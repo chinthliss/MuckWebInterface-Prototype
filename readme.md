@@ -1,6 +1,6 @@
 Need to flesh out instructions here
 
-##Deployment
+## Deployment
 Make sure Composer is installed  
 Download files to a folder / Clone from git
 Rename .env.example to .env  
@@ -12,13 +12,13 @@ npm install
 php artisan key:generate
 ```
 
-###Production
+### Production
 ```
 php artisan config:cache
 php artisan route:cache
 ```
 
-###Development
+### Development
 ```  
 vagrant up   
 vagrant ssh
@@ -29,8 +29,8 @@ cd code
 php artisan migrate --seed  
 ```
 
-##Updating
-###Production
+## Updating
+### Production
 ```
 php artisan down
 git pull origin master
