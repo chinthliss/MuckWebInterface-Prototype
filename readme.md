@@ -16,6 +16,7 @@ php artisan key:generate
 ```
 php artisan config:cache
 php artisan route:cache
+npm run production
 ```
 
 ### Development
@@ -28,6 +29,10 @@ Default password for Vagrant is 'vagrant'. Remaining commands are from the opene
 cd code  
 php artisan migrate --seed  
 ```
+Then use one of the following scripts:
+Single compile - npm run dev
+Watch files - npm run watch
+Live/HMR replacement - npm run hot
 
 ## Updating
 ### Production
