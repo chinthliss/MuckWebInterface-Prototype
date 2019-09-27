@@ -1,7 +1,7 @@
 {
-    "name": "laravel/laravel",
+    "name": "mwi/prototype",
     "type": "project",
-    "description": "The Laravel Framework.",
+    "description": "Prototype",
     "keywords": [
         "framework",
         "laravel"
@@ -40,8 +40,8 @@
             "App\\": "app/"
         },
         "classmap": [
-            "database/seeds",
-            "database/factories"
+            "database/seeds"
+            //"database/factories"
         ]
     },
     "autoload-dev": {
