@@ -162,6 +162,19 @@ class DatabaseForMuckUserProvider implements UserProvider
 
     public function updateEmail(User $user, string $email)
     {
+        //Because historic code may not have made an entry for existing mail, check on such
+        if ($existingEmail = $user->getEmailForVerification()) {
+            $query = DB::table('account_emails')->where([
+                'email' => $existingEmail
+            ])->first();
+            if (!$query) {
+                DB::table('account_emails')->insert([
+                    'email' => $existingEmail,
+                    'aid' => $user->getAid(),
+                    'created_at' => Carbon::now()
+                ]);
+            }
+        }
         //Need to make sure there's a reference in account_emails
         $query = DB::table('account_emails')->where([
             'email' => $email
