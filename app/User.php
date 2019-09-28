@@ -199,7 +199,7 @@ class User implements Authenticatable, MustVerifyEmail
 
     public function setEmail(string $email)
     {
-        $this->email = $email;
         auth()->guard('account')->getProvider()->updateEmail($this, $email);
+        $this->email = $email;
     }
 }
