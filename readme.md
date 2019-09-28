@@ -17,6 +17,7 @@ php artisan key:generate
 php artisan config:cache
 php artisan route:cache
 npm run production
+php artisan migrate
 ```
 
 ### Development

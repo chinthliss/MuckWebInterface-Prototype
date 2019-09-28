@@ -11,9 +11,11 @@ const mix = require('laravel-mix');
  |
  */
 
-mix.js('resources/js/app.js', 'public/js')
+mix
+    .disableNotifications()
+    .js('resources/js/app.js', 'public/js')
     .sass('resources/sass/app.scss', 'public/css')
     //.extract(['vue', 'bootstrap', 'jquery', 'axios', 'lodash', 'popper.js', 'process', 'setimmediate', 'timers-browserify'])
     .extract() // This now extracts all external dependencies
-    .disableNotifications()
-    .browserSync({proxy:'homestead.test', open:false});
+    .browserSync({proxy:'homestead.test', open:false})
+;
