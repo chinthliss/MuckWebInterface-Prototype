@@ -139,7 +139,7 @@ class AccountCreateTest extends TestCase
      */
     public function testCreatedAccountHasRememberTokenSet()
     {
-        $response = $this->json('POST', route('auth.account.create', [
+        $this->json('POST', route('auth.account.create', [
             'email' => 'testnew@test.com',
             'password' => 'password'
         ]));

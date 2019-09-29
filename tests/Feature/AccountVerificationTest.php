@@ -27,7 +27,7 @@ class AccountVerificationTest extends TestCase
 
     public function testCannotAccessVerificationPageWithoutAccount()
     {
-        $response = $this->followingRedirects()->get('/email/verify');
+        $response = $this->followingRedirects()->get('/account/verifyemail');
         $response->assertViewIs('auth.login');
     }
 
@@ -110,7 +110,7 @@ class AccountVerificationTest extends TestCase
         Notification::fake();
         Auth::loginUsingId(2);
         $user = $this->getPresentUser();
-        $this->get(route('verification.resend'));
+        $this->get('/account/resendverifyemail');
         Notification::assertSentTo($user,VerifyEmail::class, function(VerifyEmail $notification, $channels) use ($user) {
             $mail = $notification->toMail($user)->toArray();
             $this->assertContains('signature=', $mail['actionUrl']);
@@ -127,7 +127,7 @@ class AccountVerificationTest extends TestCase
         Notification::fake();
         Auth::loginUsingId(3);
         $user = $this->getPresentUser();
-        $this->get(route('verification.resend'));
+        $this->get('/account/resendverifyemail');
         Notification::assertSentTo($user,VerifyEmail::class, function(VerifyEmail $notification, $channels) use ($user) {
             $mail = $notification->toMail($user)->toArray();
             $response = $this->json('GET', $mail['actionUrl']);

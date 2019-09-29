@@ -2,13 +2,9 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Auth\AccountController;
 use Illuminate\Http\Request;
 use App\Notifications\ResetPassword;
-use Illuminate\Support\Facades\Auth;
-use App\User;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Events\PasswordReset;
 

@@ -6,13 +6,6 @@
 |--------------------------------------------------------------------------
 */
 
-// Laravel's inbuilt email verification routes. Allegedly should be able to use Auth::routes(['verify' => true]);
-// But such tries to register the default LoginController which we're not using.
-// Auth::routes(['verify' => true]);
-Route::get('email/verify', 'Auth\VerificationController@show')->name('verification.notice');
-Route::get('email/verify/{id}/{hash}', 'Auth\VerificationController@verify')->name('verification.verify');
-Route::get('email/resend', 'Auth\VerificationController@resend')->name('verification.resend');
-
 //Only available when NOT logged in
 Route::group(['middleware' => ['web', 'guest']], function() {
     Route::get('/', 'WelcomeController@show')
@@ -38,6 +31,11 @@ Route::group(['middleware' => ['web', 'guest']], function() {
 //Requires an account but DOESN'T require verification
 Route::group(['middleware' => ['web', 'auth:account']], function() {
     Route::post('logout', 'Auth\AccountController@logout')->name('logout');
+    Route::get('account/verifyemail', 'Auth\AccountEmailController@show');
+    Route::get('account/verifyemail/{id}/{hash}', 'Auth\AccountEmailController@verify')
+        ->name('auth.account.verifyemail')->middleware('signed', 'throttle:8,1');
+    Route::get('account/resendverifyemail', 'Auth\AccountEmailController@resend')
+        ->name('auth.account.resendverifyemail')->middleware('throttle:8,1');
 });
 
 //Requires account and verification.
@@ -49,9 +47,9 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified']], function() {
         ->name('auth.account.passwordchange');
     Route::post('account/changepassword', 'Auth\AccountPasswordController@changePassword');
     //Email change
-    Route::get('account/changeemail', 'Auth\AccountController@showChangeEmail')
+    Route::get('account/changeemail', 'Auth\AccountEmailController@showChangeEmail')
         ->name('auth.account.emailchange');
-    Route::post('account/changeemail', 'Auth\AccountController@changeEmail');
+    Route::post('account/changeemail', 'Auth\AccountEmailController@changeEmail');
 
 });
 

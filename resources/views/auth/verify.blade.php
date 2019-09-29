@@ -19,7 +19,7 @@
                         @endif
 
                         <p>Before proceeding, please check your email for a verification link.</p>
-                        <p>If you did not receive the email, <a href="{{ route('verification.resend') }}">click here to request another</a>.</p>
+                        <p>If you did not receive the email, <a href="{{ route('auth.account.resendverifyemail') }}">click here to request another</a>.</p>
                     </div>
                 </div>
             </div>

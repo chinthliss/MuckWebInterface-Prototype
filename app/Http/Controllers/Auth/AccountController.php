@@ -8,8 +8,6 @@ use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -117,30 +115,6 @@ class AccountController extends Controller
         $request->session()->invalidate();
         event(new Logout($this->guard(), $user));
         return redirect()->route('welcome');
-    }
-
-    public function changeEmail(Request $request, AccountController $accountController)
-    {
-        $request->validate([
-            'password' => 'required',
-            'email' => 'required|email'
-        ]);
-        $user = auth()->user();
-        if (!auth()->guard()->getProvider()->validateCredentials($user, ['password'=>$request['password']])) {
-            throw ValidationException::withMessages(['password'=>["Password provided doesn't match existing password"]]);
-        }
-        if (!auth()->guard()->getprovider()->isEmailAvailable($request['email'])) {
-            throw ValidationException::withMessages(['email'=>["This email is already associated with an account. You'll need to raise a ticket for this if you want to use this email."]]);
-        }
-        $user->setEmail($request['email']);
-        $user->sendEmailVerificationNotification();
-        return view('auth.email-change-processed');
-    }
-
-
-    public function showChangeEmail()
-    {
-        return view('auth.email-change');
     }
 
     public function show()
