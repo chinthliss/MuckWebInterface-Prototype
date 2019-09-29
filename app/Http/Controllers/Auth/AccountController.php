@@ -57,6 +57,8 @@ class AccountController extends Controller
             //TODO: Look better at implementing loginThrottle
             // $this->clearLoginAttempts($request);
 
+            //TODO: Remove test message in login
+            $request->session()->flash('message-success', 'You have logged in! (And this is a test message.)');
             $response = array(
                 'status' => 'success',
                 'redirectUrl' => redirect()->intended('/home')->getTargetUrl(),

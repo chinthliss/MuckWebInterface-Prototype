@@ -31,7 +31,8 @@ Route::group(['middleware' => ['web', 'guest']], function() {
 //Requires an account but DOESN'T require verification
 Route::group(['middleware' => ['web', 'auth:account']], function() {
     Route::post('logout', 'Auth\AccountController@logout')->name('logout');
-    Route::get('account/verifyemail', 'Auth\AccountEmailController@show');
+    Route::get('account/verifyemail', 'Auth\AccountEmailController@show')
+        ->name('verification.notice'); // Name is required for Laravel's verification middleware
     Route::get('account/verifyemail/{id}/{hash}', 'Auth\AccountEmailController@verify')
         ->name('auth.account.verifyemail')->middleware('signed', 'throttle:8,1');
     Route::get('account/resendverifyemail', 'Auth\AccountEmailController@resend')

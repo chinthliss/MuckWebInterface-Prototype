@@ -81,6 +81,8 @@ class AccountVerificationTest extends TestCase
         ]));
         $user = $this->getPresentUser();
         $this->assertNotTrue($user->hasVerifiedEmail());
+        $request = $this->followingRedirects()->get('/');
+        $request->assertViewIs('auth.verify');
     }
 
     /**

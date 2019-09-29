@@ -13,7 +13,7 @@
         <title>{{ config('app.name', 'Laravel') }}</title>
     @endif
 
-<!-- Scripts -->
+    <!-- Scripts -->
     <script src="{{ mix('js/manifest.js') }}"></script>
     <script src="{{ mix('js/vendor.js') }}"></script>
     <script src="{{ mix('js/app.js') }}"></script>
@@ -73,10 +73,19 @@
         </div>
     </div>
 </nav>
-
-<main id="app">
-    @yield('content')
-</main>
+<div id="pagewrapper">
+    @if ($message = Session::get('message-success'))
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>{{ $message }}</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
+    <main id="app">
+        @yield('content')
+    </main>
+</div>
 <script type="application/javascript">
     //Attach Vue components - needs to be run after the page exists and DOM populated
     const app = new Vue({
