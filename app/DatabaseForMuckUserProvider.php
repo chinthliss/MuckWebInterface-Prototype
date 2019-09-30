@@ -58,11 +58,8 @@ class DatabaseForMuckUserProvider implements UserProvider
             $accountQuery = $this->getRetrievalQuery()
                 ->where('accounts.email', $credentials['email'])
                 ->first();
-        } else if (array_key_exists('aid', $credentials))
-            $accountQuery = DB::table('accounts')->where('aid', $credentials['aid'])->first();
-        else if (array_key_exists('uuid', $credentials))
-            $accountQuery = DB::table('accounts')->where('uuid', $credentials['uuid'])->first();
-        //TODO: Check muck for character here, making sure to set present character ref.
+        }
+        //TODO: Retrieve #dbref from muck if credentials email matches character name
         if ($accountQuery) return User::fromQuery($accountQuery);
         else return null;
     }
