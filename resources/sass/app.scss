@@ -3,3 +3,26 @@
 
 // Bootstrap
 @import '~bootstrap/scss/bootstrap';
+
+@include media-breakpoint-down(md) {
+    #leftpane {
+        width:100%;
+        display: none;
+        position: inherit;
+    }
+
+    #mainpane {
+
+    }
+}
+
+@include media-breakpoint-up(md) {
+    #leftpane {
+        width:250px;
+        position: absolute;
+    }
+
+    #mainpane {
+        margin-left: 250px;
+    }
+}
