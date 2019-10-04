@@ -52,7 +52,8 @@ class AccountEmailController extends Controller
     {
         $request->validate(['email'=>'required']);
         $user = auth()->user();
-        if (array_key_exists($request['email'], $emails = $user->getEmails())){
+        $emails = $user->getEmails();
+        if (!$emails->has($request['email'])) {
             throw ValidationException::withMessages(['email'=>["Email isn't associated with this account."]]);
         }
         $user->setEmail($request['email']);

@@ -94,6 +94,8 @@ class AccountEmailChangeTest extends TestCase
         });
     }
 
+
+
     /**
      * @depends testChangeEmailSendsVerification
      */
@@ -120,5 +122,53 @@ class AccountEmailChangeTest extends TestCase
         });
     }
 
+    //region Use Existing Email
+    public function testUseExistingEmailWorksWithVerifiedMail()
+    {
+        $this->seed();
+        Notification::fake();
+        $user = $this->loginAsValidatedUser();
+        $newEmail = 'testalt@test.com';
+        $this->post('account/useexistingemail', [
+            'email' => $newEmail
+        ]);
+        $this->assertTrue($user->hasVerifiedEmail());
+        $this->assertEquals($user->getEmailForVerification(), $newEmail, "Email didn't change.");
+        Notification::assertNothingSent();
+    }
+
+    public function testUseExistingEmailWorksWithUnverifiedMail()
+    {
+        $this->seed();
+        Notification::fake();
+        $user = $this->loginAsValidatedUser();
+        $newEmail = 'testaltunverified@test.com';
+        $this->post('account/useexistingemail', [
+            'email' => $newEmail
+        ]);
+        $this->assertFalse($user->hasVerifiedEmail());
+        $this->assertEquals($user->getEmailForVerification(), $newEmail, "Email wasn't changed.");
+        Notification::assertSentTo($user,VerifyEmail::class, function(VerifyEmail $notification, $channels) use ($user, $newEmail) {
+            $mail = $notification->toMail($user)->toArray();
+            $response = $this->json('GET', $mail['actionUrl']);
+            $response->assertStatus(302);
+            $this->assertTrue($user->hasVerifiedEmail());
+            return true;
+        });
+    }
+
+    public function testUseExistingEmailRequiresExistingEmail()
+    {
+        $this->seed();
+        Notification::fake();
+        $user = $this->loginAsValidatedUser();
+        $newEmail = 'notexistingemail@test.com';
+        $this->post('account/useexistingemail', [
+            'email' => $newEmail
+        ]);
+        $this->assertNotEquals($user->getEmailForVerification(), $newEmail, "Email changed to new email.");
+        Notification::assertNothingSent();
+    }
+    //endregion
 }
 
