@@ -8,9 +8,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     @hasSection('title')
-        <title>@yield('title') ({{ config('app.name', 'Laravel') }})</title>
+        <title>@yield('title') ({{ config('app.name', 'MuckWebInterface') }})</title>
     @else
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ config('app.name', 'MuckWebInterface') }}</title>
     @endif
 
 <!-- Scripts -->
@@ -25,7 +25,7 @@
 <!-- Sidebar/Left pane -->
 <nav id="leftpane" class="navbar-dark bg-dark min-vh-100 p-2 shadow-sm">
     <a class="navbar-brand" href="{{ url('/') }}">
-        {{ config('app.name', 'Laravel') }}
+        {{ config('app.name', 'MuckWebInterface') }}
     </a>
     <div><span class="navbar-text">Some text!</span></div>
     <div><a href="#">A link</a></div>

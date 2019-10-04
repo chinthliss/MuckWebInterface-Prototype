@@ -6,7 +6,9 @@
 
 @section('content')
     <auth-account
-        email="{{ Auth::user()->getEmailForVerification() }}"
-        account-created="{{ Auth::user()->createdAt ?? 'Prior to this being recorded' }}"
+        account-created="{{ $user->createdAt ?? 'Prior to this being recorded' }}"
+        primary-email="{{ $user->getEmailForVerification() }}"
+        :emails="{{ $user->getEmails() }}"
+        :errors="{{ $errors }}"
     ></auth-account>
 @endsection

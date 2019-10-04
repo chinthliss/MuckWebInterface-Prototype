@@ -5,6 +5,7 @@ namespace App;
 use App\Helpers\MuckInterop;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -18,11 +19,13 @@ class User implements Authenticatable, MustVerifyEmail
     use Notifiable;
 
     protected $aid = null;
-    protected $email = null;
+    protected $email = null; // Primary email
+    protected $emails = null;
     protected $password = null;
     protected $passwordType = null;
     protected $playerDbref = null;
     protected $rememberToken = null;
+
     // These are public since they don't save directly
     public $createdAt = null;
     public $updatedAt = null;
@@ -47,6 +50,15 @@ class User implements Authenticatable, MustVerifyEmail
         if (property_exists($query, 'created_at') && $query->created_at) $instance->createdAt = $query->created_at;
         if (property_exists($query, 'updated_at') && $query->updated_at) $instance->updatedAt = $query->updated_at;
         return $instance;
+    }
+
+    /**
+     * Get expected user provider
+     * @return DatabaseForMuckUserProvider
+     */
+    public function getProvider()
+    {
+        return auth()->guard('account')->getProvider();
     }
 
     /**
@@ -156,7 +168,7 @@ class User implements Authenticatable, MustVerifyEmail
      */
     public function markEmailAsVerified()
     {
-        auth()->guard('account')->getProvider()->markEmailAsVerified($this, $this->email);
+        $this->getProvider()->markEmailAsVerified($this, $this->email);
         $this->emailVerified = true;
         return true;
     }
@@ -182,6 +194,23 @@ class User implements Authenticatable, MustVerifyEmail
         return $this->email;
     }
 
+    /**
+     * @return \Illuminate\Support\Collection
+     */
+    public function getEmails()
+    {
+        if (!is_null($this->emails)) {
+            return $this->emails;
+        } else {
+            $rawEmails = $this->getProvider()->getEmails($this);
+            return $this->emails = $rawEmails->mapWithKeys(function ($item, $key) {
+                $email = $item->email;
+                unset($item->email);
+                return [$email => $item];
+            });
+        }
+    }
+
     //Used by notifiable
     public function getKey()
     {
@@ -193,13 +222,13 @@ class User implements Authenticatable, MustVerifyEmail
         $password = MuckInterop::createSHA1SALTPassword($password);
         $this->password = $password;
         $this->password_type = 'SHA1SALT';
-        auth()->guard('account')->getProvider()->updatePassword($this, $password, 'SHA1SALT');
+        $this->getProvider()->updatePassword($this, $password, 'SHA1SALT');
         //$this->updateLastUpdated(); //Done automatically with update
     }
 
     public function setEmail(string $email)
     {
-        auth()->guard('account')->getProvider()->updateEmail($this, $email);
+        $this->emailVerified = $this->getProvider()->updateEmail($this, $email);
         $this->email = $email;
     }
 }

@@ -121,6 +121,8 @@ class AccountController extends Controller
 
     public function show()
     {
-        return view('auth.account');
+        return view('auth.account', [
+            'user' => $this->guard()->user()
+        ]);
     }
 }

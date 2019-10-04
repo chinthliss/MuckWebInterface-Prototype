@@ -50,6 +50,7 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified']], function() {
     //Email change
     Route::get('account/changeemail', 'Auth\AccountEmailController@showChangeEmail')
         ->name('auth.account.emailchange');
+    Route::post('account/useexistingemail', 'Auth\AccountEmailController@useExistingEmail');
     Route::post('account/changeemail', 'Auth\AccountEmailController@changeEmail');
 
 });

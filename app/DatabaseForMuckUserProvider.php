@@ -17,7 +17,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 class DatabaseForMuckUserProvider implements UserProvider
 {
 
-    //region Retrieval commands
+    //region Retrieval
 
     /**
      * Gets a base query that contains the required columns for creating a User object.
@@ -64,7 +64,7 @@ class DatabaseForMuckUserProvider implements UserProvider
         else return null;
     }
 
-    //endregion
+    //endregion Retrieval
 
     public function updateRememberToken(Authenticatable $user, $token)
     {
@@ -121,22 +121,6 @@ class DatabaseForMuckUserProvider implements UserProvider
         return $user;
     }
 
-    public function markEmailAsVerified(User $user, string $email)
-    {
-        // Verify email - this may not exist if it was created from outside
-        DB::table('account_emails')->updateOrInsert(
-            ['aid' => $user->getAid(), 'email' => $email],
-            ['verified_at' => Carbon::now()]
-        );
-        // And make it active email
-        DB::table('accounts')->where([
-            'aid' => $user->getAid()
-        ])->update([
-            'email' => $email,
-            'updated_at' => Carbon::now()
-        ]);
-    }
-
     public function updateLastUpdated(User $user)
     {
         DB::table('accounts')->where([
@@ -157,6 +141,13 @@ class DatabaseForMuckUserProvider implements UserProvider
         ]);
     }
 
+    //region Email
+
+    /**
+     * @param User $user
+     * @param string $email
+     * @return bool Whether new email is verified
+     */
     public function updateEmail(User $user, string $email)
     {
         //Because historic code may not have made an entry for existing mail, check on such
@@ -173,10 +164,10 @@ class DatabaseForMuckUserProvider implements UserProvider
             }
         }
         //Need to make sure there's a reference in account_emails
-        $query = DB::table('account_emails')->where([
+        $newEmailQuery = DB::table('account_emails')->where([
             'email' => $email
         ])->first();
-        if (!$query) {
+        if (!$newEmailQuery) {
             DB::table('account_emails')->insert([
                 'email' => $email,
                 'aid' => $user->getAid(),
@@ -189,6 +180,7 @@ class DatabaseForMuckUserProvider implements UserProvider
             'email' => $email,
             'updated_at' => Carbon::now()
         ]);
+        return ($newEmailQuery && $newEmailQuery->verified_at);
     }
 
     public function isEmailAvailable(string $email)
@@ -202,5 +194,36 @@ class DatabaseForMuckUserProvider implements UserProvider
         ])->value('aid');
         return $aid ? false : true;
     }
+
+    public function markEmailAsVerified(User $user, string $email)
+    {
+        // Verify email - this may not exist if it was created from outside
+        DB::table('account_emails')->updateOrInsert(
+            ['aid' => $user->getAid(), 'email' => $email],
+            ['verified_at' => Carbon::now()]
+        );
+        // And make it active email
+        DB::table('accounts')->where([
+            'aid' => $user->getAid()
+        ])->update([
+            'email' => $email,
+            'updated_at' => Carbon::now()
+        ]);
+    }
+
+    /**
+     * Get all emails to do with a user in the form
+     * @param User $user
+     * @return \Illuminate\Support\Collection
+     */
+    public function getEmails(User $user)
+    {
+        return DB::table('account_emails')->select([
+            'email', 'created_at', 'verified_at'
+        ])->where([
+            'aid' => $user->getAid()
+        ])->get();
+    }
+    // endregion Email
 
 }

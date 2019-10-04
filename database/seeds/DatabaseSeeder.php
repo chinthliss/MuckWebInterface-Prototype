@@ -36,6 +36,12 @@ class DatabaseSeeder extends Seeder
             'verified_at' => Carbon::now()
         ]);
 
+        DB::table('account_emails')->insert([
+            'aid' => $aid,
+            'email' => 'testaltunverified@test.com'
+        ]);
+
+
         // Account 2 - unverified
         DB::table('accounts')->insert([
             'aid' => 2,
