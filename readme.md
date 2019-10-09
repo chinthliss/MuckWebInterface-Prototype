@@ -2,7 +2,7 @@ Need to flesh out instructions here
 
 ## Deployment
 Make sure Composer is installed  
-Download files to a folder / Clone from git
+Download files to a folder / Clone from git  
 Rename .env.example to .env  
 Fill out settings in .env  
 Run commands:  

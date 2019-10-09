@@ -175,6 +175,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         App\Providers\DatabaseForMuckAuthServiceProvider::class,
         App\Providers\DatabaseForMuckSessionServiceProvider::class,
+        App\Providers\MuckServiceProvider::class,
 
     ],
 
