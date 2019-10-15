@@ -101,7 +101,7 @@ class HttpMuckConnection implements MuckConnection
             'dbref' => $character->getDbref(),
             'password' => $credentials['password']
         ]);
-        return ($response == 'true');
+        return $response;
     }
 
 
