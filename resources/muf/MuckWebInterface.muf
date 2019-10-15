@@ -85,12 +85,25 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 : handleRequest_validateCredentials[ arr:data -- ]
     data @ "dbref" array_getitem ?dup if atoi dbref else #-1 then var! dbref
     data @ "password" array_getitem ?dup not if "" then var! password
-    dbref @ ok? password @ and if
+    dbref @ player? password @ and if
         startAcceptedResponse
         dbref @ password @ checkpassword if "true" else "false" then
         descr swap descrnotify 
     else response400 then
 ; selfcall handleRequest_validateCredentials
+
+(Expects 'aid' and 'dbref' set, returns playerToString if accepted)
+: handleRequest_retrieveById[ arr:data -- ]
+    data @ "aid" array_getitem ?dup if atoi else 0 then var! aid
+    data @ "dbref" array_getitem ?dup if atoi dbref else #-1 then var! dbref
+    dbref @ player? aid @ and if
+        startAcceptedResponse
+        dbref @ acct_any2aid aid @ = not if exit then (No longer belongs to this account)
+        dbref @ playerToString
+        descr swap descrnotify
+    then
+; selfcall handleRequest_retrieveById
+
 
 : authenticateQuery[ arr:webcall -- bool:authenticated? ]
     webcall @ { "data" "BODY" }list array_nested_get ?dup not if "" then

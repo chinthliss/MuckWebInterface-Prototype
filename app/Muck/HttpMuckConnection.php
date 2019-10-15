@@ -3,7 +3,6 @@
 
 namespace App\Muck;
 use App\Contracts\MuckConnection;
-use App\User;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Client;
 use Illuminate\Support\Carbon;
@@ -79,29 +78,37 @@ class HttpMuckConnection implements MuckConnection
      */
     public function retrieveByCredentials(array $credentials)
     {
-        if (!array_key_exists('email', $credentials)) return false;
+        if (!array_key_exists('email', $credentials)) return null;
         $response = $this->requestFromMuck('retrieveByCredentials', [
             'name' => $credentials['email']
         ]);
         if (strpos($response, ',')) {
-            return User::fromMuckResponse($response);
+            return MuckCharacter::fromMuckResponse($response);
         }
-        return false;
+        return null;
     }
 
     /**
      * @inheritDoc
      */
-    public function validateCredentials(User $user, array $credentials)
+    public function validateCredentials(MuckCharacter $character, array $credentials)
     {
-        if (!array_key_exists('password', $credentials)
-            || !$user->getCharacter()) return false;
+        if (!array_key_exists('password', $credentials)) return false;
         $response = $this->requestFromMuck('validateCredentials', [
-            'dbref' => $user->getCharacter()->getDbref(),
+            'dbref' => $character->getDbref(),
             'password' => $credentials['password']
         ]);
         return ($response == 'true');
     }
 
 
+    /**
+     * @inheritDoc
+     */
+    public function retrieveById(string $identifier)
+    {
+        if (count($exploded = explode(':', $identifier)) != 2) return null;
+        list($aid, $character) = $identifier;
+        
+    }
 }
