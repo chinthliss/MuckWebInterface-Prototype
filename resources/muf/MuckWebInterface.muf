@@ -47,8 +47,8 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 
 (Default representation of a player. Presently Dbref,Name,Level,ColonSeparatedFlags)
 : playerToString[ dbref:player -- str:representation ]
-    player @ dbref "," strcat
-    player @ name "," "" subst strcat "," strcat
+    player @ intostr "," strcat
+    player @ name "" "," subst strcat "," strcat
     player @ truelevel intostr strcat "," strcat
     { }list
     player @ mlevel 3 > if "wizard" swap array_appenditem then
@@ -85,9 +85,12 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 : handleRequest_validateCredentials[ arr:data -- ]
     data @ "dbref" array_getitem ?dup if atoi dbref else #-1 then var! dbref
     data @ "password" array_getitem ?dup not if "" then var! password
-    dbref @ player? password @ and if
+    (Since a player might have been deleted, requests with a positive valid requests are ok)
+    dbref @ #-1 dbcmp not password @ and if 
         startAcceptedResponse
-        dbref @ password @ checkpassword if "true" else "false" then
+        dbref @ player? not if "false" else
+            dbref @ password @ checkpassword if "true" else "false" then
+        then
         descr swap descrnotify 
     else response400 then
 ; selfcall handleRequest_validateCredentials
@@ -96,12 +99,14 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 : handleRequest_retrieveById[ arr:data -- ]
     data @ "aid" array_getitem ?dup if atoi else 0 then var! aid
     data @ "dbref" array_getitem ?dup if atoi dbref else #-1 then var! dbref
-    dbref @ player? aid @ and if
+    (Since a player might have been deleted, requests with a positive valid requests are ok)
+    dbref @ #-1 dbcmp not aid @ and if
         startAcceptedResponse
+        dbref @ player? not if exit then
         dbref @ acct_any2aid aid @ = not if exit then (No longer belongs to this account)
         dbref @ playerToString
         descr swap descrnotify
-    then
+    else response400 then
 ; selfcall handleRequest_retrieveById
 
 
@@ -136,7 +141,8 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 ;
 
 : main
-    command @ "(WWW)" stringcmp not if 
+    command @ "(WWW)" stringcmp not if
+        pop
         prog "disabled" getpropstr "y" instring if
             response503
         else

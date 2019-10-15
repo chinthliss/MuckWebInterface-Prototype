@@ -31,7 +31,7 @@ class HttpMuckConnection implements MuckConnection
     protected function requestFromMuck(string $request, array $data = [])
     {
         $data['mwi_request'] = $request;
-        $data['mwi_timestamp'] = Carbon::now(); //This is to ensure that repeated requests don't match
+        $data['mwi_timestamp'] = Carbon::now()->timestamp; //This is to ensure that repeated requests don't match
         $signature = sha1(http_build_query($data) . $this->salt);
         try {
             $result = $this->client->request('POST', $this->uri, [
@@ -57,8 +57,8 @@ class HttpMuckConnection implements MuckConnection
         //Form of result is \r\n separated lines of dbref,name,level,flags
         foreach(explode(chr(13) . chr(10), $response) as $line) {
             if (!trim($line)) continue;
-            list($dbref, $characterName, $level, $flags) = explode(',', $line);
-            $characters[$dbref] = new MuckCharacter($dbref, $characterName);
+            $character = MuckCharacter::fromMuckResponse($line);
+            $characters[$character->getDbref()] = $character;
         }
         return collect($characters);
     }
@@ -82,8 +82,11 @@ class HttpMuckConnection implements MuckConnection
         $response = $this->requestFromMuck('retrieveByCredentials', [
             'name' => $credentials['email']
         ]);
-        if (strpos($response, ',')) {
-            return MuckCharacter::fromMuckResponse($response);
+        //Muck returns character string but with an extra aid value at the front
+        if ($split = strpos($response, ',')) {
+            $aid = substr($response, 0, $split);
+            $characterString = substr($response, $split + 1);
+            return [$aid, MuckCharacter::fromMuckResponse($characterString)];
         }
         return null;
     }
@@ -108,7 +111,14 @@ class HttpMuckConnection implements MuckConnection
     public function retrieveById(string $identifier)
     {
         if (count($exploded = explode(':', $identifier)) != 2) return null;
-        list($aid, $characterString) = $identifier;
-        return [$aid, MuckCharacter::fromMuckResponse($characterString)];
+        list($aid, $dbref) = $exploded;
+        $response = $this->requestFromMuck('retrieveById', [
+            'aid' => $aid,
+            'dbref' => $dbref
+        ]);
+        if ($response) {
+            return [$aid, MuckCharacter::fromMuckResponse($response)];
+        }
+        return null;
     }
 }
