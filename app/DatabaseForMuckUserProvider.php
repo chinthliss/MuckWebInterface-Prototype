@@ -77,6 +77,7 @@ class DatabaseForMuckUserProvider implements UserProvider
 
     public function retrieveByCredentials(array $credentials)
     {
+        debug("RetrieveByCredentials", $credentials);
         if (!array_key_exists('email', $credentials)) return null;
         if (strpos($credentials['email'], '@')) {
             //Looks like an email, so try database
