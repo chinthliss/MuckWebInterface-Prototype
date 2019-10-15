@@ -40,9 +40,11 @@ Live/HMR replacement - `npm run hot`
 ```
 php artisan down
 git pull origin master
-composer install 
+php composer.phar install 
 php artisan migrate
-// php artisan cache:clear
+php artisan config:cache
+php artisan route:cache
 // php artisan queue:restart
+npm run production
 php artisan up
 ```
