@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-
+use App\Contracts\MuckConnection;
 use App\Muck\FakeMuckConnection;
 use App\Muck\HttpMuckConnection;
 use Illuminate\Support\ServiceProvider;
@@ -19,7 +19,7 @@ class MuckServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->singleton('App\Contracts\MuckConnectionContract', function($app) {
+        $this->app->singleton(MuckConnection::class, function($app) {
             $config = $this->app['config']['muck'];
             $driver = $config['driver'];
             if ($driver == 'fake') return new FakeMuckConnection($config);
@@ -45,6 +45,6 @@ class MuckServiceProvider extends ServiceProvider
      */
     public function provides()
     {
-        return ['App\Contracts\MuckConnectionContract'];
+        return [MuckConnection::class];
     }
 }

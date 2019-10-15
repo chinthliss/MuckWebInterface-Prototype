@@ -20,16 +20,17 @@ return [
     |--------------------------------------------------------------------------
     |
     */
-    'host' => env('HOST', '127.0.0.1'),
-    'port' => env('PORT', '8000'),
+    'host' => env('MUCK_HOST', '127.0.0.1'),
+    'port' => env('MUCK_PORT', '8000'),
+    'uri' => env('MUCK_URI', 'mwi/gateway'),
 
     /*
     |--------------------------------------------------------------------------
-    | Password
+    | Salt
     |--------------------------------------------------------------------------
-    | More of a handshake challenge but this must be the same as the one the muck is expecting
+    | Used to sign requests passed to the muck. Must match the value stored on the muck.
     */
-    'password' => env('PASSWORD', ''),
+    'salt' => env('MUCK_SALT'),
 
     /*
     |--------------------------------------------------------------------------
@@ -37,5 +38,5 @@ return [
     |--------------------------------------------------------------------------
     | Whether to use HTTPS. Not generally required if the muck/web live on the same machine
     */
-    'useHttps' => ENV('USE_HTTPS', false),
+    'useHttps' => ENV('MUCK_USE_HTTPS', false),
 ];

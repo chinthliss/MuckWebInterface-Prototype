@@ -2,10 +2,9 @@
 
 
 namespace App\Muck;
-use App\Contracts\MuckConnectionContract;
-use Illuminate\Support\Collection;
+use App\Contracts\MuckConnection;
 
-class FakeMuckConnection implements MuckConnectionContract
+class FakeMuckConnection implements MuckConnection
 {
 
     public function __construct(array $config)
@@ -13,28 +12,62 @@ class FakeMuckConnection implements MuckConnectionContract
 
     }
 
+    //region Auth
+
     /**
-     * Get all the characters of a given accountId
-     * @param int $aid
-     * @return Collection
+     * @inheritDoc
      */
-    public function getCharactersOf(int $aid)
+    public function retrieveByCredentials(array $credentials)
     {
-        return collect([
-            1234=>new MuckCharacter(1234, 'fakeName')
-        ]);
+        if (array_key_exists('email', $credentials) && strtolower($credentials['email']) == 'testcharacter') {
+            return [1, MuckCharacter::fromMuckResponse('1234,TestCharacter,100,wizard')];
+        }
+        return null;
     }
 
     /**
-     * Get characters of present authenticated user
-     * @return Collection
+     * @inheritDoc
+     */
+    public function validateCredentials(MuckCharacter $character, array $credentials)
+    {
+        if ($character->getDbref() == 1234 && $credentials['password'] == 'password') return true;
+        return false;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function retrieveById(string $identifier)
+    {
+        if ($identifier == '1:1234') return MuckCharacter::fromMuckResponse('1234,TestCharacter,100,wizard');
+        return null;
+    }
+
+    //Endregion
+
+
+
+    /**
+     * @inheritDoc
+     */
+    public function getCharactersOf(int $aid)
+    {
+        $result = [];
+        if ($aid == 1) {
+            $result = [
+                1234 => new MuckCharacter(1234, 'testCharacter')
+            ];
+        }
+        return collect($result);
+    }
+
+    /**
+     * @inheritDoc
      */
     public function getCharacters()
     {
         $user = auth()->user();
         if ( !$user || !$user->getAid() ) return null;
-        return collect([
-            1234=>new MuckCharacter(1234, 'fakeName')
-        ]);
+        return $this->getCharactersOf($user->getAid());
     }
 }

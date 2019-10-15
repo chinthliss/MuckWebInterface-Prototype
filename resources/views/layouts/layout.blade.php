@@ -11,7 +11,7 @@
         <title>@yield('title') ({{ config('app.name', 'MuckWebInterface') }})</title>
     @else
         <title>{{ config('app.name', 'MuckWebInterface') }}</title>
-    @endif
+@endif
 
 <!-- Scripts -->
     <script src="{{ mix('js/manifest.js') }}"></script>
@@ -59,6 +59,16 @@
                             <a class="nav-link" href="{{ route('login') }}">Login</a>
                         </li>
                     @else
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('auth.account') }}">
+                                {{ Auth::user()->getCharacterName() }}
+                            </a>
+                        </li>
+                        @if (Route::has('auth.account'))
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('auth.account') }}">Account</a>
+                            </li>
+                        @endif
                         @if (Route::has('logout'))
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('logout') }}"
@@ -72,13 +82,6 @@
                                 </form>
                             </li>
                         @endif
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('auth.account') }}">Account</a>
-                        </li>
-
-                        <li class="nav-item">
-                            {{ Auth::user()->playerName() }}
-                        </li>
                     @endguest
                 </ul>
             </div>

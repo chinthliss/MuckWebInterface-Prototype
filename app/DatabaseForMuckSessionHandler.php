@@ -44,8 +44,8 @@ class DatabaseForMuckSessionHandler extends DatabaseSessionHandler
     {
         $user = auth()->user();
         if ($user) {
-            $payload['aid'] = $user->getAuthIdentifier();
-            if (method_exists($user, 'playerDbref') && $user->playerDbref()) $payload['player'] = $user->playerDbref();
+            $payload['aid'] = $user->getAid();
+            if (method_exists($user, 'getCharacterDbref') && $user->getCharacterDbref()) $payload['player_dbref'] = $user->getCharacterDbref();
         }
         return $this;
     }

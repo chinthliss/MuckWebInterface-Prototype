@@ -60,6 +60,37 @@ class AccountLoginTest extends TestCase
     }
 
     /**
+     * @depends testCheckSeedIsOkay
+     */
+    public function testCanLoginWithCorrectMuckCredentials()
+    {
+        $this->seed();
+        $response = $this->json('POST', route('auth.account.login', [
+            'email' => 'testCharacter',
+            'password' => 'password'
+        ]));
+        $response->assertStatus(200);
+        $this->assertAuthenticated();
+        $this->assertNotNull($this->getPresentUser()->getCharacter(), "Character should be set after logging in with such.");
+        $this->get('/home'); //Make sure it stays set
+        $this->assertNotNull($this->getPresentUser()->getCharacter(), "Character didn't remain set.");
+    }
+
+    /**
+     * @depends testCanLoginWithCorrectMuckCredentials
+     */
+    public function testCannotLoginWithIncorrectMuckCredentials()
+    {
+        $this->seed();
+        $response = $this->json('POST', route('auth.account.login', [
+            'email' => 'testCharacter',
+            'password' => 'wrongpassword'
+        ]));
+        $response->assertStatus(422);
+        $this->assertGuest();
+    }
+
+    /**
      * @depends testCanLoginWithCorrectCredentials
      */
     public function testCannotAccessLoginPageWhenLoggedIn()

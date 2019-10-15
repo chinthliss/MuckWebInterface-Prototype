@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Contracts\MuckConnection;
 use App\DatabaseForMuckUserProvider;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -28,7 +29,8 @@ class DatabaseForMuckAuthServiceProvider extends ServiceProvider
         $this->registerPolicies();
 
         Auth::provider('accounts', function($app, array $config) {
-            return new DatabaseForMuckUserProvider($app->make('App\User'));
+            $muckConnection = $app->make(MuckConnection::class);
+            return new DatabaseForMuckUserProvider($muckConnection);
         });
     }
 }

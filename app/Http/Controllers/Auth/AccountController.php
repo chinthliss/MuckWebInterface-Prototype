@@ -44,7 +44,7 @@ class AccountController extends Controller
     public function loginAccount(Request $request)
     {
         $request->validate([
-            'email' => 'required|email|max:255',
+            'email' => 'required|max:255',
             'password' => 'required|max:255'
         ]);
         //Check
@@ -68,7 +68,7 @@ class AccountController extends Controller
         } else {
             $user = $this->guard()->getProvider()->retrieveByCredentials($request->only('email'));
             event(new Failed($this->guard(), $user, $request->only('email', 'password')));
-            throw ValidationException::withMessages(['password'=>['Unrecognized Email/Password combination.']]);
+            throw ValidationException::withMessages(['password'=>['Unrecognized Email/Password or Character/Password combination.']]);
         }
     }
 
@@ -116,7 +116,7 @@ class AccountController extends Controller
         $this->guard()->logout();
         $request->session()->invalidate();
         event(new Logout($this->guard(), $user));
-        return redirect()->route('welcome');
+        return redirect()->route('login');
     }
 
     public function show()

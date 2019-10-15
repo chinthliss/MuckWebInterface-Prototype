@@ -25,7 +25,7 @@ abstract class TestCase extends BaseTestCase
     // Also returns user for chaining
     protected function loginAsValidatedUser(): ?User
     {
-        Auth::loginUsingId(1);
+        Auth::loginUsingId('1:');
         return $this->getPresentUser();
     }
 

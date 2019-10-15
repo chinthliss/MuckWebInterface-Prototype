@@ -2,7 +2,9 @@
 
 namespace App;
 
+use App\Contracts\MuckConnection;
 use App\Helpers\MuckInterop;
+use App\Muck\MuckCharacter;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +19,13 @@ use Illuminate\Contracts\Auth\Authenticatable;
 class DatabaseForMuckUserProvider implements UserProvider
 {
 
+    private $muckConnection = null;
+
+    public function __construct(MuckConnection $muckConnection)
+    {
+        $this->muckConnection = $muckConnection;
+    }
+
     //region Retrieval
 
     /**
@@ -30,38 +39,66 @@ class DatabaseForMuckUserProvider implements UserProvider
             ->leftJoin('account_emails', 'account_emails.email', '=', 'accounts.email');
     }
 
+    //Used when user is logged in, called with ID in the form aid:characterDbref or just aid
     public function retrieveById($identifier)
     {
+        debug("RetrieveById:", $identifier);
+        $characterDbref = null; $aid= null;
+        if (strpos($identifier, ':')) {
+            $exploded = explode(':', $identifier);
+            if (count($exploded) != 2) throw new \Exception("Identifier should be in the form aid:characterDbref");
+            list($aid, $characterDbref) = $exploded;
+        }
+        else $aid = $identifier;
+        //Retrieve account details from database first
         $accountQuery = $this->getRetrievalQuery()
-            ->where('accounts.aid', $identifier)
+            ->where('accounts.aid', $aid)
             ->first();
-        if ($accountQuery) return User::fromQuery($accountQuery);
-        else return null;
+        if (!$accountQuery) return null;
+        $user = User::fromDatabaseResponse($accountQuery);
+        //If we have a character reference we'll need to ask the muck to verify it and pull back character info
+        if ($characterDbref && $character = $this->muckConnection->retrieveById($identifier))
+            $user->setCharacter($character);
+        return $user;
     }
 
     public function retrieveByToken($identifier, $token)
     {
+        debug("RetrieveByToken:", $identifier, $token);
         $accountQuery = $this->getRetrievalQuery()
             ->where('accounts.aid', $identifier)
             ->first();
         if (!$accountQuery) return null;
         $rememberToken = $accountQuery->remember_token;
         if ($rememberToken && hash_equals($rememberToken, $token)) {
-            return User::fromQuery($accountQuery);
+            return User::fromDatabaseResponse($accountQuery);
         } else return null;
     }
 
     public function retrieveByCredentials(array $credentials)
     {
-        $accountQuery = null;
-        if (array_key_exists('email', $credentials)) {
+        if (!array_key_exists('email', $credentials)) return null;
+        if (strpos($credentials['email'], '@')) {
+            //Looks like an email, so try database
             $accountQuery = $this->getRetrievalQuery()
                 ->where('accounts.email', $credentials['email'])
                 ->first();
+            if ($accountQuery) return User::fromDatabaseResponse($accountQuery);
+        } else {
+            //Try from muck
+            $lookup = $this->muckConnection->retrieveByCredentials($credentials);
+            if ($lookup) {
+                list($aid, $character) = $lookup;
+                $accountQuery = $this->getRetrievalQuery()
+                    ->where('accounts.aid', $aid)
+                    ->first();
+                if (!$accountQuery) return null; //Account referenced by muck but wasn't found in DB!
+                $user = User::fromDatabaseResponse($accountQuery);
+                $user->setCharacter($character);
+                return $user;
+            }
         }
-        //TODO: Retrieve #dbref from muck if credentials email matches character name
-        if ($accountQuery) return User::fromQuery($accountQuery);
-        else return null;
+        return null;
     }
 
     //endregion Retrieval
@@ -69,7 +106,7 @@ class DatabaseForMuckUserProvider implements UserProvider
     public function updateRememberToken(Authenticatable $user, $token)
     {
         DB::table('accounts')
-            ->where($user->getAuthIdentifierName(), $user->getAuthIdentifier())
+            ->where('aid', $user->getAid())
             ->update([$user->getRememberTokenName() => $token]);
     }
 
@@ -84,11 +121,14 @@ class DatabaseForMuckUserProvider implements UserProvider
     public function validateCredentials(Authenticatable $user, array $credentials)
     {
         // return Hash::check($credentials['password'], $user->getAuthPassword());
-        //TODO: If we have an associated character, check password against muck
-        if (method_exists($user, 'getPasswordType')) {
-            if ($user->getPasswordType() == 'SHA1SALT') {
-                return MuckInterop::verifySHA1SALTPassword($credentials['password'], $user->getAuthPassword());
-            }
+        //Try the database retrieved details first
+        if (method_exists($user, 'getPasswordType')
+            && $user->getPasswordType() == 'SHA1SALT'
+            && MuckInterop::verifySHA1SALTPassword($credentials['password'], $user->getAuthPassword()))
+            return true;
+        //Otherwise try the muck
+        if (method_exists($user, 'getCharacter') && $user->getCharacter()) {
+            return $this->muckConnection->validateCredentials($user->getCharacter(), $credentials);
         }
         return false;
     }
@@ -112,7 +152,7 @@ class DatabaseForMuckUserProvider implements UserProvider
             'updated_at' => Carbon::now(),
         ]);
         $accountQuery = DB::table('accounts')->where('email', $email)->first();
-        $user = User::fromQuery($accountQuery);
+        $user = User::fromDatabaseResponse($accountQuery);
         DB::table('account_emails')->insert([
             'email' => $email,
             'aid' => $user->getAid(),
