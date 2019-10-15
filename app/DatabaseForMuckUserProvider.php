@@ -122,6 +122,7 @@ class DatabaseForMuckUserProvider implements UserProvider
     public function validateCredentials(Authenticatable $user, array $credentials)
     {
         // return Hash::check($credentials['password'], $user->getAuthPassword());
+        debug("validateCredentials:", $user, $credentials);
         //Try the database retrieved details first
         if (method_exists($user, 'getPasswordType')
             && $user->getPasswordType() == 'SHA1SALT'
