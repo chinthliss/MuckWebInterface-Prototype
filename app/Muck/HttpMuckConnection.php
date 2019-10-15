@@ -108,7 +108,7 @@ class HttpMuckConnection implements MuckConnection
     public function retrieveById(string $identifier)
     {
         if (count($exploded = explode(':', $identifier)) != 2) return null;
-        list($aid, $character) = $identifier;
-        
+        list($aid, $characterString) = $identifier;
+        return [$aid, MuckCharacter::fromMuckResponse($characterString)];
     }
 }
