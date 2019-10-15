@@ -117,7 +117,7 @@ class HttpMuckConnection implements MuckConnection
             'dbref' => $dbref
         ]);
         if ($response) {
-            return [$aid, MuckCharacter::fromMuckResponse($response)];
+            return MuckCharacter::fromMuckResponse($response);
         }
         return null;
     }
