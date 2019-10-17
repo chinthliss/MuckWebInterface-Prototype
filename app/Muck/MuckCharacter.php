@@ -46,8 +46,8 @@ class MuckCharacter
     public static function fromMuckResponse(string $muckResponse)
     {
         $parts = explode(',', $muckResponse);
-        if (count($parts) !== 4) throw new \InvalidArgumentException("Muck response should contain 4 parts.");
-        list($dbref, $characterName, $level, $flagsAsString) = $parts;
+        if (count($parts) !== 5) throw new \InvalidArgumentException("Muck response should contain 4 parts.");
+        list($dbref, $characterName, $level, $avatar, $flagsAsString) = $parts;
         $flags = [];
         if ($flagsAsString) {
         }

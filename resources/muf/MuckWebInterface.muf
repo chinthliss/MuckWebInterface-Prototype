@@ -45,11 +45,12 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     descr "\r\n" descrnotify    
 ;
 
-(Default representation of a player. Presently Dbref,Name,Level,ColonSeparatedFlags)
+(Default representation of a player. Presently Dbref,Name,Level,avatar,ColonSeparatedFlags)
 : playerToString[ dbref:player -- str:representation ]
     player @ intostr "," strcat
     player @ name "" "," subst strcat "," strcat
     player @ truelevel intostr strcat "," strcat
+    "" strcat "," strcat
     { }list
     player @ mlevel 3 > if "wizard" swap array_appenditem then
     ":" array_join strcat

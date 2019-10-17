@@ -20,7 +20,7 @@ class FakeMuckConnection implements MuckConnection
     public function retrieveByCredentials(array $credentials)
     {
         if (array_key_exists('email', $credentials) && strtolower($credentials['email']) == 'testcharacter') {
-            return [1, MuckCharacter::fromMuckResponse('1234,TestCharacter,100,wizard')];
+            return [1, MuckCharacter::fromMuckResponse('1234,TestCharacter,100,,wizard')];
         }
         return null;
     }
@@ -39,7 +39,7 @@ class FakeMuckConnection implements MuckConnection
      */
     public function retrieveById(string $identifier)
     {
-        if ($identifier == '1:1234') return MuckCharacter::fromMuckResponse('1234,TestCharacter,100,wizard');
+        if ($identifier == '1:1234') return MuckCharacter::fromMuckResponse('1234,TestCharacter,100,,wizard');
         return null;
     }
 
