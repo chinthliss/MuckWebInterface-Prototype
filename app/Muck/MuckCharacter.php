@@ -39,17 +39,21 @@ class MuckCharacter
     {
         return [
             'dbref' => $this->dbref,
-            'name' => $this->name
+            'name' => $this->name,
+            'level' => $this->level,
+            'flags' => $this->flags
         ];
     }
 
     public static function fromMuckResponse(string $muckResponse)
     {
         $parts = explode(',', $muckResponse);
-        if (count($parts) !== 5) throw new \InvalidArgumentException("Muck response should contain 4 parts.");
+        if (count($parts) !== 5)
+            throw new \InvalidArgumentException("Muck response contains the wrong number of parts");
         list($dbref, $characterName, $level, $avatar, $flagsAsString) = $parts;
         $flags = [];
         if ($flagsAsString) {
+            $flags = explode(':', $flagsAsString);
         }
         return new self($dbref, $characterName, $level, $flags);
     }

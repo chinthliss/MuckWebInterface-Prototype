@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Contracts\MuckConnection;
 use App\Muck\MuckCharacter;
-use Illuminate\Http\Request;
-use App\Muck;
 
 class HomeController extends Controller
 {

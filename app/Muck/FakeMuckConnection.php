@@ -19,8 +19,12 @@ class FakeMuckConnection implements MuckConnection
      */
     public function retrieveByCredentials(array $credentials)
     {
-        if (array_key_exists('email', $credentials) && strtolower($credentials['email']) == 'testcharacter') {
-            return [1, MuckCharacter::fromMuckResponse('1234,TestCharacter,100,,wizard')];
+        if (array_key_exists('email', $credentials)) {
+            $email = strtolower($credentials['email']);
+            if ($email == 'testcharacter')
+                return [1, MuckCharacter::fromMuckResponse('1234,TestCharacter,100,,wizard')];
+            if ($email == 'testcharacter2')
+                return [1, MuckCharacter::fromMuckResponse('2345,TestCharacter2,14,,')];
         }
         return null;
     }
@@ -31,6 +35,7 @@ class FakeMuckConnection implements MuckConnection
     public function validateCredentials(MuckCharacter $character, array $credentials)
     {
         if ($character->getDbref() == 1234 && $credentials['password'] == 'password') return true;
+        if ($character->getDbref() == 1234 && $credentials['password'] == 'password2') return true;
         return false;
     }
 
@@ -40,6 +45,7 @@ class FakeMuckConnection implements MuckConnection
     public function retrieveById(string $identifier)
     {
         if ($identifier == '1:1234') return MuckCharacter::fromMuckResponse('1234,TestCharacter,100,,wizard');
+        if ($identifier == '1:2345') return MuckCharacter::fromMuckResponse('2345,TestCharacter2,14,,');
         return null;
     }
 
@@ -55,7 +61,8 @@ class FakeMuckConnection implements MuckConnection
         $result = [];
         if ($aid == 1) {
             $result = [
-                1234 => new MuckCharacter(1234, 'testCharacter')
+                1234 => MuckCharacter::fromMuckResponse('1234,TestCharacter,100,,wizard'),
+                2345 => MuckCharacter::fromMuckResponse('2345,TestCharacter2,14,,')
             ];
         }
         return collect($result);

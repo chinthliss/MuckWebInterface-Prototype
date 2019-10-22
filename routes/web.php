@@ -55,8 +55,5 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified']], function() {
 
 });
 
-/*
-Route::get('/', function () {
-    return view('home');
-});
-*/
+//Always available
+Route::get('p/{characterName}', 'CharacterController@show')->name('character');
