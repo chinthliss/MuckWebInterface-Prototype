@@ -14,7 +14,7 @@ class MuckCharacter
 {
     private $name;
     private $dbref;
-    private $flags;
+    private $wizard = false;
     private $level;
 
     public function __construct(int $dbref, string $name, int $level = null, array $flags = [])
@@ -22,7 +22,7 @@ class MuckCharacter
         $this->dbref = $dbref;
         $this->name = $name;
         $this->level = $level;
-        $this->flags = $flags;
+        if (in_array('wizard', $flags)) $this->wizard = true;
     }
 
     public function getDbref()
@@ -41,7 +41,7 @@ class MuckCharacter
             'dbref' => $this->dbref,
             'name' => $this->name,
             'level' => $this->level,
-            'flags' => $this->flags
+            'wizard' => $this->wizard
         ];
     }
 

@@ -4,6 +4,17 @@
 // Bootstrap
 @import '~bootstrap/scss/bootstrap';
 
+//Default main view
+#leftpane {
+    width:250px;
+    position: absolute;
+}
+
+#mainpane {
+    margin-left: 250px;
+}
+
+//Overrides on smaller screen sizes
 @include media-breakpoint-down(md) {
     #leftpane {
         width:100%;
@@ -12,17 +23,6 @@
     }
 
     #mainpane {
-
-    }
-}
-
-@include media-breakpoint-up(md) {
-    #leftpane {
-        width:250px;
-        position: absolute;
-    }
-
-    #mainpane {
-        margin-left: 250px;
+        margin-left: 0;
     }
 }

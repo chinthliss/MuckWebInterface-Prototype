@@ -33,10 +33,10 @@
 <!-- Main/Right pane -->
 <div id="mainpane">
     <!-- Topbar -->
-    <nav class="col navbar navbar-dark bg-dark navbar-expand-md">
+    <nav class="navbar navbar-dark bg-dark navbar-expand-md">
         <div class="container">
             <a class="navbar-brand" href="{{ url('/') }}">
-                (Left text)
+                (Brand)
             </a>
             <button class="navbar-toggler" type="button" data-toggle="collapse"
                     data-target="#navbarSupportedContent"
@@ -48,7 +48,9 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <!-- Left Side Of Navbar -->
                 <ul class="navbar-nav mr-auto">
-
+                    <li class="nav-item">
+                        <div class="nav-link">Left Option</div>
+                    </li>
                 </ul>
 
                 <!-- Right Side Of Navbar -->

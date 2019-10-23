@@ -2,8 +2,11 @@
     <div class="card">
         <h4 class="card-header">Dashboard</h4>
         <div class="card-body">
-            <div v-for="character in characters">
-                <character-card :character="character"></character-card>
+            <div v-for="character in characters" class="row">
+                <div class="col-lg-auto"><character-card :character="character" mode="tag"></character-card></div>
+                <div class="col">
+                    <button class="btn btn-primary">Make Active Character</button>
+                </div>
             </div>
         </div>
     </div>
