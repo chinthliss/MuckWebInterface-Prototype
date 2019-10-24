@@ -52,7 +52,7 @@ class AccountPasswordController extends Controller
         if ($passwordCheck = $accountController->findIssuesWithPassword($request['password'])) {
             throw ValidationException::withMessages(['password'=>$passwordCheck]);
         }
-        $user = $this->guard()->getProvider()->retrieveById($id . ':');
+        $user = $this->guard()->getProvider()->retrieveById($id);
         $user->setPassword($request['password']);
         event(new PasswordReset($user));
         // TODO: Maybe log in user after successful password reset

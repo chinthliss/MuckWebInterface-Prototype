@@ -73,6 +73,8 @@ class HttpMuckConnection implements MuckConnection
         return $this->getCharactersOf($user->getAid());
     }
 
+    //region Auth Requests
+
     /**
      * @inheritDoc
      */
@@ -104,21 +106,5 @@ class HttpMuckConnection implements MuckConnection
         return $response;
     }
 
-
-    /**
-     * @inheritDoc
-     */
-    public function retrieveById(string $identifier)
-    {
-        if (count($exploded = explode(':', $identifier)) != 2) return null;
-        list($aid, $dbref) = $exploded;
-        $response = $this->requestFromMuck('retrieveById', [
-            'aid' => $aid,
-            'dbref' => $dbref
-        ]);
-        if ($response) {
-            return MuckCharacter::fromMuckResponse($response);
-        }
-        return null;
-    }
+    // endregion
 }

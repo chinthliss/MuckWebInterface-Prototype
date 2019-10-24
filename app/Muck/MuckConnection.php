@@ -33,18 +33,12 @@ interface MuckConnection
     public function retrieveByCredentials(array $credentials);
 
     /**
+     * Given a character and credentials, asks the muck to verify them (via password)
      * @param MuckCharacter $character
      * @param array $credentials
      * @return bool
      */
     public function validateCredentials(MuckCharacter $character, array $credentials);
-
-    /**
-     * Identifier is in the form aid:characterDbref
-     * @param string $identifier
-     * @return MuckCharacter
-     */
-    public function retrieveById(string $identifier);
 
     //endregion Auth
 

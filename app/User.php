@@ -8,6 +8,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
@@ -31,10 +32,17 @@ class User implements Authenticatable, MustVerifyEmail
      */
     protected $character = null;
 
-    // These are public since they don't save directly
+    // These are public since they're not stored past the request
     public $createdAt = null;
     public $updatedAt = null;
     public $emailVerified = false;
+
+    /**
+     * Characters of this user. Public since it's not stored past request
+     * @var Collection(MuckCharacter)
+     */
+    public $characters = [];
+
 
     public static function fromDatabaseResponse(\stdClass $query)
     {
@@ -56,13 +64,6 @@ class User implements Authenticatable, MustVerifyEmail
         return $user;
     }
 
-    public function SetCharacter(MuckCharacter $character)
-    {
-        $this->character = $character;
-    }
-
-
-
     /**
      * Get expected user provider
      * @return DatabaseForMuckUserProvider
@@ -79,18 +80,17 @@ class User implements Authenticatable, MustVerifyEmail
      */
     public function getAuthIdentifierName()
     {
-        throw new \Exception("getAuthIdentifierName() not supported because it's not a single column.");
+        return 'AccountId';
     }
 
     /**
      * Get the unique identifier for the user.
-     * In our case it's aid:characterDbref
      *
      * @return mixed
      */
     public function getAuthIdentifier()
     {
-        return $this->aid . ':' . $this->getCharacterDbref();
+        return $this->aid;
     }
 
     public function getAid()
@@ -149,6 +149,12 @@ class User implements Authenticatable, MustVerifyEmail
         if (!$this->character) return null;
         return $this->character->getDbref();
     }
+
+    public function SetCharacter(MuckCharacter $character)
+    {
+        $this->character = $character;
+    }
+
 
     public function getCharacterName()
     {

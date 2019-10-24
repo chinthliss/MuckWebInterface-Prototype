@@ -110,7 +110,7 @@ class AccountVerificationTest extends TestCase
     {
         $this->seed();
         Notification::fake();
-        Auth::loginUsingId('2:');
+        Auth::loginUsingId(2);
         $user = $this->getPresentUser();
         $this->get('/account/resendverifyemail');
         Notification::assertSentTo($user,VerifyEmail::class, function(VerifyEmail $notification, $channels) use ($user) {
@@ -127,7 +127,7 @@ class AccountVerificationTest extends TestCase
     {
         $this->seed();
         Notification::fake();
-        Auth::loginUsingId('3:');
+        Auth::loginUsingId(3);
         $user = $this->getPresentUser();
         $this->get('/account/resendverifyemail');
         Notification::assertSentTo($user,VerifyEmail::class, function(VerifyEmail $notification, $channels) use ($user) {

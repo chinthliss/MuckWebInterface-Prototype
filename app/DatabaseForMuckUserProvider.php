@@ -39,26 +39,25 @@ class DatabaseForMuckUserProvider implements UserProvider
             ->leftJoin('account_emails', 'account_emails.email', '=', 'accounts.email');
     }
 
-    //Used when user is logged in, called with ID in the form aid:characterDbref or just aid
+    //Used when user is logged in, called with accountId (aid)
     public function retrieveById($identifier)
     {
         debug("RetrieveById:", $identifier);
-        $characterDbref = null; $aid= null;
-        if (strpos($identifier, ':')) {
-            $exploded = explode(':', $identifier);
-            if (count($exploded) != 2) throw new \Exception("Identifier should be in the form aid:characterDbref");
-            list($aid, $characterDbref) = $exploded;
-        }
-        else $aid = $identifier;
         //Retrieve account details from database first
         $accountQuery = $this->getRetrievalQuery()
-            ->where('accounts.aid', $aid)
+            ->where('accounts.aid', $identifier)
             ->first();
         if (!$accountQuery) return null;
         $user = User::fromDatabaseResponse($accountQuery);
-        //If we have a character reference we'll need to ask the muck to verify it and pull back character info
-        if ($characterDbref && $character = $this->muckConnection->retrieveById($identifier))
-            $user->setCharacter($character);
+        //Now ask the muck for the characters on this account
+        $characters = $this->muckConnection->getCharactersOf($identifier);
+        $user->characters = $characters;
+        //See if a character is saved by the session - this may be overridden later by the present page
+        $characterDbref = session('lastCharacterDbref');
+        if ($characterDbref && $user->characters->has($characterDbref)) {
+            $user->setCharacter($user->characters[$characterDbref]);
+        }
+        debug($user);
         return $user;
     }
 
@@ -95,6 +94,7 @@ class DatabaseForMuckUserProvider implements UserProvider
                     ->first();
                 if (!$accountQuery) return null; //Account referenced by muck but wasn't found in DB!
                 $user = User::fromDatabaseResponse($accountQuery);
+                session(['lastCharacterDbref'=>$character->getDbref()]);
                 $user->setCharacter($character);
                 return $user;
             }

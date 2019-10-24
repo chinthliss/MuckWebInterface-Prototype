@@ -12,7 +12,7 @@ class FakeMuckConnection implements MuckConnection
 
     }
 
-    //region Auth
+    //region Auth Requests
 
     /**
      * @inheritDoc
@@ -39,17 +39,7 @@ class FakeMuckConnection implements MuckConnection
         return false;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function retrieveById(string $identifier)
-    {
-        if ($identifier == '1:1234') return MuckCharacter::fromMuckResponse('1234,TestCharacter,100,,wizard');
-        if ($identifier == '1:2345') return MuckCharacter::fromMuckResponse('2345,TestCharacter2,14,,');
-        return null;
-    }
-
-    //Endregion
+    //endregion
 
 
 

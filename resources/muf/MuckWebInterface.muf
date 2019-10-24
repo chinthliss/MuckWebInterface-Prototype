@@ -96,21 +96,6 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     else response400 then
 ; selfcall handleRequest_validateCredentials
 
-(Expects 'aid' and 'dbref' set, returns playerToString if accepted)
-: handleRequest_retrieveById[ arr:data -- ]
-    data @ "aid" array_getitem ?dup if atoi else 0 then var! aid
-    data @ "dbref" array_getitem ?dup if atoi dbref else #-1 then var! dbref
-    (Since a player might have been deleted, requests with a positive valid requests are ok)
-    dbref @ #-1 dbcmp not aid @ and if
-        startAcceptedResponse
-        dbref @ player? not if exit then
-        dbref @ acct_any2aid aid @ = not if exit then (No longer belongs to this account)
-        dbref @ playerToString
-        descr swap descrnotify
-    else response400 then
-; selfcall handleRequest_retrieveById
-
-
 : authenticateQuery[ arr:webcall -- bool:authenticated? ]
     webcall @ { "data" "BODY" }list array_nested_get ?dup not if "" then
     webcall @ { "data" "HeaderData" "Signature" }list array_nested_get ?dup not if 0 exit then

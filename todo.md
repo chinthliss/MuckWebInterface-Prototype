@@ -1,6 +1,3 @@
-### Immediate todo
-* Decouple character-in-use from session because of cross-tab issues.
-
 ### Account backbone (Core pages that don't require heavy muck communication)
 * Terms of Service agreement
 * ~~Log on as character with username/password~~
