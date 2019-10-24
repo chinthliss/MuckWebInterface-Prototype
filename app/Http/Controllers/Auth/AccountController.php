@@ -41,16 +41,6 @@ class AccountController extends Controller
         return $issues;
     }
 
-    //Triggers a change to another character and refreshes page
-    public function switchCharacter(Request $request)
-    {
-        $user = $this->guard()->user();
-        $session = $request->session();
-        dd($session);
-        $session->regenerate();
-        return back();
-    }
-
     public function loginAccount(Request $request)
     {
         $request->validate([

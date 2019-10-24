@@ -41,7 +41,6 @@ interface MuckConnection
 
     /**
      * Identifier is in the form aid:characterDbref
-     * If accepted by the muck, will retrieve character details and set on provided User
      * @param string $identifier
      * @return MuckCharacter
      */
