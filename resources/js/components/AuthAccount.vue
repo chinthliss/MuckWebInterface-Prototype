@@ -30,10 +30,13 @@
                 </tbody>
             </table>
             <div class="row">
-                <div class="col-12 mb-2"><a class="btn btn-secondary" href="/account/changepassword">Change Password</a>
+                <div class="col">
+                    <div class="btn-toolbar" role="group" aria-label="Account Controls">
+                        <a class="btn btn-secondary" href="/account/changepassword">Change Password</a>
+                        <a class="btn btn-secondary" href="/account/changeemail">Change to new Email</a>
+                        <a class="btn btn-secondary" href="/account/cardmanagement">Card Management</a>
+                    </div>
                 </div>
-                <div class="col-12 mb-2"><a class="btn btn-secondary" href="/account/changeemail">Change to new
-                    Email</a></div>
             </div>
         </div>
 
