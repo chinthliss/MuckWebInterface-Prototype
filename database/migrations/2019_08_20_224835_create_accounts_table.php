@@ -16,7 +16,7 @@ class CreateAccountsTable extends Migration
         //The existing server already has this table so need to check if it exists or not
         if (!Schema::hasTable('accounts')) {
             Schema::create('accounts', function (Blueprint $table) {
-                $table->bigIncrements('aid')->unique();
+                $table->bigIncrements('aid')->unique()->unsigned();
                 $table->char('uuid', 36)->index(); //Controlled by muck so not using uuid type
                 $table->string('email')->index();
                 $table->string('password');

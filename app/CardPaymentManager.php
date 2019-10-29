@@ -1,19 +1,42 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+namespace App;
+
+use Illuminate\Support\Facades\DB;
 use net\authorize\api\contract\v1 as AnetAPI;
 use net\authorize\api\controller as AnetController;
 
-class AccountCardManagementController extends Controller
+class CardPaymentManager
 {
-    public function show()
+
+    private $loginId = '';
+    private $transactionKey = '';
+
+    /**
+     * @var AnetAPI\MerchantAuthenticationType|null
+     */
+    private $merchantAuthentication = null;
+
+    public function __construct($loginId, $transactionKey)
     {
-        $merchantAuthentication = new AnetAPI\MerchantAuthenticationType();
-        $merchantAuthentication->setName(config('services.authorize.login'));
-        $merchantAuthentication->setTransactionKey(config('services.authorize.key'));
+        $this->loginId = $loginId;
+        $this->transactionKey = $transactionKey;
+    }
+
+    public function merchantAuthentication()
+    {
+        if (!$this->merchantAuthentication) {
+            $this->merchantAuthentication = new AnetAPI\MerchantAuthenticationType();
+            $this->merchantAuthentication->setName($this->loginId);
+            $this->merchantAuthentication->setTransactionKey($this->transactionKey);
+        }
+        return $this->merchantAuthentication;
+    }
+
+    public function test()
+    {
+        $merchantAuthentication = $this->merchantAuthentication();
         $refId = 'ref' . time();
 
         $creditCard = new AnetAPI\CreditCardType();
@@ -32,9 +55,6 @@ class AccountCardManagementController extends Controller
         $request->setTransactionRequest($transactionRequestType);
         $controller = new AnetController\CreateTransactionController($request);
         $response = $controller->executeWithApiResponse(\net\authorize\api\constants\ANetEnvironment::SANDBOX);
-
-        return view('auth.card-management', [
-            'response' => $response
-        ]);
+        return $response;
     }
 }

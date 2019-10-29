@@ -176,6 +176,7 @@ return [
         App\Providers\DatabaseForMuckAuthServiceProvider::class,
         App\Providers\DatabaseForMuckSessionServiceProvider::class,
         App\Providers\MuckServiceProvider::class,
+        App\Providers\CardPaymentServiceProvider::class,
 
     ],
 
