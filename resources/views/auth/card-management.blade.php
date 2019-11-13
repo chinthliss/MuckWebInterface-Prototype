@@ -5,8 +5,14 @@
 @endsection
 
 @section('content')
-    {{ var_dump($response) }}
     <auth-card-management
-        :response="{{ json_encode($response) }}"
+        @isset($profile)
+        :profile="{{ $profile }}"
+        @endisset
     ></auth-card-management>
+    <h2>Response</h2>
+    {{ var_dump($response) }}
+    <h2>Profile</h2>
+    {{ var_dump($profile) }}
+
 @endsection
