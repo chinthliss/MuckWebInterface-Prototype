@@ -43,7 +43,7 @@
                         </div>
                         <div class="col-xl-2">
                             <div class="mb-2">&nbsp;</div>
-                            <button id="addCardButton" class="btn btn-primary" @click="addCard">
+                            <button id="addCardButton" class="btn btn-primary btn-block" @click="addCard">
                                 Add New Card
                             </button>
                         </div>
@@ -81,7 +81,12 @@
                 this.errors = {};
                 axios({
                     method: 'post',
-                    url: '/account/cardmanagement'
+                    url: '/account/cardmanagement',
+                    data: {
+                        'cardNumber': $('#inputCardNumber').val(),
+                        'expiryDate': $('#inputExpiryDate').val(),
+                        'securityCode': $('#inputSecurityCode').val()
+                    }
                 }).then(response => {
 
                 }).catch(error => {

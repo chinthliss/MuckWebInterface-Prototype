@@ -6,6 +6,7 @@ use App\CardPayment\CardPaymentManager;
 use App\Http\Controllers\Controller;
 use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use net\authorize\api\contract\v1 as AnetAPI;
 use net\authorize\api\controller as AnetController;
 
@@ -29,11 +30,11 @@ class CardManagementController extends Controller
         /** @var User $user */
         $user = auth()->guard()->user();
         $profile = $cardPaymentManager->loadProfileFor($user->getAid());
-        $request->validate([
-            'cardNumber' => 'required',
-            'expiryDate' => 'required',
-            'securityCode' => 'required'
-        ]);
+        $errors = $cardPaymentManager->findIssuesWithAddCardParameters(
+            $request['cardNumber'], $request['expiryDate'], $request['securityCode']
+        );
+        if ($errors) throw ValidationException::withMessages($errors);
+
         abort(501);
     }
 }
