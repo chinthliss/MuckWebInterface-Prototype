@@ -41,7 +41,7 @@ class AccountVerificationTest extends TestCase
         $user = auth()->guard()->user();
         Notification::assertSentTo($user,VerifyEmail::class, function(VerifyEmail $notification, $channels) use ($user) {
             $mail = $notification->toMail($user)->toArray();
-            $this->assertContains('signature=', $mail['actionUrl']);
+            $this->assertStringContainsStringIgnoringCase('signature=', $mail['actionUrl']);
             return true;
         });
     }
@@ -115,7 +115,7 @@ class AccountVerificationTest extends TestCase
         $this->get('/account/resendverifyemail');
         Notification::assertSentTo($user,VerifyEmail::class, function(VerifyEmail $notification, $channels) use ($user) {
             $mail = $notification->toMail($user)->toArray();
-            $this->assertContains('signature=', $mail['actionUrl']);
+            $this->assertStringContainsStringIgnoringCase('signature=', $mail['actionUrl']);
             return true;
         });
     }

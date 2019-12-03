@@ -104,7 +104,7 @@ class AccountPasswordResetTest extends TestCase
         $user = auth()->guard()->getProvider()->retrieveByCredentials(['email'=>'test@test.com']);
         Notification::assertSentTo($user,ResetPassword::class, function(ResetPassword $notification, $channels) use ($user) {
             $mail = $notification->toMail($user)->toArray();
-            $this->assertContains('signature=', $mail['actionUrl']);
+            $this->assertStringContainsStringIgnoringCase('signature=', $mail['actionUrl']);
             return true;
         });
 
