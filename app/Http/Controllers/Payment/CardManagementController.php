@@ -16,25 +16,24 @@ class CardManagementController extends Controller
     {
         /** @var User $user */
         $user = auth()->guard()->user();
-        $profile = $cardPaymentManager->loadProfileFor($user->getAid());
-        $result = $cardPaymentManager->test();
+        $profile = $cardPaymentManager->loadProfileFor($user);
 
         return view('auth.card-management', [
-            'response' => $result,
-            'profile' => $profile
+            'profile' => ($profile ? $profile->getCustomerProfileId() : null)
         ]);
     }
 
     public function addCard(Request $request, CardPaymentManager $cardPaymentManager)
     {
-        /** @var User $user */
-        $user = auth()->guard()->user();
-        $profile = $cardPaymentManager->loadProfileFor($user->getAid());
         $errors = $cardPaymentManager->findIssuesWithAddCardParameters(
             $request['cardNumber'], $request['expiryDate'], $request['securityCode']
         );
         if ($errors) throw ValidationException::withMessages($errors);
 
-        abort(501);
+        /** @var User $user */
+        $user = auth()->guard()->user();
+        $profile = $cardPaymentManager->loadOrCreateProfileFor($user);
+        $paymentProfile = $cardPaymentManager->createPaymentProfileFor($profile);
+        return redirect()->refresh();
     }
 }

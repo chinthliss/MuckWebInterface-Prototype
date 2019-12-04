@@ -15,6 +15,7 @@ interface CardPaymentCustomerProfile
     public static function fromApiResponse ($response);
 
     public function getMerchantCustomerId();
+    public function getCustomerProfileId();
 
     public function getCard(string $cardId);
     public function setCard(string $cardId, Card $card);

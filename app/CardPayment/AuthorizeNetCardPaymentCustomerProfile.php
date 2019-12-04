@@ -3,6 +3,7 @@
 
 namespace App\CardPayment;
 
+use net\authorize\api\contract\v1\CreateCustomerProfileResponse;
 use net\authorize\api\contract\v1\CustomerPaymentProfileMaskedType;
 use net\authorize\api\contract\v1\GetCustomerProfileResponse;
 use net\authorize\api\contract\v1\SubscriptionPaymentType;
@@ -37,32 +38,50 @@ class AuthorizeNetCardPaymentCustomerProfile implements CardPaymentCustomerProfi
 
 
     /**
-     * @param GetCustomerProfileResponse $response
+     * @param $response
      * @return AuthorizeNetCardPaymentCustomerProfile
      */
-    public static function fromApiResponse($response)
+    public static function fromApiResponse($response): AuthorizeNetCardPaymentCustomerProfile
     {
-        $receivedProfile = $response->getProfile();
-        $customerProfile = new self($receivedProfile->getCustomerProfileId());
+        $customerProfile = null;
 
-        $customerProfile->merchantCustomerId = $receivedProfile->getMerchantCustomerId();
+        if ($response instanceof CreateCustomerProfileResponse) {
+            $customerProfile = new self($response->getCustomerProfileId());
+        } elseif ($response instanceof GetCustomerProfileResponse) {
+            $customerProfile = new self($response->getProfile()->getCustomerProfileId());
+        } else
+            throw new \Exception("fromApiResponse called with unsupported response type.");
 
-        foreach ($response->getSubscriptionIds() as $subscriptionId) {
-            $customerProfile->subscriptionProfiles[$subscriptionId] = null;
+        if ($response instanceof GetCustomerProfileResponse) {
+            $receivedProfile = $response->getProfile();
+            $customerProfile->merchantCustomerId = $receivedProfile->getMerchantCustomerId();
+
+            if ($subscriptionIds = $response->getSubscriptionIds()) {
+                foreach ($subscriptionIds as $subscriptionId) {
+                    $customerProfile->subscriptionProfiles[$subscriptionId] = null;
+                }
+            }
+
+            if ($paymentProfiles = $receivedProfile->getPaymentProfiles()) {
+                foreach ($paymentProfiles as $paymentProfile) {
+                    $receivedCard = $paymentProfile->getPayment()->getCreditCard();
+                    $card = new Card();
+                    $card->id = $paymentProfile->getCustomerPaymentProfileId();
+                    $card->cardType = $receivedCard->getCardType();
+                    $card->cardNumber = $receivedCard->getCardNumber();
+                    $card->expirationDate = $receivedCard->getExpirationDate();
+                    $customerProfile->setCard($card->id, $card);
+                    if ($paymentProfile->getDefaultPaymentProfile()) $customerProfile->defaultCardId = $card->id;
+                }
+            }
         }
-
-        foreach ($receivedProfile->getPaymentProfiles() as $paymentProfile) {
-            $receivedCard = $paymentProfile->getPayment()->getCreditCard();
-            $card = new Card();
-            $card->id = $paymentProfile->getCustomerPaymentProfileId();
-            $card->cardType = $receivedCard->getCardType();
-            $card->cardNumber = $receivedCard->getCardNumber();
-            $card->expirationDate = $receivedCard->getExpirationDate();
-            $customerProfile->setCard($card->id, $card);
-            if ($paymentProfile->getDefaultPaymentProfile()) $customerProfile->defaultCardId = $card->id;
-        }
-
         return $customerProfile;
+
+    }
+
+    public function getCustomerProfileId()
+    {
+        return $this->id;
     }
 
     public function getMerchantCustomerId()

@@ -10,9 +10,5 @@
         :profile="{{ $profile }}"
         @endisset
     ></auth-card-management>
-    <h2>Response</h2>
-    {{ var_dump($response) }}
-    <h2>Profile</h2>
-    {{ var_dump($profile) }}
-
+    <h2>Profile Debug - {{ $profile }} </h2>
 @endsection

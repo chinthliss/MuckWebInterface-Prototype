@@ -3,6 +3,7 @@
 
 namespace App\CardPayment;
 
+use App\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use net\authorize\api\contract\v1 as AnetAPI;
@@ -21,9 +22,9 @@ class CardPaymentManager
         "VISA" => '/^4[0-9]{12}(?:[0-9]{3})?$/',
         "American Express" => '/^3[47][0-9]{13}$/',
         "JCB" => '/^(?:2131|1800|35\d{3})\d{11}$/',
-        "Maesto" => '/^(5018|5020|5038|6304|6759|6761|6763)[0-9]{8,15}$/',
+        "Discover" => '/^(?:6011\d{12})|(?:65\d{14})$/',
         "Mastercard" => '/^(?:5[1-5][0-9]{2}|222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}|27[01][0-9]|2720)[0-9]{12}$/'
-        //Solo and Switch removed from this list due to being discontinued.
+        //Solo, Switch removed from this list due to being discontinued. Maestro removed as not actually accepted by Authorize.net
     ];
 
     /**
@@ -69,12 +70,14 @@ class CardPaymentManager
 
     /**
      * Loads customer profile, any customer payment profiles and subscription ids.
-     * Returns the ProfileID or null if there was no profile to load
-     * @param int $accountId
+     * Returns the profile or null if there was no profile to load
+     * @param User $user
      * @return CardPaymentCustomerProfile|null
      */
-    public function loadProfileFor(int $accountId)
+    public function loadProfileFor(User $user)
     {
+        $accountId = $user->getAid();
+
         //Return if already fetched
         if (array_key_exists($accountId, $this->customerProfiles)) return $this->customerProfiles[$accountId];
 
@@ -84,7 +87,7 @@ class CardPaymentManager
         //Attempt to find ID in database
         $row = DB::table('billing_profiles')->where('aid', $accountId)->first();
         if ($row) {
-            $profileId = $row['profileid'];
+            $profileId = $row->profileid;
             $request = new AnetAPI\GetCustomerProfileRequest();
             $request->setMerchantAuthentication($this->merchantAuthentication());
             $request->setCustomerProfileId($profileId);
@@ -92,7 +95,7 @@ class CardPaymentManager
             $response = $controller->executeWithApiResponse($this->endPoint);
             if ($response && $response->getMessages()->getResultCode() == "Ok") {
                 $profile = $this->customerProfileModel::fromApiResponse($response);
-                if($profile->getMerchantCustomerId() != $accountId) {
+                if ($profile->getMerchantCustomerId() != $accountId) {
                     // $profile = null;
                     Log::warn("Retrieved Authorize.net customer profile for AID " . $accountId . " didn't have a matching merchantId.");
                 }
@@ -100,6 +103,48 @@ class CardPaymentManager
         }
         $this->customerProfiles[$accountId] = $profile;
         return $profile;
+    }
+
+    /**
+     * Loads customer profile, any customer payment profiles and subscription ids.
+     * If such doesn't exist, creates an entry for them.
+     * @param User $user
+     * @return CardPaymentCustomerProfile
+     */
+    public function loadOrCreateProfileFor(User $user)
+    {
+        $profile = $this->loadProfileFor($user);
+        if (!$profile) {
+            $anetProfile = new AnetAPI\CustomerProfileType();
+            $anetProfile->setDescription("");
+            $anetProfile->setMerchantCustomerId($user->getAid());
+            $anetProfile->setEmail($user->getEmailForVerification());
+            $request = new AnetAPI\CreateCustomerProfileRequest();
+            $request->setMerchantAuthentication($this->merchantAuthentication());
+            $request->setRefId($this->refId());
+            $request->setProfile($anetProfile);
+            $controller = new AnetController\CreateCustomerProfileController($request);
+            $response = $controller->executeWithApiResponse($this->endPoint);
+            if ($response && ($response->getMessages()->getResultCode() == "Ok")) {
+                $profile = $this->customerProfileModel::fromApiResponse($response);
+            } else {
+                $errorMessages = $response->getMessages()->getMessage();
+                throw new \Exception("Couldn't create a profile. Response : "
+                    . $errorMessages[0]->getCode() . "  " . $errorMessages[0]->getText() . "\n");
+            }
+            DB::table('billing_profiles')->insert([
+                'aid'=>$user->getAid(),
+                'profileid'=>$profile->getCustomerProfileId(),
+                'defaultcard'=>0,
+                'spendinglimit'=>0
+            ]);
+        }
+        return $profile;
+    }
+
+    public function createPaymentProfileFor(CardPaymentCustomerProfile $profile): int
+    {
+        throw new \Exception("Not implemented");
     }
 
     /**
@@ -121,23 +166,26 @@ class CardPaymentManager
         $errors = [];
 
         //Card Number checks
-        $cardNumber = str_replace(' ', '', $cardNumber);
+        $cardNumber = str_replace([' ', '-'], '', $cardNumber);
         if ($cardNumber == '')
             $errors['cardNumber'] = 'Card number is required.';
         else {
-            $cardType = "";
-            foreach (self::CARD_TYPE_MATCHES as $testingFor => $cardTypeTest) {
-                if (preg_match($cardTypeTest, $cardNumber)) $cardType = $testingFor;
-            }
-            if (!$cardType) $errors['cardNumber'] = 'Unrecognized card number.';
+            if (!is_numeric($cardNumber)) $errors['cardNumber'] = 'Card number can only contain numbers.';
             else {
-                if (!$this->checkLuhnChecksumIsValid($cardNumber)) $errors['cardNumber'] = 'Invalid card number.';
+                $cardType = "";
+                foreach (self::CARD_TYPE_MATCHES as $testingFor => $cardTypeTest) {
+                    if (preg_match($cardTypeTest, $cardNumber)) $cardType = $testingFor;
+                }
+                if (!$cardType) $errors['cardNumber'] = 'Unrecognized card number.';
+                else {
+                    if (!$this->checkLuhnChecksumIsValid($cardNumber)) $errors['cardNumber'] = 'Invalid card number.';
+                }
             }
         }
 
         //Expiry Date checks
         if (!preg_match('/^\d\d\/\d\d\d\d$/', $expiryDate)) {
-            $errors['expiryDate'] = 'Expiry Date must be in the form MM/YYYY';
+            $errors['expiryDate'] = 'Expiry Date must be in the form MM/YYYY.';
         } else {
             [$month, $year] = explode('/', $expiryDate);
 
@@ -151,7 +199,9 @@ class CardPaymentManager
         if ($securityCode == '')
             $errors['securityCode'] = 'Security code is required.';
         else {
-            if (strlen($securityCode) < 3 or strlen($securityCode) > 4)
+            if (!is_numeric($securityCode))
+                $errors['securityCode'] = 'Security code can only contain numbers.';
+            else if (strlen($securityCode) < 3 or strlen($securityCode) > 4)
                 $errors['securityCode'] = 'Security code must be 3 or 4 numbers long.';
         }
 
@@ -164,8 +214,8 @@ class CardPaymentManager
         $refId = 'ref' . time();
 
         $creditCard = new AnetAPI\CreditCardType();
-        $creditCard->setCardNumber("4111111111111111" );
-        $creditCard->setExpirationDate( "2038-12");
+        $creditCard->setCardNumber("4111111111111111");
+        $creditCard->setExpirationDate("2038-12");
         $paymentOne = new AnetAPI\PaymentType();
         $paymentOne->setCreditCard($creditCard);
 

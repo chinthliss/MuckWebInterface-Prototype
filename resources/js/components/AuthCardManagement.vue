@@ -66,7 +66,7 @@
     export default {
         name: "auth-card-management",
         props: {
-            profile: {type: Object}
+            profile: {type: Number}
         },
         data: function () {
             return {
