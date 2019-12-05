@@ -8,5 +8,5 @@ class Card
     public $id;
     public $cardType;
     public $cardNumber;
-    public $expirationDate;
+    public $expiryDate;
 }

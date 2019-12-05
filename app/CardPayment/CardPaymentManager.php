@@ -6,6 +6,7 @@ namespace App\CardPayment;
 use App\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use net\authorize\api\contract\v1 as AnetAPI;
 use net\authorize\api\controller as AnetController;
 
@@ -97,7 +98,7 @@ class CardPaymentManager
                 $profile = $this->customerProfileModel::fromApiResponse($response);
                 if ($profile->getMerchantCustomerId() != $accountId) {
                     // $profile = null;
-                    Log::warn("Retrieved Authorize.net customer profile for AID " . $accountId . " didn't have a matching merchantId.");
+                    Log::warning("Retrieved Authorize.net customer profile for AID " . $accountId . " didn't have a matching merchantId.");
                 }
             }
         }
@@ -133,18 +134,73 @@ class CardPaymentManager
                     . $errorMessages[0]->getCode() . "  " . $errorMessages[0]->getText() . "\n");
             }
             DB::table('billing_profiles')->insert([
-                'aid'=>$user->getAid(),
-                'profileid'=>$profile->getCustomerProfileId(),
-                'defaultcard'=>0,
-                'spendinglimit'=>0
+                'aid' => $user->getAid(),
+                'profileid' => $profile->getCustomerProfileId(),
+                'defaultcard' => 0,
+                'spendinglimit' => 0
             ]);
         }
         return $profile;
     }
 
-    public function createPaymentProfileFor(CardPaymentCustomerProfile $profile): int
+    /**
+     * Registers with provider and returns Card
+     * @return Card
+     */
+    public function createCardFor(CardPaymentCustomerProfile $profile, $cardNumber,
+                                            $expiryDate, $securityCode): Card
     {
-        throw new \Exception("Not implemented");
+        $anetCard = new AnetAPI\CreditCardType();
+        $anetCard->setCardNumber($cardNumber);
+        $anetCard->setExpirationDate($expiryDate);
+        $anetCard->setCardCode($securityCode);
+
+        $anetPaymentCard = new AnetAPI\PaymentType();
+        $anetPaymentCard->setCreditCard($anetCard);
+
+        //Previous code set a dummy address - not sure if this will remain valid?
+        $anetAddress = new AnetAPI\CustomerAddressType();
+        $anetAddress->setAddress("123 Not Available");
+        $anetAddress->setZip("00000");
+
+        $anetPaymentProfile = new AnetAPI\CustomerPaymentProfileType();
+        $anetPaymentProfile->setCustomerType('individual');
+        $anetPaymentProfile->setBillTo($anetAddress);
+        $anetPaymentProfile->setPayment($anetPaymentCard);
+        $anetPaymentProfile->setDefaultPaymentProfile(true);
+
+        // Make the request
+        $request = new AnetAPI\CreateCustomerPaymentProfileRequest();
+        $request->setMerchantAuthentication($this->merchantAuthentication());
+        // Add an existing profile id to the request
+        $request->setCustomerProfileId($profile->getCustomerProfileId());
+        $request->setPaymentProfile($anetPaymentProfile);
+        $request->setValidationMode("liveMode");
+        // Create the controller and get the response
+        $controller = new AnetController\CreateCustomerPaymentProfileController($request);
+        $response = $controller->executeWithApiResponse($this->endPoint);
+        if (!$response || ($response->getMessages()->getResultCode() != "Ok") ) {
+            $errorMessages = $response->getMessages()->getMessage();
+            throw new \Exception("Couldn't create a payment profile. Response : "
+                . $errorMessages[0]->getCode() . "  " . $errorMessages[0]->getText() . "\n");
+        }
+        $card = new Card();
+        $card->id = $response->getCustomerPaymentProfileId();
+        //Silly that this has to be extracted from a huge comma separated string..
+        $responseParts = explode(',', $response->getValidationDirectResponse());
+        $card->cardNumber = $responseParts[50];
+        $card->expiryDate = $expiryDate;
+        $card->cardType = $responseParts[51];
+        DB::table('billing_paymentprofiles')->insert([
+            'profileid' => $profile->getCustomerProfileId(),
+            'paymentid' => $response->getCustomerPaymentProfileId(),
+            'firstname' => '',
+            'lastname' => '',
+            'cardtype' => $card->cardType,
+            'maskedcardnum' => $card->cardNumber,
+            'expdate' => $card->expiryDate
+        ]);
+        return $card;
     }
 
     /**

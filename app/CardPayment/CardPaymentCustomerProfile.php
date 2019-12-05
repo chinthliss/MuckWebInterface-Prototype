@@ -17,6 +17,7 @@ interface CardPaymentCustomerProfile
     public function getMerchantCustomerId();
     public function getCustomerProfileId();
 
+    public function getCardIds();
     public function getCard(string $cardId);
-    public function setCard(string $cardId, Card $card);
+    public function setCard(Card $card);
 }

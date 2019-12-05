@@ -70,7 +70,7 @@ class AuthorizeNetCardPaymentCustomerProfile implements CardPaymentCustomerProfi
                     $card->cardType = $receivedCard->getCardType();
                     $card->cardNumber = $receivedCard->getCardNumber();
                     $card->expirationDate = $receivedCard->getExpirationDate();
-                    $customerProfile->setCard($card->id, $card);
+                    $customerProfile->setCard($card);
                     if ($paymentProfile->getDefaultPaymentProfile()) $customerProfile->defaultCardId = $card->id;
                 }
             }
@@ -89,9 +89,15 @@ class AuthorizeNetCardPaymentCustomerProfile implements CardPaymentCustomerProfi
         return $this->merchantCustomerId;
     }
 
-    public function setCard(string $cardId, Card $card)
+    #region Card functionality
+    public function getCardIds()
     {
-        $this->cards[$cardId] = $card;
+        return array_keys($this->cards);
+    }
+
+    public function setCard(Card $card)
+    {
+        $this->cards[$card->id] = $card;
     }
 
     public function getCard(string $cardId)
@@ -99,4 +105,5 @@ class AuthorizeNetCardPaymentCustomerProfile implements CardPaymentCustomerProfi
         return $this->cards[$cardId];
     }
 
+    #endregion
 }
