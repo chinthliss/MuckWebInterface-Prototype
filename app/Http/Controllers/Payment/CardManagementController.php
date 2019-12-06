@@ -9,6 +9,7 @@ use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
+use net\authorize\api\contract\v1\DeleteCustomerPaymentProfileRequest;
 
 class CardManagementController extends Controller
 {
@@ -18,8 +19,16 @@ class CardManagementController extends Controller
         $user = auth()->guard()->user();
         $profile = $cardPaymentManager->loadProfileFor($user);
 
+        $cards = [];
+        if ($profile) {
+            foreach ($profile->getCardIds() as $id) {
+                array_push($cards, $profile->getCard($id));
+            }
+        }
+
         return view('auth.card-management', [
-            'profile' => ($profile ? $profile->getCustomerProfileId() : null)
+            'profileId' => ($profile ? $profile->getCustomerProfileId() : null),
+            'cards' => $cards
         ]);
     }
 
@@ -35,11 +44,29 @@ class CardManagementController extends Controller
         $user = auth()->guard()->user();
         try {
             $profile = $cardPaymentManager->loadOrCreateProfileFor($user);
-            $cardPaymentManager->createCardFor($profile, $cardNumber, $expiryDate, $securityCode);
+            $card = $cardPaymentManager->createCardFor($profile, $cardNumber, $expiryDate, $securityCode);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             throw ValidationException::withMessages(['cardNumber'=>'An internal server error occurred. The actual error has been logged for staff to review.']);
         }
-        return redirect()->refresh();
+        return response(json_encode($card), 200);
+    }
+
+    public function deleteCard(Request $request, CardPaymentManager $cardPaymentManager)
+    {
+        $cardId = $request['id'];
+        if (!$cardId) return response('Card ID missing', 400);
+
+        /** @var User $user */
+        $user = auth()->guard()->user();
+        try {
+            $profile = $cardPaymentManager->loadOrCreateProfileFor($user);
+            $card = $profile->getCard($cardId);
+            $cardPaymentManager->DeleteCardFor($profile, $card);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            throw ValidationException::withMessages(['cardNumber'=>'An internal server error occurred. The actual error has been logged for staff to review.']);
+        }
+        return response("OK", 200);
     }
 }

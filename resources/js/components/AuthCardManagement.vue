@@ -2,7 +2,28 @@
     <div class="card">
         <h4 class="card-header">Card Management</h4>
         <div class="card-body">
-            <div v-if="typeof profile == 'undefined'">You have no cards configured.</div>
+            <div v-if="!cards">You have no cards configured.</div>
+            <table v-else class="table table-striped">
+                <tr>
+                    <th scope="col">Card Type</th>
+                    <th scope="col">Masked Card#</th>
+                    <th scope="col">Expiry Date</th>
+                </tr>
+                <tbody>
+                <tr v-for="card in cards" :data-id="card.id">
+                    <td>{{ card.cardType }}</td>
+                    <td>{{ card.cardNumber }}</td>
+                    <td>{{ card.expiryDate }}</td>
+                    <td>
+                        <div v-if="card.isDefault">Default</div>
+                        <button v-else class="btn btn-secondary">Make Default</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-secondary" :data-id="card.id" @click="deleteCard">Delete</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
             <div id="add-card" class="border border-primary rounded p-3">
                 <form>
                     <div class="form-row">
@@ -66,14 +87,16 @@
     export default {
         name: "auth-card-management",
         props: {
-            profile: {type: Number}
+            profileId: {type: String},
+            initialCards: {type: Array}
         },
         data: function () {
             return {
                 cardNumber: '',
                 expiryDate: '',
                 securityCode: '',
-                errors: {}
+                errors: {},
+                cards: this.initialCards
             }
         },
         methods: {
@@ -88,11 +111,24 @@
                         'securityCode': $('#inputSecurityCode').val()
                     }
                 }).then(response => {
-
+                    this.cards.push(response.data);
                 }).catch(error => {
-                    if (error.response.status === 422) {
+                    if (error.response && error.response.status === 422) {
                         this.errors = error.response.data.errors;
                     } else console.log(error);
+                });
+                e.preventDefault();
+            },
+            deleteCard: function (e) {
+                let cardId = e.target.getAttribute('data-id');
+                axios({
+                    method: 'delete',
+                    url: '/account/cardmanagement',
+                    data: {'id': cardId}
+                }).then(response => {
+                    this.cards = this.cards.filter(card => card.id !== cardId);
+                }).catch(error => {
+                    console.log("deleteCard got an error response: " + error);
                 });
                 e.preventDefault();
             }

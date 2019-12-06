@@ -9,4 +9,5 @@ class Card
     public $cardType;
     public $cardNumber;
     public $expiryDate;
+    public $isDefault;
 }

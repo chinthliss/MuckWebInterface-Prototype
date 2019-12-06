@@ -23,7 +23,7 @@ class CardPaymentManager
         "VISA" => '/^4[0-9]{12}(?:[0-9]{3})?$/',
         "American Express" => '/^3[47][0-9]{13}$/',
         "JCB" => '/^(?:2131|1800|35\d{3})\d{11}$/',
-        "Discover" => '/^(?:6011\d{12})|(?:65\d{14})$/',
+        // "Discover" => '/^(?:6011\d{12})|(?:65\d{14})$/', // Not accepted by us
         "Mastercard" => '/^(?:5[1-5][0-9]{2}|222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}|27[01][0-9]|2720)[0-9]{12}$/'
         //Solo, Switch removed from this list due to being discontinued. Maestro removed as not actually accepted by Authorize.net
     ];
@@ -99,6 +99,17 @@ class CardPaymentManager
                 if ($profile->getMerchantCustomerId() != $accountId) {
                     // $profile = null;
                     Log::warning("Retrieved Authorize.net customer profile for AID " . $accountId . " didn't have a matching merchantId.");
+                }
+                //Need to populate full card details from what we know, since ANet response masks expiry dates.
+                $paymentProfiles = DB::table('billing_paymentprofiles')
+                    ->where('profileid', $profile->getCustomerProfileId())->get();
+                foreach ($paymentProfiles as $paymentProfile) {
+                    $present = $profile->getCard($paymentProfile->paymentid);
+                    if ($present) {
+                        $present->expiryDate = $paymentProfile->expdate;
+                        $profile->setCard($present);
+                    }
+
                 }
             }
         }
@@ -201,6 +212,26 @@ class CardPaymentManager
             'expdate' => $card->expiryDate
         ]);
         return $card;
+    }
+
+    public function deleteCardFor(CardPaymentCustomerProfile $profile, Card $card)
+    {
+        $request = new AnetAPI\DeleteCustomerPaymentProfileRequest();
+        $request->setMerchantAuthentication($this->merchantAuthentication());
+        $request->setCustomerProfileId($profile->getCustomerProfileId());
+        $request->setCustomerPaymentProfileId($card->id);
+        $controller = new AnetController\DeleteCustomerPaymentProfileController($request);
+        $response = $controller->executeWithApiResponse($this->endPoint);
+        if (!$response || $response->getMessages()->getResultCode() != "Ok")
+        {
+            $errorMessages = $response->getMessages()->getMessage();
+            throw new \Exception("Couldn't create a payment profile. Response : "
+                . $errorMessages[0]->getCode() . "  " . $errorMessages[0]->getText() . "\n");
+        }
+        DB::table('billing_paymentprofiles')->where([
+            'profileid' => $profile->getCustomerProfileId(),
+            'paymentid' => $card->id
+        ])->delete();
     }
 
     /**
