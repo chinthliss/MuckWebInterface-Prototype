@@ -1,3 +1,4 @@
+
 <template>
     <div class="card">
         <h4 class="card-header">Card Management</h4>
@@ -139,8 +140,11 @@
                     url: '/account/cardmanagement',
                     data: {'id': cardId}
                 }).then(response => {
-                    console.log("TBC: Replace single instance");
-                    //this.cards.push(response.data);
+                    for (let card in this.cards) {
+                        if (this.cards.hasOwnProperty(card)) {
+                            this.cards[card].isDefault = (this.cards[card].id === cardId);
+                        }
+                    }
                 }).catch(error => {
                     console.log("updateCard got an error response: " + error);
                 });

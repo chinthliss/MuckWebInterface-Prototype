@@ -36,7 +36,8 @@ return [
 
     'authorize' => [
         'loginId' => env('AUTHORIZE_PAYMENT_API_LOGIN_ID'),
-        'transactionKey' => env('AUTHORIZE_PAYMENT_TRANSACTION_KEY')
+        'transactionKey' => env('AUTHORIZE_PAYMENT_TRANSACTION_KEY'),
+        'sealId' => env('AUTHORIZE_PAYMENT_SEAL_ID')
     ],
 
 ];

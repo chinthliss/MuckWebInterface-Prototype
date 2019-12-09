@@ -28,7 +28,8 @@ class CardManagementController extends Controller
 
         return view('auth.card-management', [
             'profileId' => ($profile ? $profile->getCustomerProfileId() : null),
-            'cards' => $cards
+            'cards' => $cards,
+            'sealId' => config('services.authorize.sealId')
         ]);
     }
 
@@ -84,10 +85,6 @@ class CardManagementController extends Controller
             Log::error($e->getMessage());
             throw ValidationException::withMessages(['cardNumber'=>'An internal server error occurred. The actual error has been logged for staff to review.']);
         }
-        /** @var User $user */
-        $user = auth()->guard()->user();
-
-
         return response("OK", 200);
     }
 }
