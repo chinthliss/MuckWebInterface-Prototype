@@ -4,7 +4,6 @@
 namespace App\CardPayment;
 
 use net\authorize\api\contract\v1\CreateCustomerProfileResponse;
-use net\authorize\api\contract\v1\CustomerPaymentProfileMaskedType;
 use net\authorize\api\contract\v1\GetCustomerProfileResponse;
 use net\authorize\api\contract\v1\SubscriptionPaymentType;
 

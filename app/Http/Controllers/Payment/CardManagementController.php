@@ -62,11 +62,32 @@ class CardManagementController extends Controller
         try {
             $profile = $cardPaymentManager->loadOrCreateProfileFor($user);
             $card = $profile->getCard($cardId);
-            $cardPaymentManager->DeleteCardFor($profile, $card);
+            $cardPaymentManager->deleteCardFor($profile, $card);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             throw ValidationException::withMessages(['cardNumber'=>'An internal server error occurred. The actual error has been logged for staff to review.']);
         }
+        return response("OK", 200);
+    }
+
+    public function updateDefaultCard(Request $request, CardPaymentManager $cardPaymentManager)
+    {
+        $cardId = $request['id'];
+        if (!$cardId) return response('Card ID missing', 400);
+        /** @var User $user */
+        $user = auth()->guard()->user();
+        try {
+            $profile = $cardPaymentManager->loadOrCreateProfileFor($user);
+            $card = $profile->getCard($cardId);
+            $cardPaymentManager->setDefaultCardFor($profile, $card);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            throw ValidationException::withMessages(['cardNumber'=>'An internal server error occurred. The actual error has been logged for staff to review.']);
+        }
+        /** @var User $user */
+        $user = auth()->guard()->user();
+
+
         return response("OK", 200);
     }
 }

@@ -202,6 +202,7 @@ class CardPaymentManager
         $card->cardNumber = $responseParts[50];
         $card->expiryDate = $expiryDate;
         $card->cardType = $responseParts[51];
+        //This is just for historic purposes and to allow the muck easy access
         DB::table('billing_paymentprofiles')->insert([
             'profileid' => $profile->getCustomerProfileId(),
             'paymentid' => $response->getCustomerPaymentProfileId(),
@@ -228,10 +229,44 @@ class CardPaymentManager
             throw new \Exception("Couldn't create a payment profile. Response : "
                 . $errorMessages[0]->getCode() . "  " . $errorMessages[0]->getText() . "\n");
         }
+        //This is just for historic purposes and to allow the muck easy access
         DB::table('billing_paymentprofiles')->where([
             'profileid' => $profile->getCustomerProfileId(),
             'paymentid' => $card->id
         ])->delete();
+    }
+
+    public function setDefaultCardFor(CardPaymentCustomerProfile $profile, Card $card)
+    {
+        $creditCard = new AnetAPI\CreditCardType();
+        $creditCard->setCardNumber( $card->cardNumber);
+        $creditCard->setExpirationDate($card->expiryDate);
+
+        $paymentCreditCard = new AnetAPI\PaymentType();
+        $paymentCreditCard->setCreditCard($creditCard);
+        $paymentProfile = new AnetAPI\CustomerPaymentProfileExType();
+        // $paymentprofile->setBillTo($billto);
+        $paymentProfile->setPayment($paymentCreditCard);
+        $paymentProfile->setCustomerPaymentProfileId($card->id);
+        $paymentProfile->setDefaultPaymentProfile(true);
+        $request = new AnetAPI\UpdateCustomerPaymentProfileRequest();
+        $request->setMerchantAuthentication($this->merchantAuthentication());
+        $request->setCustomerProfileId($profile->getCustomerProfileId());
+        $request->setPaymentProfile($paymentProfile);
+        $controller = new AnetController\DeleteCustomerPaymentProfileController($request);
+        $response = $controller->executeWithApiResponse($this->endPoint);
+        if (!$response || $response->getMessages()->getResultCode() != "Ok")
+        {
+            $errorMessages = $response->getMessages()->getMessage();
+            throw new \Exception("Couldn't update default payment profile. Response : "
+                . $errorMessages[0]->getCode() . "  " . $errorMessages[0]->getText() . "\n");
+        }
+        //This is just for historic purposes and to allow the muck easy access
+        DB::table('billing_profiles')->where([
+            'profileid' => $profile->getCustomerProfileId()
+        ])->update([
+            'defaultcard' => $card->id
+        ]);
     }
 
     /**

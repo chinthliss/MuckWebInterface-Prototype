@@ -56,6 +56,7 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified']], function() {
     Route::get('account/cardmanagement', 'Payment\CardManagementController@show');
     Route::post('account/cardmanagement', 'Payment\CardManagementController@addCard');
     Route::delete('account/cardmanagement', 'Payment\CardManagementController@deleteCard');
+    Route::patch('account/cardmanagement', 'Payment\CardManagementController@updateDefaultCard');
 
 });
 

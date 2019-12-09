@@ -14,11 +14,11 @@
                     <td>{{ card.cardType }}</td>
                     <td>{{ card.cardNumber }}</td>
                     <td>{{ card.expiryDate }}</td>
-                    <td>
+                    <td class="text-center">
                         <div v-if="card.isDefault">Default</div>
-                        <button v-else class="btn btn-secondary">Make Default</button>
+                        <button v-else class="btn btn-secondary" :data-id="card.id" @click="setDefaultCard">Make Default</button>
                     </td>
-                    <td>
+                    <td class="text-center">
                         <button class="btn btn-secondary" :data-id="card.id" @click="deleteCard">Delete</button>
                     </td>
                 </tr>
@@ -129,6 +129,20 @@
                     this.cards = this.cards.filter(card => card.id !== cardId);
                 }).catch(error => {
                     console.log("deleteCard got an error response: " + error);
+                });
+                e.preventDefault();
+            },
+            setDefaultCard: function(e) {
+                let cardId = e.target.getAttribute('data-id');
+                axios({
+                    method: 'patch',
+                    url: '/account/cardmanagement',
+                    data: {'id': cardId}
+                }).then(response => {
+                    console.log("TBC: Replace single instance");
+                    //this.cards.push(response.data);
+                }).catch(error => {
+                    console.log("updateCard got an error response: " + error);
                 });
                 e.preventDefault();
             }
