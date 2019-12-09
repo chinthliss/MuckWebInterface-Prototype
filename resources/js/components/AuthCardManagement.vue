@@ -3,7 +3,7 @@
     <div class="card">
         <h4 class="card-header">Card Management</h4>
         <div class="card-body">
-            <div v-if="!cards">You have no cards configured.</div>
+            <div v-if="!cards.length">You have no cards configured.</div>
             <table v-else class="table table-striped">
                 <tr>
                     <th scope="col">Card Type</th>
