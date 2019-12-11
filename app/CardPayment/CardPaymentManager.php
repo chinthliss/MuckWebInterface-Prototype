@@ -193,8 +193,8 @@ class CardPaymentManager
         $response = $controller->executeWithApiResponse($this->endPoint);
         if (!$response || ($response->getMessages()->getResultCode() != "Ok") ) {
             $errorMessages = $response->getMessages()->getMessage();
-            if (count($errorMessages) == 1 && $errorMessages[0]->getCode() === 'E27') {
-                // E27 - The transaction was unsuccessful.
+            if (count($errorMessages) == 1 && $errorMessages[0]->getCode() === 'E00027') {
+                // E00027 - The transaction was unsuccessful.
                 return null;
             } else
                 throw new \Exception("Couldn't create a payment profile. Response : "
