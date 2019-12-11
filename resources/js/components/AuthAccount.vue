@@ -32,9 +32,9 @@
             <div class="row">
                 <div class="col">
                     <div class="btn-toolbar" role="group" aria-label="Account Controls">
-                        <a class="btn btn-secondary" href="/account/changepassword">Change Password</a>
-                        <a class="btn btn-secondary" href="/account/changeemail">Change to new Email</a>
-                        <a class="btn btn-secondary" href="/account/cardmanagement">Card Management</a>
+                        <a class="btn btn-secondary mt-1 ml-1" href="/account/changepassword">Change Password</a>
+                        <a class="btn btn-secondary mt-1 ml-1" href="/account/changeemail">Change to new Email</a>
+                        <a class="btn btn-secondary mt-1 ml-1" href="/account/cardmanagement">Card Management</a>
                     </div>
                 </div>
             </div>

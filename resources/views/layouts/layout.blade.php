@@ -23,7 +23,7 @@
 </head>
 <body>
 <!-- Sidebar/Left pane -->
-<nav id="leftpane" class="navbar-dark bg-dark min-vh-100 p-2 shadow-sm">
+<nav id="leftpane" class="navbar-dark min-vh-100 p-2 shadow-sm">
     <a class="navbar-brand" href="{{ url('/') }}">
         {{ config('app.name', 'MuckWebInterface') }}
     </a>
@@ -33,7 +33,7 @@
 <!-- Main/Right pane -->
 <div id="mainpane">
     <!-- Topbar -->
-    <nav class="navbar navbar-dark bg-dark navbar-expand-md">
+    <nav class="navbar navbar-dark navbar-expand-md">
         <div class="container">
             <a class="navbar-brand" href="{{ url('/') }}">
                 (Brand)
