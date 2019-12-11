@@ -50,6 +50,8 @@ class CardManagementController extends Controller
             Log::error($e->getMessage());
             throw ValidationException::withMessages(['cardNumber'=>'An internal server error occurred. The actual error has been logged for staff to review.']);
         }
+        if (!$card) // For when the card is valid but not accepted, e.g. entering test numbers into live.
+            throw ValidationException::withMessages(['cardNumber'=>'The given card was rejected by the authorization server.']);
         return response(json_encode($card), 200);
     }
 

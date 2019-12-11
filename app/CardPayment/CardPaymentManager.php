@@ -155,8 +155,9 @@ class CardPaymentManager
     }
 
     /**
-     * Registers with provider and returns Card
-     * @return Card
+     * Registers with provider and returns Card.
+     * If the provider refuses it returns null, otherwise throws an error
+     * @return Card|null
      */
     public function createCardFor(CardPaymentCustomerProfile $profile, $cardNumber,
                                             $expiryDate, $securityCode): Card
@@ -192,8 +193,12 @@ class CardPaymentManager
         $response = $controller->executeWithApiResponse($this->endPoint);
         if (!$response || ($response->getMessages()->getResultCode() != "Ok") ) {
             $errorMessages = $response->getMessages()->getMessage();
-            throw new \Exception("Couldn't create a payment profile. Response : "
-                . $errorMessages[0]->getCode() . "  " . $errorMessages[0]->getText() . "\n");
+            if (count($errorMessages) == 1 && $errorMessages[0]->getCode() === 'E27') {
+                // E27 - The transaction was unsuccessful.
+                return null;
+            } else
+                throw new \Exception("Couldn't create a payment profile. Response : "
+                    . $errorMessages[0]->getCode() . "  " . $errorMessages[0]->getText() . "\n");
         }
         $card = new Card();
         $card->id = $response->getCustomerPaymentProfileId();
