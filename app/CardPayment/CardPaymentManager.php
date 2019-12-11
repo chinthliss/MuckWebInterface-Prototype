@@ -311,8 +311,8 @@ class CardPaymentManager
         } else {
             [$month, $year] = explode('/', $expiryDate);
 
-            $actualDate = Carbon::createFromDate($year, $month, 1);
-            if ($actualDate < Carbon::now()) {
+            $endDate = Carbon::createFromDate($year, $month + 1, 1);
+            if ($endDate < Carbon::now()) {
                 $errors['expiryDate'] = 'Card has expired.';
             }
         }
