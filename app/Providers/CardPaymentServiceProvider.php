@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\CardPayment\AuthorizeNetCardPaymentCustomerProfile;
 use App\CardPayment\CardPaymentManager;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\ServiceProvider;
 
 
@@ -27,7 +28,7 @@ class CardPaymentServiceProvider extends ServiceProvider
             $loginId = config('services.authorize.loginId');
             $transactionKey = config('services.authorize.transactionKey');
             $endPoint = null;
-            if (config('app.env') !== 'PRODUCTION') //Not ideal but it's where they stored it.
+            if (App::environment() !== 'production') //Not ideal but it's where they stored it.
                 $endPoint = \net\authorize\api\constants\ANetEnvironment::SANDBOX;
             else
                 $endPoint = \net\authorize\api\constants\ANetEnvironment::PRODUCTION;
