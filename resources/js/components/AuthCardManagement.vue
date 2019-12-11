@@ -107,12 +107,22 @@
                     method: 'post',
                     url: '/account/cardmanagement',
                     data: {
-                        'cardNumber': $('#inputCardNumber').val(),
-                        'expiryDate': $('#inputExpiryDate').val(),
-                        'securityCode': $('#inputSecurityCode').val()
+                        'cardNumber': this.cardNumber,
+                        'expiryDate': this.expiryDate,
+                        'securityCode': this.securityCode
                     }
                 }).then(response => {
+                    this.cardNumber = '';
+                    this.expiryDate = '';
+                    this.securityCode = '';
+                    $('#add-card-form').trigger('reset');
                     this.cards.push(response.data);
+                    //Any new card is the default, so need to reflect this
+                    for (let card in this.cards) {
+                        if (this.cards.hasOwnProperty(card)) {
+                            this.cards[card].isDefault = (this.cards[card].id === response.data.id);
+                        }
+                    }
                 }).catch(error => {
                     if (error.response && error.response.status === 422) {
                         this.errors = error.response.data.errors;
