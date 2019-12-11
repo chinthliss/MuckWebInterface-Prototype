@@ -156,8 +156,7 @@ class CardPaymentManager
 
     /**
      * Registers with provider and returns Card.
-     * If the provider refuses it returns null, otherwise throws an error
-     * @return Card|null
+     * @return Card
      */
     public function createCardFor(CardPaymentCustomerProfile $profile, $cardNumber,
                                             $expiryDate, $securityCode): Card
@@ -195,7 +194,7 @@ class CardPaymentManager
             $errorMessages = $response->getMessages()->getMessage();
             if (count($errorMessages) == 1 && $errorMessages[0]->getCode() === 'E00027') {
                 // E00027 - The transaction was unsuccessful.
-                return null;
+                throw new \InvalidArgumentException("The transaction was unsuccessful.");
             } else
                 throw new \Exception("Couldn't create a payment profile. Response : "
                     . $errorMessages[0]->getCode() . "  " . $errorMessages[0]->getText() . "\n");

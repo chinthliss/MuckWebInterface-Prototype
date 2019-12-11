@@ -46,12 +46,12 @@ class CardManagementController extends Controller
         try {
             $profile = $cardPaymentManager->loadOrCreateProfileFor($user);
             $card = $cardPaymentManager->createCardFor($profile, $cardNumber, $expiryDate, $securityCode);
+        } catch (\InvalidArgumentException $e) {
+            throw ValidationException::withMessages(['cardNumber'=>'The given card was rejected by the authorization server.']);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             throw ValidationException::withMessages(['cardNumber'=>'An internal server error occurred. The actual error has been logged for staff to review.']);
         }
-        if (!$card) // For when the card is valid but not accepted, e.g. entering test numbers into live.
-            throw ValidationException::withMessages(['cardNumber'=>'The given card was rejected by the authorization server.']);
         return response(json_encode($card), 200);
     }
 
