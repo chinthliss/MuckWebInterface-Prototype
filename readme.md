@@ -36,15 +36,17 @@ Watch files - `npm run watch`
 Live/HMR replacement - `npm run hot`  
 
 ## Updating
+
 ### Production
 ```
 php artisan down
 git pull origin master
-php composer.phar install 
+php composer.phar install
 php artisan migrate
 php artisan config:cache
 php artisan route:cache
 // php artisan queue:restart
+npm install
 npm run production
 php artisan up
 ```
