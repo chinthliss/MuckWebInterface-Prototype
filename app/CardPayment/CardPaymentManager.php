@@ -216,6 +216,15 @@ class CardPaymentManager
             'maskedcardnum' => $card->cardNumber,
             'expdate' => $card->expiryDate
         ]);
+        $newPaymentProfileId = DB::table('billing_paymentprofiles')->where([
+            'profileid' => $profile->getCustomerProfileId(),
+            'paymentid' => $response->getCustomerPaymentProfileId()
+        ])->value('id');
+        DB::table('billing_profiles')->where([
+            'profileid' => $profile->getCustomerProfileId()
+        ])->update([
+            'defaultcard' => $newPaymentProfileId
+        ]);
         return $card;
     }
 
@@ -266,10 +275,13 @@ class CardPaymentManager
                 . $errorMessages[0]->getCode() . "  " . $errorMessages[0]->getText() . "\n");
         }
         //This is just for historic purposes and to allow the muck easy access
+        $newPaymentProfileId = DB::table('billing_paymentprofiles')->where([
+            'paymentid' => $card->id
+        ])->value('id');
         DB::table('billing_profiles')->where([
             'profileid' => $profile->getCustomerProfileId()
         ])->update([
-            'defaultcard' => $card->id
+            'defaultcard' => $newPaymentProfileId
         ]);
     }
 
