@@ -111,6 +111,18 @@ class CardPaymentManager
                     }
 
                 }
+                // Historic thing - default is controlled by the muck (But we'll set it on ANet going forwards)
+                $defaultCardId = DB::table('billing_profiles')
+                    ->leftJoin('billing_paymentprofiles', 'billing_profiles.defaultcard', '=', 'billing_paymentprofiles.id')
+                    ->where('billing_profiles.profileid', '=', $profile->getCustomerProfileId())
+                    ->value('billing_paymentprofiles.paymentid');
+                if ($defaultCardId) {
+                    foreach ($profile->getCardIds() as $cardId) {
+                        $card = $profile->getCard($cardId);
+                        $card->isDefault = $card->id == $defaultCardId;
+                    }
+                }
+
             }
         }
         $this->customerProfiles[$accountId] = $profile;
@@ -159,7 +171,7 @@ class CardPaymentManager
      * @return Card
      */
     public function createCardFor(CardPaymentCustomerProfile $profile, $cardNumber,
-                                            $expiryDate, $securityCode): Card
+                                  $expiryDate, $securityCode): Card
     {
         $anetCard = new AnetAPI\CreditCardType();
         $anetCard->setCardNumber($cardNumber);
@@ -190,7 +202,7 @@ class CardPaymentManager
         // Create the controller and get the response
         $controller = new AnetController\CreateCustomerPaymentProfileController($request);
         $response = $controller->executeWithApiResponse($this->endPoint);
-        if (!$response || ($response->getMessages()->getResultCode() != "Ok") ) {
+        if (!$response || ($response->getMessages()->getResultCode() != "Ok")) {
             $errorMessages = $response->getMessages()->getMessage();
             if (count($errorMessages) == 1 && $errorMessages[0]->getCode() === 'E00027') {
                 // E00027 - The transaction was unsuccessful.
@@ -236,8 +248,7 @@ class CardPaymentManager
         $request->setCustomerPaymentProfileId($card->id);
         $controller = new AnetController\DeleteCustomerPaymentProfileController($request);
         $response = $controller->executeWithApiResponse($this->endPoint);
-        if (!$response || $response->getMessages()->getResultCode() != "Ok")
-        {
+        if (!$response || $response->getMessages()->getResultCode() != "Ok") {
             $errorMessages = $response->getMessages()->getMessage();
             throw new \Exception("Couldn't create a payment profile. Response : "
                 . $errorMessages[0]->getCode() . "  " . $errorMessages[0]->getText() . "\n");
@@ -252,7 +263,7 @@ class CardPaymentManager
     public function setDefaultCardFor(CardPaymentCustomerProfile $profile, Card $card)
     {
         $creditCard = new AnetAPI\CreditCardType();
-        $creditCard->setCardNumber( $card->cardNumber);
+        $creditCard->setCardNumber($card->cardNumber);
         $creditCard->setExpirationDate($card->expiryDate);
 
         $paymentCreditCard = new AnetAPI\PaymentType();
@@ -268,8 +279,7 @@ class CardPaymentManager
         $request->setPaymentProfile($paymentProfile);
         $controller = new AnetController\DeleteCustomerPaymentProfileController($request);
         $response = $controller->executeWithApiResponse($this->endPoint);
-        if (!$response || $response->getMessages()->getResultCode() != "Ok")
-        {
+        if (!$response || $response->getMessages()->getResultCode() != "Ok") {
             $errorMessages = $response->getMessages()->getMessage();
             throw new \Exception("Couldn't update default payment profile. Response : "
                 . $errorMessages[0]->getCode() . "  " . $errorMessages[0]->getText() . "\n");
