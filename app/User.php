@@ -6,11 +6,8 @@ use App\Helpers\MuckInterop;
 use App\Muck\MuckCharacter;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
 
 /**
  * Class User
@@ -36,6 +33,9 @@ class User implements Authenticatable, MustVerifyEmail
     public $createdAt = null;
     public $updatedAt = null;
     public $emailVerified = false;
+
+    public $prefersNoAvatars = false;
+    public $prefersFullWidth = false;
 
     /**
      * Characters of this user. Public since it's not stored past request

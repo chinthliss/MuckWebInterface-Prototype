@@ -4,11 +4,9 @@ namespace App;
 
 use App\Contracts\MuckConnection;
 use App\Helpers\MuckInterop;
-use App\Muck\MuckCharacter;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
-// use Illuminate\Support\Facades\Hash;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Auth\Authenticatable;
 
@@ -37,6 +35,28 @@ class DatabaseForMuckUserProvider implements UserProvider
         return DB::table('accounts')
             ->select('accounts.*', 'account_emails.verified_at')
             ->leftJoin('account_emails', 'account_emails.email', '=', 'accounts.email');
+    }
+
+    /**
+     * Retrieves properties that effect web views
+     */
+    protected function loadUserViewPreferences(User $user): User
+    {
+        $preferences = DB::table('account_properties')
+            ->where('aid', $user->getAid())
+            ->whereIn('propname', ['webNoAvatars', 'webUseFullWidth'])
+            ->get();
+        foreach ($preferences as $preference) {
+            switch($preference->propname) {
+                case 'webNoAvatars':
+                    $user->prefersNoAvatars = $preference->propdata == 'Y';
+                    break;
+                case 'webUseFullWidth':
+                    $user->prefersFullWidth = $preference->propdata == 'Y';
+                    break;
+            }
+        }
+        return $user;
     }
 
     //Used when user is logged in, called with accountId (aid)
