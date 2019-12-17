@@ -28,3 +28,6 @@
 * Maybe move all websocket functionality into such
 
 ### Onto individual pages..
+
+### Stuff to do once system goes live
+* Remove tos-hash-viewed from account_properties
