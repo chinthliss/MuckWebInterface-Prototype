@@ -40,23 +40,25 @@ class DatabaseForMuckUserProvider implements UserProvider
     /**
      * Retrieves properties that effect web views
      */
-    protected function loadUserViewPreferences(User $user): User
+    public function loadLatePropertiesFor(User $user)
     {
         $preferences = DB::table('account_properties')
             ->where('aid', $user->getAid())
-            ->whereIn('propname', ['webNoAvatars', 'webUseFullWidth'])
+            ->whereIn('propname', ['webNoAvatars', 'webUseFullWidth', 'tos-hash-viewed'])
             ->get();
         foreach ($preferences as $preference) {
-            switch($preference->propname) {
-                case 'webNoAvatars':
-                    $user->prefersNoAvatars = $preference->propdata == 'Y';
+            switch(strtolower($preference->propname)) {
+                case 'webnoavatars':
+                    $user->setPrefersNoAvatars($preference->propdata == 'Y');
                     break;
-                case 'webUseFullWidth':
-                    $user->prefersFullWidth = $preference->propdata == 'Y';
+                case 'webusefullwidth':
+                    $user->setPrefersFullWidth($preference->propdata == 'Y');
+                    break;
+                case 'tos-hash-viewed':
+                    $user->setAgreedToTermsOfService($preference->propdata == TermsOfService::getTermsOfServiceHash());
                     break;
             }
         }
-        return $user;
     }
 
     //Used when user is logged in, called with accountId (aid)

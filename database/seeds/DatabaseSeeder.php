@@ -1,5 +1,6 @@
 <?php
 
+use App\TermsOfService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 
@@ -14,7 +15,7 @@ class DatabaseSeeder extends Seeder
     {
         // $this->call(UsersTableSeeder::class);
 
-        //Account 1 - Validated user account
+        //Account 1 - Validated user account that's accepted TOS
         DB::table('accounts')->insert([
             'aid' => 1,
             'uuid' => '11111111',
@@ -41,6 +42,13 @@ class DatabaseSeeder extends Seeder
             'email' => 'testaltunverified@test.com'
         ]);
 
+        DB::table('account_properties')->insert([
+            'aid' => $aid,
+            'propname' => 'tos-hash-viewed',
+            'proptype' => 'STRING',
+            'propdata' => TermsOfService::getTermsOfServiceHash()
+        ]);
+
 
         // Account 2 - unverified
         DB::table('accounts')->insert([
@@ -65,6 +73,29 @@ class DatabaseSeeder extends Seeder
             'email' => 'testbrokenunverified@test.com',
             'password' => '0A095F587AFCB082:EC2F0D2ACB7788E26E0A36C32C6475C589860589', //password
             'password_type' => 'SHA1SALT'
+        ]);
+
+        //Acount 4 - verified but hasn't accepted TOS
+        DB::table('accounts')->insert([
+            'aid' => 4,
+            'uuid' => '44444444',
+            'email' => 'notagreedtotos@test.com',
+            'password' => '0A095F587AFCB082:EC2F0D2ACB7788E26E0A36C32C6475C589860589', //password
+            'password_type' => 'SHA1SALT'
+        ]);
+        $aid = DB::table('accounts')->where('email', 'notagreedtotos@test.com')->first()->aid;
+
+        DB::table('account_emails')->insert([
+            'aid' => $aid,
+            'email' => 'notagreedtotos@test.com',
+            'verified_at' => Carbon::now()
+        ]);
+
+        DB::table('account_properties')->insert([
+            'aid' => $aid,
+            'propname' => 'tos-hash-viewed',
+            'proptype' => 'STRING',
+            'propdata' => 'OldHash'
         ]);
 
     }

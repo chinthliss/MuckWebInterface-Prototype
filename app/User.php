@@ -34,9 +34,6 @@ class User implements Authenticatable, MustVerifyEmail
     public $updatedAt = null;
     public $emailVerified = false;
 
-    public $prefersNoAvatars = false;
-    public $prefersFullWidth = false;
-
     /**
      * Characters of this user. Public since it's not stored past request
      * @var Collection(MuckCharacter)
@@ -251,5 +248,54 @@ class User implements Authenticatable, MustVerifyEmail
     {
         return $this->character;
     }
+
+    //region Late Loading Properties
+    // These are loaded late because they're not required for api calls.
+    protected $latePropertiesLoaded = false;
+    protected $agreedToTermsOfService = false;
+    protected $prefersNoAvatars = false;
+    protected $prefersFullWidth = false;
+
+    public function ensureLatePropertiesAreLoaded()
+    {
+        if (!$this->latePropertiesLoaded) {
+            $this->getProvider()->loadLatePropertiesFor($this);
+            $this->latePropertiesLoaded = true;
+        }
+    }
+
+    public function getAgreedToTermsOfService()
+    {
+        $this->ensureLatePropertiesAreLoaded();
+        return $this->agreedToTermsOfService;
+    }
+
+    public function setAgreedToTermsOfService($value)
+    {
+        $this->agreedToTermsOfService = $value;
+    }
+
+    public function getPrefersNoAvatars()
+    {
+        $this->ensureLatePropertiesAreLoaded();
+        return $this->prefersNoAvatars;
+    }
+
+    public function setPrefersNoAvatars($value)
+    {
+        $this->prefersNoAvatars = $value;
+    }
+
+    public function getPrefersFullWidth()
+    {
+        $this->ensureLatePropertiesAreLoaded();
+        return $this->getPrefersFullWidth();
+    }
+
+    public function setPrefersFullWidth($value)
+    {
+        $this->prefersFullWidth = $value;
+    }
+    //endregion Late Loading Properties
 
 }

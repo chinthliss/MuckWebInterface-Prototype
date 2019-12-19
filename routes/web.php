@@ -25,10 +25,9 @@ Route::group(['middleware' => ['web', 'guest']], function() {
         ->name('auth.account.passwordreset')->middleware('signed', 'throttle:8,1');
     Route::post('account/passwordreset/{id}/{hash}', 'Auth\AccountPasswordController@resetPassword')
         ->middleware('signed', 'throttle:8,1');
-
 });
 
-//Requires an account but DOESN'T require verification
+//Requires an account but DOESN'T require verification or Terms of Service acceptance
 Route::group(['middleware' => ['web', 'auth:account']], function() {
     Route::post('logout', 'Auth\AccountController@logout')->name('logout');
     Route::get('account/verifyemail', 'Auth\AccountEmailController@show')
@@ -39,8 +38,8 @@ Route::group(['middleware' => ['web', 'auth:account']], function() {
         ->name('auth.account.resendverifyemail')->middleware('throttle:8,1');
 });
 
-//Requires account and verification.
-Route::group(['middleware' => ['web', 'auth:account', 'verified']], function() {
+//Requires account, verification and terms of service acceptance
+Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']], function() {
     Route::get('home', 'HomeController@show')->name('home');
     Route::get('account', 'Auth\AccountController@show')->name('auth.account');
     //Password change
@@ -61,4 +60,8 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified']], function() {
 });
 
 //Always available
+//Character Profiles
 Route::get('p/{characterName}', 'CharacterController@show')->name('character');
+//Terms of service - always viewable, does challenge if logged in.
+Route::get('account/termsofservice', 'Auth\TermsOfServiceController@view')
+    ->name('auth.account.termsofservice');
