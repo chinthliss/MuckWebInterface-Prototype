@@ -28,4 +28,13 @@ class TermsOfServiceController extends Controller
             'hash' => $termsOfService->getTermsOfServiceHash()
         ]);
     }
+
+    public function accept(Request $request, TermsOfService $termsOfService)
+    {
+        $user = auth()->user();
+        $user->storeTermsOfServiceAgreement($request['_hash']);
+        return redirect()->intended('/home');
+    }
+
+
 }

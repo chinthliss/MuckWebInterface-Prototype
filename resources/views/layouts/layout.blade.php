@@ -118,5 +118,6 @@
         el: '#app',
     });
 </script>
+@yield('script')
 </body>
 </html>

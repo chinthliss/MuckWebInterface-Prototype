@@ -65,3 +65,6 @@ Route::get('p/{characterName}', 'CharacterController@show')->name('character');
 //Terms of service - always viewable, does challenge if logged in.
 Route::get('account/termsofservice', 'Auth\TermsOfServiceController@view')
     ->name('auth.account.termsofservice');
+Route::post('account/termsofservice', 'Auth\TermsOfServiceController@accept')
+    ->name('auth.account.termsofservice');
+

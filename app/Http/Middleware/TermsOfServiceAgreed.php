@@ -18,8 +18,10 @@ class TermsOfServiceAgreed
         $user = $request->user();
         //Because this should have been checked by an earlier middleware
         if (!$user) abort(500, 'Server error - Terms of Service check called with no user set.');
-        if (!$user->getAgreedToTermsofService())
+        if (!$user->getAgreedToTermsofService()) {
+            redirect()->setIntendedUrl($request->getRequestUri());
             return redirect()->route('auth.account.termsofservice');
+        }
         return $next($request);
     }
 }

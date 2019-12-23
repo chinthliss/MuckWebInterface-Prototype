@@ -55,7 +55,7 @@ class AccountTermsOfService extends TestCase
             return $user;
         });
         $middleware = new TermsOfServiceAgreed();
-        $response = $middleware->handle($request, function() {
+        $response = $middleware->handle($request, function () {
             return 'no redirect';
         });
         $this->assertEquals($response, 'no redirect');
@@ -73,11 +73,35 @@ class AccountTermsOfService extends TestCase
             return $user;
         });
         $middleware = new TermsOfServiceAgreed();
-        $response = $middleware->handle($request, function() {
+        $response = $middleware->handle($request, function () {
             return 'no redirect';
         });
         $this->assertNotEquals($response, 'no redirect');
     }
+
+    /**
+     * @depends testUserWhoHasNotAcceptedTermsOfServiceIsRedirected
+     */
+    public function testTermsOfServiceCanBeAccepted()
+    {
+        $this->seed();
+        $user = Auth::loginUsingId('4');
+        $response = $this->get('/home');
+        $response->assertStatus(302);
+        $termsOfService = $this->app->make('App\TermsOfService');
+        $hash = $termsOfService::getTermsOfServiceHash();
+        $response = $this->post(route('auth.account.termsofservice'),
+            [
+                '_token' => csrf_token(),
+                '_hash' => $hash
+            ]);
+        $this->assertDatabaseHas('account_properties', [
+            'aid' => $user->getAid(),
+            'propname' => 'tos-hash-viewed',
+            'propdata' => $hash
+        ]);
+    }
+
 
 }
 

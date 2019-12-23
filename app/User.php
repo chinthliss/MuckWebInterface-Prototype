@@ -298,4 +298,9 @@ class User implements Authenticatable, MustVerifyEmail
     }
     //endregion Late Loading Properties
 
+    public function storeTermsOfServiceAgreement($hash)
+    {
+        $this->getProvider()->storeTermsOfServiceAgreement($this, $hash);
+    }
+
 }

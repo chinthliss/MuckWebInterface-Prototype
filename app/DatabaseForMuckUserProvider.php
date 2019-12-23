@@ -290,4 +290,11 @@ class DatabaseForMuckUserProvider implements UserProvider
     }
     // endregion Email
 
+    public function storeTermsOfServiceAgreement(User $user, string $hash)
+    {
+        DB::table('account_properties')->updateOrInsert(
+            ['aid' => $user->getAid(), 'propname'=>'tos-hash-viewed' ],
+            ['propdata' => $hash, 'proptype'=>'STRING']
+        );
+    }
 }

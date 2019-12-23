@@ -20,7 +20,16 @@
                             @if ($agreed)
                                 <div class="p-2 mb-2 bg-primary text-dark">You've agreed to this previously.</div>
                             @else
-                                You need to agree!
+                                <div class="border border-primary rounded p-3 text-center">
+                                    <form action="{{ route('auth.account.termsofservice') }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="_hash" value="{{ $hash }}">
+
+                                        <button type="submit" value="submit" class="btn btn-primary">
+                                            Click here to agree to the Terms of Service
+                                        </button>
+                                    </form>
+                                </div>
                             @endif
                         @endauth
                     </div>
