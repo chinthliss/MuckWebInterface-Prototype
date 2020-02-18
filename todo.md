@@ -31,3 +31,4 @@
 
 ### Stuff to do once system goes live
 * Remove tos-hash-viewed from account_properties
+* drop billing_sessions
