@@ -78,7 +78,6 @@ class CardPaymentManager
     public function loadProfileFor(User $user)
     {
         $accountId = $user->getAid();
-
         //Return if already fetched
         if (array_key_exists($accountId, $this->customerProfiles)) return $this->customerProfiles[$accountId];
 
@@ -100,7 +99,7 @@ class CardPaymentManager
                     // $profile = null;
                     Log::warning("Retrieved Authorize.net customer profile for AID " . $accountId . " didn't have a matching merchantId.");
                 }
-                //Need to populate full card details from what we know, since ANet response masks expiry dates.
+                // Need to populate full card details from what we know, since ANet response masks expiry dates.
                 $paymentProfiles = DB::table('billing_paymentprofiles')
                     ->where('profileid', $profile->getCustomerProfileId())->get();
                 foreach ($paymentProfiles as $paymentProfile) {
@@ -110,6 +109,12 @@ class CardPaymentManager
                         $profile->setCard($present);
                     }
 
+                }
+                // Subscriptions
+                $subscriptions = $response->getSubscriptionIds();
+                if ($subscriptions) {
+                    //TODO Retrieve subscription
+                    dd("Subscription found!");
                 }
                 // Historic thing - default is controlled by the muck (But we'll set it on ANet going forwards)
                 $defaultCardId = DB::table('billing_profiles')

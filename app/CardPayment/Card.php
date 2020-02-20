@@ -10,4 +10,9 @@ class Card
     public $cardNumber;
     public $expiryDate;
     public $isDefault;
+
+    /*
+     * @var int[]
+     */
+    public $subscriptions = [];
 }
