@@ -18,6 +18,17 @@ interface CardPaymentCustomerProfile
     public function getCustomerProfileId();
 
     public function getCardIds();
+
+    /**
+     * @param string $cardId
+     * @return Card|null
+     */
     public function getCard(string $cardId);
+
     public function setCard(Card $card);
+
+    /**
+     * @return Card|null
+     */
+    public function getDefaultCard();
 }

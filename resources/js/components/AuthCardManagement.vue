@@ -7,13 +7,13 @@
             <table v-else class="table table-striped">
                 <tr>
                     <th scope="col">Card Type</th>
-                    <th scope="col">Masked Card#</th>
+                    <th scope="col">Ends With</th>
                     <th scope="col">Expiry Date</th>
                 </tr>
                 <tbody>
                 <tr v-for="card in cards" :data-id="card.id">
                     <td>{{ card.cardType }}</td>
-                    <td>{{ card.cardNumber }}</td>
+                    <td>{{ card.maskedCardNumber }}</td>
                     <td>{{ card.expiryDate }}</td>
                     <td class="text-center">
                         <div v-if="card.isDefault">Default</div>

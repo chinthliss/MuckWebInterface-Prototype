@@ -52,11 +52,14 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
     Route::post('account/useexistingemail', 'Auth\AccountEmailController@useExistingEmail');
     Route::post('account/changeemail', 'Auth\AccountEmailController@changeEmail');
     //Card Management
-    Route::get('account/cardmanagement', 'Payment\CardManagementController@show');
+    Route::get('account/cardmanagement', 'Payment\CardManagementController@show')
+        ->name('payment.cardmanagement');
     Route::post('account/cardmanagement', 'Payment\CardManagementController@addCard');
     Route::delete('account/cardmanagement', 'Payment\CardManagementController@deleteCard');
     Route::patch('account/cardmanagement', 'Payment\CardManagementController@updateDefaultCard');
 
+    //Account Currency
+    Route::get('accountcurrency', 'Payment\AccountCurrencyController@show');
 });
 
 //Always available

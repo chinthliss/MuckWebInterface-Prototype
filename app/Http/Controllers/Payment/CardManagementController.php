@@ -22,7 +22,7 @@ class CardManagementController extends Controller
         $cards = [];
         if ($profile) {
             foreach ($profile->getCardIds() as $id) {
-                array_push($cards, $profile->getCard($id));
+                array_push($cards, $profile->getCard($id)->toArray());
             }
         }
 

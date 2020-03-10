@@ -35,7 +35,6 @@ class AuthorizeNetCardPaymentCustomerProfile implements CardPaymentCustomerProfi
         $this->id = $id;
     }
 
-
     /**
      * @param $response
      * @return AuthorizeNetCardPaymentCustomerProfile
@@ -105,6 +104,13 @@ class AuthorizeNetCardPaymentCustomerProfile implements CardPaymentCustomerProfi
         if (array_key_exists($cardId, $this->cards))
             return $this->cards[$cardId];
         else return null;
+    }
+
+    public function getDefaultCard()
+    {
+        if ($this->defaultCardId)
+            return $this->getCard($this->defaultCardId);
+        return null;
     }
 
     #endregion

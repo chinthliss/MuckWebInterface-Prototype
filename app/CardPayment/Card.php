@@ -15,4 +15,20 @@ class Card
      * @var int[]
      */
     public $subscriptions = [];
+
+    public function maskedCardNumber()
+    {
+        return '..' . substr($this->cardNumber, -4);
+    }
+
+    public function toArray()
+    {
+        return array(
+            'id' => $this->cardNumber,
+            'cardType' => $this->cardType,
+            'maskedCardNumber' => $this->maskedCardNumber(),
+            'expiryDate' => $this->expiryDate,
+            'isDefault' => $this->isDefault
+        );
+    }
 }
