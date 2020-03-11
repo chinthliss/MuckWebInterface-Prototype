@@ -8,42 +8,12 @@
                     This will be charged to your card ending in '{{ defaultCardMaskedNumber }}'.
                 </div>
                 <div class="row mb-2 justify-content-center">
-                    <div class="col-md-3">
+                    <div class="col-md-3" v-for="amount in cardSuggestedAmounts">
                         <div class="card border-primary">
-                            <h3 class="card-header bg-primary text-dark">$5</h3>
+                            <h3 class="card-header bg-primary text-dark">${{ amount }}</h3>
                             <div class="card-body text-center">
                                 <p class="card-text">??? Mako</p>
-                                <button type="button" class="btn btn-primary btn-block">Select</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-3">
-                        <div class="card border-primary">
-                            <h3 class="card-header bg-primary text-dark">$10</h3>
-                            <div class="card-body text-center">
-                                <p class="card-text">??? Mako</p>
-                                <button type="button" class="btn btn-primary btn-block">Select</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-3">
-                        <div class="card border-primary">
-                            <h3 class="card-header bg-primary text-dark">$20</h3>
-                            <div class="card-body text-center">
-                                <p class="card-text">??? Mako</p>
-                                <button type="button" class="btn btn-primary btn-block">Select</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-3">
-                        <div class="card border-primary">
-                            <h3 class="card-header bg-primary text-dark">$50</h3>
-                            <div class="card-body text-center">
-                                <p class="card-text">??? Mako</p>
-                                <button type="button" class="btn btn-primary btn-block">Select</button>
+                                <button @click="cardUseSuggestedAmount" :data-amount="amount" type="button" class="btn btn-primary btn-block">Select</button>
                             </div>
                         </div>
                     </div>
@@ -51,7 +21,7 @@
                 <div class="row mb-2 justify-content-center">
                     <div class="col-12 col-md-5 col-lg-3 text-center">
                         <label for="cardAmount">Amount</label>
-                        <input id="cardAmount" style="width:5em;" type="number" value="10" min="5" step="5">
+                        <input id="cardAmount" style="width:5em;" type="number" v-model="cardAmount" @change="cardAmountChanged" value="10" min="5" step="5">
                     </div>
                     <div class="col-12 col-md-5 col-lg-3 text-center">
                         You'll get ???
@@ -97,11 +67,20 @@
         props: ['defaultCardMaskedNumber', 'account', 'cardManagementPage'],
         data: function () {
             return {
+                'cardSuggestedAmounts':[5, 10, 20, 50],
                 'cardRecurring':false,
-                'cardRecurringInterval':'90'
+                'cardRecurringInterval':'90',
+                'cardAmount':10
             }
         },
         methods: {
+            cardUseSuggestedAmount: function(e) {
+                this.cardAmount = e.currentTarget.getAttribute('data-amount');
+                this.cardAmountChanged(e);
+            },
+            cardAmountChanged: function(e) {
+                console.log("TBC - Should call the muck here to update quote here..");
+            }
         }
     }
 </script>
