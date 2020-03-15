@@ -41,21 +41,24 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
-
+        */
+        /*
         'api' => [
             'driver' => 'token',
-            'provider' => 'users',
+            'provider' => 'accounts',
             'hash' => false,
         ],
         */
         'account' => [
             'driver' => 'session',
             'provider' => 'accounts'
-        ],
+        ]
+        /*
         'player' => [
             'driver' => 'session',
             'provider' => 'players'
         ]
+        */
     ],
 
     /*
@@ -88,10 +91,12 @@ return [
         // ],
         'accounts' => [
             'driver' => 'accounts'
-        ],
+        ]
+        /*,
         'players' => [
             'driver' => 'muck'
         ]
+        */
     ],
 
     /*

@@ -42,4 +42,6 @@ interface MuckConnection
 
     //endregion Auth
 
+    public function usdToAccountCurrency(int $amount);
+
 }

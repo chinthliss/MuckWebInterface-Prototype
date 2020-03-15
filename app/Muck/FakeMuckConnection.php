@@ -67,4 +67,13 @@ class FakeMuckConnection implements MuckConnection
         if ( !$user || !$user->getAid() ) return null;
         return $this->getCharactersOf($user->getAid());
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function usdToAccountCurrency(int $amount)
+    {
+        //Fake value!
+        return $amount * 3.5;
+    }
 }

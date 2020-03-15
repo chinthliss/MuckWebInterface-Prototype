@@ -106,5 +106,20 @@ class HttpMuckConnection implements MuckConnection
         return $response;
     }
 
-    // endregion
+    // endregion Auth Requests
+
+    /**
+     * @inheritDoc
+     */
+    public function usdToAccountCurrency(int $amount)
+    {
+        $user = auth()->user();
+        if ( !$user || !$user->getAid() ) return null;
+
+        $response = $this->requestFromMuck('usdToAccountCurrencyFor', [
+            'amount' => $amount,
+            'account' => $user->getAid()
+        ]);
+        return $response;
+    }
 }

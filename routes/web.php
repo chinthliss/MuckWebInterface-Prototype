@@ -60,6 +60,7 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
 
     //Account Currency
     Route::get('accountcurrency', 'Payment\AccountCurrencyController@show');
+    Route::post('accountcurrency/fromUsd', 'Payment\AccountCurrencyController@usdToAccountCurrency');
 });
 
 //Always available

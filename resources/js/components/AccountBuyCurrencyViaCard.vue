@@ -81,6 +81,13 @@
             cardAmountChanged: function(e) {
                 console.log("TBC - Should call the muck here to update quote here..");
             }
+        },
+        mounted:function()  {
+            axios.post('accountcurrency/fromUsd', {
+                'amount': 5
+            }).then(response => {
+                console.log(response);
+            });
         }
     }
 </script>

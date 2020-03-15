@@ -56,14 +56,14 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     ":" array_join strcat
 ;
 
-: handleRequest_test[ arr:data -- ]
+: handleRequest_test[ arr:webcall -- ]
     startAcceptedResponse
     descr "TEST" descrnotify
 ; selfcall handleRequest_test
 
 (Expects 'aid' set, returns playerToString separated by lines)
-: handleRequest_getCharacters[ arr:data -- ]
-    data @ "aid" array_getitem ?dup if
+: handleRequest_getCharacters[ arr:webcall -- ]
+    webcall @ "aid" array_getitem ?dup if
         startAcceptedResponse
         acct_getalts
         foreach nip
@@ -73,8 +73,8 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 ; selfcall handleRequest_getCharacters
 
 (Excepts 'name', returns 'account,[playerToString]' if one is matched or returns empty response)
-: handleRequest_retrieveByCredentials[ arr:data -- ]
-    data @ "name" array_getitem ?dup not if response400 exit then
+: handleRequest_retrieveByCredentials[ arr:webcall -- ]
+    webcall @ "name" array_getitem ?dup not if response400 exit then
     startAcceptedResponse
     pmatch dup ok? if
         dup acct_any2aid intostr "," strcat swap playerToString strcat
@@ -83,9 +83,9 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 ; selfcall handleRequest_retrieveByCredentials
 
 (Excepts 'dbref' and 'password' set, returns either 'true' or 'false')
-: handleRequest_validateCredentials[ arr:data -- ]
-    data @ "dbref" array_getitem ?dup if atoi dbref else #-1 then var! dbref
-    data @ "password" array_getitem ?dup not if "" then var! password
+: handleRequest_validateCredentials[ arr:webcall -- ]
+    webcall @ "dbref" array_getitem ?dup if atoi dbref else #-1 then var! dbref
+    webcall @ "password" array_getitem ?dup not if "" then var! password
     (Since a player might have been deleted, requests with a positive valid requests are ok)
     dbref @ #-1 dbcmp not password @ and if 
         startAcceptedResponse
@@ -95,6 +95,13 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         descr swap descrnotify 
     else response400 then
 ; selfcall handleRequest_validateCredentials
+
+(Expects 'amount' and 'account', returns value in account currency)
+: handleRequest_usdToAccountCurrencyFor[ arr:webcall -- ]
+    webcall @ "amount" array_getitem ?dup if atoi else response400 exit then
+    webcall @ "account" array_getitem ?dup if acct_any2aid else pop response400 exit then
+    "$www/ecommerce" match "usdToGameCurrencyFor" call
+; selfcall handleRequest_usdToAccountCurrencyFor
 
 : authenticateQuery[ arr:webcall -- bool:authenticated? ]
     webcall @ { "data" "BODY" }list array_nested_get ?dup not if "" then

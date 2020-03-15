@@ -18,6 +18,6 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 */
 
-//Pages that are freely available:
+// Pages that are freely available:
 Route::get('/terms-of-service-hash', 'Auth\TermsOfServiceController@getHash');
 Route::get('/terms-of-service', 'Auth\TermsOfServiceController@getContent');
