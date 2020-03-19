@@ -25,6 +25,7 @@ $endif
 
 $include $lib/account
 $include $lib/kta/proto
+$include $lib/kta/json
 $include $lib/rp
 
 $def response400 descr "HTTP/1.1 400 Bad Request\r\n" descrnotify descr "\r\n" descrnotify
@@ -55,6 +56,10 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     player @ mlevel 3 > if "wizard" swap array_appenditem then
     ":" array_join strcat
 ;
+
+( -------------------------------------------------- )
+( Handlers - Auth )
+( -------------------------------------------------- )
 
 : handleRequest_test[ arr:webcall -- ]
     startAcceptedResponse
@@ -96,12 +101,32 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     else response400 then
 ; selfcall handleRequest_validateCredentials
 
+( -------------------------------------------------- )
+( Payment related )
+( -------------------------------------------------- )
+
 (Expects 'amount' and 'account', returns value in account currency)
 : handleRequest_usdToAccountCurrencyFor[ arr:webcall -- ]
     webcall @ "amount" array_getitem ?dup if atoi else response400 exit then
     webcall @ "account" array_getitem ?dup if acct_any2aid else pop response400 exit then
     "$www/ecommerce" match "usdToGameCurrencyFor" call
 ; selfcall handleRequest_usdToAccountCurrencyFor
+
+(Expects 'account' and 'suggestedAmounts', returns several values on multiple lines for account currency page's opening status)
+: handleRequest_bootAccountCurrency[ arr:webcall -- ]
+    webcall @ "account" array_getitem ?dup if acct_any2aid else pop response400 exit then
+    { }dict
+    0 swap "firstOfMonth" array_setitem
+    0 swap "firstDonation" array_setitem
+    0 swap "currencyDiscountTime" array_setitem
+    0 swap "startOfMonthSale" array_setitem
+    
+; selfcall handleRequest_bootAccountCurrency
+
+( -------------------------------------------------- )
+( Routing )
+( -------------------------------------------------- )
+
 
 : authenticateQuery[ arr:webcall -- bool:authenticated? ]
     webcall @ { "data" "BODY" }list array_nested_get ?dup not if "" then

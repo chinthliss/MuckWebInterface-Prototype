@@ -10,15 +10,22 @@ use Illuminate\Http\Request;
 
 class AccountCurrencyController extends Controller
 {
-    public function show(CardPaymentManager $cardPaymentManager)
+    private $suggestedAmounts = [5, 10, 20, 50];
+
+    public function show(CardPaymentManager $cardPaymentManager, MuckConnection $muck)
     {
         /** @var User $user */
         $user = auth()->guard()->user();
         $paymentProfile = $cardPaymentManager->loadProfileFor($user);
 
+        $parsedSuggestedAmounts = [];
+        foreach ($this->suggestedAmounts as $amount) {
+            $parsedSuggestedAmounts[$amount] = $muck->usdToAccountCurrency($amount);
+        }
         return view('account-currency')->with([
             'account' => $user->getAid(),
-            'defaultCardMaskedNumber' => $paymentProfile->getDefaultCard()->maskedCardNumber()
+            'defaultCardMaskedNumber' => $paymentProfile->getDefaultCard()->maskedCardNumber(),
+            'suggestedAmounts' => $parsedSuggestedAmounts
         ]);
     }
 

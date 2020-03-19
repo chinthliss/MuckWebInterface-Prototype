@@ -8,12 +8,12 @@
                     This will be charged to your card ending in '{{ defaultCardMaskedNumber }}'.
                 </div>
                 <div class="row mb-2 justify-content-center">
-                    <div class="col-md-3" v-for="amount in cardSuggestedAmounts">
+                    <div class="col-md-3" v-for="(gameCurrency, usd) in suggestedAmounts">
                         <div class="card border-primary">
-                            <h3 class="card-header bg-primary text-dark">${{ amount }}</h3>
+                            <h3 class="card-header bg-primary text-dark">${{ usd }}</h3>
                             <div class="card-body text-center">
-                                <p class="card-text">??? Mako</p>
-                                <button @click="cardUseSuggestedAmount" :data-amount="amount" type="button" class="btn btn-primary btn-block">Select</button>
+                                <p class="card-text">{{ gameCurrency }} Mako</p>
+                                <button @click="cardUseSuggestedAmount" :data-amount="usd" type="button" class="btn btn-primary btn-block">Select</button>
                             </div>
                         </div>
                     </div>
@@ -24,7 +24,7 @@
                         <input id="cardAmount" style="width:5em;" type="number" v-model="cardAmount" @change="cardAmountChanged" value="10" min="5" step="5">
                     </div>
                     <div class="col-12 col-md-5 col-lg-3 text-center">
-                        You'll get ???
+                        <span v-if="cardAmountExchange">You'll get {{ cardAmountExchange }}</span>
                     </div>
                 </div>
                 <div class="row mb-2 justify-content-center">
@@ -54,8 +54,9 @@
             <div v-else class="p-2 mb-2 bg-warning text-dark text-center"><span class="sr-only">Warning: </span>
                 You have no default card configured and will need to use 'Manage Cards' before making a payment.
             </div>
-            <div class="float-right">
-            <a class="btn btn-primary" :href="cardManagementPage" role="button">Manage Cards</a>
+            <div class="text-center">
+            <a class="btn btn-secondary" :href="cardManagementPage" role="button">Manage Cards</a>
+            <a v-if="defaultCardMaskedNumber" class="btn btn-primary" :href="cardManagementPage" role="button">Proceed</a>
             </div>
         </div>
     </div>
@@ -64,13 +65,13 @@
 <script>
     export default {
         name: "account-buy-currency-via-card",
-        props: ['defaultCardMaskedNumber', 'account', 'cardManagementPage'],
+        props: ['defaultCardMaskedNumber', 'account', 'cardManagementPage', 'suggestedAmounts'],
         data: function () {
             return {
-                'cardSuggestedAmounts':[5, 10, 20, 50],
                 'cardRecurring':false,
                 'cardRecurringInterval':'90',
-                'cardAmount':10
+                'cardAmount':0,
+                'cardAmountExchange':0
             }
         },
         methods: {
@@ -79,15 +80,18 @@
                 this.cardAmountChanged(e);
             },
             cardAmountChanged: function(e) {
-                console.log("TBC - Should call the muck here to update quote here..");
+                this.cardAmountExchange = 0;
+                axios.post('accountcurrency/fromUsd', {
+                    'amount': this.cardAmount
+                }).then(response => {
+                    this.cardAmountExchange = response.data;
+                });
             }
         },
         mounted:function()  {
-            axios.post('accountcurrency/fromUsd', {
-                'amount': 5
-            }).then(response => {
-                console.log(response);
-            });
+            let secondIndex = Object.keys(this.suggestedAmounts)[1];
+            this.cardAmount = secondIndex;
+            this.cardAmountExchange = this.suggestedAmounts[secondIndex];
         }
     }
 </script>

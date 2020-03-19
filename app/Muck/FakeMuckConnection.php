@@ -74,6 +74,6 @@ class FakeMuckConnection implements MuckConnection
     public function usdToAccountCurrency(int $amount)
     {
         //Fake value!
-        return $amount * 3.5;
+        return $amount * 3;
     }
 }
