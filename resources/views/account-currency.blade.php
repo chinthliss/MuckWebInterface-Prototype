@@ -5,11 +5,12 @@
 @endsection
 
 @section('content')
-    <account-buy-currency-via-card
+    <account-buy-currency
         default-card-masked-number = "{{ $defaultCardMaskedNumber }}"
         account = "{{ $account }}"
-        card-management-page = "{{ route('payment.cardmanagement') }}"
         :suggested-amounts = "{{ json_encode($suggestedAmounts) }}"
-    ></account-buy-currency-via-card>
+        account-currency-image="{{ asset('image/accountcurrency.png') }}"
+        card-management-page = "{{ route('payment.cardmanagement') }}"
+    ></account-buy-currency>
     <game-stretch-goals></game-stretch-goals>
 @endsection
