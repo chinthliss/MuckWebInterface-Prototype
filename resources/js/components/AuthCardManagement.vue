@@ -139,7 +139,9 @@
                 }).then(response => {
                     this.cards = this.cards.filter(card => card.id !== cardId);
                 }).catch(error => {
-                    console.log("deleteCard got an error response: " + error);
+                    if (error.response && error.response.status === 422) {
+                        this.errors = error.response.data.errors;
+                    } else console.log(error);
                 });
                 e.preventDefault();
             },
@@ -156,7 +158,9 @@
                         }
                     }
                 }).catch(error => {
-                    console.log("updateCard got an error response: " + error);
+                    if (error.response && error.response.status === 422) {
+                        this.errors = error.response.data.errors;
+                    } else console.log(error);
                 });
                 e.preventDefault();
             }
