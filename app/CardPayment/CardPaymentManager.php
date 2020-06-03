@@ -220,7 +220,7 @@ class CardPaymentManager
         $card->id = $response->getCustomerPaymentProfileId();
         //Silly that this has to be extracted from a huge comma separated string..
         $responseParts = explode(',', $response->getValidationDirectResponse());
-        $card->cardNumber = $responseParts[50];
+        $card->cardNumber = substr($responseParts[50], -4);
         $card->expiryDate = $expiryDate;
         $card->cardType = $responseParts[51];
         //This is just for historic purposes and to allow the muck easy access

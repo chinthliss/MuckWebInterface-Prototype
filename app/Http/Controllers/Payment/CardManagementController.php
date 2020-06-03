@@ -52,7 +52,7 @@ class CardManagementController extends Controller
             Log::error($e->getMessage());
             throw ValidationException::withMessages(['cardNumber'=>'An internal server error occurred. The actual error has been logged for staff to review.']);
         }
-        return response(json_encode($card), 200);
+        return response(json_encode($card->toArray()), 200);
     }
 
     public function deleteCard(Request $request, CardPaymentManager $cardPaymentManager)

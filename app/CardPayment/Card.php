@@ -21,6 +21,7 @@ class Card
         return '..' . substr($this->cardNumber, -4);
     }
 
+    //Sanitised version of this object, for passing out to client interfaces
     public function toArray()
     {
         return array(
