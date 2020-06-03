@@ -48,7 +48,7 @@ class CardManagementController extends Controller
             $card = $cardPaymentManager->createCardFor($profile, $cardNumber, $expiryDate, $securityCode);
         } catch (\InvalidArgumentException $e) {
             throw ValidationException::withMessages(['cardNumber'=>'The given card was rejected by the authorization server.']);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error($e->getMessage());
             throw ValidationException::withMessages(['cardNumber'=>'An internal server error occurred. The actual error has been logged for staff to review.']);
         }
@@ -66,7 +66,7 @@ class CardManagementController extends Controller
             $profile = $cardPaymentManager->loadOrCreateProfileFor($user);
             $card = $profile->getCard($cardId);
             $cardPaymentManager->deleteCardFor($profile, $card);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error($e->getMessage());
             throw ValidationException::withMessages(['cardNumber'=>'An internal server error occurred. The actual error has been logged for staff to review.']);
         }
@@ -83,7 +83,7 @@ class CardManagementController extends Controller
             $profile = $cardPaymentManager->loadOrCreateProfileFor($user);
             $card = $profile->getCard($cardId);
             $cardPaymentManager->setDefaultCardFor($profile, $card);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error($e->getMessage());
             throw ValidationException::withMessages(['cardNumber'=>'An internal server error occurred. The actual error has been logged for staff to review.']);
         }

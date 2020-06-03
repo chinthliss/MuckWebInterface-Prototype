@@ -24,7 +24,7 @@ class TermsOfService
             $lastSeenModification = Cache::get('tos-last-seen-modification');
             try {
                 if ($lastSeenModification) $lastSeenModification = new Carbon($lastSeenModification);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 Log::warning("Unable to read Terms of Service's last seen modification from cache.");
             }
             $lastModification = Carbon::createFromTimeStamp(filemtime(self::getTermsOfServiceFilepath()));
