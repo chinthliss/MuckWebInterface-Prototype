@@ -2,7 +2,6 @@
 
 
 namespace App\Muck;
-use App\Contracts\MuckConnection;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Client;
 use Illuminate\Support\Carbon;

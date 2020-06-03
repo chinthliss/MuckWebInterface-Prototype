@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Payment;
 
 use App\CardPayment\CardPaymentManager;
-use App\Contracts\MuckConnection;
+use App\Muck\MuckConnection;
 use App\Http\Controllers\Controller;
 use App\User;
 use Illuminate\Http\Request;

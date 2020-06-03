@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Contracts\MuckConnection;
-use App\Muck\MuckCharacter;
+use App\Muck\MuckConnection;
 
 class CharacterController extends Controller
 {

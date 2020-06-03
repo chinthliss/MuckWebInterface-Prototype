@@ -1,8 +1,8 @@
 <?php
 
 
-namespace App\Contracts;
-use App\Muck\MuckCharacter;
+namespace App\Muck;
+
 use Illuminate\Support\Collection;
 
 interface MuckConnection

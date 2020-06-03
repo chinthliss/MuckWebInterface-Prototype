@@ -3,8 +3,6 @@
 
 namespace App\Muck;
 
-use App\Contracts\MuckConnection;
-
 /**
  * Class MuckCharacter
  * This is largely an empty stub to pass to the client - at which point the client will query for more info as appropriate

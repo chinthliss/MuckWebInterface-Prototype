@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Contracts\MuckConnection;
+use App\Muck\MuckConnection;
 use App\Muck\FakeMuckConnection;
 use App\Muck\HttpMuckConnection;
 use Illuminate\Support\ServiceProvider;

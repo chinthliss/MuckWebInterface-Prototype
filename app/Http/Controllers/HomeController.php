@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Contracts\MuckConnection;
+use App\Muck\MuckConnection;
 use App\Muck\MuckCharacter;
 
 class HomeController extends Controller

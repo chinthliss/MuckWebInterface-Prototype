@@ -2,7 +2,6 @@
 
 
 namespace App\Muck;
-use App\Contracts\MuckConnection;
 
 class FakeMuckConnection implements MuckConnection
 {

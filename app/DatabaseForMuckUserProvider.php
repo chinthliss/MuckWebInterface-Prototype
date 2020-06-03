@@ -2,7 +2,7 @@
 
 namespace App;
 
-use App\Contracts\MuckConnection;
+use App\Muck\MuckConnection;
 use App\Helpers\MuckInterop;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;

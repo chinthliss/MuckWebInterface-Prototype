@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Contracts\MuckConnection;
+use App\Muck\MuckConnection;
 use App\DatabaseForMuckUserProvider;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
