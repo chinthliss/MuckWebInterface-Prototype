@@ -24,7 +24,7 @@ class Card
     public function toArray()
     {
         return array(
-            'id' => $this->cardNumber,
+            'id' => $this->id,
             'cardType' => $this->cardType,
             'maskedCardNumber' => $this->maskedCardNumber(),
             'expiryDate' => $this->expiryDate,
