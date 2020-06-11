@@ -158,7 +158,7 @@ class AccountLoginTest extends TestCase
             'email' => 'test@test.com',
             'password' => 'password'
         ]));
-        $user = auth()->guard()->user();
+        $user = auth()->user();
         $this->assertNotEmpty($user->getRememberToken());
     }
 
@@ -173,7 +173,7 @@ class AccountLoginTest extends TestCase
             'password' => 'password',
             'forget' => true
         ]));
-        $user = auth()->guard()->user();
+        $user = auth()->user();
         $this->assertEmpty($user->getRememberToken());
     }
 

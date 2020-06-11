@@ -18,7 +18,7 @@ abstract class TestCase extends BaseTestCase
 
     protected function getPresentUser(): ?User
     {
-        $user =  auth()->guard()->user();
+        $user =  auth()->user();
         return $user instanceof User ? $user : null;
     }
 

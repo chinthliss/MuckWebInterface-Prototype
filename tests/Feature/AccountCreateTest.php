@@ -129,7 +129,7 @@ class AccountCreateTest extends TestCase
             'email' => 'testnew@test.com',
             'password' => 'password'
         ]));
-        $user = auth()->guard()->user();
+        $user = auth()->user();
         Notification::assertSentTo([$user], VerifyEmail::class);
         Notification::assertTimesSent(1, VerifyEmail::class);
     }
@@ -143,7 +143,7 @@ class AccountCreateTest extends TestCase
             'email' => 'testnew@test.com',
             'password' => 'password'
         ]));
-        $user = auth()->guard()->user();
+        $user = auth()->user();
         $this->assertNotEmpty($user->getRememberToken());
     }
 
@@ -157,7 +157,7 @@ class AccountCreateTest extends TestCase
             'password' => 'password',
             'forget' => true
         ]));
-        $user = auth()->guard()->user();
+        $user = auth()->user();
         $this->assertEmpty($user->getRememberToken());
     }
 
@@ -171,7 +171,7 @@ class AccountCreateTest extends TestCase
             'password' => 'password',
             'forget' => true
         ]));
-        $user = auth()->guard()->user();
+        $user = auth()->user();
         $this->assertNotNull($user->createdAt);
         $this->assertNotNull($user->updatedAt);
     }

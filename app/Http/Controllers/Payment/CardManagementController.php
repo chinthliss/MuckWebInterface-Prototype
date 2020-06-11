@@ -16,7 +16,7 @@ class CardManagementController extends Controller
     public function show(CardPaymentManager $cardPaymentManager)
     {
         /** @var User $user */
-        $user = auth()->guard()->user();
+        $user = auth()->user();
         $profile = $cardPaymentManager->loadProfileFor($user);
 
         $cards = [];
@@ -42,7 +42,7 @@ class CardManagementController extends Controller
         if ($errors) throw ValidationException::withMessages($errors);
 
         /** @var User $user */
-        $user = auth()->guard()->user();
+        $user = auth()->user();
         try {
             $profile = $cardPaymentManager->loadOrCreateProfileFor($user);
             $card = $cardPaymentManager->createCardFor($profile, $cardNumber, $expiryDate, $securityCode);
@@ -61,7 +61,7 @@ class CardManagementController extends Controller
         if (!$cardId) return response('Card ID missing', 400);
 
         /** @var User $user */
-        $user = auth()->guard()->user();
+        $user = auth()->user();
         try {
             $profile = $cardPaymentManager->loadOrCreateProfileFor($user);
             $card = $profile->getCard($cardId);
@@ -78,7 +78,7 @@ class CardManagementController extends Controller
         $cardId = $request['id'];
         if (!$cardId) return response('Card ID missing', 400);
         /** @var User $user */
-        $user = auth()->guard()->user();
+        $user = auth()->user();
         try {
             $profile = $cardPaymentManager->loadOrCreateProfileFor($user);
             $card = $profile->getCard($cardId);

@@ -38,7 +38,7 @@ class AccountVerificationTest extends TestCase
             'email' => 'testnew@test.com',
             'password' => 'password'
         ]));
-        $user = auth()->guard()->user();
+        $user = auth()->user();
         Notification::assertSentTo($user,VerifyEmail::class, function(VerifyEmail $notification, $channels) use ($user) {
             $mail = $notification->toMail($user)->toArray();
             $this->assertStringContainsStringIgnoringCase('signature=', $mail['actionUrl']);
