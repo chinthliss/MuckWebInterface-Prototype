@@ -28,7 +28,7 @@
         {{ config('app.name', 'MuckWebInterface') }}
     </a>
     <div><span class="navbar-text">Some text!</span></div>
-    <div><a href="#">A link</a></div>
+    <div><a href="{{ route('accountcurrency') }}">Buy Account Currency</a></div>
 </nav>
 <!-- Main/Right pane -->
 <div id="mainpane">

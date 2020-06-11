@@ -59,7 +59,8 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
     Route::patch('account/cardmanagement', 'Payment\CardManagementController@updateDefaultCard');
 
     //Account Currency
-    Route::get('accountcurrency', 'Payment\AccountCurrencyController@show');
+    Route::get('accountcurrency', 'Payment\AccountCurrencyController@show')
+        ->name('accountcurrency');
     Route::post('accountcurrency/fromUsd', 'Payment\AccountCurrencyController@usdToAccountCurrency');
 });
 
