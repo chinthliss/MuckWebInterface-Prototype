@@ -25,6 +25,13 @@ class FakeMuckConnection implements MuckConnection
             if ($email == 'testcharacter2')
                 return [1, MuckCharacter::fromMuckResponse('2345,TestCharacter2,14,,')];
         }
+        if (array_key_exists('api_token', $credentials)) {
+            $token = $credentials['api_token'];
+            if ($token == 'token_testcharacter')
+                return [1, MuckCharacter::fromMuckResponse('1234,TestCharacter,100,,wizard')];
+            if ($token == 'token_testcharacter2')
+                return [1, MuckCharacter::fromMuckResponse('2345,TestCharacter2,14,,')];
+        }
         return null;
     }
 

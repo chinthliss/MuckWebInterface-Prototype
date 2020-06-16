@@ -77,14 +77,23 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     else response400 then
 ; selfcall handleRequest_getCharacters
 
-(Excepts 'name', returns 'account,[playerToString]' if one is matched or returns empty response)
+(Excepts either 'email' or 'api_token', returns 'account,[playerToString]' if one is matched or returns empty response)
+(Because this is passed directly from the login form, email will actually be the character name)
 : handleRequest_retrieveByCredentials[ arr:webcall -- ]
-    webcall @ "name" array_getitem ?dup not if response400 exit then
-    startAcceptedResponse
-    pmatch dup ok? if
-        dup acct_any2aid intostr "," strcat swap playerToString strcat
-        descr swap descrnotify 
-    else pop then
+    webcall @ "email" array_getitem if
+        startAcceptedResponse
+        pmatch dup ok? if
+            dup acct_any2aid intostr "," strcat swap playerToString strcat
+            descr swap descrnotify 
+        else pop then
+        exit
+    then
+    webcall @ "api_token" array_getitem if
+        startAcceptedResponse
+        (TODO: Not implemented yet)
+        exit
+    then
+    response400
 ; selfcall handleRequest_retrieveByCredentials
 
 (Excepts 'dbref' and 'password' set, returns either 'true' or 'false')

@@ -5,6 +5,7 @@ namespace App;
 use App\Muck\MuckConnection;
 use App\Helpers\MuckInterop;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Auth\UserProvider;
@@ -99,15 +100,20 @@ class DatabaseForMuckUserProvider implements UserProvider
     public function retrieveByCredentials(array $credentials)
     {
         debug("RetrieveByCredentials", $credentials);
-        if (!array_key_exists('email', $credentials)) return null;
-        if (strpos($credentials['email'], '@')) {
-            //Looks like an email, so try database
+
+        //If it's an email address we can try the database
+        if (array_key_exists('email', $credentials) && strpos($credentials['email'], '@')) {
             $accountQuery = $this->getRetrievalQuery()
                 ->where('accounts.email', $credentials['email'])
                 ->first();
             if ($accountQuery) return User::fromDatabaseResponse($accountQuery);
-        } else {
-            //Try from muck
+        }
+
+        //If it's an email that might be a character name or an api_token we try the muck
+        if (
+            array_key_exists('email', $credentials) ||
+            array_key_exists('api_token', $credentials)
+        ) {
             $lookup = $this->muckConnection->retrieveByCredentials($credentials);
             if ($lookup) {
                 list($aid, $character) = $lookup;
@@ -121,6 +127,7 @@ class DatabaseForMuckUserProvider implements UserProvider
                 return $user;
             }
         }
+
         return null;
     }
 

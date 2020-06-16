@@ -42,13 +42,11 @@ return [
             'provider' => 'users',
         ],
         */
-        /*
         'api' => [
             'driver' => 'token',
             'provider' => 'accounts',
             'hash' => false,
         ],
-        */
         'account' => [
             'driver' => 'session',
             'provider' => 'accounts'

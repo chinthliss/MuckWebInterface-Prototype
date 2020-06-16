@@ -79,10 +79,7 @@ class HttpMuckConnection implements MuckConnection
      */
     public function retrieveByCredentials(array $credentials)
     {
-        if (!array_key_exists('email', $credentials)) return null;
-        $response = $this->requestFromMuck('retrieveByCredentials', [
-            'name' => $credentials['email']
-        ]);
+        $response = $this->requestFromMuck('retrieveByCredentials', $credentials);
         //Muck returns character string but with an extra aid value at the front
         if ($split = strpos($response, ',')) {
             $aid = substr($response, 0, $split);
