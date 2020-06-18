@@ -33,7 +33,14 @@ class CreateBillingTransactionsTable extends Migration
 
             $table->timestamp('created_at')->useCurrent();
 
-            $table->timestamp('completed_at')->nullable();
+            $table->timestamp('completed_at')->nullable()
+                ->comment('Final date for this transaction. Does not imply success.');
+
+            $table->enum('result', [
+                'paid',
+                'refused',
+                'expired'
+            ])->nullable();
 
             $table->json('other')->nullable()
                 ->comment('JSON column for additional details');

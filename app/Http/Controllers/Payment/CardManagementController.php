@@ -63,7 +63,7 @@ class CardManagementController extends Controller
         /** @var User $user */
         $user = auth()->user();
         try {
-            $profile = $cardPaymentManager->loadOrCreateProfileFor($user);
+            $profile = $cardPaymentManager->loadProfileFor($user);
             $card = $profile->getCard($cardId);
             $cardPaymentManager->deleteCardFor($profile, $card);
         } catch (\Throwable $e) {
@@ -80,7 +80,7 @@ class CardManagementController extends Controller
         /** @var User $user */
         $user = auth()->user();
         try {
-            $profile = $cardPaymentManager->loadOrCreateProfileFor($user);
+            $profile = $cardPaymentManager->loadProfileFor($user);
             $card = $profile->getCard($cardId);
             $cardPaymentManager->setDefaultCardFor($profile, $card);
         } catch (\Throwable $e) {

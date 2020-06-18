@@ -58,23 +58,33 @@
             </div>
             <div class="text-center">
                 <a class="btn btn-secondary" :href="cardManagementPage" role="button">Manage Cards</a>
-                <a v-if="defaultCardMaskedNumber" class="btn btn-primary" href="" role="button">via CreditCard</a>
-                <a class="btn btn-primary" href="" role="button">via PayPal</a>
+                <a v-if="defaultCardMaskedNumber" class="btn btn-primary" @click="startCardTransaction" href="" role="button">via CreditCard</a>
+                <a class="btn btn-primary" href="" @click="startPayPalTransaction" role="button">via PayPal</a>
             </div>
         </div>
+        <dialog-approve-transaction id="approveTransactionModal"
+                                    :transaction="transaction"
+                                    @transaction-accepted="transactionAccepted"
+                                    @transaction-declined="transactionDeclined"
+        ></dialog-approve-transaction>
     </div>
 </template>
 
 <script>
+    import DialogApproveTransaction from "./DialogApproveTransaction";
     export default {
         name: "account-buy-currency",
+        components: {DialogApproveTransaction},
         props: ['defaultCardMaskedNumber', 'account', 'suggestedAmounts', 'cardManagementPage', 'accountCurrencyImage'],
         data: function () {
             return {
                 'cardRecurring': false,
                 'cardRecurringInterval': '90',
                 'cardAmount': 0,
-                'cardAmountExchange': 0
+                'cardAmountExchange': 0,
+                'transaction' : {
+                    'purchase': 'test'
+                }
             }
         },
         methods: {
@@ -89,6 +99,27 @@
                 }).then(response => {
                     this.cardAmountExchange = response.data;
                 });
+            },
+            startCardTransaction: function(e) {
+                let data = {
+                    'amountUsd': this.cardAmount
+                }
+                if (this.cardRecurring) data.recurringInterval = this.cardRecurringInterval;
+                axios.post('accountcurrency/newTransaction', data).then(response => {
+                    console.log(response.data);
+                    this.transaction = response.data;
+                    $('#approveTransactionModal').modal();
+                });
+                e.preventDefault();
+            },
+            startPayPalTransaction: function(e) {
+                console.log("TBC");
+            },
+            transactionAccepted: function(e) {
+                console.log("Accepted!", e);
+            },
+            transactionDeclined: function(e) {
+                console.log("Declined!", e);
             }
         },
         mounted: function () {
