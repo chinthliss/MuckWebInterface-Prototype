@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\CardPayment;
+namespace App\Payment;
 
 /**
  * Due to a lack of familiarity, this is more to leave room for abstraction.

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Payment;
 
-use App\CardPayment\Card;
-use App\CardPayment\CardPaymentManager;
+use App\Payment\Card;
+use App\Payment\CardPaymentManager;
 use App\Http\Controllers\Controller;
 use App\User;
 use Illuminate\Http\Request;

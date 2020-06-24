@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\CardPayment;
+namespace App\Payment;
 
 use App\User;
 use Illuminate\Support\Carbon;
@@ -127,7 +127,6 @@ class CardPaymentManager
                         $card->isDefault = $card->id == $defaultCardId;
                     }
                 }
-
             }
         }
         $this->customerProfiles[$accountId] = $profile;
@@ -361,27 +360,4 @@ class CardPaymentManager
         return $errors;
     }
 
-    public function test()
-    {
-        $merchantAuthentication = $this->merchantAuthentication();
-        $refId = 'ref' . time();
-
-        $creditCard = new AnetAPI\CreditCardType();
-        $creditCard->setCardNumber("4111111111111111");
-        $creditCard->setExpirationDate("2038-12");
-        $paymentOne = new AnetAPI\PaymentType();
-        $paymentOne->setCreditCard($creditCard);
-
-        $transactionRequestType = new AnetAPI\TransactionRequestType();
-        $transactionRequestType->setTransactionType("authCaptureTransaction");
-        $transactionRequestType->setAmount(151.51);
-        $transactionRequestType->setPayment($paymentOne);
-        $request = new AnetAPI\CreateTransactionRequest();
-        $request->setMerchantAuthentication($merchantAuthentication);
-        $request->setRefId($refId);
-        $request->setTransactionRequest($transactionRequestType);
-        $controller = new AnetController\CreateTransactionController($request);
-        $response = $controller->executeWithApiResponse($this->endPoint);
-        return $response;
-    }
 }

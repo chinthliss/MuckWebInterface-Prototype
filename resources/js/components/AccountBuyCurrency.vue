@@ -8,7 +8,8 @@
                     <div class="card border-primary">
                         <h3 class="card-header bg-primary text-dark">${{ usd }}</h3>
                         <div class="card-body text-center">
-                            <img :src="accountCurrencyImage" alt="Account Currency Image"><p class="card-text">{{ gameCurrency }} Mako </p>
+                            <img :src="accountCurrencyImage" alt="Account Currency Image">
+                            <p class="card-text">{{ gameCurrency }} Mako </p>
                             <button @click="cardUseSuggestedAmount" :data-amount="usd" type="button"
                                     class="btn btn-primary btn-block">Select
                             </button>
@@ -23,7 +24,8 @@
                            @change="cardAmountChanged" value="10" min="5" step="5">
                 </div>
                 <div class="col-12 col-md-5 col-lg-3 text-center">
-                    <span v-if="cardAmountExchange">You'll get {{ cardAmountExchange }} <img :src="accountCurrencyImage" alt="Account Currency Image"></span>
+                    <span v-if="cardAmountExchange">You'll get {{ cardAmountExchange }} <img :src="accountCurrencyImage"
+                                                                                             alt="Account Currency Image"></span>
                 </div>
             </div>
             <div class="row mb-2 justify-content-center">
@@ -58,7 +60,8 @@
             </div>
             <div class="text-center">
                 <a class="btn btn-secondary" :href="cardManagementPage" role="button">Manage Cards</a>
-                <a v-if="defaultCardMaskedNumber" class="btn btn-primary" @click="startCardTransaction" href="" role="button">via CreditCard</a>
+                <a v-if="defaultCardMaskedNumber" class="btn btn-primary" @click="startCardTransaction" href=""
+                   role="button">via CreditCard</a>
                 <a class="btn btn-primary" href="" @click="startPayPalTransaction" role="button">via PayPal</a>
             </div>
         </div>
@@ -72,6 +75,7 @@
 
 <script>
     import DialogApproveTransaction from "./DialogApproveTransaction";
+
     export default {
         name: "account-buy-currency",
         components: {DialogApproveTransaction},
@@ -82,7 +86,7 @@
                 'cardRecurringInterval': '90',
                 'cardAmount': 0,
                 'cardAmountExchange': 0,
-                'transaction' : {
+                'transaction': {
                     'purchase': 'test'
                 }
             }
@@ -100,26 +104,31 @@
                     this.cardAmountExchange = response.data;
                 });
             },
-            startCardTransaction: function(e) {
+            startCardTransaction: function (e) {
                 let data = {
                     'amountUsd': this.cardAmount
                 }
                 if (this.cardRecurring) data.recurringInterval = this.cardRecurringInterval;
-                axios.post('accountcurrency/newTransaction', data).then(response => {
-                    console.log(response.data);
-                    this.transaction = response.data;
-                    $('#approveTransactionModal').modal();
-                });
+                axios.post('accountcurrency/newCardTransaction', data)
+                    .then(response => {
+                        this.transaction = response.data;
+                        $('#approveTransactionModal').modal();
+                    });
                 e.preventDefault();
             },
-            startPayPalTransaction: function(e) {
+            startPayPalTransaction: function (e) {
                 console.log("TBC");
             },
-            transactionAccepted: function(e) {
-                console.log("Accepted!", e);
+            transactionAccepted: function (token) {
+                axios.post('accountcurrency/acceptTransaction', {'token': token})
+                    .then(response => {
+                        console.log("Accepted response", response);
+                        //TODO: Implement show receipt.
+                    });
             },
-            transactionDeclined: function(e) {
-                console.log("Declined!", e);
+            transactionDeclined: function (token) {
+                //Notify the site but don't care about the result
+                axios.post('accountcurrency/declineTransaction', {'token': token});
             }
         },
         mounted: function () {

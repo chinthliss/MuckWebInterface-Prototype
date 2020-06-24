@@ -11,6 +11,7 @@
                 <div class="modal-body">
                     <p>Do you approve paying {{ transaction.price }} for:</p>
                     <p>{{ transaction.purchase }}</p>
+                    <p v-if="transaction.note" class="text-muted">{{ transaction.note }}</p>
                 </div>
                 <div class="modal-footer">
                     <button @click="transactionAccepted" type="button" class="btn btn-primary" data-dismiss="modal">Yes</button>
@@ -25,7 +26,7 @@
     export default {
         name: "dialog-approve-transaction",
         props: [
-            'transaction' // Array of [purchase, price, token]
+            'transaction' // Array of [purchase, price, token, [note]]
         ],
         methods: {
             'transactionAccepted': function() {

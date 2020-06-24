@@ -16,12 +16,15 @@ class CreateBillingTransactionsTable extends Migration
         Schema::create('billing_transactions', function (Blueprint $table) {
             $table->uuid('id')->primary();
 
-            $table->bigInteger('paymentprofile_id');
-
             $table->bigInteger('account_id');
 
-            $table->integer('amount_usd')->unsigned()
-                ->comment('Not a decimal since partial dollar values aren\'t accepted.');
+            $table->bigInteger('paymentprofile_id')->nullable()
+                ->comment('Presently used if the payment was via Authorize.Net');
+
+            $table->bigInteger('paymentprofile_id_txt')->nullable()
+                ->comment("Presently used if the payment was via PayPal");
+
+            $table->decimal('amount_usd',8,2)->unsigned();
 
             $table->integer('amount_accountcurrency')->unsigned();
 
@@ -31,19 +34,17 @@ class CreateBillingTransactionsTable extends Migration
             $table->integer('recurring_interval')->unsigned()->nullable()
                 ->comment('In days');
 
-            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('created_at')->useCurrent()->index();
 
             $table->timestamp('completed_at')->nullable()
                 ->comment('Final date for this transaction. Does not imply success.');
 
             $table->enum('result', [
                 'paid',
-                'refused',
+                'user_declined',
+                'vendor_refused',
                 'expired'
             ])->nullable();
-
-            $table->json('other')->nullable()
-                ->comment('JSON column for additional details');
 
         });
     }

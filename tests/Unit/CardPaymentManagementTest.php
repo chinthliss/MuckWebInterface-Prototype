@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\CardPayment\CardPaymentManager;
+use App\Payment\CardPaymentManager;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
@@ -14,7 +14,7 @@ class CardPaymentManagementTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->manager = $this->app->make('App\CardPayment\CardPaymentManager');
+        $this->manager = $this->app->make('App\Payment\CardPaymentManager');
 
     }
 

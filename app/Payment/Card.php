@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\CardPayment;
+namespace App\Payment;
 
 class Card
 {

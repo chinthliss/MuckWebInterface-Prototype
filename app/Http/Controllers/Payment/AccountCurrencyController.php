@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Payment;
 
-use App\CardPayment\CardPaymentManager;
+use App\Payment\CardPaymentManager;
 use App\Muck\MuckConnection;
 use App\Http\Controllers\Controller;
+use App\Payment\PaymentTransactionManager;
 use App\User;
 use Illuminate\Http\Request;
 
@@ -51,7 +52,6 @@ class AccountCurrencyController extends Controller
         return $muck->usdToAccountCurrency($amount);
     }
 
-
     /**
      * cardId can be 'paypal'
      * @param Request{cardId, amountUsd, [recurringInterval], [items]} $request
@@ -59,15 +59,14 @@ class AccountCurrencyController extends Controller
      * @param MuckConnection $muck
      * @return void|array{id}
      */
-    public function newTransaction(Request $request, CardPaymentManager $cardPaymentManager, MuckConnection $muck)
+    public function newCardTransaction(Request $request, CardPaymentManager $cardPaymentManager,
+                                       PaymentTransactionManager $transactionManager)
     {
         /** @var User $user */
         $user = auth()->user();
 
         if (!$user) return abort(401);
 
-        $purchase=[];
-        $priceUsd = 0;
         $paymentProfile = $cardPaymentManager->loadOrCreateProfileFor($user);
         $cardId = $request->input('cardId', null);
         $card = null;
@@ -78,11 +77,6 @@ class AccountCurrencyController extends Controller
 
         $amountUsd = (int)$request->input('amountUsd', 0);
         if (!$amountUsd || $amountUsd < 5) return abort(400);
-        $amountAccountCurrency = $muck->usdToAccountCurrency($amountUsd);
-        if ($amountAccountCurrency) {
-            array_push($purchase, $amountAccountCurrency . ' Mako');
-            $priceUsd += $amountUsd;
-        }
 
         $recurringInterval = $request->has('recurringInterval') ? (int)$request['recurringInterval'] : null;
 
@@ -90,12 +84,35 @@ class AccountCurrencyController extends Controller
         $items = $request->has('items') ? $request['items'] : [];
         if ($items) return abort (501); //Not implemented
 
-        // $card = $paymentProfile->getCard($request['cardId']);
-        return [
-            "token" => 1,
-            "purchase" => implode('<br/>', $purchase),
-            "price" => "$" . $priceUsd
-        ];
+        return $transactionManager->createCardTransaction(
+            $user, $card, $amountUsd, $items, $recurringInterval
+        );
+    }
+
+    public function declineTransaction(Request $request, PaymentTransactionManager $transactionManager)
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        $transactionId = $request->input('token', null);
+
+        if ($transactionId && $user) {
+            $transaction = $transactionManager->getTransaction($transactionId);
+            if ($transaction->userId == $user->getAid())
+                $transactionManager->closeTransaction($transaction->id, 'user_declined');
+        }
+    }
+
+    public function acceptTransaction(Request $request, PaymentTransactionManager $transactionManager)
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        $transactionId = $request->input('token', null);
+
+        if ($transactionId && $user) {
+            return "OK";
+        }
     }
 
 }

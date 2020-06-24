@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
-use App\CardPayment\AuthorizeNetCardPaymentCustomerProfile;
-use App\CardPayment\CardPaymentManager;
+use App\Payment\AuthorizeNetCardPaymentCustomerProfile;
+use App\Payment\CardPaymentManager;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\ServiceProvider;
 

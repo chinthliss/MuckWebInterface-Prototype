@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\CardPayment;
+namespace App\Payment;
 
 use net\authorize\api\contract\v1\CreateCustomerProfileResponse;
 use net\authorize\api\contract\v1\GetCustomerProfileResponse;
