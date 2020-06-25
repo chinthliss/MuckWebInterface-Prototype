@@ -129,9 +129,19 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     0 swap "firstDonation" array_setitem
     0 swap "currencyDiscountTime" array_setitem
     0 swap "startOfMonthSale" array_setitem
-    
 ; selfcall handleRequest_bootAccountCurrency
 
+(Excepts {account, usdAmount, accountCurrency, isSubscription} returns amount actually rewarded)
+: handleRequest_adjustAccountCurrency[ arr:webcall -- ]
+    webcall @ "account" array_getitem ?dup if acct_any2aid else pop response400 exit then
+    acct_aid2email (makoadjust wants such for stack order)
+    webcall @ "usdAmount" array_getitem
+    webcall @ "accountCurrency" array_getitem
+    webcall @ "isSubscription" array_getitem 
+    #5193 "makoadjust" call var! accountCurrencyAmount
+    depth popn (Makoadjust sometimes leaves a 1 on the stack)
+    accountCurrencyAmount @ 
+; selfcall handleRequest_adjustAccountCurrency
 ( -------------------------------------------------- )
 ( Routing )
 ( -------------------------------------------------- )

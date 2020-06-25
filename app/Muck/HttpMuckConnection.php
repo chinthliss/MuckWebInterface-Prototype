@@ -118,4 +118,15 @@ class HttpMuckConnection implements MuckConnection
         ]);
         return $response;
     }
+
+    public function adjustAccountCurrency(int $accountId, int $usdAmount, int $accountCurrency, bool $isSubscription)
+    {
+        $response = $this->requestFromMuck('accountCurrencyAdjust', [
+            'account' => $accountId,
+            'usdAmount' => $usdAmount,
+            'accountCurrency' => $accountCurrency,
+            'isSubscription' => $isSubscription
+        ]);
+        return (int)$response;
+    }
 }

@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Payment;
 use App\Payment\CardPaymentManager;
 use App\Muck\MuckConnection;
 use App\Http\Controllers\Controller;
+use App\Payment\PaymentTransaction;
 use App\Payment\PaymentTransactionManager;
 use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use mysql_xdevapi\Exception;
 
 class AccountCurrencyController extends Controller
 {
@@ -89,6 +92,22 @@ class AccountCurrencyController extends Controller
         );
     }
 
+    /**
+     * @param PaymentTransaction $transaction
+     * @return int actualAmountEarned
+     */
+    private function fulfillTransaction(PaymentTransaction $transaction)
+    {
+        //Actual mako adjustment is done by the MUCK still, due to ingame triggers
+        $muck = resolve('App\Muck\MuckConnection');
+        return $muck->adjustAccountCurrency(
+            $transaction->accountId,
+            $transaction->totalPriceUsd,
+            $transaction->accountCurrencyRewarded,
+            $transaction->recurringInterval != null
+        );
+    }
+
     public function declineTransaction(Request $request, PaymentTransactionManager $transactionManager)
     {
         /** @var User $user */
@@ -98,7 +117,7 @@ class AccountCurrencyController extends Controller
 
         if ($transactionId && $user) {
             $transaction = $transactionManager->getTransaction($transactionId);
-            if ($transaction->userId == $user->getAid())
+            if ($transaction->accountId == $user->getAid() && $transaction->open)
                 $transactionManager->closeTransaction($transaction->id, 'user_declined');
         }
     }
@@ -111,8 +130,35 @@ class AccountCurrencyController extends Controller
         $transactionId = $request->input('token', null);
 
         if ($transactionId && $user) {
-            return "OK";
+            $transaction = $transactionManager->getTransaction($transactionId);
+            if ($transaction->accountId == $user->getAid() && $transaction->open) {
+                $paid = false;
+                if ($transaction->cardPaymentId) {
+
+                    $cardPaymentManager = resolve('App\Payment\CardPaymentManager');
+                    $userPaymentProfile = $cardPaymentManager->loadProfileFor($user);
+                    $card = $userPaymentProfile->getCard($transaction->cardPaymentId);
+                    try {
+                        $cardPaymentManager->chargeCard($userPaymentProfile, $card, $transaction->totalPriceUsd);
+                        $paid = true;
+                    } catch (\Exception $e) {
+                        Log::info("Error during card payment: " . $e);
+                    }
+                }
+                if ($transaction->payPalId) {
+                    throw new \Error("PayPal route hasn't been implemented.");
+                    $paid = true;
+                }
+                if ($paid) {
+                    $transactionManager->closeTransaction($transaction->id, 'fulfilled');
+                    $actualAmount = $this->fulfillTransaction($transaction);
+                    return "Transaction complete and credited to your account. " .
+                        "The total amount earned was " . $actualAmount . ".";
+                } else
+                    return "The payment didn't process correctly or wasn't accepted.";
+            }
         }
+        return "Something went wrong and the transaction failed. Please notify staff of this.";
     }
 
 }

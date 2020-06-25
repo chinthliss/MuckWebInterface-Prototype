@@ -124,6 +124,8 @@
                     .then(response => {
                         console.log("Accepted response", response);
                         //TODO: Implement show receipt.
+                    }).catch(error => {
+                        console.log("Rejected response", error);
                     });
             },
             transactionDeclined: function (token) {

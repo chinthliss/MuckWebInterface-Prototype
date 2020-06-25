@@ -40,7 +40,7 @@ class CreateBillingTransactionsTable extends Migration
                 ->comment('Final date for this transaction. Does not imply success.');
 
             $table->enum('result', [
-                'paid',
+                'fulfilled',
                 'user_declined',
                 'vendor_refused',
                 'expired'

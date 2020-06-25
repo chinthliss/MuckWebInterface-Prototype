@@ -360,4 +360,52 @@ class CardPaymentManager
         return $errors;
     }
 
+    /**
+     * @param CardPaymentCustomerProfile $customerProfile
+     * @param Card $card
+     * @param float $amountToChargeUsd
+     * @return string
+     * @throws \Exception
+     */
+    public function chargeCard(CardPaymentCustomerProfile $customerProfile, Card $card, float $amountToChargeUsd)
+    {
+
+        $transactionPaymentProfile = new AnetAPI\PaymentProfileType();
+        $transactionPaymentProfile->setPaymentProfileId($card->id);
+
+        $transactionCustomerProfile = new AnetAPI\CustomerProfilePaymentType();
+        $transactionCustomerProfile->setCustomerProfileId($customerProfile->getCustomerProfileId());
+        $transactionCustomerProfile->setPaymentProfile($transactionPaymentProfile);
+
+        $transaction = new AnetAPI\TransactionRequestType();
+        $transaction->setTransactionType( "authCaptureTransaction");
+        $transaction->setAmount($amountToChargeUsd);
+        $transaction->setProfile($transactionCustomerProfile);
+
+        $request = new AnetAPI\CreateTransactionRequest();
+        $request->setMerchantAuthentication($this->merchantAuthentication());
+        $request->setRefId($this->refId());
+        $request->setTransactionRequest($transaction);
+
+        $controller = new AnetController\CreateTransactionController($request);
+        $response = $controller->executeWithApiResponse($this->endPoint);
+
+        if (!$response || $response->getMessages()->getResultCode() != "Ok") {
+            throw new \Exception("Error with transaction request: " .
+                $response->getMessages()->getMessage()[0]->getCode() . ":" .
+                $response->getMessages()->getMessage()[0]->getText()
+            );
+        }
+
+        $transactionResponse = $response->getTransactionResponse();
+
+        if (!$transactionResponse || $transactionResponse->getErrors()) {
+            throw new \Exception("Error with transaction: " .
+                $transactionResponse->getErrors()[0]->getErrorCode() . ":" .
+                $transactionResponse->getErrors()[0]->getErrorText()
+            );
+        }
+
+        return $transactionResponse->getTransId();
+    }
 }

@@ -9,13 +9,17 @@ use App\User;
 class PaymentTransaction
 {
     public $id = null;
-    public $userId = null;
+    public $accountId = null;
+
     public $cardPaymentId = null; // If card
+    public $payPalId = null; // If PayPal
 
     public $purchaseDescription = "";
     public $accountCurrencyRewarded = 0;
     public $totalPriceUsd = 0.0;
     public $recurringInterval = null;
+
+    public $open = false;
 
     public function toClientArray()
     {

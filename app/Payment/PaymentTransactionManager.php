@@ -32,7 +32,7 @@ class PaymentTransactionManager
 
         DB::table('billing_transactions')->insert([
             'id' => $transaction->id,
-            'account_id' => $transaction->userId,
+            'account_id' => $transaction->accountId,
             'paymentprofile_id' => $transaction->cardPaymentId,
             'amount_usd' => $transaction->totalPriceUsd,
             'amount_accountcurrency' => $transaction->accountCurrencyRewarded,
@@ -54,7 +54,7 @@ class PaymentTransactionManager
         $purchases = [];
 
         $transaction = new PaymentTransaction();
-        $transaction->userId = $user->getAid();
+        $transaction->accountId = $user->getAid();
         $transaction->id = Str::uuid();
 
         if ($recurringInterval) $transaction->recurringInterval = $recurringInterval;
@@ -77,12 +77,13 @@ class PaymentTransactionManager
         $row = DB::table('billing_transactions')->where('id', '=', $transactionId)->first();
         $transaction = new PaymentTransaction();
         $transaction->id = $row->id;
-        $transaction->userId = $row->account_id;
+        $transaction->accountId = $row->account_id;
         $transaction->cardPaymentId = $row->paymentprofile_id;
         $transaction->totalPriceUsd = $row->amount_usd;
         $transaction->accountCurrencyRewarded = $row->amount_accountcurrency;
         $transaction->purchaseDescription = $row->purchase_description;
         $transaction->recurringInterval = $row->recurring_interval;
+        $transaction->open = $row->result == null;
         return $transaction;
     }
 
@@ -90,7 +91,7 @@ class PaymentTransactionManager
     public function closeTransaction(string $transactionId, string $closure_reason)
     {
         // Closure reason must match one of the accepted entries by the DB
-        if (!in_array($closure_reason, ['paid', 'user_declined', 'vendor_refused', 'expired']))
+        if (!in_array($closure_reason, ['fulfilled', 'user_declined', 'vendor_refused', 'expired']))
             throw new \Exception('Closure reason is unrecognised');
         DB::table('billing_transactions')->where('id', '=', $transactionId)->update([
             'result' => $closure_reason,

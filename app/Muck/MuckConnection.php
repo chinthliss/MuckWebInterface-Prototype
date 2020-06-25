@@ -27,6 +27,7 @@ interface MuckConnection
     /**
      * If valid, returns an array in the form [aid, MuckCharacter]
      * Worth noting the credentials passed are from the login form so 'email' rather than 'name'.
+     * May also be 'api_token' since this route is used for api token validation
      * @param array $credentials
      * @return array|null
      */
@@ -39,9 +40,18 @@ interface MuckConnection
      * @return bool
      */
     public function validateCredentials(MuckCharacter $character, array $credentials);
-
     //endregion Auth
 
     public function usdToAccountCurrency(int $amount);
+
+    /**
+     * Asks the muck to handle account currency rewards
+     * @param int $accountId
+     * @param int $usdAmount
+     * @param int $accountCurrency
+     * @param bool $is_subscription
+     * @return int accountCurrencyRewarded
+     */
+    public function adjustAccountCurrency(int $accountId, int $usdAmount, int $accountCurrency, bool $is_subscription);
 
 }
