@@ -85,7 +85,7 @@ class AccountCurrencyController extends Controller
 
         //Item code was previously disabled but leaving room for it here.
         $items = $request->has('items') ? $request['items'] : [];
-        if ($items) return abort (501); //Not implemented
+        if ($items) return abort(501); //Not implemented
 
         return $transactionManager->createCardTransaction(
             $user, $card, $amountUsd, $items, $recurringInterval
@@ -115,11 +115,14 @@ class AccountCurrencyController extends Controller
 
         $transactionId = $request->input('token', null);
 
-        if ($transactionId && $user) {
-            $transaction = $transactionManager->getTransaction($transactionId);
-            if ($transaction->accountId == $user->getAid() && $transaction->open)
-                $transactionManager->closeTransaction($transaction->id, 'user_declined');
-        }
+        if (!$transactionId || !$user) return abort(403);
+
+        $transaction = $transactionManager->getTransaction($transactionId);
+
+        if ($transaction->accountId != $user->getAid() || !$transaction->open) return abort(403);
+
+        $transactionManager->closeTransaction($transaction->id, 'user_declined');
+        return "Transaction Declined";
     }
 
     public function acceptTransaction(Request $request, PaymentTransactionManager $transactionManager)
@@ -129,35 +132,36 @@ class AccountCurrencyController extends Controller
 
         $transactionId = $request->input('token', null);
 
-        if ($transactionId && $user) {
-            $transaction = $transactionManager->getTransaction($transactionId);
-            if ($transaction->accountId == $user->getAid() && $transaction->open) {
-                $paid = false;
-                if ($transaction->cardPaymentId) {
+        if (!$transactionId || !$user) return abort(403);
 
-                    $cardPaymentManager = resolve('App\Payment\CardPaymentManager');
-                    $userPaymentProfile = $cardPaymentManager->loadProfileFor($user);
-                    $card = $userPaymentProfile->getCard($transaction->cardPaymentId);
-                    try {
-                        $cardPaymentManager->chargeCard($userPaymentProfile, $card, $transaction->totalPriceUsd);
-                        $paid = true;
-                    } catch (\Exception $e) {
-                        Log::info("Error during card payment: " . $e);
-                    }
-                }
-                if ($transaction->payPalId) {
-                    throw new \Error("PayPal route hasn't been implemented.");
-                    $paid = true;
-                }
-                if ($paid) {
-                    $transactionManager->closeTransaction($transaction->id, 'fulfilled');
-                    $actualAmount = $this->fulfillTransaction($transaction);
-                    return "Transaction complete and credited to your account. " .
-                        "The total amount earned was " . $actualAmount . ".";
-                } else
-                    return "The payment didn't process correctly or wasn't accepted.";
+        $transaction = $transactionManager->getTransaction($transactionId);
+
+        if ($transaction->accountId != $user->getAid() || !$transaction->open) return abort(403);
+
+        $paid = false;
+        if ($transaction->cardPaymentId) {
+            $cardPaymentManager = resolve('App\Payment\CardPaymentManager');
+            $userPaymentProfile = $cardPaymentManager->loadProfileFor($user);
+            $card = $userPaymentProfile->getCard($transaction->cardPaymentId);
+            try {
+                $cardPaymentManager->chargeCard($userPaymentProfile, $card, $transaction->totalPriceUsd);
+                $paid = true;
+            } catch (\Exception $e) {
+                Log::info("Error during card payment: " . $e);
             }
         }
+        if ($transaction->payPalId) {
+            throw new \Error("PayPal route hasn't been implemented.");
+            $paid = true;
+        }
+        if ($paid) {
+            $transactionManager->closeTransaction($transaction->id, 'fulfilled');
+            $actualAmount = $this->fulfillTransaction($transaction);
+            return "Transaction complete and credited to your account. " .
+                "The total amount earned was " . $actualAmount . ".";
+        } else
+            return "The payment didn't process correctly or wasn't accepted.";
+
         return "Something went wrong and the transaction failed. Please notify staff of this.";
     }
 

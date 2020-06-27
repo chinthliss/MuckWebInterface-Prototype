@@ -23,32 +23,31 @@ class DatabaseSeeder extends Seeder
             'password' => '0A095F587AFCB082:EC2F0D2ACB7788E26E0A36C32C6475C589860589', //password
             'password_type' => 'SHA1SALT'
         ]);
-        $aid = DB::table('accounts')->where('email', 'test@test.com')->first()->aid;
+        $validAid = DB::table('accounts')->where('email', 'test@test.com')->first()->aid;
 
         DB::table('account_emails')->insert([
-            'aid' => $aid,
+            'aid' => $validAid,
             'email' => 'test@test.com',
             'verified_at' => Carbon::now()
         ]);
 
         DB::table('account_emails')->insert([
-            'aid' => $aid,
+            'aid' => $validAid,
             'email' => 'testalt@test.com',
             'verified_at' => Carbon::now()
         ]);
 
         DB::table('account_emails')->insert([
-            'aid' => $aid,
+            'aid' => $validAid,
             'email' => 'testaltunverified@test.com'
         ]);
 
         DB::table('account_properties')->insert([
-            'aid' => $aid,
+            'aid' => $validAid,
             'propname' => 'tos-hash-viewed',
             'proptype' => 'STRING',
             'propdata' => TermsOfService::getTermsOfServiceHash()
         ]);
-
 
         // Account 2 - unverified
         DB::table('accounts')->insert([
@@ -59,10 +58,10 @@ class DatabaseSeeder extends Seeder
             'password_type' => 'SHA1SALT'
         ]);
 
-        $aid = DB::table('accounts')->where('email', 'testunverified@test.com')->first()->aid;
+        $unverifiedAid = DB::table('accounts')->where('email', 'testunverified@test.com')->first()->aid;
 
         DB::table('account_emails')->insert([
-            'aid' => $aid,
+            'aid' => $unverifiedAid,
             'email' => 'testunverified@test.com'
         ]);
 
@@ -83,19 +82,84 @@ class DatabaseSeeder extends Seeder
             'password' => '0A095F587AFCB082:EC2F0D2ACB7788E26E0A36C32C6475C589860589', //password
             'password_type' => 'SHA1SALT'
         ]);
-        $aid = DB::table('accounts')->where('email', 'notagreedtotos@test.com')->first()->aid;
+        $notAgreedToTosAid = DB::table('accounts')->where('email', 'notagreedtotos@test.com')->first()->aid;
 
         DB::table('account_emails')->insert([
-            'aid' => $aid,
+            'aid' => $notAgreedToTosAid,
             'email' => 'notagreedtotos@test.com',
             'verified_at' => Carbon::now()
         ]);
 
         DB::table('account_properties')->insert([
-            'aid' => $aid,
+            'aid' => $notAgreedToTosAid,
             'propname' => 'tos-hash-viewed',
             'proptype' => 'STRING',
             'propdata' => 'OldHash'
+        ]);
+
+        //Account 5 - Second validated user
+        DB::table('accounts')->insert([
+            'aid' => 5,
+            'uuid' => '5555555%',
+            'email' => 'secondvalid@test.com',
+            'password' => '0A095F587AFCB082:EC2F0D2ACB7788E26E0A36C32C6475C589860589', //password
+            'password_type' => 'SHA1SALT'
+        ]);
+        $secondAid = DB::table('accounts')->where('email', 'secondvalid@test.com')->first()->aid;
+
+
+        // Payment tests
+        DB::table('billing_profiles')->insert([
+            'aid' => $validAid,
+            'profileid' => 1,
+            'defaultcard' => 1,
+            'spendinglimit' => 0
+        ]);
+
+        DB::table('billing_paymentprofiles')->insert([
+            'id' => 1,
+            'profileid' => $validAid,
+            'paymentid' => 1,
+            'cardtype' => 'MasterCard',
+            'maskedcardnum' => 4444,
+            'expdate' => '10/2021',
+            'firstname' => '',
+            'lastname' => ''
+        ]);
+
+        //Completed card payment
+        DB::table('billing_transactions')->insert([
+            'id' => '00000000-0000-0000-0000-000000000001',
+            'account_id' => $validAid,
+            'paymentprofile_id' => 1,
+            'amount_usd' => 10,
+            'amount_accountcurrency' => 30,
+            'purchase_description' => '30 bananas',
+            'created_at' => Carbon::now(),
+            'completed_at' => Carbon::now(),
+            'result' => 'fulfilled'
+        ]);
+
+        //Pending card payment
+        DB::table('billing_transactions')->insert([
+            'id' => '00000000-0000-0000-0000-000000000002',
+            'account_id' => $validAid,
+            'paymentprofile_id' => 1,
+            'amount_usd' => 10,
+            'amount_accountcurrency' => 30,
+            'purchase_description' => '30 bananas',
+            'created_at' => Carbon::now()
+        ]);
+
+        //Another user's payment
+        DB::table('billing_transactions')->insert([
+            'id' => '00000000-0000-0000-0000-000000000003',
+            'account_id' => $secondAid,
+            'paymentprofile_id' => 1,
+            'amount_usd' => 10,
+            'amount_accountcurrency' => 30,
+            'purchase_description' => '30 bananas',
+            'created_at' => Carbon::now()
         ]);
 
     }

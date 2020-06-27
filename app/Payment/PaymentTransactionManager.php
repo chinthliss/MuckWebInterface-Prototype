@@ -75,6 +75,7 @@ class PaymentTransactionManager
     public function getTransaction(string $transactionId)
     {
         $row = DB::table('billing_transactions')->where('id', '=', $transactionId)->first();
+        if (!$row) return null;
         $transaction = new PaymentTransaction();
         $transaction->id = $row->id;
         $transaction->accountId = $row->account_id;
