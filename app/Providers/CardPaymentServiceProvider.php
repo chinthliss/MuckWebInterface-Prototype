@@ -2,11 +2,9 @@
 
 namespace App\Providers;
 
-use App\Payment\AuthorizeNetCardPaymentCustomerProfile;
 use App\Payment\CardPaymentManager;
-use Illuminate\Support\Facades\App;
+use App\Payment\AuthorizeNetCardPaymentManager;
 use Illuminate\Support\ServiceProvider;
-
 
 class CardPaymentServiceProvider extends ServiceProvider
 {
@@ -20,19 +18,13 @@ class CardPaymentServiceProvider extends ServiceProvider
     public function register()
     {
         //This should be loaded from config if ever properly abstracted.
-        $this->app->singleton('CardPaymentCustomerProfile', function($app) {
-            return AuthorizeNetCardPaymentCustomerProfile::class;
-        });
-
         $this->app->singleton(CardPaymentManager::class, function($app) {
-            $loginId = config('services.authorize.loginId');
-            $transactionKey = config('services.authorize.transactionKey');
-            $endPoint = null;
-            if (App::environment() !== 'production') //Not ideal but it's where they stored it.
-                $endPoint = \net\authorize\api\constants\ANetEnvironment::SANDBOX;
-            else
-                $endPoint = \net\authorize\api\constants\ANetEnvironment::PRODUCTION;
-            return new CardPaymentManager($loginId, $transactionKey, $endPoint, $app['CardPaymentCustomerProfile']);
+            $card_payment_driver = config('app.card_payment_driver');
+            if ($card_payment_driver == 'authorizenet') {
+                $config = config('services.authorizenet');
+                return new AuthorizeNetCardPaymentManager($config);
+            }
+            throw new \Error('No card payment driver set');
         });
     }
 

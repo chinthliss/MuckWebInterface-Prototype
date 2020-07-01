@@ -20,7 +20,7 @@ class MuckServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton(MuckConnection::class, function($app) {
-            $config = $this->app['config']['muck'];
+            $config = config('muck');
             $driver = $config['driver'];
             if ($driver == 'fake') return new FakeMuckConnection($config);
             if ($driver == 'http') return new HttpMuckConnection($config);

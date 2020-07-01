@@ -16,10 +16,10 @@ class HttpMuckConnection implements MuckConnection
     public function __construct(array $config)
     {
         if(!array_key_exists('salt', $config))
-            throw new \Exception("Salt hasn't been set in Muck connection config. Ensure MUCK_SALT is set.");
+            throw new \Error("Salt hasn't been set in Muck connection config. Ensure MUCK_SALT is set.");
         $this->salt = $config['salt'];
         if (!$config['host'] || !$config['port'] || !$config['uri'])
-            throw new \Exception('Configuration for muck is missing host, port or uri');
+            throw new \Error('Configuration for muck is missing host, port or uri');
         $url = ($config['useHttps'] ? 'https' : 'http') . '://' . $config['host'] . ':' . $config['port'];
         $this->client = new Client([
             'base_uri' => $url

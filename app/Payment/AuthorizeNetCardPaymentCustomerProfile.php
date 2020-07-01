@@ -9,10 +9,10 @@ use net\authorize\api\contract\v1\SubscriptionPaymentType;
 
 /**
  * Class CardPaymentProfile
- * Represents an Authorize.Net customer profile.
+ * Utility class for the Authorize.Net Payment manager, represents a customer profile.
  * @package App
  */
-class AuthorizeNetCardPaymentCustomerProfile implements CardPaymentCustomerProfile
+class AuthorizeNetCardPaymentCustomerProfile
 {
     protected $id;
     protected $merchantCustomerId = null;
@@ -89,9 +89,9 @@ class AuthorizeNetCardPaymentCustomerProfile implements CardPaymentCustomerProfi
     }
 
     #region Card functionality
-    public function getCardIds()
+    public function getCards()
     {
-        return array_keys($this->cards);
+        return $this->cards;
     }
 
     public function setCard(Card $card)

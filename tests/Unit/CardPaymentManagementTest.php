@@ -2,7 +2,6 @@
 
 namespace Tests\Unit;
 
-use App\Payment\CardPaymentManager;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
@@ -15,7 +14,6 @@ class CardPaymentManagementTest extends TestCase
     {
         parent::setUp();
         $this->manager = $this->app->make('App\Payment\CardPaymentManager');
-
     }
 
     public function testCheckLuhnChecksumIsValid()

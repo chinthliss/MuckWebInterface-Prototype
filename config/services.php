@@ -34,10 +34,10 @@ return [
         'secret' => env('SPARKPOST_SECRET'),
     ],
 
-    'authorize' => [
-        'loginId' => env('AUTHORIZE_PAYMENT_API_LOGIN_ID'),
-        'transactionKey' => env('AUTHORIZE_PAYMENT_TRANSACTION_KEY'),
-        'sealId' => env('AUTHORIZE_PAYMENT_SEAL_ID')
+    'authorizenet' => [
+        'loginId' => env('AUTHORIZENET_PAYMENT_API_LOGIN_ID'),
+        'transactionKey' => env('AUTHORIZENET_PAYMENT_TRANSACTION_KEY'),
+        'sealId' => env('AUTHORIZENET_PAYMENT_SEAL_ID')
     ],
 
 ];

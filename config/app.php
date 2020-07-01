@@ -232,4 +232,7 @@ return [
 
     ],
 
+    //Payment drivers. Not using a default to avoid accidently using a fake one
+    'card_payment_driver' => env('CARD_PAYMENT_DRIVER'),
+
 ];

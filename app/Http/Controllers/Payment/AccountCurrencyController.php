@@ -10,7 +10,6 @@ use App\Payment\PaymentTransactionManager;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use mysql_xdevapi\Exception;
 
 class AccountCurrencyController extends Controller
 {
@@ -21,8 +20,7 @@ class AccountCurrencyController extends Controller
         /** @var User $user */
         $user = auth()->user();
 
-        $paymentProfile = $cardPaymentManager->loadProfileFor($user);
-        $defaultCard = ($paymentProfile ? $paymentProfile->getDefaultCard() : null);
+        $defaultCard = $cardPaymentManager->getDefaultCardFor($user);
 
         $parsedSuggestedAmounts = [];
         foreach ($this->suggestedAmounts as $amount) {
@@ -55,12 +53,12 @@ class AccountCurrencyController extends Controller
         return $muck->usdToAccountCurrency($amount);
     }
 
+
     /**
-     * cardId can be 'paypal'
-     * @param Request{cardId, amountUsd, [recurringInterval], [items]} $request
+     * @param Request $request
      * @param CardPaymentManager $cardPaymentManager
-     * @param MuckConnection $muck
-     * @return void|array{id}
+     * @param PaymentTransactionManager $transactionManager
+     * @return array|void
      */
     public function newCardTransaction(Request $request, CardPaymentManager $cardPaymentManager,
                                        PaymentTransactionManager $transactionManager)
@@ -70,11 +68,12 @@ class AccountCurrencyController extends Controller
 
         if (!$user) return abort(401);
 
-        $paymentProfile = $cardPaymentManager->loadOrCreateProfileFor($user);
         $cardId = $request->input('cardId', null);
         $card = null;
         if ($cardId !== 'paypal') {
-            $card = $cardId ? $paymentProfile->getCard($cardId) : $paymentProfile->getDefaultCard();
+
+            $card = $cardId ? $cardPaymentManager->getCardFor($user, $cardId)
+                : $cardPaymentManager->getDefaultCardFor($user);
             if (!$card) return abort(400);
         }
 
@@ -141,10 +140,9 @@ class AccountCurrencyController extends Controller
         $paid = false;
         if ($transaction->cardPaymentId) {
             $cardPaymentManager = resolve('App\Payment\CardPaymentManager');
-            $userPaymentProfile = $cardPaymentManager->loadProfileFor($user);
-            $card = $userPaymentProfile->getCard($transaction->cardPaymentId);
+            $card = $cardPaymentManager->getCardFor($user, $transaction->cardPaymentId);
             try {
-                $cardPaymentManager->chargeCard($userPaymentProfile, $card, $transaction->totalPriceUsd);
+                $cardPaymentManager->chargeCardFor($user, $card, $transaction->totalPriceUsd);
                 $paid = true;
             } catch (\Exception $e) {
                 Log::info("Error during card payment: " . $e);
