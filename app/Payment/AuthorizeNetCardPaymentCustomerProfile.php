@@ -59,8 +59,7 @@ class AuthorizeNetCardPaymentCustomerProfile extends CardPaymentCustomerProfile
                     $parts = explode('-', $receivedCard->getExpirationDate());
                     $card->expiryDate = Carbon::createFromDate($parts[0], $parts[1], 1);
                     $card->isDefault = $paymentProfile->getDefaultPaymentProfile();
-                    $customerProfile->setCard($card);
-                    if ($paymentProfile->getDefaultPaymentProfile()) $customerProfile->defaultCardId = $card->id;
+                    $customerProfile->addCard($card);
                 }
             }
         }

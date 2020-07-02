@@ -274,11 +274,13 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
             throw new \Exception("Couldn't create a payment profile. Response : "
                 . $errorMessages[0]->getCode() . "  " . $errorMessages[0]->getText() . "\n");
         }
+        $profile->removeCard($card);
         //This is just for historic purposes and to allow the muck easy access
         DB::table('billing_paymentprofiles')->where([
             'profileid' => $profile->getCustomerProfileId(),
             'paymentid' => $card->id
         ])->delete();
+
     }
 
     /**

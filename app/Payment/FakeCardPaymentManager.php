@@ -23,7 +23,7 @@ class FakeCardPaymentManager implements CardPaymentManager
         /** @var CardPaymentCustomerProfile $profile */
         $profile = new CardPaymentCustomerProfile(count($this->customerProfiles));
 
-        $this->customerProfiles[$profile->getCustomerProfileId()] = $profile;
+        $this->customerProfiles[$accountId] = $profile;
         return $profile;
     }
 
@@ -39,10 +39,9 @@ class FakeCardPaymentManager implements CardPaymentManager
         // $expiryDate is in the form MM/YYYY
         $parts = explode('/', $expiryDate);
         $card->expiryDate = Carbon::createFromDate($parts[1], $parts[0], 1);
-
-        $card->expiryDate = $expiryDate;
         $card->cardType = 'Fake';
-        $profile->setCard($card);
+        $profile->addCard($card);
+        $this->setDefaultCardFor($user, $card);
         return $card;
     }
 
@@ -51,7 +50,8 @@ class FakeCardPaymentManager implements CardPaymentManager
      */
     public function deleteCardFor(User $user, Card $card): void
     {
-        return;
+        $profile = $this->loadOrCreateProfileFor($user);
+        $profile->removeCard($card);
     }
 
     /**
@@ -70,7 +70,7 @@ class FakeCardPaymentManager implements CardPaymentManager
      */
     public function chargeCardFor(User $user, Card $card, float $amountToChargeUsd): string
     {
-        return;
+        return 'NO';
     }
 
     /**

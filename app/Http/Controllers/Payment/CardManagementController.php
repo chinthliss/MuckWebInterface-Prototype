@@ -53,8 +53,8 @@ class CardManagementController extends Controller
 
     public function deleteCard(Request $request, CardPaymentManager $cardPaymentManager)
     {
+        if (!$request->has('id')) return response('Card ID missing', 400);
         $cardId = $request['id'];
-        if (!$cardId) return response('Card ID missing', 400);
 
         /** @var User $user */
         $user = auth()->user();

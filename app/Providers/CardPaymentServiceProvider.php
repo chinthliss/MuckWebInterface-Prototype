@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Payment\CardPaymentManager;
 use App\Payment\AuthorizeNetCardPaymentManager;
+use App\Payment\FakeCardPaymentManager;
 use Illuminate\Support\ServiceProvider;
 
 class CardPaymentServiceProvider extends ServiceProvider
@@ -23,6 +24,9 @@ class CardPaymentServiceProvider extends ServiceProvider
             if ($card_payment_driver == 'authorizenet') {
                 $config = config('services.authorizenet');
                 return new AuthorizeNetCardPaymentManager($config);
+            }
+            if ($card_payment_driver == 'fake') {
+                return new FakeCardPaymentManager();
             }
             throw new \Error('No card payment driver set');
         });

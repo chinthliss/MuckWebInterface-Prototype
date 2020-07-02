@@ -86,7 +86,7 @@
 
 <script>
     export default {
-        name: "auth-card-management",
+        name: "account-card-management",
         props: {
             profileId: {type: String},
             initialCards: {type: Array}

@@ -54,8 +54,10 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
     //Card Management
     Route::get('account/cardmanagement', 'Payment\CardManagementController@show')
         ->name('payment.cardmanagement');
-    Route::post('account/cardmanagement', 'Payment\CardManagementController@addCard');
-    Route::delete('account/cardmanagement', 'Payment\CardManagementController@deleteCard');
+    Route::post('account/cardmanagement', 'Payment\CardManagementController@addCard')
+        ->name('payment.cardmanagement.add');
+    Route::delete('account/cardmanagement', 'Payment\CardManagementController@deleteCard')
+        ->name('payment.cardmanagement.delete');
     Route::patch('account/cardmanagement', 'Payment\CardManagementController@updateDefaultCard');
 
     //Account Currency

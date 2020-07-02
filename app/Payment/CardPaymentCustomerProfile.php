@@ -12,14 +12,9 @@ class CardPaymentCustomerProfile
     protected $id;
 
     /**
-     * @var array<int, Card[]> Stored as {paymentProfileId:Card}
+     * @var Card[] Stored as {paymentProfileId:Card}
      */
     protected $cards = [];
-
-    /**
-     * @var Card|null Reference to default card
-     */
-    protected $defaultCardId = null;
 
     public function __construct($id)
     {
@@ -31,27 +26,36 @@ class CardPaymentCustomerProfile
         return $this->id;
     }
 
-    public function getCards()
+    /**
+     * @return array<int, Card[]>
+     */
+    public function getCards() : array
     {
         return $this->cards;
     }
 
-    public function setCard(Card $card)
+    public function addCard(Card $card)
     {
         $this->cards[$card->id] = $card;
     }
 
-    public function getCard(string $cardId)
+    public function removeCard(Card $card)
+    {
+        unset($this->cards[$card->id]);
+    }
+
+    public function getCard(string $cardId) : ?Card
     {
         if (array_key_exists($cardId, $this->cards))
             return $this->cards[$cardId];
         else return null;
     }
 
-    public function getDefaultCard()
+    public function getDefaultCard() : ?Card
     {
-        if ($this->defaultCardId)
-            return $this->getCard($this->defaultCardId);
+        foreach($this->cards as $card) {
+            if ($card->isDefault) return $card;
+        }
         return null;
     }
 }

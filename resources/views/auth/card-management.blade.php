@@ -5,14 +5,14 @@
 @endsection
 
 @section('content')
-    <auth-card-management
+    <account-card-management
         @isset($profileId)
         profile-id="{{ $profileId }}"
         @endisset
         @isset($cards)
         :initial-cards="{{ json_encode($cards) }}"
         @endisset
-    ></auth-card-management>
+    ></account-card-management>
     <div style="float:right">
         <!-- (c) 2005, 2011. Authorize.Net is a registered trademark of CyberSource Corporation -->
         <div class="AuthorizeNetSeal">
