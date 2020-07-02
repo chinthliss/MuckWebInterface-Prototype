@@ -16,13 +16,16 @@ class CreateBillingTransactionsTable extends Migration
         Schema::create('billing_transactions', function (Blueprint $table) {
             $table->uuid('id')->primary();
 
-            $table->bigInteger('account_id');
+            $table->bigInteger('account_id')->index();
 
-            $table->bigInteger('paymentprofile_id')->nullable()
+            $table->bigInteger('paymentprofile_id')->nullable()->index()
                 ->comment('Presently used if the payment was via Authorize.Net');
 
-            $table->bigInteger('paymentprofile_id_txt')->nullable()
+            $table->bigInteger('paymentprofile_id_txt')->nullable()->index()
                 ->comment("Presently used if the payment was via PayPal");
+
+            $table->string('external_id', 80)->nullable()->unique()
+                ->comment("ID value for the external vendor handling the payment");
 
             $table->decimal('amount_usd',8,2)->unsigned();
 

@@ -31,5 +31,6 @@
         <server name="SESSION_DRIVER" value="array"/>
         <server name="DB_CONNECTION" value="sqlite_testing"/>
         <server name="MUCK_DRIVER" value="fake"/>
+        <server name="CARD_PAYMENT_DRIVER" value="fake"/>
     </php>
 </phpunit>

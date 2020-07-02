@@ -14,15 +14,6 @@ use net\authorize\api\controller as AnetController;
 class AuthorizeNetCardPaymentManager implements CardPaymentManager
 {
 
-    const CARD_TYPE_MATCHES = [
-        "VISA" => '/^4[0-9]{12}(?:[0-9]{3})?$/',
-        "American Express" => '/^3[47][0-9]{13}$/',
-        "JCB" => '/^(?:2131|1800|35\d{3})\d{11}$/',
-        // "Discover" => '/^(?:6011\d{12})|(?:65\d{14})$/', // Not accepted by us
-        "Mastercard" => '/^(?:5[1-5][0-9]{2}|222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}|27[01][0-9]|2720)[0-9]{12}$/'
-        //Solo, Switch removed from this list due to being discontinued. Maestro removed as not actually accepted by Authorize.net
-    ];
-
     private $loginId = '';
     private $transactionKey = '';
     private $endPoint = '';
@@ -68,67 +59,6 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
     }
 
     /**
-     * @param string|int $number
-     * @return bool
-     */
-    public function checkLuhnChecksumIsValid($number)
-    {
-        $total = 0;
-        foreach (str_split(strrev(strval($number))) as $index => $character) {
-            $total += ($index % 2 == 0 ? $character : array_sum(str_split(strval($character * 2))));
-        }
-        return ($total % 10 == 0);
-    }
-
-    //Returns blank array if everything is okay, otherwise returns errors in the form { <element>:"error" }
-    public function findIssuesWithAddCardParameters($cardNumber, $expiryDate, $securityCode)
-    {
-        $errors = [];
-
-        //Card Number checks
-        $cardNumber = str_replace([' ', '-'], '', $cardNumber);
-        if ($cardNumber == '')
-            $errors['cardNumber'] = 'Card number is required.';
-        else {
-            if (!is_numeric($cardNumber)) $errors['cardNumber'] = 'Card number can only contain numbers.';
-            else {
-                $cardType = "";
-                foreach (self::CARD_TYPE_MATCHES as $testingFor => $cardTypeTest) {
-                    if (preg_match($cardTypeTest, $cardNumber)) $cardType = $testingFor;
-                }
-                if (!$cardType) $errors['cardNumber'] = 'Unrecognized card number.';
-                else {
-                    if (!$this->checkLuhnChecksumIsValid($cardNumber)) $errors['cardNumber'] = 'Invalid card number.';
-                }
-            }
-        }
-
-        //Expiry Date checks
-        if (!preg_match('/^\d\d\/\d\d\d\d$/', $expiryDate)) {
-            $errors['expiryDate'] = 'Expiry Date must be in the form MM/YYYY.';
-        } else {
-            [$month, $year] = explode('/', $expiryDate);
-
-            $endDate = Carbon::createFromDate($year, $month + 1, 1);
-            if ($endDate < Carbon::now()) {
-                $errors['expiryDate'] = 'Card has expired.';
-            }
-        }
-
-        //Security Code checks
-        if ($securityCode == '')
-            $errors['securityCode'] = 'Security code is required.';
-        else {
-            if (!is_numeric($securityCode))
-                $errors['securityCode'] = 'Security code can only contain numbers.';
-            else if (strlen($securityCode) < 3 or strlen($securityCode) > 4)
-                $errors['securityCode'] = 'Security code must be 3 or 4 numbers long.';
-        }
-
-        return $errors;
-    }
-
-    /**
      * Loads customer profile, any customer payment profiles and subscription ids.
      * Returns the profile or null if there was no profile to load
      * @param User $user
@@ -147,9 +77,11 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
         $row = DB::table('billing_profiles')->where('aid', $accountId)->first();
         if ($row) {
             $profileId = $row->profileid;
+            Log::debug('AuthorizeNet - Requesting profile#' . $profileId);
             $request = new AnetAPI\GetCustomerProfileRequest();
             $request->setMerchantAuthentication($this->merchantAuthentication());
             $request->setCustomerProfileId($profileId);
+            $request->setUnmaskExpirationDate(true);
             $controller = new AnetController\GetCustomerProfileController($request);
             $response = $controller->executeWithApiResponse($this->endPoint);
             if ($response && $response->getMessages()->getResultCode() == "Ok") {
@@ -158,17 +90,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
                     // $profile = null;
                     Log::warning("Retrieved Authorize.net customer profile for AID " . $accountId . " didn't have a matching merchantId.");
                 }
-                // Need to populate full card details from what we know, since ANet response masks expiry dates.
-                $paymentProfiles = DB::table('billing_paymentprofiles')
-                    ->where('profileid', $profile->getCustomerProfileId())->get();
-                foreach ($paymentProfiles as $paymentProfile) {
-                    $present = $profile->getCard($paymentProfile->paymentid);
-                    if ($present) {
-                        $present->expiryDate = $paymentProfile->expdate;
-                        $profile->setCard($present);
-                    }
 
-                }
                 // Subscriptions
                 $subscriptions = $response->getSubscriptionIds();
                 if ($subscriptions) {
@@ -185,9 +107,15 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
                         $card->isDefault = $card->id == $defaultCardId;
                     }
                 }
+                $this->customerProfiles[$accountId] = $profile;
+            }
+            else {
+                $message = $response->getMessages()->getMessage()[0];
+                Log::error('Failed to request Authorize.net profile#' . $profileId . ', Response=' .
+                    $message->getCode() . ':' .$message->getText()
+                );
             }
         }
-        $this->customerProfiles[$accountId] = $profile;
         return $profile;
     }
 
@@ -201,6 +129,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
     {
         $profile = $this->loadProfileFor($user);
         if (!$profile) {
+            Log::debug('AuthorizeNet - Creating profile for User#' . $user->getAid());
             $anetProfile = new AnetAPI\CustomerProfileType();
             $anetProfile->setDescription("");
             $anetProfile->setMerchantCustomerId($user->getAid());
@@ -215,8 +144,28 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
                 $profile = AuthorizeNetCardPaymentCustomerProfile::fromApiResponse($response);
             } else {
                 $errorMessages = $response->getMessages()->getMessage();
-                throw new \Exception("Couldn't create a profile. Response : "
-                    . $errorMessages[0]->getCode() . "  " . $errorMessages[0]->getText() . "\n");
+                //Check if it's a case if the merchant says there's already an entry for this person.
+                preg_match(
+                    "/A duplicate record with ID (\d+) already exists./",
+                    $errorMessages[0]->getText(), $attemptToFindExistingId
+                );
+                if ($attemptToFindExistingId && $attemptToFindExistingId[1]) {
+                    LOG::warning('We have no valid Authorize.Net account for User#' . $user->getAid() .
+                        ' but AN reported one with an ID of ' . $attemptToFindExistingId[1] .
+                        ' (Attempting to repair our record and use this ID.)'
+                    );
+                    DB::table('billing_profiles')->updateOrInsert([
+                        'aid' => $user->getAid()
+                    ],[
+                        'profileid' => $attemptToFindExistingId[1],
+                        'defaultcard' => 0,
+                        'spendinglimit' => 0
+                    ]);
+                    //Once more try to load it
+                    $profile = $this->loadProfileFor($user);
+                }
+                if (!$profile) throw new \Exception("Couldn't create a profile. Response = "
+                    . $errorMessages[0]->getCode() . ":" . $errorMessages[0]->getText() . "\n");
             }
             DB::table('billing_profiles')->insert([
                 'aid' => $user->getAid(),
@@ -231,10 +180,11 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
     /**
      * @inheritDoc
      */
-    public function createCardFor(User $user, $cardNumber,
-                                  $expiryDate, $securityCode): Card
+    public function createCardFor(User $user, string $cardNumber,
+                                  string $expiryDate, string $securityCode): Card
     {
         $profile = $this->loadOrCreateProfileFor($user);
+        Log::debug('AuthorizeNet - Registering a new card for User#' . $user->getAid());
         $anetCard = new AnetAPI\CreditCardType();
         $anetCard->setCardNumber($cardNumber);
         $anetCard->setExpirationDate($expiryDate);
@@ -278,7 +228,9 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
         //Silly that this has to be extracted from a huge comma separated string..
         $responseParts = explode(',', $response->getValidationDirectResponse());
         $card->cardNumber = substr($responseParts[50], -4);
-        $card->expiryDate = $expiryDate;
+        // $expiryDate is in the form MM/YYYY
+        $parts = explode('/', $expiryDate);
+        $card->expiryDate = Carbon::createFromDate($parts[1], $parts[0], 1);
         $card->cardType = $responseParts[51];
         //This is just for historic purposes and to allow the muck easy access
         DB::table('billing_paymentprofiles')->insert([
@@ -299,6 +251,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
         ])->update([
             'defaultcard' => $newPaymentProfileId
         ]);
+        Log::debug('AuthorizeNet - New card registered as PaymentProfile#' . $card->id);
         return $card;
     }
 
@@ -309,6 +262,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
     {
         $profile = $this->loadProfileFor($user);
         if (!$profile) throw new \Error("No valid profile found.");
+        Log::debug('AuthorizeNet - Deleting card with PaymentProfile#' . $card->id);
         $request = new AnetAPI\DeleteCustomerPaymentProfileRequest();
         $request->setMerchantAuthentication($this->merchantAuthentication());
         $request->setCustomerProfileId($profile->getCustomerProfileId());
@@ -373,6 +327,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
     {
         $profile = $this->loadProfileFor($user);
         if (!$profile) throw new \Error("No valid profile found.");
+        Log::debug('AuthorizeNet - Charging card with PaymentProfile#' . $card->id);
         $transactionPaymentProfile = new AnetAPI\PaymentProfileType();
         $transactionPaymentProfile->setPaymentProfileId($card->id);
 

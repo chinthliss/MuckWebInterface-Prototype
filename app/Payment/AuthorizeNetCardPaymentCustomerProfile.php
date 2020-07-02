@@ -3,6 +3,7 @@
 
 namespace App\Payment;
 
+use Illuminate\Support\Carbon;
 use net\authorize\api\contract\v1\CreateCustomerProfileResponse;
 use net\authorize\api\contract\v1\GetCustomerProfileResponse;
 use net\authorize\api\contract\v1\SubscriptionPaymentType;
@@ -12,28 +13,15 @@ use net\authorize\api\contract\v1\SubscriptionPaymentType;
  * Utility class for the Authorize.Net Payment manager, represents a customer profile.
  * @package App
  */
-class AuthorizeNetCardPaymentCustomerProfile
+class AuthorizeNetCardPaymentCustomerProfile extends CardPaymentCustomerProfile
 {
-    protected $id;
     protected $merchantCustomerId = null;
-
-    /**
-     * @var array<int, Card[]> Stored as {paymentProfileId:Card}
-     */
-    protected $cards = [];
-
-    protected $defaultCardId = null;
 
     /**
      * These are initially retrieved as just the id, so will be in the form id:null until a further call is made
      * @var array<int, SubscriptionPaymentType|null> Stored as {id:subscription}
      */
     protected $subscriptionProfiles = [];
-
-    public function __construct($id)
-    {
-        $this->id = $id;
-    }
 
     /**
      * @param $response
@@ -67,7 +55,9 @@ class AuthorizeNetCardPaymentCustomerProfile
                     $card->id = $paymentProfile->getCustomerPaymentProfileId();
                     $card->cardType = $receivedCard->getCardType();
                     $card->cardNumber = $receivedCard->getCardNumber();
-                    $card->expiryDate = $receivedCard->getExpirationDate();
+                    // Returned from API as YYYY-MM
+                    $parts = explode('-', $receivedCard->getExpirationDate());
+                    $card->expiryDate = Carbon::createFromDate($parts[0], $parts[1], 1);
                     $card->isDefault = $paymentProfile->getDefaultPaymentProfile();
                     $customerProfile->setCard($card);
                     if ($paymentProfile->getDefaultPaymentProfile()) $customerProfile->defaultCardId = $card->id;
@@ -78,40 +68,9 @@ class AuthorizeNetCardPaymentCustomerProfile
 
     }
 
-    public function getCustomerProfileId()
-    {
-        return $this->id;
-    }
-
     public function getMerchantCustomerId()
     {
         return $this->merchantCustomerId;
     }
 
-    #region Card functionality
-    public function getCards()
-    {
-        return $this->cards;
-    }
-
-    public function setCard(Card $card)
-    {
-        $this->cards[$card->id] = $card;
-    }
-
-    public function getCard(string $cardId)
-    {
-        if (array_key_exists($cardId, $this->cards))
-            return $this->cards[$cardId];
-        else return null;
-    }
-
-    public function getDefaultCard()
-    {
-        if ($this->defaultCardId)
-            return $this->getCard($this->defaultCardId);
-        return null;
-    }
-
-    #endregion
 }

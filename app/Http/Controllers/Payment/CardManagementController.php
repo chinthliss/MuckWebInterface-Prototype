@@ -35,7 +35,7 @@ class CardManagementController extends Controller
         $cardNumber = $request['cardNumber'];
         $expiryDate = $request['expiryDate'];
         $securityCode = $request['securityCode'];
-        $errors = $cardPaymentManager->findIssuesWithAddCardParameters($cardNumber, $expiryDate, $securityCode);
+        $errors = Card::findIssuesWithAddCardParameters($cardNumber, $expiryDate, $securityCode);
         if ($errors) throw ValidationException::withMessages($errors);
 
         /** @var User $user */

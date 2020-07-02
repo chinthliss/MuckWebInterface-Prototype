@@ -2,12 +2,14 @@
 
 namespace Tests\Unit;
 
+use App\Payment\Card;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
-class CardPaymentManagementTest extends TestCase
+class CardTest extends TestCase
 {
 
+    /* Not required now the card functions are on the card class
     protected $manager;
 
     public function setUp(): void
@@ -15,6 +17,7 @@ class CardPaymentManagementTest extends TestCase
         parent::setUp();
         $this->manager = $this->app->make('App\Payment\CardPaymentManager');
     }
+    */
 
     public function testCheckLuhnChecksumIsValid()
     {
@@ -29,11 +32,11 @@ class CardPaymentManagementTest extends TestCase
         ];
 
         foreach ($validValues as $test) {
-            $this->assertTrue($this->manager->checkLuhnChecksumIsValid($test));
+            $this->assertTrue(Card::checkLuhnChecksumIsValid($test));
         }
 
         foreach ($invalidValues as $test) {
-            $this->assertFalse($this->manager->checkLuhnChecksumIsValid($test));
+            $this->assertFalse(Card::checkLuhnChecksumIsValid($test));
         }
 
     }
@@ -70,7 +73,7 @@ class CardPaymentManagementTest extends TestCase
         ];
         foreach ($tests as $test) {
             [$cardNumber, $expiryDate, $securityCode, $expectedResult] = $test;
-            $errors = $this->manager->findIssuesWithAddCardParameters($cardNumber, $expiryDate, $securityCode);
+            $errors = Card::findIssuesWithAddCardParameters($cardNumber, $expiryDate, $securityCode);
             if ($expectedResult === '') $this->assertEmpty($errors,
                 'Check failed and was expected to pass.'
                 . ' CardNumber=' . $cardNumber

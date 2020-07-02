@@ -88,7 +88,7 @@ class AccountCurrencyController extends Controller
 
         return $transactionManager->createCardTransaction(
             $user, $card, $amountUsd, $items, $recurringInterval
-        );
+        )->toClientArray();
     }
 
     /**
@@ -138,9 +138,9 @@ class AccountCurrencyController extends Controller
         if ($transaction->accountId != $user->getAid() || !$transaction->open) return abort(403);
 
         $paid = false;
-        if ($transaction->cardPaymentId) {
+        if ($transaction->type == 'card') {
             $cardPaymentManager = resolve('App\Payment\CardPaymentManager');
-            $card = $cardPaymentManager->getCardFor($user, $transaction->cardPaymentId);
+            $card = $cardPaymentManager->getCardFor($user, $transaction->paymentId);
             try {
                 $cardPaymentManager->chargeCardFor($user, $card, $transaction->totalPriceUsd);
                 $paid = true;
@@ -148,7 +148,7 @@ class AccountCurrencyController extends Controller
                 Log::info("Error during card payment: " . $e);
             }
         }
-        if ($transaction->payPalId) {
+        if ($transaction->type == 'paypal') {
             throw new \Error("PayPal route hasn't been implemented.");
             $paid = true;
         }
@@ -157,8 +157,10 @@ class AccountCurrencyController extends Controller
             $actualAmount = $this->fulfillTransaction($transaction);
             return "Transaction complete and credited to your account. " .
                 "The total amount earned was " . $actualAmount . ".";
-        } else
+        } else {
+            $transactionManager->closeTransaction($transaction->id, 'vendor_refused');
             return "The payment didn't process correctly or wasn't accepted.";
+        }
 
         return "Something went wrong and the transaction failed. Please notify staff of this.";
     }

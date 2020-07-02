@@ -4,6 +4,7 @@
 namespace App\Payment;
 
 use App\User;
+use Illuminate\Support\Carbon;
 
 interface CardPaymentManager
 {
@@ -40,6 +41,10 @@ interface CardPaymentManager
 
     public function getCardFor(User $user, int $cardId): ?Card;
 
+    /**
+     * @param User $user
+     * @return Card[]
+     */
     public function getCardsFor(User $user): array;
 
     public function getCustomerIdFor(User $user);

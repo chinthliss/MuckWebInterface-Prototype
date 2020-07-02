@@ -11,8 +11,10 @@ class PaymentTransaction
     public $id = null;
     public $accountId = null;
 
-    public $cardPaymentId = null; // If card
-    public $payPalId = null; // If PayPal
+    public $paymentId = null; // May be string or int depending on vendor used
+    public $type = null; // May be Card or PayPal presently
+
+    public $externalId = null;
 
     public $purchaseDescription = "";
     public $accountCurrencyRewarded = 0;
