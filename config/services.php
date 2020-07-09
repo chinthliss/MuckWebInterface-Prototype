@@ -40,4 +40,10 @@ return [
         'sealId' => env('AUTHORIZENET_PAYMENT_SEAL_ID')
     ],
 
+    'paypal' => [
+        'account' => env('PAYPAL_ACCOUNT'),
+        'clientId' => env('PAYPAL_CLIENT_ID'),
+        'secret' => env('PAYPAL_SECRET')
+    ],
+
 ];

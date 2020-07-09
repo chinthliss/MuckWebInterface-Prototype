@@ -18,7 +18,6 @@ class CardPaymentServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //This should be loaded from config if ever properly abstracted.
         $this->app->singleton(CardPaymentManager::class, function($app) {
             $card_payment_driver = config('app.card_payment_driver');
             if ($card_payment_driver == 'authorizenet') {

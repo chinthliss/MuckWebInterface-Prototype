@@ -24,7 +24,7 @@ class MuckServiceProvider extends ServiceProvider
             $driver = $config['driver'];
             if ($driver == 'fake') return new FakeMuckConnection($config);
             if ($driver == 'http') return new HttpMuckConnection($config);
-            throw new \Exception('Unrecognized muck driver: ' . $driver);
+            throw new \Error('Unrecognized muck driver: ' . $driver);
         });
     }
 
