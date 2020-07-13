@@ -1,5 +1,5 @@
 <template>
-    <div class="modal" tabindex="-1" role="dialog">
+    <div id="dialog-approve-transaction" class="modal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -30,11 +30,11 @@
         ],
         methods: {
             'transactionAccepted': function() {
-                this.close();
+                $('#dialog-approve-transaction').modal('hide');
                 this.$emit('transaction-accepted', this.transaction.token);
             },
             'transactionDeclined': function() {
-                this.close();
+                $('#dialog-approve-transaction').modal('hide');
                 this.$emit('transaction-declined', this.transaction.token);
             }
         }
