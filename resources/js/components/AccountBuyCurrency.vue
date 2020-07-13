@@ -120,13 +120,8 @@
                 console.log("TBC");
             },
             transactionAccepted: function (token) {
-                axios.post('accountcurrency/acceptTransaction', {'token': token})
-                    .then(response => {
-                        console.log("Accepted response", response);
-                        //TODO: Implement show receipt.
-                    }).catch(error => {
-                        console.log("Rejected response", error);
-                    });
+                //Redirect to accept page - it should redirect us as required.
+                window.location = 'accountcurrency/acceptTransaction?token=' + token;
             },
             transactionDeclined: function (token) {
                 //Notify the site but don't care about the result

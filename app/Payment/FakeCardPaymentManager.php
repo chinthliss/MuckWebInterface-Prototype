@@ -5,6 +5,7 @@ namespace App\Payment;
 
 use App\User;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class FakeCardPaymentManager implements CardPaymentManager
 {
@@ -20,8 +21,32 @@ class FakeCardPaymentManager implements CardPaymentManager
         //Return if already fetched
         if (array_key_exists($accountId, $this->customerProfiles)) return $this->customerProfiles[$accountId];
 
+
         /** @var CardPaymentCustomerProfile $profile */
-        $profile = new CardPaymentCustomerProfile(count($this->customerProfiles));
+        $profile = null;
+
+        //Try to actually load one
+        $row = DB::table('billing_profiles')->where([
+            'aid' => $accountId
+        ])->first();
+
+        if ($row->profileid) {
+            $profile = new CardPaymentCustomerProfile($row->profileid);
+            //Try to load cards
+            $cardRows = DB::table('billing_paymentprofiles')->where([
+                'profileid' => $profile->getCustomerProfileId()
+            ])->get();
+            foreach ($cardRows as $row) {
+                $card = new Card();
+                $card->id = $row->id;
+                $card->cardType = $row->cardtype;
+                $card->cardNumber = $row->maskedcardnum;
+                $card->expiryDate = $row->expdate;
+                $profile->addCard($card);
+            }
+
+        }
+        else $profile = new CardPaymentCustomerProfile(count($this->customerProfiles));
 
         $this->customerProfiles[$accountId] = $profile;
         return $profile;

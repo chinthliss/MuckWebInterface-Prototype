@@ -34,11 +34,13 @@ class CardPaymentManagerTest extends TestCase
     {
         $this->seed();
         $user = $this->loginAsValidatedUser();
+        $startingCardCount = count($this->cardPaymentManager->getCardsFor($user));
         $response = $this->json('POST', route('payment.cardmanagement.add', [
             'cardnumber' => '1'
         ]));
         $response->assertStatus(422);
-        $this->assertEmpty($this->cardPaymentManager->getCardsFor($user));
+        $this->assertEquals(count($this->cardPaymentManager->getCardsFor($user)), $startingCardCount,
+            "Number of cards changed");
     }
 
     public function testUserCanAddValidCard()
@@ -70,12 +72,12 @@ class CardPaymentManagerTest extends TestCase
         ]);
         $card = $this->cardPaymentManager->getDefaultCardFor($user);
         $this->assertNotNull($card, 'Should have gotten a valid reference after setting card.');
-        $response = $this->json('DELETE',route('payment.cardmanagement.delete'), [
+        $response = $this->json('DELETE', route('payment.cardmanagement.delete'), [
             'id' => $card->id
         ]);
         $response->assertStatus(200);
         $this->assertEmpty($this->cardPaymentManager->getCardsFor($user));
     }
-    
+
 
 }

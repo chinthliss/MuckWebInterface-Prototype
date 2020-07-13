@@ -29,7 +29,10 @@ class CreateBillingTransactionsTable extends Migration
 
             $table->decimal('amount_usd',8,2)->unsigned();
 
-            $table->integer('amount_accountcurrency')->unsigned();
+            $table->integer('accountcurrency_quoted')->unsigned();
+
+            $table->integer('accountcurrency_rewarded')->unsigned()->nullable()
+                ->comment("Separate since the final amount can change due to bonuses.");
 
             $table->text('purchase_description')
                 ->comment('Text description of what was purchased, primarily used for receipting purposes.');

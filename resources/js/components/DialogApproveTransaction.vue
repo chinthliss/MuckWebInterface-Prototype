@@ -30,9 +30,11 @@
         ],
         methods: {
             'transactionAccepted': function() {
+                this.close();
                 this.$emit('transaction-accepted', this.transaction.token);
             },
             'transactionDeclined': function() {
+                this.close();
                 this.$emit('transaction-declined', this.transaction.token);
             }
         }

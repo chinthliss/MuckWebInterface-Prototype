@@ -133,7 +133,8 @@ class DatabaseSeeder extends Seeder
             'account_id' => $validAid,
             'paymentprofile_id' => 1,
             'amount_usd' => 10,
-            'amount_accountcurrency' => 30,
+            'accountcurrency_quoted' => 30,
+            'accountcurrency_rewarded' => 30,
             'purchase_description' => '30 bananas',
             'created_at' => Carbon::now(),
             'completed_at' => Carbon::now(),
@@ -146,7 +147,7 @@ class DatabaseSeeder extends Seeder
             'account_id' => $validAid,
             'paymentprofile_id' => 1,
             'amount_usd' => 10,
-            'amount_accountcurrency' => 30,
+            'accountcurrency_quoted' => 30,
             'purchase_description' => '30 bananas',
             'created_at' => Carbon::now()
         ]);
@@ -157,7 +158,7 @@ class DatabaseSeeder extends Seeder
             'account_id' => $secondAid,
             'paymentprofile_id' => 1,
             'amount_usd' => 10,
-            'amount_accountcurrency' => 30,
+            'accountcurrency_quoted' => 30,
             'purchase_description' => '30 bananas',
             'created_at' => Carbon::now()
         ]);

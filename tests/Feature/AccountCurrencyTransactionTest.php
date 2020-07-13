@@ -32,7 +32,7 @@ class AccountCurrencyTransactionTest extends TestCase
     {
         $this->seed();
         $this->loginAsValidatedUser();
-        $response = $this->json('POST', 'accountcurrency/acceptTransaction', [
+        $response = $this->json('GET', 'accountcurrency/acceptTransaction', [
             'token' => '00000000-0000-0000-0000-000000000003'
         ]);
         $response->assertStatus(403);
@@ -42,7 +42,7 @@ class AccountCurrencyTransactionTest extends TestCase
     {
         $this->seed();
         $this->loginAsValidatedUser();
-        $response = $this->json('POST', 'accountcurrency/acceptTransaction', [
+        $response = $this->json('GET', 'accountcurrency/acceptTransaction', [
             'token' => '00000000-0000-0000-0000-000000000001'
         ]);
         $response->assertStatus(403);
@@ -52,20 +52,47 @@ class AccountCurrencyTransactionTest extends TestCase
     {
         $this->seed();
         $this->loginAsValidatedUser();
-        $response = $this->json('POST', 'accountcurrency/declineTransaction', [
+        $response = $this->followingRedirects()->json('POST', 'accountcurrency/declineTransaction', [
             'token' => '00000000-0000-0000-0000-000000000002'
         ]);
         $response->assertStatus(200);
     }
 
+    public function testOpenTransactionCanBeAccepted()
+    {
+        $this->seed();
+        $this->loginAsValidatedUser();
+        $response = $this->followingRedirects()->json('GET', 'accountcurrency/acceptTransaction', [
+            'token' => '00000000-0000-0000-0000-000000000002'
+        ]);
+        $response->assertStatus(200);
+    }
+
+
     public function testClosedTransactionCannotBeDeclined()
     {
         $this->seed();
         $this->loginAsValidatedUser();
-        $response = $this->json('POST', 'accountcurrency/declineTransaction', [
+        $response = $this->followingRedirects()->json('POST', 'accountcurrency/declineTransaction', [
             'token' => '00000000-0000-0000-0000-000000000001'
         ]);
         $response->assertStatus(403);
     }
 
+    /**
+     * @depends testOpenTransactionCanBeAccepted
+     */
+    public function testCompletedTransactionHasRewardedAmountRecorded()
+    {
+        $this->seed();
+        $this->loginAsValidatedUser();
+        $token = '00000000-0000-0000-0000-000000000002';
+        $response = $this->followingRedirects()->json('GET', 'accountcurrency/acceptTransaction', [
+            'token' => $token
+        ]);
+        $response->assertStatus(200);
+        $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
+        $transaction = $transactionManager->getTransaction($token);
+        $this->assertNotNull($transaction->accountCurrencyRewarded);
+    }
 }

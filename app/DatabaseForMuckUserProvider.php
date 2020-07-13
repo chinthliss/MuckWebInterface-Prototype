@@ -65,7 +65,7 @@ class DatabaseForMuckUserProvider implements UserProvider
     //Used when user is logged in, called with accountId (aid)
     public function retrieveById($identifier)
     {
-        debug("RetrieveById:", $identifier);
+        debug('UserProvider RetrieveById attempt for ' . $identifier);
         //Retrieve account details from database first
         $accountQuery = $this->getRetrievalQuery()
             ->where('accounts.aid', $identifier)
@@ -80,13 +80,13 @@ class DatabaseForMuckUserProvider implements UserProvider
         if ($characterDbref && $user->characters->has($characterDbref)) {
             $user->setCharacter($user->characters[$characterDbref]);
         }
-        debug($user);
+        debug('UserProvider RetrieveById result for ' . $identifier . ', result = ' . $user->getAid());
         return $user;
     }
 
     public function retrieveByToken($identifier, $token)
     {
-        debug("RetrieveByToken:", $identifier, $token);
+        debug('UserProvider RetrieveByToken attempt for ' . $identifier . ':' . $token);
         $accountQuery = $this->getRetrievalQuery()
             ->where('accounts.aid', $identifier)
             ->first();
@@ -99,8 +99,7 @@ class DatabaseForMuckUserProvider implements UserProvider
 
     public function retrieveByCredentials(array $credentials)
     {
-        debug("RetrieveByCredentials", $credentials);
-
+        debug('UserProvider RetrieveByCredentials attempt for ' . json_encode($credentials));
         //If it's an email address we can try the database
         if (array_key_exists('email', $credentials) && strpos($credentials['email'], '@')) {
             $accountQuery = $this->getRetrievalQuery()
@@ -151,7 +150,7 @@ class DatabaseForMuckUserProvider implements UserProvider
     public function validateCredentials(Authenticatable $user, array $credentials)
     {
         // return Hash::check($credentials['password'], $user->getAuthPassword());
-        debug("validateCredentials:", $user, $credentials);
+        debug('UserProvider ValidateCredentials for ' . $user->getAid()  . ' with ' . json_encode($credentials));
         //Try the database retrieved details first
         if (method_exists($user, 'getPasswordType')
             && $user->getPasswordType() == 'SHA1SALT'

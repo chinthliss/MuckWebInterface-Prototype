@@ -102,7 +102,7 @@ class AccountCurrencyController extends Controller
         return $muck->adjustAccountCurrency(
             $transaction->accountId,
             $transaction->totalPriceUsd,
-            $transaction->accountCurrencyRewarded,
+            $transaction->accountCurrencyQuoted,
             $transaction->recurringInterval != null
         );
     }
@@ -153,16 +153,31 @@ class AccountCurrencyController extends Controller
             $paid = true;
         }
         if ($paid) {
-            $transactionManager->closeTransaction($transaction->id, 'fulfilled');
             $actualAmount = $this->fulfillTransaction($transaction);
-            return "Transaction complete and credited to your account. " .
-                "The total amount earned was " . $actualAmount . ".";
-        } else {
+            $transactionManager->closeTransaction($transaction->id, 'fulfilled', $actualAmount);
+        } else
             $transactionManager->closeTransaction($transaction->id, 'vendor_refused');
-            return "The payment didn't process correctly or wasn't accepted.";
-        }
-
-        return "Something went wrong and the transaction failed. Please notify staff of this.";
+        return redirect()->route('accountcurrency.transaction', [
+            'transactionId'=>$transactionId
+        ]);
     }
 
+    public function viewTransaction(Request $request, PaymentTransactionManager $transactionManager)
+    {
+        // TODO: For later, from paypal docs: with PayerID and paymentId appended to the URL.
+
+        /** @var User $user */
+        $user = auth()->user();
+
+        //Using paymentId so we can capture PayPal responses
+        $transactionId = $request->input('transactionId', null);
+
+        if (!$transactionId || !$user) return abort(403);
+
+        $transaction = $transactionManager->getTransaction($transactionId);
+
+        if ($transaction->accountId != $user->getAid()) return abort(403);
+
+        return '? ' . $transactionId;
+    }
 }

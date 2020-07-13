@@ -17,6 +17,7 @@ class PaymentTransaction
     public $externalId = null;
 
     public $purchaseDescription = "";
+    public $accountCurrencyQuoted = 0;
     public $accountCurrencyRewarded = 0;
     public $totalPriceUsd = 0.0;
     public $recurringInterval = null;
