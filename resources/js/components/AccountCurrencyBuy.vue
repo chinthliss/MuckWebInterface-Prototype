@@ -77,7 +77,7 @@
     import DialogApproveTransaction from "./DialogApproveTransaction";
 
     export default {
-        name: "account-buy-currency",
+        name: "account-currency-buy",
         components: {DialogApproveTransaction},
         props: ['defaultCardMaskedNumber', 'account', 'suggestedAmounts', 'cardManagementPage', 'accountCurrencyImage'],
         data: function () {

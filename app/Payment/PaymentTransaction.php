@@ -11,10 +11,10 @@ class PaymentTransaction
     public $id = null;
     public $accountId = null;
 
-    public $paymentId = null; // May be string or int depending on vendor used
+    public $paymentProfileId = null; // May be string or int depending on vendor used
     public $type = null; // May be Card or PayPal presently
 
-    public $externalId = null;
+    public $externalId = null; //Vendor's ID
 
     public $purchaseDescription = "";
     public $accountCurrencyQuoted = 0;
@@ -22,9 +22,19 @@ class PaymentTransaction
     public $totalPriceUsd = 0.0;
     public $recurringInterval = null;
 
-    public $open = false;
+    public $createdAt = null;
+    public $completedAt = null;
 
-    public function toClientArray()
+    public $updated = null;
+
+    public $status = 'unknown';
+    public $open = true;
+
+    /**
+     * Produces the array used to offer a user the chance to accept/decline the transaction
+     * @return array
+     */
+    public function toTransactionArray()
     {
         return [
             "token" => $this->id,
@@ -32,5 +42,23 @@ class PaymentTransaction
             "price" => "$" . round($this->totalPriceUsd, 2)
         ];
 
+    }
+
+    public function toArray()
+    {
+        $array = [
+            "id" => $this->id,
+            "type" => $this->type,
+            "purchase_description" => $this->purchaseDescription,
+            "account_currency_quoted" => $this->accountCurrencyQuoted,
+            "account_currency_rewarded" => $this->accountCurrencyRewarded,
+            "total_usd" => $this->totalPriceUsd,
+            "open" => $this->open,
+            "created_at" => $this->createdAt,
+            "completed_at" => $this->completedAt,
+            "status" => $this->status
+        ];
+        if ($this->recurringInterval) $array["recurring_interval"] = $this->recurringInterval;
+        return $array;
     }
 }

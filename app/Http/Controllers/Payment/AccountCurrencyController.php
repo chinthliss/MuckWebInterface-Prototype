@@ -88,14 +88,14 @@ class AccountCurrencyController extends Controller
 
         return $transactionManager->createCardTransaction(
             $user, $card, $amountUsd, $items, $recurringInterval
-        )->toClientArray();
+        )->toTransactionArray();
     }
 
     /**
      * @param PaymentTransaction $transaction
      * @return int actualAmountEarned
      */
-    private function fulfillTransaction(PaymentTransaction $transaction)
+    private function fulfillTransaction(PaymentTransaction $transaction): int
     {
         //Actual mako adjustment is done by the MUCK still, due to ingame triggers
         $muck = resolve('App\Muck\MuckConnection');
@@ -140,7 +140,7 @@ class AccountCurrencyController extends Controller
         $paid = false;
         if ($transaction->type == 'card') {
             $cardPaymentManager = resolve('App\Payment\CardPaymentManager');
-            $card = $cardPaymentManager->getCardFor($user, $transaction->paymentId);
+            $card = $cardPaymentManager->getCardFor($user, $transaction->paymentProfileId);
             try {
                 $cardPaymentManager->chargeCardFor($user, $card, $transaction->totalPriceUsd);
                 $paid = true;
@@ -178,6 +178,9 @@ class AccountCurrencyController extends Controller
 
         if ($transaction->accountId != $user->getAid()) return abort(403);
 
-        return '? ' . $transactionId;
+        return view('account-currency-transaction')->with([
+            'transaction' => $transaction->toArray()
+        ]);
+
     }
 }

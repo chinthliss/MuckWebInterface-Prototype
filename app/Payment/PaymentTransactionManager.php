@@ -22,32 +22,6 @@ class PaymentTransactionManager
     }
 
     // Handles the shared parts
-
-    public function createCardTransaction(User $user, Card $card, int $usdForAccountCurrency,
-                                          array $items, ?int $recurringInterval) : PaymentTransaction
-    {
-        $transaction = $this->createStubTransaction($user, $usdForAccountCurrency, $items, $recurringInterval);
-
-        $transaction->paymentId = $card->id;
-
-        DB::table('billing_transactions')->insert([
-            'id' => $transaction->id,
-            'account_id' => $transaction->accountId,
-            'paymentprofile_id' => $transaction->paymentId,
-            'amount_usd' => $transaction->totalPriceUsd,
-            'accountcurrency_quoted' => $transaction->accountCurrencyQuoted,
-            'purchase_description' => $transaction->purchaseDescription,
-            'recurring_interval' => $transaction->recurringInterval,
-            'created_at' => Carbon::now()
-        ]);
-
-        $clientArray = $transaction->toClientArray();
-        if ($recurringInterval) $clientArray['note'] = "$" . round($transaction->totalPriceUsd, 2)
-            . ' will be recharged every ' . $recurringInterval . ' days.';
-
-        return $transaction;
-    }
-
     private function createStubTransaction(User $user, int $usdForAccountCurrency,
                                            array $items, ?int $recurringInterval) : PaymentTransaction
     {
@@ -57,20 +31,46 @@ class PaymentTransactionManager
         $transaction->accountId = $user->getAid();
         $transaction->id = Str::uuid();
 
+
         if ($recurringInterval) $transaction->recurringInterval = $recurringInterval;
 
         if ($items) throw new \Exception("Not Implemented");
 
-        $transaction->accountCurrencyRewarded = $this->muck->usdToAccountCurrency($usdForAccountCurrency);
-        if ($transaction->accountCurrencyRewarded) {
+        $transaction->accountCurrencyQuoted = $this->muck->usdToAccountCurrency($usdForAccountCurrency);
+        if ($transaction->accountCurrencyQuoted) {
             $transaction->totalPriceUsd += $usdForAccountCurrency;
-            array_push($purchases, $transaction->accountCurrencyRewarded . ' Mako');
+            array_push($purchases, $transaction->accountCurrencyQuoted . ' Mako');
         }
 
         $transaction->purchaseDescription = implode('<br/>', $purchases);
 
         return $transaction;
     }
+
+    public function createCardTransaction(User $user, Card $card, int $usdForAccountCurrency,
+                                          array $items, ?int $recurringInterval) : PaymentTransaction
+    {
+        $transaction = $this->createStubTransaction($user, $usdForAccountCurrency, $items, $recurringInterval);
+        $transaction->paymentProfileId = $card->id;
+
+        DB::table('billing_transactions')->insert([
+            'id' => $transaction->id,
+            'account_id' => $transaction->accountId,
+            'paymentprofile_id' => $transaction->paymentProfileId,
+            'amount_usd' => $transaction->totalPriceUsd,
+            'accountcurrency_quoted' => $transaction->accountCurrencyQuoted,
+            'purchase_description' => $transaction->purchaseDescription,
+            'recurring_interval' => $transaction->recurringInterval,
+            'created_at' => Carbon::now()
+        ]);
+
+        $clientArray = $transaction->toTransactionArray();
+        if ($recurringInterval) $clientArray['note'] = "$" . round($transaction->totalPriceUsd, 2)
+            . ' will be recharged every ' . $recurringInterval . ' days.';
+
+        return $transaction;
+    }
+
 
     public function getTransaction(string $transactionId) : ?PaymentTransaction
     {
@@ -80,10 +80,10 @@ class PaymentTransactionManager
         $transaction->id = $row->id;
         $transaction->accountId = $row->account_id;
         if ($row->paymentprofile_id_txt) {
-            $transaction->paymentId = $row->paymentprofile_id_txt;
+            $transaction->paymentProfileId = $row->paymentprofile_id_txt;
             $transaction->type = 'paypal';
         } else {
-            $transaction->paymentId =   $row->paymentprofile_id;
+            $transaction->paymentProfileId =   $row->paymentprofile_id;
             $transaction->type = 'card';
         }
         $transaction->externalId = $row->external_id;
@@ -92,7 +92,10 @@ class PaymentTransactionManager
         $transaction->accountCurrencyRewarded = $row->accountcurrency_rewarded;
         $transaction->purchaseDescription = $row->purchase_description;
         $transaction->recurringInterval = $row->recurring_interval;
-        $transaction->open = $row->result == null;
+        $transaction->createdAt = $row->created_at;
+        $transaction->completedAt = $row->completed_at;
+        $transaction->status = ($row->result ?? 'open');
+        $transaction->open = $row->completed_at ? false : true;
         return $transaction;
     }
 
