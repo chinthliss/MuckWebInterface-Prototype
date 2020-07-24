@@ -1,7 +1,7 @@
 @extends('layouts.layout')
 
 @section('title')
-    Account Currency
+    Account Currency Transaction
 @endsection
 
 @section('content')

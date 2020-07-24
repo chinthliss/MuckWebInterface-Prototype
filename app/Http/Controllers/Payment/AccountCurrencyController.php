@@ -158,28 +158,42 @@ class AccountCurrencyController extends Controller
         } else
             $transactionManager->closeTransaction($transaction->id, 'vendor_refused');
         return redirect()->route('accountcurrency.transaction', [
-            'transactionId'=>$transactionId
+            'id' => $transactionId
         ]);
     }
 
-    public function viewTransaction(Request $request, PaymentTransactionManager $transactionManager)
+    public function viewTransaction(Request $request, PaymentTransactionManager $transactionManager, string $id)
     {
         // TODO: For later, from paypal docs: with PayerID and paymentId appended to the URL.
 
         /** @var User $user */
         $user = auth()->user();
 
-        //Using paymentId so we can capture PayPal responses
-        $transactionId = $request->input('transactionId', null);
+        if (!$id || !$user) return abort(401);
 
-        if (!$transactionId || !$user) return abort(403);
-
-        $transaction = $transactionManager->getTransaction($transactionId);
+        $transaction = $transactionManager->getTransaction($id);
 
         if ($transaction->accountId != $user->getAid()) return abort(403);
 
         return view('account-currency-transaction')->with([
             'transaction' => $transaction->toArray()
+        ]);
+    }
+
+    public function viewTransactions(Request $request, PaymentTransactionManager $transactionManager)
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        $accountToView = $user->getAid();
+
+        if (!$accountToView) return abort(401);
+
+        //TODO Leaving room to allow admin to view others
+        if ($accountToView !== $user->getAid()) return abort(403);
+
+        return view('account-currency-transactions')->with([
+            'transactions' => $transactionManager->getTransactionsFor($accountToView)
         ]);
 
     }

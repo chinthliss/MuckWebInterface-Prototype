@@ -67,8 +67,9 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
     Route::post('accountcurrency/newCardTransaction', 'Payment\AccountCurrencyController@newCardTransaction');
     Route::post('accountcurrency/declineTransaction', 'Payment\AccountCurrencyController@declineTransaction');
     Route::get('accountcurrency/acceptTransaction', 'Payment\AccountCurrencyController@acceptTransaction');
-    Route::get('accountcurrency/transaction', 'Payment\AccountCurrencyController@viewTransaction')
+    Route::get('accountcurrency/transaction/{id}', 'Payment\AccountCurrencyController@viewTransaction')
         ->name('accountcurrency.transaction');
+    Route::get('accountcurrency/history', 'Payment\AccountCurrencyController@viewTransactions');
 });
 
 //Always available

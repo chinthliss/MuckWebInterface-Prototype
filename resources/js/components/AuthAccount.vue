@@ -35,6 +35,7 @@
                         <a class="btn btn-secondary mt-1 ml-1" href="/account/changepassword">Change Password</a>
                         <a class="btn btn-secondary mt-1 ml-1" href="/account/changeemail">Change to new Email</a>
                         <a class="btn btn-secondary mt-1 ml-1" href="/account/cardmanagement">Card Management</a>
+                        <a class="btn btn-secondary mt-1 ml-1" href="/accountcurrency/history">Account Transactions</a>
                     </div>
                 </div>
             </div>

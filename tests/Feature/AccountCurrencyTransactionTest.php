@@ -12,11 +12,15 @@ class AccountCurrencyTransactionTest extends TestCase
 {
     use RefreshDatabase;
 
+    private $validOwnedCompletedTransation = '00000000-0000-0000-0000-000000000001';
+    private $validOwnedOpenTransation = '00000000-0000-0000-0000-000000000002';
+    private $validUnownedTransation = '00000000-0000-0000-0000-000000000003';
+
     public function testValidTransactionIsRetrievedOkay()
     {
         $this->seed();
         $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
-        $transaction = $transactionManager->getTransaction('00000000-0000-0000-0000-000000000001');
+        $transaction = $transactionManager->getTransaction($this->validOwnedCompletedTransation);
         $this->assertnotnull($transaction);
     }
 
@@ -33,7 +37,7 @@ class AccountCurrencyTransactionTest extends TestCase
         $this->seed();
         $this->loginAsValidatedUser();
         $response = $this->json('GET', 'accountcurrency/acceptTransaction', [
-            'token' => '00000000-0000-0000-0000-000000000003'
+            'token' => $this->validUnownedTransation
         ]);
         $response->assertStatus(403);
     }
@@ -43,7 +47,7 @@ class AccountCurrencyTransactionTest extends TestCase
         $this->seed();
         $this->loginAsValidatedUser();
         $response = $this->json('GET', 'accountcurrency/acceptTransaction', [
-            'token' => '00000000-0000-0000-0000-000000000001'
+            'token' => $this->validOwnedCompletedTransation
         ]);
         $response->assertStatus(403);
     }
@@ -53,7 +57,7 @@ class AccountCurrencyTransactionTest extends TestCase
         $this->seed();
         $this->loginAsValidatedUser();
         $response = $this->followingRedirects()->json('POST', 'accountcurrency/declineTransaction', [
-            'token' => '00000000-0000-0000-0000-000000000002'
+            'token' => $this->validOwnedOpenTransation
         ]);
         $response->assertStatus(200);
     }
@@ -63,7 +67,7 @@ class AccountCurrencyTransactionTest extends TestCase
         $this->seed();
         $this->loginAsValidatedUser();
         $response = $this->followingRedirects()->json('GET', 'accountcurrency/acceptTransaction', [
-            'token' => '00000000-0000-0000-0000-000000000002'
+            'token' => $this->validOwnedOpenTransation
         ]);
         $response->assertStatus(200);
     }
@@ -74,7 +78,7 @@ class AccountCurrencyTransactionTest extends TestCase
         $this->seed();
         $this->loginAsValidatedUser();
         $response = $this->followingRedirects()->json('POST', 'accountcurrency/declineTransaction', [
-            'token' => '00000000-0000-0000-0000-000000000001'
+            'token' => $this->validOwnedCompletedTransation
         ]);
         $response->assertStatus(403);
     }
@@ -86,7 +90,7 @@ class AccountCurrencyTransactionTest extends TestCase
     {
         $this->seed();
         $this->loginAsValidatedUser();
-        $token = '00000000-0000-0000-0000-000000000002';
+        $token = $this->validOwnedOpenTransation;
         $response = $this->followingRedirects()->json('GET', 'accountcurrency/acceptTransaction', [
             'token' => $token
         ]);
@@ -94,5 +98,44 @@ class AccountCurrencyTransactionTest extends TestCase
         $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
         $transaction = $transactionManager->getTransaction($token);
         $this->assertNotNull($transaction->accountCurrencyRewarded);
+    }
+
+    public function testUserGetsOwnTransactionsInList()
+    {
+        $this->seed();
+        $user = $this->loginAsValidatedUser();
+        $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
+        $transactions = $transactionManager->getTransactionsFor($user->getAid());
+        $this->assertArrayHasKey($this->validOwnedOpenTransation, $transactions);
+        $this->assertArrayHasKey($this->validOwnedCompletedTransation, $transactions);
+    }
+
+    public function testUserDoesNotUnowedTransactionsInList()
+    {
+        $this->seed();
+        $user = $this->loginAsValidatedUser();
+        $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
+        $transactions = $transactionManager->getTransactionsFor($user->getAid());
+        $this->assertArrayNotHasKey($this->validUnownedTransation, $transactions);
+    }
+
+    public function testUserCanViewOwnedTransaction()
+    {
+        $this->seed();
+        $user = $this->loginAsValidatedUser();
+        $response = $this->followingRedirects()->json('GET', route('accountcurrency.transaction', [
+            'id' => $this->validOwnedCompletedTransation
+        ]));
+        $response->assertStatus(200);
+    }
+
+    public function testUserCannotViewUnownedTransaction()
+    {
+        $this->seed();
+        $user = $this->loginAsValidatedUser();
+        $response = $this->followingRedirects()->json('GET', route('accountcurrency.transaction', [
+            'id' => $this->validUnownedTransation
+        ]));
+        $response->assertStatus(403);
     }
 }

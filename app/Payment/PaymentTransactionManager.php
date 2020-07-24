@@ -71,6 +71,23 @@ class PaymentTransactionManager
         return $transaction;
     }
 
+    public function getTransactionsFor(int $userId): array
+    {
+        $rows = DB::table('billing_transactions')->where('account_id', '=', $userId)->get();
+        $result = [];
+        foreach ($rows as $row) {
+            $result[$row->id] = [
+                'id' => $row->id,
+                'type' => ($row->paymentprofile_id_txt ? 'paypal' : 'card'),
+                'accountCurrency' => $row->accountcurrency_rewarded,
+                'usd' => $row->amount_usd,
+                'timeStamp' => $row->completed_at ?? $row->created_at,
+                'status' => ($row->result ?? 'open'),
+                'url' => route('accountcurrency.transaction', ["id" => $row->id])
+            ];
+        }
+        return $result;
+    }
 
     public function getTransaction(string $transactionId) : ?PaymentTransaction
     {
