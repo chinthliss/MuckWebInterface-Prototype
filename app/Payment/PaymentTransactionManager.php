@@ -73,7 +73,10 @@ class PaymentTransactionManager
 
     public function getTransactionsFor(int $userId): array
     {
-        $rows = DB::table('billing_transactions')->where('account_id', '=', $userId)->get();
+        $rows = DB::table('billing_transactions')
+            ->where('account_id', '=', $userId)
+            ->orderBy('created_at')
+            ->get();
         $result = [];
         foreach ($rows as $row) {
             $result[$row->id] = [
