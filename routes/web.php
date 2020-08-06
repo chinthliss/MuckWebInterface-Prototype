@@ -41,6 +41,8 @@ Route::group(['middleware' => ['web', 'auth:account']], function() {
 //Requires account, verification and terms of service acceptance
 Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']], function() {
     Route::get('home', 'HomeController@show')->name('home');
+
+
     Route::get('account', 'Auth\AccountController@show')->name('auth.account');
     //Password change
     Route::get('account/changepassword', 'Auth\AccountPasswordController@showChange')
@@ -65,11 +67,16 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
         ->name('accountcurrency');
     Route::post('accountcurrency/fromUsd', 'Payment\AccountCurrencyController@usdToAccountCurrency');
     Route::post('accountcurrency/newCardTransaction', 'Payment\AccountCurrencyController@newCardTransaction');
+    Route::post('accountcurrency/newPayPalTransaction', 'Payment\AccountCurrencyController@newPayPalTransaction');
     Route::post('accountcurrency/declineTransaction', 'Payment\AccountCurrencyController@declineTransaction');
     Route::get('accountcurrency/acceptTransaction', 'Payment\AccountCurrencyController@acceptTransaction');
     Route::get('accountcurrency/transaction/{id}', 'Payment\AccountCurrencyController@viewTransaction')
         ->name('accountcurrency.transaction');
     Route::get('accountcurrency/history', 'Payment\AccountCurrencyController@viewTransactions');
+    Route::get('accountcurrency/paypal_return', 'Payment\AccountCurrencyController@paypalReturn')
+        ->name('accountcurrency.paypal.return');
+    Route::get('accountcurrency/paypal_cancel', 'Payment\AccountCurrencyController@paypalCancel')
+        ->name('accountcurrency.paypal.cancel');
 });
 
 //Always available

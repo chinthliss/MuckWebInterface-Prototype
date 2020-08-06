@@ -325,7 +325,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
     /**
      * @inheritDoc
      */
-    public function chargeCardFor(User $user, Card $card, float $amountToChargeUsd): string
+    public function chargeCardFor(User $user, Card $card, PaymentTransaction $transaction): string
     {
         $profile = $this->loadProfileFor($user);
         if (!$profile) throw new \Error("No valid profile found.");
@@ -337,15 +337,15 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
         $transactionCustomerProfile->setCustomerProfileId($profile->getCustomerProfileId());
         $transactionCustomerProfile->setPaymentProfile($transactionPaymentProfile);
 
-        $transaction = new AnetAPI\TransactionRequestType();
-        $transaction->setTransactionType( "authCaptureTransaction");
-        $transaction->setAmount($amountToChargeUsd);
-        $transaction->setProfile($transactionCustomerProfile);
+        $anetTransaction = new AnetAPI\TransactionRequestType();
+        $anetTransaction->setTransactionType( "authCaptureTransaction");
+        $anetTransaction->setAmount($transaction->totalPriceUsd);
+        $anetTransaction->setProfile($transactionCustomerProfile);
 
         $request = new AnetAPI\CreateTransactionRequest();
         $request->setMerchantAuthentication($this->merchantAuthentication());
         $request->setRefId($this->refId());
-        $request->setTransactionRequest($transaction);
+        $request->setTransactionRequest($anetTransaction);
 
         $controller = new AnetController\CreateTransactionController($request);
         $response = $controller->executeWithApiResponse($this->endPoint);

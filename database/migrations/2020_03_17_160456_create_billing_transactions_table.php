@@ -21,13 +21,13 @@ class CreateBillingTransactionsTable extends Migration
             $table->bigInteger('paymentprofile_id')->nullable()->index()
                 ->comment('Presently used if the payment was via Authorize.Net');
 
-            $table->bigInteger('paymentprofile_id_txt')->nullable()->index()
+            $table->string('paymentprofile_id_txt', 60)->nullable()->index()
                 ->comment("Presently used if the payment was via PayPal");
 
             $table->string('external_id', 80)->nullable()->unique()
                 ->comment("ID value for the external vendor handling the payment");
 
-            $table->decimal('amount_usd',8,2)->unsigned();
+            $table->decimal('amount_usd', 8, 2)->unsigned();
 
             $table->integer('accountcurrency_quoted')->unsigned();
 

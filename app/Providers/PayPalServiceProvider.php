@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Payment\PaymentTransactionManager;
 use App\Payment\PayPalManager;
 use Illuminate\Support\ServiceProvider;
 use PayPalCheckoutSdk\Core\ProductionEnvironment;
@@ -35,7 +36,9 @@ class PayPalServiceProvider extends ServiceProvider
             else
                 $environment = new SandboxEnvironment($clientId, $secret);
 
-            return new PayPalManager($environment, $account, $clientId, $secret);
+            $paymentManager = $app->make(PaymentTransactionManager::class);
+
+            return new PayPalManager($account, $environment, $paymentManager);
         });
     }
 

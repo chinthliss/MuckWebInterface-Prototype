@@ -36,12 +36,16 @@ class PaymentTransaction
      */
     public function toTransactionArray()
     {
-        return [
+        $clientArray = [
             "token" => $this->id,
             "purchase" => $this->purchaseDescription,
             "price" => "$" . round($this->totalPriceUsd, 2)
         ];
 
+        if ($this->recurringInterval) $clientArray['note'] = "$" . round($this->totalPriceUsd, 2)
+            . ' will be recharged every ' . $this->recurringInterval . ' days.';
+
+        return $clientArray;
     }
 
     public function toArray()

@@ -93,7 +93,7 @@ class FakeCardPaymentManager implements CardPaymentManager
     /**
      * @inheritDoc
      */
-    public function chargeCardFor(User $user, Card $card, float $amountToChargeUsd): string
+    public function chargeCardFor(User $user, Card $card, PaymentTransaction $transaction): string
     {
         return 'NO';
     }

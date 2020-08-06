@@ -138,4 +138,31 @@ class AccountCurrencyTransactionTest extends TestCase
         ]));
         $response->assertStatus(403);
     }
+
+    public function testUpdatedExternalIdUpdatesAndPersists()
+    {
+        $this->seed();
+        $this->loginAsValidatedUser();
+        $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
+        $transaction = $transactionManager->getTransaction($this->validOwnedOpenTransation);
+        $transactionManager->updateExternalId($transaction, 'NEWTEST');
+        $this->assertTrue($transaction->externalId == 'NEWTEST', 'ExternalId not updated.');
+        //Refetch
+        $transaction = $transactionManager->getTransaction($this->validOwnedOpenTransation);
+        $this->assertTrue($transaction->externalId == 'NEWTEST', 'ExternalId not persisted');
+    }
+
+    public function testUpdatedPaymentProfileIdUpdatesAndPersists()
+    {
+        $this->seed();
+        $this->loginAsValidatedUser();
+        $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
+        $transaction = $transactionManager->getTransaction($this->validOwnedOpenTransation);
+        $transactionManager->updatePaymentProfileId($transaction, 'NEWTEST');
+        $this->assertTrue($transaction->paymentProfileId == 'NEWTEST', 'PaymentProfileId not updated.');
+        //Refetch
+        $transaction = $transactionManager->getTransaction($this->validOwnedOpenTransation);
+        $this->assertTrue($transaction->paymentProfileId == 'NEWTEST', 'PaymentProfileId not persisted');
+    }
+
 }

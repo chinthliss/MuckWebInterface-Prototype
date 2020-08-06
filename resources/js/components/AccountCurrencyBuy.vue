@@ -117,7 +117,16 @@
                 e.preventDefault();
             },
             startPayPalTransaction: function (e) {
-                console.log("TBC");
+                let data = {
+                    'amountUsd': this.cardAmount
+                }
+                if (this.cardRecurring) data.recurringInterval = this.cardRecurringInterval;
+                axios.post('accountcurrency/newPayPalTransaction', data)
+                    .then(response => {
+                        this.transaction = response.data;
+                        $('#approveTransactionModal').modal();
+                    });
+                e.preventDefault();
             },
             transactionAccepted: function (token) {
                 //Redirect to accept page - it should redirect us as required.
