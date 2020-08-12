@@ -27,12 +27,19 @@ class CreateBillingTransactionsTable extends Migration
             $table->string('external_id', 80)->nullable()->unique()
                 ->comment("ID value for the external vendor handling the payment");
 
-            $table->decimal('amount_usd', 8, 2)->unsigned();
+            $table->decimal('amount_usd', 8, 2)->unsigned()
+                ->comment("The amount for directly buying account currency.");
+
+            $table->decimal('amount_usd_items', 8, 2)->unsigned()
+                ->comment("The amount for buying items.");
 
             $table->integer('accountcurrency_quoted')->unsigned();
 
             $table->integer('accountcurrency_rewarded')->unsigned()->nullable()
                 ->comment("Separate since the final amount can change due to bonuses.");
+
+            $table->json('items_json')->nullable()
+                ->comment("JSON encoding of item purchased along with any additional information required.");
 
             $table->text('purchase_description')
                 ->comment('Text description of what was purchased, primarily used for receipting purposes.');

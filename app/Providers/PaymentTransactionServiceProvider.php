@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Muck\MuckConnection;
+use App\Payment\PaymentTransactionItemCatalogue;
 use App\Payment\PaymentTransactionManager;
 use Illuminate\Support\ServiceProvider;
 
@@ -21,6 +22,9 @@ class PaymentTransactionServiceProvider extends ServiceProvider
         $this->app->singleton(PaymentTransactionManager::class, function($app) {
             $muck = $app->make(MuckConnection::class);
             return new PaymentTransactionManager($muck);
+        });
+        $this->app->singleton(PaymentTransactionItemCatalogue::class, function($app) {
+            return new PaymentTransactionItemCatalogue();
         });
     }
 

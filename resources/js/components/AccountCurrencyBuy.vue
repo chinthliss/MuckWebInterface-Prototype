@@ -50,6 +50,26 @@
                     </select>
                 </div>
             </div>
+            <!-- Items -->
+            <div>
+                <h4>Add-on Items</h4>
+                <p>Add-on items reward supporter points. TODO: Add link to help page on supporter</p>
+                <div v-for="item in itemCatalogue">
+                    <div class="form-check">
+                        <input class="form-check-input purchase-item-input"
+                               :id="'item_' + item.code" type="checkbox" name="items" :value="item.code"
+                               :data-item-code="item.code">
+                        <label class="form-check-label font-weight-bold" :for="'item_' + item.code">
+                            {{item.name + ' - $' + item.priceUsd}}
+                        </label>
+                    </div>
+                    <div class="mb-2">{{ item.description }}</div>
+                </div>
+                <div class="alert alert-danger" v-if="!itemCatalogue.length">
+                    No items were found in the Item Catalogue, this is likely a loading error.
+                </div>
+            </div>
+            <!-- Payment Controls -->
             <div v-if="defaultCardMaskedNumber">
                 <div class="p-2 mb-2 bg-info text-white text-center">
                     If you pay by Card, your card ending in '{{ defaultCardMaskedNumber }}' will be used.
@@ -74,75 +94,82 @@
 </template>
 
 <script>
-    import DialogApproveTransaction from "./DialogApproveTransaction";
+import DialogApproveTransaction from "./DialogApproveTransaction";
 
-    export default {
-        name: "account-currency-buy",
-        components: {DialogApproveTransaction},
-        props: ['defaultCardMaskedNumber', 'account', 'suggestedAmounts', 'cardManagementPage', 'accountCurrencyImage'],
-        data: function () {
-            return {
-                'cardRecurring': false,
-                'cardRecurringInterval': '90',
-                'cardAmount': 0,
-                'cardAmountExchange': 0,
-                'transaction': {
-                    'purchase': 'test'
-                }
+export default {
+    name: "account-currency-buy",
+    components: {DialogApproveTransaction},
+    props: [
+        'defaultCardMaskedNumber', 'account', 'suggestedAmounts',
+        'cardManagementPage', 'accountCurrencyImage', 'itemCatalogue'
+    ],
+    data: function () {
+        return {
+            'cardRecurring': false,
+            'cardRecurringInterval': '90',
+            'cardAmount': 0,
+            'cardAmountExchange': 0,
+            'transaction': {
+                'purchase': 'test'
             }
-        },
-        methods: {
-            cardUseSuggestedAmount: function (e) {
-                this.cardAmount = e.currentTarget.getAttribute('data-amount');
-                this.cardAmountChanged(e);
-            },
-            cardAmountChanged: function (e) {
-                this.cardAmountExchange = 0;
-                axios.post('accountcurrency/fromUsd', {
-                    'amount': this.cardAmount
-                }).then(response => {
-                    this.cardAmountExchange = response.data;
-                });
-            },
-            startCardTransaction: function (e) {
-                let data = {
-                    'amountUsd': this.cardAmount
-                }
-                if (this.cardRecurring) data.recurringInterval = this.cardRecurringInterval;
-                axios.post('accountcurrency/newCardTransaction', data)
-                    .then(response => {
-                        this.transaction = response.data;
-                        $('#approveTransactionModal').modal();
-                    });
-                e.preventDefault();
-            },
-            startPayPalTransaction: function (e) {
-                let data = {
-                    'amountUsd': this.cardAmount
-                }
-                if (this.cardRecurring) data.recurringInterval = this.cardRecurringInterval;
-                axios.post('accountcurrency/newPayPalTransaction', data)
-                    .then(response => {
-                        this.transaction = response.data;
-                        $('#approveTransactionModal').modal();
-                    });
-                e.preventDefault();
-            },
-            transactionAccepted: function (token) {
-                //Redirect to accept page - it should redirect us as required.
-                window.location = 'accountcurrency/acceptTransaction?token=' + token;
-            },
-            transactionDeclined: function (token) {
-                //Notify the site but don't care about the result
-                axios.post('accountcurrency/declineTransaction', {'token': token});
-            }
-        },
-        mounted: function () {
-            let secondIndex = Object.keys(this.suggestedAmounts)[1];
-            this.cardAmount = secondIndex;
-            this.cardAmountExchange = this.suggestedAmounts[secondIndex];
         }
+    },
+    methods: {
+        buildPurchaseRequest: function() {
+            let data = {
+                'amountUsd': this.cardAmount
+            }
+            if (this.cardRecurring) data.recurringInterval = this.cardRecurringInterval;
+            let items = $.map($('.purchase-item-input:checked'), function(item) {
+                return $(item).data('item-code');
+            });
+            if (items.length > 0) data.items = items;
+            console.log(data);
+            return data;
+        },
+        cardUseSuggestedAmount: function (e) {
+            this.cardAmount = e.currentTarget.getAttribute('data-amount');
+            this.cardAmountChanged(e);
+        },
+        cardAmountChanged: function (e) {
+            this.cardAmountExchange = 0;
+            axios.post('accountcurrency/fromUsd', {
+                'amount': this.cardAmount
+            }).then(response => {
+                this.cardAmountExchange = response.data;
+            });
+        },
+        startCardTransaction: function (e) {
+            e.preventDefault();
+            axios.post('accountcurrency/newCardTransaction', this.buildPurchaseRequest())
+                .then(response => {
+                    this.transaction = response.data;
+                    $('#approveTransactionModal').modal();
+                });
+        },
+        startPayPalTransaction: function (e) {
+            e.preventDefault();
+            axios.post('accountcurrency/newPayPalTransaction', this.buildPurchaseRequest())
+                .then(response => {
+                    this.transaction = response.data;
+                    $('#approveTransactionModal').modal();
+                });
+        },
+        transactionAccepted: function (token) {
+            //Redirect to accept page - it should redirect us as required.
+            window.location = 'accountcurrency/acceptTransaction?token=' + token;
+        },
+        transactionDeclined: function (token) {
+            //Notify the site but don't care about the result
+            axios.post('accountcurrency/declineTransaction', {'token': token});
+        }
+    },
+    mounted: function () {
+        let secondIndex = Object.keys(this.suggestedAmounts)[1];
+        this.cardAmount = secondIndex;
+        this.cardAmountExchange = this.suggestedAmounts[secondIndex];
     }
+}
 </script>
 
 <style scoped>

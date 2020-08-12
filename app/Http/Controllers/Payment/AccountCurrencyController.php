@@ -6,6 +6,7 @@ use App\Payment\CardPaymentManager;
 use App\Muck\MuckConnection;
 use App\Http\Controllers\Controller;
 use App\Payment\PaymentTransaction;
+use App\Payment\PaymentTransactionItemCatalogue;
 use App\Payment\PaymentTransactionManager;
 use App\Payment\PayPalManager;
 use App\User;
@@ -18,7 +19,8 @@ class AccountCurrencyController extends Controller
 
     private const suggestedAmounts = [5, 10, 20, 50];
 
-    public function show(CardPaymentManager $cardPaymentManager, MuckConnection $muck)
+    public function show(CardPaymentManager $cardPaymentManager, MuckConnection $muck,
+                         PaymentTransactionItemCatalogue $itemsCatalogue)
     {
         /** @var User $user */
         $user = auth()->user();
@@ -30,11 +32,16 @@ class AccountCurrencyController extends Controller
             $parsedSuggestedAmounts[$amount] = $muck->usdToAccountCurrency($amount);
         }
 
+        $parsedItems = [];
+        foreach ($itemsCatalogue->getEligibleItemsFor($user) as $code) {
+            array_push($parsedItems, $itemsCatalogue->itemCodeToArray($code));
+        }
 
         return view('account-currency')->with([
             'account' => $user->getAid(),
             'defaultCardMaskedNumber' => ($defaultCard ? $defaultCard->maskedCardNumber() : null),
-            'suggestedAmounts' => $parsedSuggestedAmounts
+            'suggestedAmounts' => $parsedSuggestedAmounts,
+            'itemCatalogue' => $parsedItems
         ]);
     }
 
