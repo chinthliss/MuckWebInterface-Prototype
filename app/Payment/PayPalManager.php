@@ -47,7 +47,7 @@ class PayPalManager
             "purchase_units" => [[
                 "reference_id" => $transaction->id,
                 "amount" => [
-                    "value" => $transaction->accountCurrencyPriceUsd,
+                    "value" => $transaction->totalPriceUsd(),
                     "currency_code" => "USD"
                 ]
             ]],
