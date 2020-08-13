@@ -110,7 +110,7 @@ class AccountCurrencyTransactionTest extends TestCase
         $this->assertArrayHasKey($this->validOwnedCompletedTransation, $transactions);
     }
 
-    public function testUserDoesNotUnowedTransactionsInList()
+    public function testUserDoesNotGetUnowedTransactionsInList()
     {
         $this->seed();
         $user = $this->loginAsValidatedUser();
@@ -138,6 +138,75 @@ class AccountCurrencyTransactionTest extends TestCase
         ]));
         $response->assertStatus(403);
     }
+
+    public function testBaseAmountOnPayPalSavesCorrectly()
+    {
+        $this->seed();
+        $user = $this->loginAsValidatedUser();
+        $response = $this->followingRedirects()->json('POST', 'accountcurrency/newPayPalTransaction', [
+            'amountUsd' => 10.0
+        ]);
+        $response->assertStatus(200);
+        $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
+        $id = (string)$response->original['token'];
+        $transaction = $transactionManager->getTransaction($id);
+        $this->assertTrue($transaction->accountCurrencyPriceUsd == 10, "Amount didn't save");
+        $this->assertTrue(!$transaction->itemPriceUsd, "Item amount should have been zero or null");
+        $this->assertTrue(!$transaction->items, "Items should have been empty");
+    }
+
+    public function testBaseAmountOnCardSavesCorrectly()
+    {
+        $this->seed();
+        $user = $this->loginAsValidatedUser();
+        $response = $this->followingRedirects()->json('POST', 'accountcurrency/newCardTransaction', [
+            'cardId' => 1,
+            'amountUsd' => 10.0
+        ]);
+        $response->assertStatus(200);
+        $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
+        $id = (string)$response->original['token'];
+        $transaction = $transactionManager->getTransaction($id);
+        $this->assertTrue($transaction->accountCurrencyPriceUsd == 10, "Amount didn't save");
+        $this->assertTrue(!$transaction->itemPriceUsd, "Item amount should have been zero or null");
+        $this->assertTrue(!$transaction->items, "Items should have been empty");
+    }
+
+    public function testItemsOnCardSavesCorrectly()
+    {
+        $this->seed();
+        $user = $this->loginAsValidatedUser();
+        $response = $this->followingRedirects()->json('POST', 'accountcurrency/newCardTransaction', [
+            'cardId' => 1,
+            'amountUsd' => 0.0,
+            'items' => ['TESTITEM']
+        ]);
+        $response->assertStatus(200);
+        $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
+        $id = (string)$response->original['token'];
+        $transaction = $transactionManager->getTransaction($id);
+        $this->assertTrue($transaction->accountCurrencyPriceUsd == 0, "Amount should be 0");
+        $this->assertTrue($transaction->itemPriceUsd > 0.0, "Item price should have a value");
+        $this->assertTrue(count($transaction->items) > 0, "Items array should have an item");
+    }
+
+    public function testItemsOnPayPalSavesCorrectly()
+    {
+        $this->seed();
+        $user = $this->loginAsValidatedUser();
+        $response = $this->followingRedirects()->json('POST', 'accountcurrency/newPayPalTransaction', [
+            'amountUsd' => 0.0,
+            'items' => ['TESTITEM']
+        ]);
+        $response->assertStatus(200);
+        $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
+        $id = (string)$response->original['token'];
+        $transaction = $transactionManager->getTransaction($id);
+        $this->assertTrue($transaction->accountCurrencyPriceUsd == 0, "Amount should be 0");
+        $this->assertTrue($transaction->itemPriceUsd > 0.0, "Item price should have a value");
+        $this->assertTrue(count($transaction->items) > 0, "Items array should have an item");
+    }
+
 
     public function testUpdatedExternalIdUpdatesAndPersists()
     {

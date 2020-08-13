@@ -19,8 +19,12 @@ class PaymentTransaction
     public $purchaseDescription = "";
     public $accountCurrencyQuoted = 0;
     public $accountCurrencyRewarded = 0;
-    public $totalPriceUsd = 0.0;
+    public $accountCurrencyPriceUsd = 0.0;
+    public $itemPriceUsd = 0.0;
     public $recurringInterval = null;
+
+    //Because item details/pricing might change this was the item code, name and amount_usd at the time of the transaction
+    public $items;
 
     public $createdAt = null;
     public $completedAt = null;
@@ -29,6 +33,11 @@ class PaymentTransaction
 
     public $status = 'unknown';
     public $open = true;
+
+    public function totalPriceUsd()
+    {
+        return $this->accountCurrencyPriceUsd + $this->itemPriceUsd;
+    }
 
     /**
      * Produces the array used to offer a user the chance to accept/decline the transaction
@@ -39,10 +48,10 @@ class PaymentTransaction
         $clientArray = [
             "token" => $this->id,
             "purchase" => $this->purchaseDescription,
-            "price" => "$" . round($this->totalPriceUsd, 2)
+            "price" => "$" . round($this->accountCurrencyPriceUsd, 2)
         ];
 
-        if ($this->recurringInterval) $clientArray['note'] = "$" . round($this->totalPriceUsd, 2)
+        if ($this->recurringInterval) $clientArray['note'] = "$" . round($this->accountCurrencyPriceUsd, 2)
             . ' will be recharged every ' . $this->recurringInterval . ' days.';
 
         return $clientArray;
@@ -56,7 +65,7 @@ class PaymentTransaction
             "purchase_description" => $this->purchaseDescription,
             "account_currency_quoted" => $this->accountCurrencyQuoted,
             "account_currency_rewarded" => $this->accountCurrencyRewarded,
-            "total_usd" => $this->totalPriceUsd,
+            "total_usd" => $this->accountCurrencyPriceUsd,
             "open" => $this->open,
             "created_at" => $this->createdAt,
             "completed_at" => $this->completedAt,

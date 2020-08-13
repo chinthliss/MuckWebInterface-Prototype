@@ -5,9 +5,10 @@ namespace App\Payment;
 
 use App\Muck\MuckConnection;
 use App\User;
-use Composer\DependencyResolver\Transaction;
+use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class PaymentTransactionManager
@@ -35,12 +36,29 @@ class PaymentTransactionManager
 
         if ($recurringInterval) $transaction->recurringInterval = $recurringInterval;
 
-        if ($items) throw new \Exception("Not Implemented");
-
         $transaction->accountCurrencyQuoted = $this->muck->usdToAccountCurrency($usdForAccountCurrency);
         if ($transaction->accountCurrencyQuoted) {
-            $transaction->totalPriceUsd += $usdForAccountCurrency;
+            $transaction->accountCurrencyPriceUsd = $usdForAccountCurrency;
             array_push($purchases, $transaction->accountCurrencyQuoted . ' Mako');
+        }
+
+        if ($items) {
+            $itemCatalogue = resolve('App\Payment\PaymentTransactionItemCatalogue')->itemsCatalogue();
+            $itemsRecord = [];
+            foreach ($items as $item) {
+                if (!array_key_exists($item, $itemCatalogue)) {
+                    Log::error("Attempt made to purchase non-existent billing item with itemCode " . $item);
+                } else {
+                    $itemDetails = [
+                        'code' => $item,
+                        'name' => $itemCatalogue[$item]['name'],
+                        'amount_usd' => $itemCatalogue[$item]['amountUsd']
+                    ];
+                    $transaction->itemPriceUsd += $itemDetails['amount_usd'];
+                    array_push($itemsRecord, $itemDetails);
+                }
+            }
+            $transaction->items = $itemsRecord;
         }
 
         $transaction->purchaseDescription = implode('<br/>', $purchases);
@@ -50,17 +68,20 @@ class PaymentTransactionManager
 
     private function insertTransactionIntoStorage(PaymentTransaction $transaction)
     {
-        DB::table('billing_transactions')->insert([
+        $row = [
             'id' => $transaction->id,
             'account_id' => $transaction->accountId,
             'paymentprofile_id' => ($transaction->type == 'card' ? $transaction->paymentProfileId : null),
             'paymentprofile_id_txt' => ($transaction->type == 'paypal' ? $transaction->paymentProfileId : null),
-            'amount_usd' => $transaction->totalPriceUsd,
+            'amount_usd' => $transaction->accountCurrencyPriceUsd,
             'accountcurrency_quoted' => $transaction->accountCurrencyQuoted,
             'purchase_description' => $transaction->purchaseDescription,
             'recurring_interval' => $transaction->recurringInterval,
             'created_at' => Carbon::now()
-        ]);
+        ];
+        if ($transaction->itemPriceUsd) $row['amount_usd_items'] = $transaction->itemPriceUsd;
+        if ($transaction->items) $row['items_json'] = json_encode($transaction->items);
+        DB::table('billing_transactions')->insert($row);
     }
 
     public function createCardTransaction(User $user, Card $card, int $usdForAccountCurrency,
@@ -102,11 +123,13 @@ class PaymentTransactionManager
             $transaction->type = 'card';
         }
         $transaction->externalId = $row->external_id;
-        $transaction->totalPriceUsd = $row->amount_usd;
+        $transaction->accountCurrencyPriceUsd = $row->amount_usd;
         $transaction->accountCurrencyQuoted = $row->accountcurrency_quoted;
         $transaction->accountCurrencyRewarded = $row->accountcurrency_rewarded;
         $transaction->purchaseDescription = $row->purchase_description;
         $transaction->recurringInterval = $row->recurring_interval;
+        $transaction->itemPriceUsd = $row->amount_usd_items;
+        $transaction->items = json_decode($row->items_json);
         $transaction->createdAt = $row->created_at;
         $transaction->completedAt = $row->completed_at;
         $transaction->status = ($row->result ?? 'open');
@@ -126,7 +149,7 @@ class PaymentTransactionManager
                 'id' => $row->id,
                 'type' => ($row->paymentprofile_id_txt ? 'paypal' : 'card'),
                 'accountCurrency' => $row->accountcurrency_rewarded,
-                'usd' => $row->amount_usd,
+                'usd' => $row->amount_usd + $row->amount_usd_items,
                 'timeStamp' => $row->completed_at ?? $row->created_at,
                 'status' => ($row->result ?? 'open'),
                 'url' => route('accountcurrency.transaction', ["id" => $row->id])
@@ -138,14 +161,13 @@ class PaymentTransactionManager
     public function getTransaction(string $transactionId): ?PaymentTransaction
     {
         $row = DB::table('billing_transactions')->where('id', '=', $transactionId)->first();
-        return $transaction = $this->buildTransactionFromRow($row);
+        return $this->buildTransactionFromRow($row);
     }
 
     public function getTransactionFromExternalId($externalId): ?PaymentTransaction
     {
         $row = DB::table('billing_transactions')->where('external_id', '=', $externalId)->first();
-        $transaction = $this->buildTransactionFromRow($row);
-        return $transaction;
+        return $this->buildTransactionFromRow($row);
     }
 
 
@@ -153,7 +175,7 @@ class PaymentTransactionManager
     {
         // Closure reason must match one of the accepted entries by the DB
         if (!in_array($closure_reason, ['fulfilled', 'user_declined', 'vendor_refused', 'expired']))
-            throw new \Exception('Closure reason is unrecognised');
+            throw new Exception('Closure reason is unrecognised');
         $transaction->status = $closure_reason;
         $transaction->completedAt = Carbon::now();
         $transaction->accountCurrencyRewarded = $actualAmount;

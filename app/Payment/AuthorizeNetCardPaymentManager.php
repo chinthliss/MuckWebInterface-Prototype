@@ -339,7 +339,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
 
         $anetTransaction = new AnetAPI\TransactionRequestType();
         $anetTransaction->setTransactionType( "authCaptureTransaction");
-        $anetTransaction->setAmount($transaction->totalPriceUsd);
+        $anetTransaction->setAmount($transaction->accountCurrencyPriceUsd);
         $anetTransaction->setProfile($transactionCustomerProfile);
 
         $request = new AnetAPI\CreateTransactionRequest();

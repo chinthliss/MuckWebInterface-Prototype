@@ -105,63 +105,11 @@ class DatabaseSeeder extends Seeder
             'password' => '0A095F587AFCB082:EC2F0D2ACB7788E26E0A36C32C6475C589860589', //password
             'password_type' => 'SHA1SALT'
         ]);
-        $secondAid = DB::table('accounts')->where('email', 'secondvalid@test.com')->first()->aid;
 
-
-        // Payment tests
-        DB::table('billing_profiles')->insert([
-            'aid' => $validAid,
-            'profileid' => 1,
-            'defaultcard' => 1,
-            'spendinglimit' => 0
+        //Remember to do 'composer dump-autoload' before adding to this
+        $this->call([
+            BillingItemCatalogueSeeder::class,
+            BillingTransactionsSeeder::class
         ]);
-
-        DB::table('billing_paymentprofiles')->insert([
-            'id' => 1,
-            'profileid' => $validAid,
-            'paymentid' => 1,
-            'cardtype' => 'MasterCard',
-            'maskedcardnum' => 4444,
-            'expdate' => '10/2021',
-            'firstname' => '',
-            'lastname' => ''
-        ]);
-
-        //Completed card payment
-        DB::table('billing_transactions')->insert([
-            'id' => '00000000-0000-0000-0000-000000000001',
-            'account_id' => $validAid,
-            'paymentprofile_id' => 1,
-            'amount_usd' => 10,
-            'accountcurrency_quoted' => 30,
-            'accountcurrency_rewarded' => 30,
-            'purchase_description' => '30 bananas',
-            'created_at' => Carbon::now(),
-            'completed_at' => Carbon::now(),
-            'result' => 'fulfilled'
-        ]);
-
-        //Pending card payment
-        DB::table('billing_transactions')->insert([
-            'id' => '00000000-0000-0000-0000-000000000002',
-            'account_id' => $validAid,
-            'paymentprofile_id' => 1,
-            'amount_usd' => 10,
-            'accountcurrency_quoted' => 30,
-            'purchase_description' => '30 bananas',
-            'created_at' => Carbon::now()
-        ]);
-
-        //Another user's payment
-        DB::table('billing_transactions')->insert([
-            'id' => '00000000-0000-0000-0000-000000000003',
-            'account_id' => $secondAid,
-            'paymentprofile_id' => 1,
-            'amount_usd' => 10,
-            'accountcurrency_quoted' => 30,
-            'purchase_description' => '30 bananas',
-            'created_at' => Carbon::now()
-        ]);
-
     }
 }

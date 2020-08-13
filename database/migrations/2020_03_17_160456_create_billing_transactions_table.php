@@ -30,7 +30,7 @@ class CreateBillingTransactionsTable extends Migration
             $table->decimal('amount_usd', 8, 2)->unsigned()
                 ->comment("The amount for directly buying account currency.");
 
-            $table->decimal('amount_usd_items', 8, 2)->unsigned()
+            $table->decimal('amount_usd_items', 8, 2)->unsigned()->nullable()
                 ->comment("The amount for buying items.");
 
             $table->integer('accountcurrency_quoted')->unsigned();

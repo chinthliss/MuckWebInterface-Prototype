@@ -60,7 +60,7 @@
                                :id="'item_' + item.code" type="checkbox" name="items" :value="item.code"
                                :data-item-code="item.code">
                         <label class="form-check-label font-weight-bold" :for="'item_' + item.code">
-                            {{item.name + ' - $' + item.priceUsd}}
+                            {{item.name + ' - $' + item.amountUsd}}
                         </label>
                     </div>
                     <div class="mb-2">{{ item.description }}</div>

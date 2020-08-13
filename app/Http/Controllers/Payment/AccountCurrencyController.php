@@ -10,6 +10,7 @@ use App\Payment\PaymentTransactionItemCatalogue;
 use App\Payment\PaymentTransactionManager;
 use App\Payment\PayPalManager;
 use App\User;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -63,31 +64,51 @@ class AccountCurrencyController extends Controller
         return $muck->usdToAccountCurrency($amountUsd);
     }
 
+    //Returns {accountCurrencyUsd, items, recurringInterval}
+    private function parseBaseRequest(Request $request): array
+    {
+        $amountUsd = (int)$request->input('amountUsd', 0);
+        if ($amountUsd && $amountUsd < self::minimumAmountUsd)
+            throw new Exception('Amount specified was beneath minimum amount');
+
+        $items = $request->has('items') ? $request['items'] : [];
+        if (!$items && !$amountUsd)
+            throw new Exception("Transaction has no value");
+
+        $recurringInterval = $request->has('recurringInterval') ? (int)$request['recurringInterval'] : null;
+
+        return [
+            'accountCurrencyUsd' => $amountUsd,
+            'items' => $items,
+            'recurringInterval' => $recurringInterval
+        ];
+    }
+
     /**
      * @param Request $request
      * @param PayPalManager $payPalManager
      * @param PaymentTransactionManager $transactionManager
      * @return array|void
      */
-    public function newPayPalTransaction(Request $request, PayPalManager $payPalManager,
-                                         PaymentTransactionManager $transactionManager)
+    public function newPayPalTransaction(Request $request, PaymentTransactionManager $transactionManager)
     {
         /** @var User $user */
         $user = auth()->user();
 
         if (!$user) return abort(401);
 
-        $amountUsd = (int)$request->input('amountUsd', 0);
-        if (!$amountUsd || $amountUsd < self::minimumAmountUsd) return abort(400);
-
-        $recurringInterval = $request->has('recurringInterval') ? (int)$request['recurringInterval'] : null;
-
-        //Item code was previously disabled but leaving room for it here.
-        $items = $request->has('items') ? $request['items'] : [];
-        if ($items) return abort(501); //Not implemented
+        $baseDetails = null;
+        try {
+            $baseDetails = $this->parseBaseRequest($request);
+        } catch (Exception $e) {
+            abort(400);
+        }
 
         return $transactionManager->createPayPalTransaction(
-            $user, $amountUsd, $items, $recurringInterval
+            $user,
+            $baseDetails['accountCurrencyUsd'],
+            $baseDetails['items'],
+            $baseDetails['recurringInterval']
         )->toTransactionArray();
 
     }
@@ -112,17 +133,18 @@ class AccountCurrencyController extends Controller
             : $cardPaymentManager->getDefaultCardFor($user);
         if (!$card) return abort(400);
 
-        $amountUsd = (int)$request->input('amountUsd', 0);
-        if (!$amountUsd || $amountUsd < 5) return abort(400);
-
-        $recurringInterval = $request->has('recurringInterval') ? (int)$request['recurringInterval'] : null;
-
-        //Item code was previously disabled but leaving room for it here.
-        $items = $request->has('items') ? $request['items'] : [];
-        if ($items) return abort(501); //Not implemented
+        $baseDetails = null;
+        try {
+            $baseDetails = $this->parseBaseRequest($request);
+        } catch (Exception $e) {
+            abort(400);
+        }
 
         return $transactionManager->createCardTransaction(
-            $user, $card, $amountUsd, $items, $recurringInterval
+            $user, $card,
+            $baseDetails['accountCurrencyUsd'],
+            $baseDetails['items'],
+            $baseDetails['recurringInterval']
         )->toTransactionArray();
     }
 
@@ -136,7 +158,7 @@ class AccountCurrencyController extends Controller
         $muck = resolve('App\Muck\MuckConnection');
         return $muck->adjustAccountCurrency(
             $transaction->accountId,
-            $transaction->totalPriceUsd,
+            $transaction->accountCurrencyPriceUsd,
             $transaction->accountCurrencyQuoted,
             $transaction->recurringInterval != null
         );
@@ -178,7 +200,7 @@ class AccountCurrencyController extends Controller
             try {
                 $approvalUrl = $payPalManager->startPayPalOrderFor($user, $transaction);
                 return redirect($approvalUrl);
-            } catch (\Throwable $e) {
+            } catch (Exception $e) {
                 Log::info("Error during starting paypal payment: " . $e);
                 return abort(500);
             }
@@ -194,7 +216,7 @@ class AccountCurrencyController extends Controller
                 $externalId = $cardPaymentManager->chargeCardFor($user, $card, $transaction);
                 $transactionManager->updateExternalId($transaction, $externalId);
                 $paid = true;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::info("Error during card payment: " . $e);
             }
         }
@@ -209,7 +231,7 @@ class AccountCurrencyController extends Controller
         ]);
     }
 
-    public function viewTransaction(Request $request, PaymentTransactionManager $transactionManager, string $id)
+    public function viewTransaction(PaymentTransactionManager $transactionManager, string $id)
     {
         // TODO: For later, from paypal docs: with PayerID and paymentId appended to the URL.
 
@@ -227,7 +249,7 @@ class AccountCurrencyController extends Controller
         ]);
     }
 
-    public function viewTransactions(Request $request, PaymentTransactionManager $transactionManager)
+    public function viewTransactions(PaymentTransactionManager $transactionManager)
     {
         /** @var User $user */
         $user = auth()->user();
