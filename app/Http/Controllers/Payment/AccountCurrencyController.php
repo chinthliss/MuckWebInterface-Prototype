@@ -11,6 +11,7 @@ use App\Payment\PaymentTransactionManager;
 use App\Payment\PayPalManager;
 use App\User;
 use Exception;
+use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -53,11 +54,6 @@ class AccountCurrencyController extends Controller
      */
     public function usdToAccountCurrency(Request $request, MuckConnection $muck)
     {
-        /** @var User $user */
-        $user = auth()->user();
-
-        if (!$user) return abort(401);
-
         $amountUsd = (int)$request->input('amount', 0);
         if (!$amountUsd || $amountUsd < self::minimumAmountUsd) return abort(400);
 
@@ -69,11 +65,12 @@ class AccountCurrencyController extends Controller
     {
         $amountUsd = (int)$request->input('amountUsd', 0);
         if ($amountUsd && $amountUsd < self::minimumAmountUsd)
-            throw new Exception('Amount specified was beneath minimum amount');
+            throw new Exception('Amount specified was beneath minimum amount of $' . self::minimumAmountUsd . '.');
 
         $items = $request->has('items') ? $request['items'] : [];
         if (!$items && !$amountUsd)
-            throw new Exception("Transaction has no value");
+            throw new Exception("Transaction has no value.<br/>" .
+                "You need to specify either an amount or select item(s).");
 
         $recurringInterval = $request->has('recurringInterval') ? (int)$request['recurringInterval'] : null;
 
@@ -86,22 +83,19 @@ class AccountCurrencyController extends Controller
 
     /**
      * @param Request $request
-     * @param PayPalManager $payPalManager
      * @param PaymentTransactionManager $transactionManager
-     * @return array|void
+     * @return array|ResponseFactory
      */
     public function newPayPalTransaction(Request $request, PaymentTransactionManager $transactionManager)
     {
         /** @var User $user */
         $user = auth()->user();
 
-        if (!$user) return abort(401);
-
         $baseDetails = null;
         try {
             $baseDetails = $this->parseBaseRequest($request);
         } catch (Exception $e) {
-            abort(400);
+            return response($e->getMessage(), 400);
         }
 
         return $transactionManager->createPayPalTransaction(
@@ -117,7 +111,7 @@ class AccountCurrencyController extends Controller
      * @param Request $request
      * @param CardPaymentManager $cardPaymentManager
      * @param PaymentTransactionManager $transactionManager
-     * @return array|void
+     * @return array|ResponseFactory
      */
     public function newCardTransaction(Request $request, CardPaymentManager $cardPaymentManager,
                                        PaymentTransactionManager $transactionManager)
@@ -125,19 +119,17 @@ class AccountCurrencyController extends Controller
         /** @var User $user */
         $user = auth()->user();
 
-        if (!$user) return abort(401);
-
         $cardId = $request->input('cardId', null);
         $card = null;
         $card = $cardId ? $cardPaymentManager->getCardFor($user, $cardId)
             : $cardPaymentManager->getDefaultCardFor($user);
-        if (!$card) return abort(400);
+        if (!$card) return response("Default card couldn't be found or isn't valid.", 400);
 
         $baseDetails = null;
         try {
             $baseDetails = $this->parseBaseRequest($request);
         } catch (Exception $e) {
-            abort(400);
+            return response($e->getMessage(), 400);
         }
 
         return $transactionManager->createCardTransaction(
@@ -156,6 +148,9 @@ class AccountCurrencyController extends Controller
     {
         //Actual mako adjustment is done by the MUCK still, due to ingame triggers
         $muck = resolve('App\Muck\MuckConnection');
+        if ($transaction->items) {
+            Log::error("Transaction " . $transaction->id . " tried to fulfill items and the item code isn't done!");
+        }
         return $muck->adjustAccountCurrency(
             $transaction->accountId,
             $transaction->accountCurrencyPriceUsd,
@@ -238,7 +233,7 @@ class AccountCurrencyController extends Controller
         /** @var User $user */
         $user = auth()->user();
 
-        if (!$id || !$user) return abort(401);
+        if (!$id) return abort(401);
 
         $transaction = $transactionManager->getTransaction($id);
 

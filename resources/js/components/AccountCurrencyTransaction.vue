@@ -15,7 +15,7 @@
 
                 <div class="row">
                     <dt class="col-sm-3">Purchase Description</dt>
-                    <dd class="col-sm-9">{{ transaction.purchase_description }}</dd>
+                    <dd class="col-sm-9" v-html="transaction.purchase_description"></dd>
                 </div>
 
                 <div class="row">

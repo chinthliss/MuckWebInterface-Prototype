@@ -19,25 +19,25 @@
             </div>
             <div class="row mb-2 justify-content-center">
                 <div class="col-12 col-md-5 col-lg-3 text-center">
-                    <label for="cardAmount">Amount</label>
-                    <input id="cardAmount" style="width:5em;" type="number" v-model="cardAmount"
-                           @change="cardAmountChanged" value="10" min="5" step="5">
+                    <label for="baseAmount">Amount</label>
+                    <input id="baseAmount" style="width:5em;" type="number" v-model="baseAmount"
+                           @change="baseAmountChanged" value="10" min="5" step="5">
                 </div>
                 <div class="col-12 col-md-5 col-lg-3 text-center">
-                    <span v-if="cardAmountExchange">You'll get {{ cardAmountExchange }} <img :src="accountCurrencyImage"
+                    <span v-if="baseAmountExchange">You'll get {{ baseAmountExchange }} <img :src="accountCurrencyImage"
                                                                                              alt="Account Currency Image"></span>
                 </div>
             </div>
             <div class="row mb-2 justify-content-center">
                 <div class="col-12 col-md-6 text-center">
-                    <label for="cardRecurring">Make this a recurring payment?</label>
-                    <input id="cardRecurring" v-model="cardRecurring" type="checkbox">
+                    <label for="recurring">Make this a recurring payment?</label>
+                    <input id="recurring" v-model="recurring" type="checkbox">
                 </div>
             </div>
-            <div class="row mb-2 justify-content-center" v-if="cardRecurring.valueOf()">
+            <div class="row mb-2 justify-content-center" v-if="recurring.valueOf()">
                 <div class="col-12 col-md-6 text-center">
-                    <label for="cardRecurringInterval">Recurring Interval</label>
-                    <select v-model="cardRecurringInterval" id="cardRecurringInterval" class="custom-select">
+                    <label for="recurringInterval">Recurring Interval</label>
+                    <select v-model="recurringInterval" id="recurringInterval" class="custom-select">
                         <option value="7">Every 7 days</option>
                         <option value="14">Every 14 days</option>
                         <option value="30" selected>Every 30 days</option>
@@ -60,7 +60,7 @@
                                :id="'item_' + item.code" type="checkbox" name="items" :value="item.code"
                                :data-item-code="item.code">
                         <label class="form-check-label font-weight-bold" :for="'item_' + item.code">
-                            {{item.name + ' - $' + item.amountUsd}}
+                            {{ item.name + ' - $' + item.amountUsd }}
                         </label>
                     </div>
                     <div class="mb-2">{{ item.description }}</div>
@@ -90,70 +90,83 @@
                                     @transaction-accepted="transactionAccepted"
                                     @transaction-declined="transactionDeclined"
         ></dialog-approve-transaction>
+        <dialog-message id="messageModal"
+                        :content="message_dialog_content"
+                        :header="message_dialog_header"
+        ></dialog-message>
     </div>
 </template>
 
 <script>
 import DialogApproveTransaction from "./DialogApproveTransaction";
+import DialogMessage from "./DialogMessage";
 
 export default {
     name: "account-currency-buy",
-    components: {DialogApproveTransaction},
+    components: {DialogApproveTransaction, DialogMessage},
     props: [
         'defaultCardMaskedNumber', 'account', 'suggestedAmounts',
         'cardManagementPage', 'accountCurrencyImage', 'itemCatalogue'
     ],
     data: function () {
         return {
-            'cardRecurring': false,
-            'cardRecurringInterval': '90',
-            'cardAmount': 0,
-            'cardAmountExchange': 0,
+            'recurring': false,
+            'recurringInterval': '90',
+            'baseAmount': 0,
+            'baseAmountExchange': 0,
             'transaction': {
                 'purchase': 'test'
-            }
+            },
+            'message_dialog_header': '',
+            'message_dialog_content': ''
+
         }
     },
     methods: {
-        buildPurchaseRequest: function() {
+        buildPurchaseRequest: function () {
             let data = {
-                'amountUsd': this.cardAmount
+                'amountUsd': this.baseAmount
             }
-            if (this.cardRecurring) data.recurringInterval = this.cardRecurringInterval;
-            let items = $.map($('.purchase-item-input:checked'), function(item) {
+            if (this.recurring) data.recurringInterval = this.recurringInterval;
+            let items = $.map($('.purchase-item-input:checked'), function (item) {
                 return $(item).data('item-code');
             });
             if (items.length > 0) data.items = items;
-            console.log(data);
             return data;
         },
         cardUseSuggestedAmount: function (e) {
-            this.cardAmount = e.currentTarget.getAttribute('data-amount');
-            this.cardAmountChanged(e);
+            this.baseAmount = e.currentTarget.getAttribute('data-amount');
+            this.baseAmountChanged(e);
         },
-        cardAmountChanged: function (e) {
-            this.cardAmountExchange = 0;
+        baseAmountChanged: function (e) {
+            this.baseAmountExchange = 0;
             axios.post('accountcurrency/fromUsd', {
-                'amount': this.cardAmount
+                'amount': this.baseAmount
             }).then(response => {
-                this.cardAmountExchange = response.data;
+                this.baseAmountExchange = response.data;
             });
+        },
+        newTransaction: function (endpoint) {
+            console.log("New transaction");
+            axios.post(endpoint, this.buildPurchaseRequest())
+                .then(response => {
+                    console.log("Oh");
+                    this.transaction = response.data;
+                    $('#approveTransactionModal').modal();
+                })
+                .catch(error => {
+                    this.message_dialog_header = 'Transaction Declined';
+                    this.message_dialog_content = error.response.data;
+                    $('#messageModal').modal();
+                });
         },
         startCardTransaction: function (e) {
             e.preventDefault();
-            axios.post('accountcurrency/newCardTransaction', this.buildPurchaseRequest())
-                .then(response => {
-                    this.transaction = response.data;
-                    $('#approveTransactionModal').modal();
-                });
+            this.newTransaction('accountcurrency/newCardTransaction');
         },
         startPayPalTransaction: function (e) {
             e.preventDefault();
-            axios.post('accountcurrency/newPayPalTransaction', this.buildPurchaseRequest())
-                .then(response => {
-                    this.transaction = response.data;
-                    $('#approveTransactionModal').modal();
-                });
+            this.newTransaction('accountcurrency/newPayPalTransaction');
         },
         transactionAccepted: function (token) {
             //Redirect to accept page - it should redirect us as required.
@@ -163,11 +176,6 @@ export default {
             //Notify the site but don't care about the result
             axios.post('accountcurrency/declineTransaction', {'token': token});
         }
-    },
-    mounted: function () {
-        let secondIndex = Object.keys(this.suggestedAmounts)[1];
-        this.cardAmount = secondIndex;
-        this.cardAmountExchange = this.suggestedAmounts[secondIndex];
     }
 }
 </script>

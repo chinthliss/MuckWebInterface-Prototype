@@ -56,6 +56,7 @@ class PaymentTransactionManager
                     ];
                     $transaction->itemPriceUsd += $itemDetails['amount_usd'];
                     array_push($itemsRecord, $itemDetails);
+                    array_push($purchases, $itemDetails['name']);
                 }
             }
             $transaction->items = $itemsRecord;

@@ -10,7 +10,7 @@
                 </div>
                 <div class="modal-body">
                     <p>Do you approve paying {{ transaction.price }} for:</p>
-                    <p>{{ transaction.purchase }}</p>
+                    <p v-html="transaction.purchase"></p>
                     <p v-if="transaction.note" class="text-muted">{{ transaction.note }}</p>
                 </div>
                 <div class="modal-footer">

@@ -48,7 +48,7 @@ class PaymentTransaction
         $clientArray = [
             "token" => $this->id,
             "purchase" => $this->purchaseDescription,
-            "price" => "$" . round($this->accountCurrencyPriceUsd, 2)
+            "price" => "$" . round($this->totalPriceUsd(), 2)
         ];
 
         if ($this->recurringInterval) $clientArray['note'] = "$" . round($this->accountCurrencyPriceUsd, 2)
@@ -65,7 +65,7 @@ class PaymentTransaction
             "purchase_description" => $this->purchaseDescription,
             "account_currency_quoted" => $this->accountCurrencyQuoted,
             "account_currency_rewarded" => $this->accountCurrencyRewarded,
-            "total_usd" => $this->accountCurrencyPriceUsd,
+            "total_usd" => $this->totalPriceUsd(),
             "open" => $this->open,
             "created_at" => $this->createdAt,
             "completed_at" => $this->completedAt,
