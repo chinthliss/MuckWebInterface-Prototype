@@ -151,6 +151,7 @@ class PaymentTransactionManager
                 'type' => ($row->paymentprofile_id_txt ? 'paypal' : 'card'),
                 'accountCurrency' => $row->accountcurrency_rewarded,
                 'usd' => $row->amount_usd + $row->amount_usd_items,
+                'items' => ($row->items_json != null) ? 'Y' : '',
                 'timeStamp' => $row->completed_at ?? $row->created_at,
                 'status' => ($row->result ?? 'open'),
                 'url' => route('accountcurrency.transaction', ["id" => $row->id])

@@ -10,6 +10,7 @@
                     <th scope="col">Type</th>
                     <th scope="col">USD</th>
                     <th scope="col">Account Currency</th>
+                    <th scope="col">Items?</th>
                     <th scope="col">Status</th>
                 </tr>
                 </thead>
@@ -20,6 +21,7 @@
                         <td>{{ transaction.type }}</td>
                         <td>${{ transaction.usd }}</td>
                         <td>{{ transaction.accountCurrency }}</td>
+                        <td>{{ transaction.items }}</td>
                         <td>{{ transaction.status }}</td>
                     </tr>
                 </tbody>
