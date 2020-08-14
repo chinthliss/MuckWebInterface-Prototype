@@ -20,7 +20,8 @@ class PaymentTransactionItemCatalogue
                 $this->itemsCatalogue[$row->code] = [
                     'name' => $row->name,
                     'description' => $row->description,
-                    'amountUsd' => $row->amount_usd
+                    'amountUsd' => $row->amount_usd,
+                    'supporter' => ($row->supporter == 1)
                 ];
             }
         }
@@ -56,7 +57,8 @@ class PaymentTransactionItemCatalogue
             "code" => $itemCode,
             "name" => $item['name'],
             "description" => $item['description'],
-            "amountUsd" => $item['amountUsd']
+            "amountUsd" => $item['amountUsd'],
+            "supporter" => $item['supporter']
         ];
     }
 }

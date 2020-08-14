@@ -53,7 +53,7 @@
             <!-- Items -->
             <div>
                 <h4>Add-on Items</h4>
-                <p>Add-on items reward supporter points. TODO: Add link to help page on supporter</p>
+                <p>Some items marked below reward supporter points. TODO: Add link to help page on supporter once help page exists.</p>
                 <div v-for="item in itemCatalogue">
                     <div class="form-check">
                         <input class="form-check-input purchase-item-input"
@@ -62,6 +62,7 @@
                         <label class="form-check-label font-weight-bold" :for="'item_' + item.code">
                             {{ item.name + ' - $' + item.amountUsd }}
                         </label>
+                        <span v-if="item.supporter" class="badge badge-primary">Supporter</span>
                     </div>
                     <div class="mb-2">{{ item.description }}</div>
                 </div>

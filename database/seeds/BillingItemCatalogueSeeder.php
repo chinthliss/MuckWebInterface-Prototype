@@ -15,7 +15,7 @@ class BillingItemCatalogueSeeder extends Seeder
             'code' => 'TESTITEM',
             'name' => 'Test Item',
             'description' => "This is a test item.",
-            'amount_usd' => 10.00
+            'amount_usd' => 5.00
         ]);
 
         DB::table('billing_itemcatalogue')->insert([
@@ -25,5 +25,12 @@ class BillingItemCatalogueSeeder extends Seeder
             'amount_usd' => 10.00
         ]);
 
+        DB::table('billing_itemcatalogue')->insert([
+            'code' => 'TESTITEM3',
+            'name' => 'A supporter item',
+            'description' => "This particular test item gives supporter points!",
+            'amount_usd' => 15.00,
+            'supporter' => true
+        ]);
     }
 }

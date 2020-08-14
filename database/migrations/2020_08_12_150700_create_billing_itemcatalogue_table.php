@@ -19,6 +19,8 @@ class CreateBillingItemcatalogueTable extends Migration
                 $table->string('name', 60);
                 $table->string('description');
                 $table->decimal('amount_usd', 8,2);
+                $table->boolean('supporter')->nullable()
+                    ->comment("Whether this item awards supporter points");
             });
         }
     }
