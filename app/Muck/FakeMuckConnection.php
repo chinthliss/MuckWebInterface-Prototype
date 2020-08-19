@@ -83,9 +83,21 @@ class FakeMuckConnection implements MuckConnection
         return $amount * 3;
     }
 
-    public function adjustAccountCurrency(int $accountId, int $usdAmount, int $accountCurrency, bool $is_subscription)
+    /**
+     * @inheritDoc
+     */
+    public function adjustAccountCurrency(int $accountId, int $usdAmount,
+                                          int $accountCurrency, ?string $subscriptionId): int
     {
         // Nothing done by the fake method
+        return $accountCurrency;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function rewardItem(int $accountId, int $usdAmount, int $accountCurrency, string $itemCode): int
+    {
         return $accountCurrency;
     }
 }

@@ -40,6 +40,7 @@ interface MuckConnection
      * @return bool
      */
     public function validateCredentials(MuckCharacter $character, array $credentials);
+
     //endregion Auth
 
     public function usdToAccountCurrency(int $amount);
@@ -49,9 +50,17 @@ interface MuckConnection
      * @param int $accountId
      * @param int $usdAmount
      * @param int $accountCurrency
-     * @param bool $is_subscription
+     * @param ?string $subscriptionId
      * @return int accountCurrencyRewarded
      */
-    public function adjustAccountCurrency(int $accountId, int $usdAmount, int $accountCurrency, bool $is_subscription);
+    public function adjustAccountCurrency(int $accountId, int $usdAmount, int $accountCurrency, ?string $subscriptionId): int;
 
+    /**
+     * @param int $acacountId
+     * @param int $usdAmount
+     * @param int $accountCurrency
+     * @param string $itemCode
+     * @return int accountCurrencyRewarded
+     */
+    public function rewardItem(int $acacountId, int $usdAmount, int $accountCurrency, string $itemCode): int;
 }

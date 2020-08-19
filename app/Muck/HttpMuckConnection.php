@@ -5,6 +5,7 @@ namespace App\Muck;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Client;
 use Illuminate\Support\Carbon;
+use Error;
 
 class HttpMuckConnection implements MuckConnection
 {
@@ -16,10 +17,10 @@ class HttpMuckConnection implements MuckConnection
     public function __construct(array $config)
     {
         if(!array_key_exists('salt', $config))
-            throw new \Error("Salt hasn't been set in Muck connection config. Ensure MUCK_SALT is set.");
+            throw new Error("Salt hasn't been set in Muck connection config. Ensure MUCK_SALT is set.");
         $this->salt = $config['salt'];
         if (!$config['host'] || !$config['port'] || !$config['uri'])
-            throw new \Error('Configuration for muck is missing host, port or uri');
+            throw new Error('Configuration for muck is missing host, port or uri');
         $url = ($config['useHttps'] ? 'https' : 'http') . '://' . $config['host'] . ':' . $config['port'];
         $this->client = new Client([
             'base_uri' => $url
@@ -119,13 +120,31 @@ class HttpMuckConnection implements MuckConnection
         return $response;
     }
 
-    public function adjustAccountCurrency(int $accountId, int $usdAmount, int $accountCurrency, bool $isSubscription)
+    /**
+     * @inheritDoc
+     */
+    public function adjustAccountCurrency(int $accountId, int $usdAmount,
+                                          int $accountCurrency, ?string $subscriptionId): int
     {
-        $response = $this->requestFromMuck('accountCurrencyAdjust', [
+        $response = $this->requestFromMuck('adjustAccountCurrency', [
             'account' => $accountId,
             'usdAmount' => $usdAmount,
             'accountCurrency' => $accountCurrency,
-            'isSubscription' => $isSubscription
+            'subscriptionId' => $subscriptionId
+        ]);
+        return (int)$response;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function rewardItem(int $accountId, int $usdAmount, int $accountCurrency, string $itemCode): int
+    {
+        $response = $this->requestFromMuck('rewardItem', [
+            'account' => $accountId,
+            'usdAmount' => $usdAmount,
+            'accountCurrency' => $accountCurrency,
+            'itemCode' => $itemCode
         ]);
         return (int)$response;
     }
