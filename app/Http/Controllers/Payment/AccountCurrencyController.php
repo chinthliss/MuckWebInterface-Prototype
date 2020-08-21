@@ -146,17 +146,28 @@ class AccountCurrencyController extends Controller
      */
     private function fulfillTransaction(PaymentTransaction $transaction): int
     {
-        //Actual mako adjustment is done by the MUCK still, due to ingame triggers
+        //Actual fulfillment is done by the MUCK still, due to ingame triggers
         $muck = resolve('App\Muck\MuckConnection');
-        if ($transaction->items) {
-            Log::error("Transaction " . $transaction->id . " tried to fulfill items and the item code isn't done!");
-        }
-        return $muck->adjustAccountCurrency(
+
+        $accountCurrencyRewarded = $muck->adjustAccountCurrency(
             $transaction->accountId,
             $transaction->accountCurrencyPriceUsd,
             $transaction->accountCurrencyQuoted,
-            $transaction->recurringInterval != null
+            ''
         );
+
+        if ($transaction->items) {
+            foreach ($transaction->items as $item) {
+                $accountCurrencyRewarded += $muck->rewardItem(
+                    $transaction->accountId,
+                    $item->priceUsd,
+                    $item->accountCurrencyValue,
+                    $item->code
+                );
+            }
+        }
+
+        return $accountCurrencyRewarded;
     }
 
     public function declineTransaction(Request $request, PaymentTransactionManager $transactionManager)

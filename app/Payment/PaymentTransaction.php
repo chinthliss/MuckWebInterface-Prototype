@@ -23,8 +23,10 @@ class PaymentTransaction
     public $itemPriceUsd = 0.0;
     public $recurringInterval = null;
 
-    //Because item details/pricing might change this was the item code, name and amount_usd at the time of the transaction
-    public $items;
+    /**
+     * @var PaymentTransactionItem[]
+     */
+    public $items = [];
 
     public $createdAt = null;
     public $completedAt = null;

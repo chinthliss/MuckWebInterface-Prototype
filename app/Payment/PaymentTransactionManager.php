@@ -45,18 +45,20 @@ class PaymentTransactionManager
         if ($items) {
             $itemCatalogue = resolve('App\Payment\PaymentTransactionItemCatalogue')->itemsCatalogue();
             $itemsRecord = [];
-            foreach ($items as $item) {
-                if (!array_key_exists($item, $itemCatalogue)) {
-                    Log::error("Attempt made to purchase non-existent billing item with itemCode " . $item);
+            foreach ($items as $itemCode) {
+                if (!array_key_exists($itemCode, $itemCatalogue)) {
+                    Log::error("Attempt made to purchase non-existent billing item with itemCode " . $itemCode);
                 } else {
-                    $itemDetails = [
-                        'code' => $item,
-                        'name' => $itemCatalogue[$item]['name'],
-                        'amount_usd' => $itemCatalogue[$item]['amountUsd']
-                    ];
-                    $transaction->itemPriceUsd += $itemDetails['amount_usd'];
-                    array_push($itemsRecord, $itemDetails);
-                    array_push($purchases, $itemDetails['name']);
+                    $item = new PaymentTransactionItem(
+                        $itemCode,
+                        $itemCatalogue[$itemCode]['name'],
+                        1,
+                        $itemCatalogue[$itemCode]['amountUsd'],
+                        $this->muck->usdToAccountCurrency($itemCatalogue[$itemCode]['amountUsd'])
+                    );
+                    $transaction->itemPriceUsd += $item->priceUsd;
+                    array_push($itemsRecord, $item);
+                    array_push($purchases, $item->name);
                 }
             }
             $transaction->items = $itemsRecord;
@@ -81,7 +83,9 @@ class PaymentTransactionManager
             'created_at' => Carbon::now()
         ];
         if ($transaction->itemPriceUsd) $row['amount_usd_items'] = $transaction->itemPriceUsd;
-        if ($transaction->items) $row['items_json'] = json_encode($transaction->items);
+        if ($transaction->items) $row['items_json'] = json_encode(array_map(function ($item) {
+            return $item->toArray();
+        }, $transaction->items));
         DB::table('billing_transactions')->insert($row);
     }
 
@@ -130,7 +134,12 @@ class PaymentTransactionManager
         $transaction->purchaseDescription = $row->purchase_description;
         $transaction->recurringInterval = $row->recurring_interval;
         $transaction->itemPriceUsd = $row->amount_usd_items;
-        $transaction->items = json_decode($row->items_json);
+        //$transaction->items = json_decode($row->items_json);
+        if ($row->items_json) {
+            foreach (json_decode($row->items_json) as $itemArray) {
+                array_push($transaction->items, PaymentTransactionItem::fromArray($itemArray));
+            }
+        }
         $transaction->createdAt = $row->created_at;
         $transaction->completedAt = $row->completed_at;
         $transaction->status = ($row->result ?? 'open');
