@@ -173,7 +173,7 @@ class AccountCurrencyTransactionTest extends TestCase
         $this->assertTrue(!$transaction->items, "Items should have been empty");
     }
 
-    private  function testItemSavesCorrectly($transactionId)
+    private function internalTestItemSavesCorrectly($transactionId)
     {
         $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
         $transaction = $transactionManager->getTransaction($transactionId);
@@ -197,7 +197,7 @@ class AccountCurrencyTransactionTest extends TestCase
         ]);
         $response->assertStatus(200);
         $transactionId = (string)$response->original['token'];
-        $this->testItemSavesCorrectly($transactionId);
+        $this->internalTestItemSavesCorrectly($transactionId);
     }
 
     public function testItemsOnPayPalSavesCorrectly()
@@ -210,7 +210,7 @@ class AccountCurrencyTransactionTest extends TestCase
         ]);
         $response->assertStatus(200);
         $transactionId = (string)$response->original['token'];
-        $this->testItemSavesCorrectly($transactionId);
+        $this->internalTestItemSavesCorrectly($transactionId);
     }
 
 
