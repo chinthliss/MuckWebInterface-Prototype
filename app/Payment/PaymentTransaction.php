@@ -17,10 +17,29 @@ class PaymentTransaction
     public $externalId = null; //Vendor's ID
 
     public $purchaseDescription = "";
-    public $accountCurrencyQuoted = 0;
-    public $accountCurrencyRewarded = 0;
+
+    /**
+     * @var float The USD value associated with only an account currency purchase
+     */
     public $accountCurrencyPriceUsd = 0.0;
+
+    /**
+     * @var float The USD value associated with item purchases
+     */
     public $itemPriceUsd = 0.0;
+
+    public $accountCurrencyQuoted = 0;
+
+    /**
+     * @var int Account currency rewarded from direct purchase - can vary due to bonuses
+     */
+    public $accountCurrencyRewarded = 0;
+
+    /**
+     * @var int Any account currency that was rewarded for item purchases.
+     */
+    public $accountCurrencyRewardedForItems = 0;
+
     public $recurringInterval = null;
 
     /**
@@ -40,6 +59,12 @@ class PaymentTransaction
     {
         return $this->accountCurrencyPriceUsd + $this->itemPriceUsd;
     }
+
+    public function totalAccountCurrencyRewarded()
+    {
+        return $this->accountCurrencyRewarded + $this->accountCurrencyRewardedForItems;
+    }
+
 
     /**
      * Produces the array used to offer a user the chance to accept/decline the transaction
@@ -67,6 +92,8 @@ class PaymentTransaction
             "purchase_description" => $this->purchaseDescription,
             "account_currency_quoted" => $this->accountCurrencyQuoted,
             "account_currency_rewarded" => $this->accountCurrencyRewarded,
+            "account_currency_rewarded_items" => $this->accountCurrencyRewardedForItems,
+            "total_account_currency_rewarded" => $this->totalAccountCurrencyRewarded(),
             "total_usd" => $this->totalPriceUsd(),
             "open" => $this->open,
             "created_at" => $this->createdAt,

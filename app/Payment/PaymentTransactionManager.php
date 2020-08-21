@@ -77,12 +77,12 @@ class PaymentTransactionManager
             'paymentprofile_id' => ($transaction->type == 'card' ? $transaction->paymentProfileId : null),
             'paymentprofile_id_txt' => ($transaction->type == 'paypal' ? $transaction->paymentProfileId : null),
             'amount_usd' => $transaction->accountCurrencyPriceUsd,
+            'amount_usd_items' => $transaction->itemPriceUsd,
             'accountcurrency_quoted' => $transaction->accountCurrencyQuoted,
             'purchase_description' => $transaction->purchaseDescription,
             'recurring_interval' => $transaction->recurringInterval,
             'created_at' => Carbon::now()
         ];
-        if ($transaction->itemPriceUsd) $row['amount_usd_items'] = $transaction->itemPriceUsd;
         if ($transaction->items) $row['items_json'] = json_encode(array_map(function ($item) {
             return $item->toArray();
         }, $transaction->items));
@@ -131,6 +131,7 @@ class PaymentTransactionManager
         $transaction->accountCurrencyPriceUsd = $row->amount_usd;
         $transaction->accountCurrencyQuoted = $row->accountcurrency_quoted;
         $transaction->accountCurrencyRewarded = $row->accountcurrency_rewarded;
+        $transaction->accountCurrencyRewardedForItems = $row->accountcurrency_rewarded_items;
         $transaction->purchaseDescription = $row->purchase_description;
         $transaction->recurringInterval = $row->recurring_interval;
         $transaction->itemPriceUsd = $row->amount_usd_items;
@@ -155,15 +156,16 @@ class PaymentTransactionManager
             ->get();
         $result = [];
         foreach ($rows as $row) {
-            $result[$row->id] = [
-                'id' => $row->id,
-                'type' => ($row->paymentprofile_id_txt ? 'paypal' : 'card'),
-                'accountCurrency' => $row->accountcurrency_rewarded,
-                'usd' => $row->amount_usd + $row->amount_usd_items,
-                'items' => ($row->items_json != null) ? 'Y' : '',
-                'timeStamp' => $row->completed_at ?? $row->created_at,
-                'status' => ($row->result ?? 'open'),
-                'url' => route('accountcurrency.transaction', ["id" => $row->id])
+            $transaction = $this->buildTransactionFromRow($row);
+            $result[$transaction->id] = [
+                'id' => $transaction->id,
+                'type' => $transaction->type,
+                'usd' => $transaction->totalPriceUsd(),
+                'accountCurrency' => $transaction->totalAccountCurrencyRewarded(),
+                'items' => count($transaction->items),
+                'timeStamp' => $transaction->completedAt ?? $transaction->createdAt,
+                'status' => ($transaction->status ?? 'open'),
+                'url' => route('accountcurrency.transaction', ["id" => $transaction->id])
             ];
         }
         return $result;
@@ -182,18 +184,18 @@ class PaymentTransactionManager
     }
 
 
-    public function closeTransaction(PaymentTransaction $transaction, string $closure_reason, int $actualAmount = null)
+    public function closeTransaction(PaymentTransaction $transaction, string $closure_reason)
     {
         // Closure reason must match one of the accepted entries by the DB
         if (!in_array($closure_reason, ['fulfilled', 'user_declined', 'vendor_refused', 'expired']))
             throw new Exception('Closure reason is unrecognised');
         $transaction->status = $closure_reason;
         $transaction->completedAt = Carbon::now();
-        $transaction->accountCurrencyRewarded = $actualAmount;
         DB::table('billing_transactions')->where('id', '=', $transaction->id)->update([
             'result' => $transaction->status,
             'completed_at' => $transaction->completedAt,
-            'accountcurrency_rewarded' => $transaction->accountCurrencyRewarded
+            'accountcurrency_rewarded' => $transaction->accountCurrencyRewarded,
+            'accountcurrency_rewarded_items' => $transaction->accountCurrencyRewardedForItems
         ]);
     }
 

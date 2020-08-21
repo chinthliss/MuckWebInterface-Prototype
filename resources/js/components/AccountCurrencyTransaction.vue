@@ -24,6 +24,11 @@
                 </div>
 
                 <div class="row">
+                    <dt class="col-sm-3">Status</dt>
+                    <dd class="col-sm-9">{{ friendlyStatus }}</dd>
+                </div>
+
+                <div class="row">
                     <dt class="col-sm-3">Created</dt>
                     <dd class="col-sm-9">{{ transaction.created_at }}</dd>
                 </div>
@@ -43,9 +48,9 @@
                     <dd class="col-sm-9">{{ transaction.account_currency_rewarded }}</dd>
                 </div>
 
-                <div class="row">
-                    <dt class="col-sm-3">Status</dt>
-                    <dd class="col-sm-9">{{ friendlyStatus }}</dd>
+                <div class="row" v-if="transaction.account_currency_rewarded_items">
+                    <dt class="col-sm-3">Additional Account Currency Rewarded from Items</dt>
+                    <dd class="col-sm-9">{{ transaction.account_currency_rewarded }}</dd>
                 </div>
             </dl>
         </div>

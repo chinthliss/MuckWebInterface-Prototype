@@ -30,13 +30,16 @@ class CreateBillingTransactionsTable extends Migration
             $table->decimal('amount_usd', 8, 2)->unsigned()
                 ->comment("The amount for directly buying account currency.");
 
-            $table->decimal('amount_usd_items', 8, 2)->unsigned()->nullable()
+            $table->decimal('amount_usd_items', 8, 2)->unsigned()
                 ->comment("The amount for buying items.");
 
             $table->integer('accountcurrency_quoted')->unsigned();
 
             $table->integer('accountcurrency_rewarded')->unsigned()->nullable()
                 ->comment("Separate since the final amount can change due to bonuses.");
+
+            $table->integer('accountcurrency_rewarded_items')->unsigned()->nullable()
+                ->comment("Any extra direct currency given from items");
 
             $table->json('items_json')->nullable()
                 ->comment("JSON encoding of item purchased along with any additional information required.");

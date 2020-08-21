@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
+use App\Payment\PaymentTransactionItem;
 
 class BillingTransactionsSeeder extends Seeder
 {
@@ -40,6 +41,7 @@ class BillingTransactionsSeeder extends Seeder
             'account_id' => $validAid,
             'paymentprofile_id' => 1,
             'amount_usd' => 10,
+            'amount_usd_items' => 0,
             'accountcurrency_quoted' => 30,
             'accountcurrency_rewarded' => 30,
             'purchase_description' => '30 bananas',
@@ -54,6 +56,7 @@ class BillingTransactionsSeeder extends Seeder
             'account_id' => $validAid,
             'paymentprofile_id' => 1,
             'amount_usd' => 10,
+            'amount_usd_items' => 0,
             'accountcurrency_quoted' => 30,
             'purchase_description' => '30 bananas',
             'created_at' => Carbon::now()
@@ -65,10 +68,30 @@ class BillingTransactionsSeeder extends Seeder
             'account_id' => $secondAid,
             'paymentprofile_id' => 1,
             'amount_usd' => 10,
+            'amount_usd_items' => 0,
             'accountcurrency_quoted' => 30,
             'purchase_description' => '30 bananas',
             'created_at' => Carbon::now()
         ]);
 
+        //Pending card payment with an item
+        $item = new PaymentTransactionItem(
+            'TESTITEM',
+            'Test Item',
+            1,
+            10.0,
+            30
+        );
+        DB::table('billing_transactions')->insert([
+            'id' => '00000000-0000-0000-0000-000000000004',
+            'account_id' => $validAid,
+            'paymentprofile_id' => 1,
+            'amount_usd' => 10,
+            'amount_usd_items' => 0,
+            'accountcurrency_quoted' => 30,
+            'purchase_description' => '30 bananas',
+            'created_at' => Carbon::now(),
+            'items_json' => json_encode([$item->toArray()])
+        ]);
     }
 }

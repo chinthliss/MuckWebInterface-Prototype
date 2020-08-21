@@ -142,14 +142,14 @@ class AccountCurrencyController extends Controller
 
     /**
      * @param PaymentTransaction $transaction
-     * @return int actualAmountEarned
+     * @return PaymentTransaction Original transaction with rewards recorded
      */
-    private function fulfillTransaction(PaymentTransaction $transaction): int
+    private function fulfillTransaction(PaymentTransaction $transaction): PaymentTransaction
     {
         //Actual fulfillment is done by the MUCK still, due to ingame triggers
         $muck = resolve('App\Muck\MuckConnection');
 
-        $accountCurrencyRewarded = $muck->adjustAccountCurrency(
+        $transaction->accountCurrencyRewarded = $muck->adjustAccountCurrency(
             $transaction->accountId,
             $transaction->accountCurrencyPriceUsd,
             $transaction->accountCurrencyQuoted,
@@ -157,8 +157,9 @@ class AccountCurrencyController extends Controller
         );
 
         if ($transaction->items) {
+            $transaction->accountCurrencyRewardedForItems = 0;
             foreach ($transaction->items as $item) {
-                $accountCurrencyRewarded += $muck->rewardItem(
+                $transaction->accountCurrencyRewardedForItems += $muck->rewardItem(
                     $transaction->accountId,
                     $item->priceUsd,
                     $item->accountCurrencyValue,
@@ -167,7 +168,7 @@ class AccountCurrencyController extends Controller
             }
         }
 
-        return $accountCurrencyRewarded;
+        return $transaction;
     }
 
     public function declineTransaction(Request $request, PaymentTransactionManager $transactionManager)
@@ -229,7 +230,7 @@ class AccountCurrencyController extends Controller
 
         if ($paid) {
             $actualAmount = $this->fulfillTransaction($transaction);
-            $transactionManager->closeTransaction($transaction, 'fulfilled', $actualAmount);
+            $transactionManager->closeTransaction($transaction, 'fulfilled');
         } else
             $transactionManager->closeTransaction($transaction, 'vendor_refused');
         return redirect()->route('accountcurrency.transaction', [
@@ -287,7 +288,7 @@ class AccountCurrencyController extends Controller
         $paid = $paypalManager->completePayPalOrder($transaction);
         if ($paid) {
             $actualAmount = $this->fulfillTransaction($transaction);
-            $transactionManager->closeTransaction($transaction, 'fulfilled', $actualAmount);
+            $transactionManager->closeTransaction($transaction, 'fulfilled');
         } else
             $transactionManager->closeTransaction($transaction, 'vendor_refused');
         return view('account-currency-transaction')->with([
