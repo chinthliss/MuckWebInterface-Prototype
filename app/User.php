@@ -303,4 +303,21 @@ class User implements Authenticatable, MustVerifyEmail
         $this->getProvider()->storeTermsOfServiceAgreement($this, $hash);
     }
 
+    #region Roles
+    protected $roles = null;
+
+    public function setRoles(array $roles)
+    {
+        $this->roles = $roles;
+    }
+
+    public function hasRole(string $role): bool
+    {
+        if ($this->roles == null) $this->getProvider()->loadRolesFor($this);
+
+        //Admin role has all other roles
+        return in_array($role, $this->roles) || in_array('admin', $this->roles);
+    }
+    #endregion Roles
+
 }

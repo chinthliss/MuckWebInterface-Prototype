@@ -97,13 +97,39 @@ class DatabaseSeeder extends Seeder
             'propdata' => 'OldHash'
         ]);
 
-        //Account 5 - Second validated user
+        //Account 5 - Second validated user, with the role of other_role
         DB::table('accounts')->insert([
             'aid' => 5,
-            'uuid' => '5555555%',
+            'uuid' => '55555555',
             'email' => 'secondvalid@test.com',
             'password' => '0A095F587AFCB082:EC2F0D2ACB7788E26E0A36C32C6475C589860589', //password
             'password_type' => 'SHA1SALT'
+        ]);
+
+        DB::table('account_roles')->insert([
+            'aid' => 5,
+            'roles' => 'other_role'
+        ]);
+
+
+        //Account 6 - Admin account
+        DB::table('accounts')->insert([
+            'aid' => 6,
+            'uuid' => '66666666',
+            'email' => 'admin@test.com',
+            'password' => '0A095F587AFCB082:EC2F0D2ACB7788E26E0A36C32C6475C589860589', //password
+            'password_type' => 'SHA1SALT'
+        ]);
+
+        DB::table('account_emails')->insert([
+            'aid' => 6,
+            'email' => 'admin@test.com',
+            'verified_at' => Carbon::now()
+        ]);
+
+        DB::table('account_roles')->insert([
+            'aid' => 6,
+            'roles' => 'admin'
         ]);
 
         //Remember to do 'composer dump-autoload' before adding to this

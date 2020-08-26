@@ -5,7 +5,6 @@ namespace App;
 use App\Muck\MuckConnection;
 use App\Helpers\MuckInterop;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Auth\UserProvider;
@@ -60,6 +59,14 @@ class DatabaseForMuckUserProvider implements UserProvider
                     break;
             }
         }
+    }
+
+    public function loadRolesFor(User $user)
+    {
+        $row = DB::table('account_roles')
+            ->where('aid', $user->getAid())
+            ->first();
+        $user->setRoles($row ? explode(',', $row->roles) : []);
     }
 
     //Used when user is logged in, called with accountId (aid)

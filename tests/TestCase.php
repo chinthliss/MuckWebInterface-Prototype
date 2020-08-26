@@ -29,4 +29,11 @@ abstract class TestCase extends BaseTestCase
         return $this->getPresentUser();
     }
 
+    // Also returns user for chaining
+    protected function loginAsAdminUser(): ?User
+    {
+        Auth::loginUsingId('6');
+        return $this->getPresentUser();
+    }
+
 }

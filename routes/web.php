@@ -79,6 +79,12 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
         ->name('accountcurrency.paypal.cancel');
 });
 
+//Website admin routes
+Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'role:admin']], function() {
+    Route::get('admin', 'AdminController@show');
+});
+
+
 //Always available
 //Character Profiles
 Route::get('p/{characterName}', 'CharacterController@show')->name('character');
