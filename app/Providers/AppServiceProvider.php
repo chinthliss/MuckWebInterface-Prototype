@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Blade;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,6 +24,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        // Add the capability of blade views to tell if user is an Admin
+        Blade::if('admin', function() {
+            $user = auth()->user();
+            return $user && $user->hasRole('admin');
+        });
     }
 }

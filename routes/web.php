@@ -81,9 +81,12 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
 
 //Website admin routes
 Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'role:admin']], function() {
-    Route::get('admin', 'AdminController@show');
+    Route::get('admin', 'AdminController@show')
+        ->name('admin.home');
+    Route::get('admin/logs', 'AdminController@showLogViewer')
+        ->name('admin.logs');
+    Route::get('admin/logs/{date}', 'AdminController@getLogForDate');
 });
-
 
 //Always available
 //Character Profiles
