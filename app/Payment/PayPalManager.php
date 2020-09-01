@@ -59,16 +59,17 @@ class PayPalManager
 
         try {
             $response = $this->client->execute($request);
-            $this->transactionManager->updateExternalId($transaction, $response->result->id);
-            // Response contains an array of links in the form {href, rel, method}.
-            // We need to find the one where rel=approve
-            foreach ($response->result->links as $link) {
-                if ($link->rel == 'approve') return $link->href;
-            }
-            throw new \Exception("No approve link given in response from PayPal.");
         } catch (HttpException $ex) {
-            throw new \Exception($ex->getMessage());
+            Log::error("Paypal - attempt to create payment got the following error: " .
+                json_encode($ex));
         }
+        $this->transactionManager->updateExternalId($transaction, $response->result->id);
+        // Response contains an array of links in the form {href, rel, method}.
+        // We need to find the one where rel=approve
+        foreach ($response->result->links as $link) {
+            if ($link->rel == 'approve') return $link->href;
+        }
+        throw new \Exception("No approve link given in response from PayPal.");
     }
 
     public function cancelPayPalOrder(PaymentTransaction $transaction)
@@ -81,12 +82,25 @@ class PayPalManager
         $request = new OrdersCaptureRequest($transaction->externalId);
         try {
             $response = $this->client->execute($request);
-            $this->transactionManager->updatePaymentProfileId($transaction, $response->result->payer->payer_id);
-            return ($response->result->status == 'COMPLETED');
         } catch (HttpException $ex) {
-            Log::error("Paypal - attempt to complete payment got the following error from PayPal: " .
+            Log::error("Paypal - attempt to complete payment got the following error: " .
                 json_encode($ex));
             return false;
         }
+        $this->transactionManager->updatePaymentProfileId($transaction, $response->result->payer->payer_id);
+        return ($response->result->status == 'COMPLETED');
+    }
+
+    public function getSubscriptionPlans(): array
+    {
+        $request = new PayPalSubscriptionsListPlans();
+        try {
+            $response = $this->client->execute($request);
+        } catch (HttpException $ex) {
+            Log::error("Paypal - attempt to get subscription plans got the following error: " .
+                json_encode($ex));
+            return false;
+        }
+        return $response->result->plans;
     }
 }
