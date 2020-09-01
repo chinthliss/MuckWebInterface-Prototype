@@ -1,0 +1,1 @@
+If this file is renamed as 'site-notice.txt' then any lines within it will appear on every page.

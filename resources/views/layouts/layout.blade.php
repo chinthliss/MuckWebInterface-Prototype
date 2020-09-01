@@ -33,10 +33,10 @@
         <div><a href="{{ route('accountcurrency') }}">Buy Account Currency</a></div>
     @endauth
 
-    @admin
-        <div><a href="{{ route('admin.home') }}">Admin Dashboard</a></div>
-        <div><a href="{{ route('admin.logs') }}">Log Viewer</a></div>
-    @endadmin
+    @Admin
+    <div><a href="{{ route('admin.home') }}">Admin Dashboard</a></div>
+    <div><a href="{{ route('admin.logs') }}">Log Viewer</a></div>
+    @endAdmin
 </nav>
 <!-- Main/Right pane -->
 <div id="mainpane">
@@ -97,11 +97,15 @@
             </div>
         </div>
     </nav>
-    <div class="container">
+    <div class="container"> <!-- Or container-fluid here depending on prefs -->
         <div class="row">
             <div class="col">
-
                 <div id="contentwrapper">
+                    <!-- Site Notice -->
+                    @SiteNotice
+                    <div class="p-3 mb-2 bg-warning text-dark rounded">@SiteNoticeContent</div>
+                    @endSiteNotice
+
                     <!-- Flashed Messages -->
                     @if ($message = Session::get('message-success'))
                         <div class="alert alert-warning alert-dismissible fade show" role="alert">
@@ -110,8 +114,9 @@
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
-                @endif
-                <!-- Content -->
+                    @endif
+
+                    <!-- Content -->
                     <main id="app">
                         @yield('content')
                     </main>
