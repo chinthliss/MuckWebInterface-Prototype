@@ -27,7 +27,6 @@ $include $lib/account
 $include $lib/kta/proto
 $include $lib/kta/json
 $include $lib/rp
-
 $include $lib/accountpurchases
 
 $def response400 descr "HTTP/1.1 400 Bad Request\r\n" descrnotify descr "\r\n" descrnotify
@@ -121,7 +120,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     webcall @ "amount" array_getitem ?dup if atoi else response400 exit then
     webcall @ "account" array_getitem ?dup if acct_any2aid else pop response400 exit then
     startAcceptedResponse
-    usd2Mako intostr 
+    usd2MakoFor intostr 
     descr swap descrnotify
 ; selfcall handleRequest_usdToAccountCurrencyFor
 

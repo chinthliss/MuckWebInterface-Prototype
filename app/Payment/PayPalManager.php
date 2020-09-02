@@ -99,7 +99,7 @@ class PayPalManager
         } catch (HttpException $ex) {
             Log::error("Paypal - attempt to get subscription plans got the following error: " .
                 json_encode($ex));
-            return false;
+            return [];
         }
         return $response->result->plans;
     }
