@@ -46,7 +46,8 @@ class HttpMuckConnection implements MuckConnection
             throw $e;
         }
         //getBody() returns a stream, so need to ensure we complete and parse such:
-        $parsedResult = $result->getBody()->getContents();
+        //The result will also have a trailing \r\n
+        $parsedResult = rtrim($result->getBody()->getContents());
         Log::debug('requestFromMuck called ' . $request . ', response: ' . json_encode($parsedResult));
         return $parsedResult;
     }
