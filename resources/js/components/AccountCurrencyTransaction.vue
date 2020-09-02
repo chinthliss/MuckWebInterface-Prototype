@@ -50,7 +50,7 @@
 
                 <div class="row" v-if="transaction.account_currency_rewarded_items">
                     <dt class="col-sm-3">Additional Account Currency Rewarded from Items</dt>
-                    <dd class="col-sm-9">{{ transaction.account_currency_rewarded }}</dd>
+                    <dd class="col-sm-9">{{ transaction.account_currency_rewarded_items }}</dd>
                 </div>
             </dl>
         </div>
