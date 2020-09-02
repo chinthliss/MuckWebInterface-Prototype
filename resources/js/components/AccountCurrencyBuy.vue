@@ -24,6 +24,7 @@
                            @change="baseAmountChanged" value="10" min="5" step="5">
                 </div>
                 <div class="col-12 col-md-5 col-lg-3 text-center">
+                    <span class="text-warning" v-if="baseAmountExchangeError">{{ baseAmountExchangeError }}</span>
                     <span v-if="baseAmountExchange">You'll get {{ baseAmountExchange }} <img :src="accountCurrencyImage"
                                                                                              alt="Account Currency Image"></span>
                 </div>
@@ -115,6 +116,7 @@ export default {
             'recurringInterval': '90',
             'baseAmount': 0,
             'baseAmountExchange': 0,
+            'baseAmountExchangeError': '',
             'transaction': {
                 'purchase': 'test'
             },
@@ -141,17 +143,18 @@ export default {
         },
         baseAmountChanged: function (e) {
             this.baseAmountExchange = 0;
+            this.baseAmountExchangeError = '';
             axios.post('accountcurrency/fromUsd', {
                 'amount': this.baseAmount
             }).then(response => {
                 this.baseAmountExchange = response.data;
+            }).catch(error => {
+                this.baseAmountExchangeError = error.response.data.message;
             });
         },
         newTransaction: function (endpoint) {
-            console.log("New transaction");
             axios.post(endpoint, this.buildPurchaseRequest())
                 .then(response => {
-                    console.log("Oh");
                     this.transaction = response.data;
                     $('#approveTransactionModal').modal();
                 })

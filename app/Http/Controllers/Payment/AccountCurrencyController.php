@@ -54,8 +54,13 @@ class AccountCurrencyController extends Controller
      */
     public function usdToAccountCurrency(Request $request, MuckConnection $muck)
     {
-        $amountUsd = (int)$request->input('amount', 0);
-        if (!$amountUsd || $amountUsd < self::minimumAmountUsd) return abort(400);
+        $amountUsd = $request->input('amount', 0);
+
+        if (!is_numeric($amountUsd) || $amountUsd - floor($amountUsd) > 0.0)
+            return abort(400, 'Whole numbers only');
+
+        if (!$amountUsd || $amountUsd < self::minimumAmountUsd)
+            return abort(400, 'Below minimum amount of $' . self::minimumAmountUsd);
 
         return $muck->usdToAccountCurrency($amountUsd);
     }
