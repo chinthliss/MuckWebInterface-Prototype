@@ -3,6 +3,8 @@
 
 namespace App\Muck;
 
+use Illuminate\Support\Facades\Log;
+
 class FakeMuckConnection implements MuckConnection
 {
 
@@ -90,6 +92,11 @@ class FakeMuckConnection implements MuckConnection
                                           int $accountCurrency, ?string $subscriptionId): int
     {
         // Nothing done by the fake method
+        Log::debug(
+            "Fake Muck adjustAccountCurrency call for AID#" . $accountId
+            . ", usdAmount=" . $usdAmount . ", accountCurrency=" . $accountCurrency
+            . ", subscriptionId=" . $subscriptionId
+        );
         return $accountCurrency;
     }
 
@@ -98,6 +105,12 @@ class FakeMuckConnection implements MuckConnection
      */
     public function rewardItem(int $accountId, int $usdAmount, int $accountCurrency, string $itemCode): int
     {
+        // Nothing done by the fake method
+        Log::debug(
+            "Fake Muck rewardItem call for AID#" . $accountId
+            . ", usdAmount=" . $usdAmount . ", accountCurrency=" . $accountCurrency
+            . ", itemCode=" . $itemCode
+        );
         return $accountCurrency;
     }
 }

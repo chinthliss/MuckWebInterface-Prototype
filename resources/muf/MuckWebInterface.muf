@@ -180,13 +180,21 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     webcall @ authenticateQuery if
         (Convert request body to dict)
         { }dict var! parsedBody
+        "" var! request
         webcall @ { "data" "POSTData" }list array_nested_get ?dup not if "" then
         foreach (key valueArray)
             "\n" array_join
-            parsedBody @ rot array_setitem parsedBody !
+            over "mwi_request" stringcmp not if 
+                request ! pop 
+            else
+                parsedBody @ rot array_setitem parsedBody !
+            then
         repeat
         (Request should have a 'mwi_request' value)
-        parsedBody @ "mwi_request" array_getitem ?dup if
+        request @ ?dup if
+            $ifdef is_dev
+                "[MWI Gateway] Request: " over strcat ", Data: " strcat parsedBody @ encodeJson strcat logStatus
+            $endif 
             prog "handleRequest_" rot strcat
             over over cancall? if parsedBody @ rot rot call 
             else pop pop response404 exit

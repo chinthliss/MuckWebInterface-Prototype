@@ -142,9 +142,8 @@ class AccountCurrencyController extends Controller
 
     /**
      * @param PaymentTransaction $transaction
-     * @return PaymentTransaction Original transaction with rewards recorded
      */
-    private function fulfillTransaction(PaymentTransaction $transaction): PaymentTransaction
+    private function fulfillTransaction(PaymentTransaction $transaction)
     {
         //Actual fulfillment is done by the MUCK still, due to ingame triggers
         $muck = resolve('App\Muck\MuckConnection');
@@ -167,8 +166,6 @@ class AccountCurrencyController extends Controller
                 );
             }
         }
-
-        return $transaction;
     }
 
     public function declineTransaction(Request $request, PaymentTransactionManager $transactionManager)
@@ -216,20 +213,24 @@ class AccountCurrencyController extends Controller
         //Otherwise we attempt to charge the card
         $paid = false;
 
-        if ($transaction->type == 'card') {
-            $cardPaymentManager = resolve('App\Payment\CardPaymentManager');
-            $card = $cardPaymentManager->getCardFor($user, $transaction->paymentProfileId);
-            try {
-                $externalId = $cardPaymentManager->chargeCardFor($user, $card, $transaction);
-                $transactionManager->updateExternalId($transaction, $externalId);
-                $paid = true;
-            } catch (Exception $e) {
-                Log::info("Error during card payment: " . $e);
+        if ($transaction->status == 'reprocess')
+            $paid = true;
+        else {
+            if ($transaction->type == 'card') {
+                $cardPaymentManager = resolve('App\Payment\CardPaymentManager');
+                $card = $cardPaymentManager->getCardFor($user, $transaction->paymentProfileId);
+                try {
+                    $externalId = $cardPaymentManager->chargeCardFor($user, $card, $transaction);
+                    $transactionManager->updateExternalId($transaction, $externalId);
+                    $paid = true;
+                } catch (Exception $e) {
+                    Log::info("Error during card payment: " . $e);
+                }
             }
         }
 
         if ($paid) {
-            $actualAmount = $this->fulfillTransaction($transaction);
+            $this->fulfillTransaction($transaction);
             $transactionManager->closeTransaction($transaction, 'fulfilled');
         } else
             $transactionManager->closeTransaction($transaction, 'vendor_refused');
@@ -284,16 +285,21 @@ class AccountCurrencyController extends Controller
                 ", but either failed to look it up or looked up row is missing externalID.");
             abort(500);
         }
-        if (!$transaction->open) return 403;
-        $paid = $paypalManager->completePayPalOrder($transaction);
-        if ($paid) {
-            $actualAmount = $this->fulfillTransaction($transaction);
-            $transactionManager->closeTransaction($transaction, 'fulfilled');
-        } else
-            $transactionManager->closeTransaction($transaction, 'vendor_refused');
-        return view('account-currency-transaction')->with([
-            'transaction' => $transaction->toArray()
-        ]);
+        if (!$transaction->open) {
+            Log::warning("Attempt to reclaim PayPal transaction " . $transaction->externalId .
+                " (User may have just pressed refresh at a bad time.)");
+        } else {
+            if ($transaction->status == 'reprocess')
+                $paid = true;
+            else
+                $paid = $paypalManager->completePayPalOrder($transaction);
+            if ($paid) {
+                $this->fulfillTransaction($transaction);
+                $transactionManager->closeTransaction($transaction, 'fulfilled');
+            } else
+                $transactionManager->closeTransaction($transaction, 'vendor_refused');
+        }
+        return redirect()->route('accountcurrency.transaction', ['id' => $transaction->id]);
     }
 
     public function paypalCancel(Request $request, PayPalManager $paypalManager,

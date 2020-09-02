@@ -59,9 +59,9 @@ class CreateBillingTransactionsTable extends Migration
                 'fulfilled',
                 'user_declined',
                 'vendor_refused',
-                'expired'
+                'expired',
+                'reprocess' // Does not seek to claim money, just reruns fulfillment
             ])->nullable();
-
         });
     }
 

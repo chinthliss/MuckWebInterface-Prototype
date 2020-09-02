@@ -17,7 +17,7 @@ class CreateBillingItemcatalogueTable extends Migration
             Schema::create('billing_itemcatalogue', function (Blueprint $table) {
                 $table->char('code', 16)->primary();
                 $table->string('name', 60);
-                $table->string('description');
+                $table->text('description');
                 $table->decimal('amount_usd', 8,2);
                 $table->boolean('supporter')->nullable()
                     ->comment("Whether this item awards supporter points");
