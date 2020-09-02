@@ -84,7 +84,7 @@ export default {
             }
         },
         classForLevel: function(level) {
-            if (level === 'ERROR') return 'text-danger';
+            if (['EMERGENCY', 'CRITICAL', 'ALERT', 'ERROR'].indexOf(level) !== -1) return 'text-danger';
             if (level === 'WARNING') return 'text-warning';
             return null;
         }
