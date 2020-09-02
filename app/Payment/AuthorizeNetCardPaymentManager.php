@@ -77,7 +77,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
         $row = DB::table('billing_profiles')->where('aid', $accountId)->first();
         if ($row) {
             $profileId = $row->profileid;
-            Log::debug('AuthorizeNet - Requesting profile#' . $profileId);
+            Log::debug('AuthorizeNet - Requesting profile#' . $profileId . ' for AID#' . $user->getAid());
             $request = new AnetAPI\GetCustomerProfileRequest();
             $request->setMerchantAuthentication($this->merchantAuthentication());
             $request->setCustomerProfileId($profileId);

@@ -1,1 +1,2 @@
-If this file is renamed as 'site-notice.txt' then any lines within it will appear on every page.
+If a 'site-notice.txt' file is created then any lines within it will appear on every page.
+NOTE: Views are cached, so after editing such a file, need to do 'php artisan view:cache' from the site's root folder.

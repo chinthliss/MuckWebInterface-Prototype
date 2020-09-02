@@ -38,6 +38,7 @@ class AppServiceProvider extends ServiceProvider
 
         Blade::directive('SiteNoticeContent', function() {
             $filePath = public_path('site-notice.txt');
+            if (!file_exists($filePath)) return "";
             return implode('<br/>', file($filePath, FILE_IGNORE_NEW_LINES));
         });
     }
