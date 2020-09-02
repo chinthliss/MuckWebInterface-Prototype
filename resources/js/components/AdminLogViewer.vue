@@ -1,7 +1,9 @@
 <style scoped>
+.log-table {
+    font-size:90%;
+}
 .log-line {
-    word-break: break-all;
-    font-size: 90%;
+    word-break: break-word;
 }
 </style>
 
@@ -14,7 +16,7 @@
                     <div v-for="date in dates"><a href="#" @click="loadDate(date, $event)">{{ date }}</a></div>
                 </div>
                 <div class="col-md-10">
-                    <table v-if="log" class="table">
+                    <table v-if="log" class="table log-table">
                         <thead>
                         <tr>
                             <th scope="col">Time</th>
