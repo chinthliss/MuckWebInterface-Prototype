@@ -79,7 +79,7 @@ class FakeMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function usdToAccountCurrency(float $amount)
+    public function usdToAccountCurrency(float $amount): ?int
     {
         //Fake value!
         return $amount * 3;

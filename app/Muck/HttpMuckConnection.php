@@ -6,6 +6,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Client;
 use Illuminate\Support\Carbon;
 use Error;
+use Illuminate\Support\Facades\Log;
 
 class HttpMuckConnection implements MuckConnection
 {
@@ -30,6 +31,7 @@ class HttpMuckConnection implements MuckConnection
 
     protected function requestFromMuck(string $request, array $data = [])
     {
+        Log::debug('requestFromMuck calling ' . $request . ' with: ' . json_encode($data));
         $data['mwi_request'] = $request;
         $data['mwi_timestamp'] = Carbon::now()->timestamp; //This is to ensure that repeated requests don't match
         $signature = sha1(http_build_query($data) . $this->salt);
@@ -44,7 +46,9 @@ class HttpMuckConnection implements MuckConnection
             throw $e;
         }
         //getBody() returns a stream, so need to ensure we complete and parse such:
-        return $result->getBody()->getContents();
+        $parsedResult = $result->getBody()->getContents();
+        Log::debug('requestFromMuck called ' . $request . ', response: ' . json_encode($parsedResult));
+        return $parsedResult;
     }
 
     /**
@@ -108,7 +112,7 @@ class HttpMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function usdToAccountCurrency(float $amount)
+    public function usdToAccountCurrency(float $amount): ?int
     {
         $user = auth()->user();
         if ( !$user || !$user->getAid() ) return null;
@@ -117,7 +121,7 @@ class HttpMuckConnection implements MuckConnection
             'amount' => $amount,
             'account' => $user->getAid()
         ]);
-        return $response;
+        return (int)$response;
     }
 
     /**

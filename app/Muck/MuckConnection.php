@@ -43,7 +43,12 @@ interface MuckConnection
 
     //endregion Auth
 
-    public function usdToAccountCurrency(float $usdAmount);
+    /**
+     * Requests a conversion quote from the muck. Returns null if amount isn't acceptable
+     * @param float $usdAmount
+     * @return int|null
+     */
+    public function usdToAccountCurrency(float $usdAmount): ?int;
 
     /**
      * Asks the muck to handle account currency rewards
