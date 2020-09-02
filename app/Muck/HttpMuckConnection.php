@@ -108,7 +108,7 @@ class HttpMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function usdToAccountCurrency(int $amount)
+    public function usdToAccountCurrency(float $amount)
     {
         $user = auth()->user();
         if ( !$user || !$user->getAid() ) return null;
@@ -123,7 +123,7 @@ class HttpMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function adjustAccountCurrency(int $accountId, int $usdAmount,
+    public function adjustAccountCurrency(int $accountId, float $usdAmount,
                                           int $accountCurrency, ?string $subscriptionId): int
     {
         $response = $this->requestFromMuck('adjustAccountCurrency', [
@@ -138,7 +138,7 @@ class HttpMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function rewardItem(int $accountId, int $usdAmount, int $accountCurrency, string $itemCode): int
+    public function rewardItem(int $accountId, float $usdAmount, int $accountCurrency, string $itemCode): int
     {
         $response = $this->requestFromMuck('rewardItem', [
             'account' => $accountId,

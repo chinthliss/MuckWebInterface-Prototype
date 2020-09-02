@@ -43,24 +43,24 @@ interface MuckConnection
 
     //endregion Auth
 
-    public function usdToAccountCurrency(int $amount);
+    public function usdToAccountCurrency(float $usdAmount);
 
     /**
      * Asks the muck to handle account currency rewards
      * @param int $accountId
-     * @param int $usdAmount
+     * @param float $usdAmount
      * @param int $accountCurrency
      * @param ?string $subscriptionId
      * @return int accountCurrencyRewarded
      */
-    public function adjustAccountCurrency(int $accountId, int $usdAmount, int $accountCurrency, ?string $subscriptionId): int;
+    public function adjustAccountCurrency(int $accountId, float $usdAmount, int $accountCurrency, ?string $subscriptionId): int;
 
     /**
      * @param int $acacountId
-     * @param int $usdAmount
+     * @param float $usdAmount
      * @param int $accountCurrency
      * @param string $itemCode
      * @return int accountCurrencyRewarded
      */
-    public function rewardItem(int $acacountId, int $usdAmount, int $accountCurrency, string $itemCode): int;
+    public function rewardItem(int $acacountId, float $usdAmount, int $accountCurrency, string $itemCode): int;
 }

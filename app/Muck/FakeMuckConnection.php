@@ -79,7 +79,7 @@ class FakeMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function usdToAccountCurrency(int $amount)
+    public function usdToAccountCurrency(float $amount)
     {
         //Fake value!
         return $amount * 3;
@@ -88,7 +88,7 @@ class FakeMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function adjustAccountCurrency(int $accountId, int $usdAmount,
+    public function adjustAccountCurrency(int $accountId, float $usdAmount,
                                           int $accountCurrency, ?string $subscriptionId): int
     {
         // Nothing done by the fake method
@@ -103,7 +103,7 @@ class FakeMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function rewardItem(int $accountId, int $usdAmount, int $accountCurrency, string $itemCode): int
+    public function rewardItem(int $accountId, float $usdAmount, int $accountCurrency, string $itemCode): int
     {
         // Nothing done by the fake method
         Log::debug(

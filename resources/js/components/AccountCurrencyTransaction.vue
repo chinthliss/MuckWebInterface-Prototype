@@ -73,7 +73,7 @@
                     case 'vendor_refused': return "Payment attempted but wasn't accepted";
                     case 'expired': return "Timed out (Expired)";
                     case 'reprocess': return "Fulfillment failed and will be reattempted.";
-                    default: return 'Unknown'
+                    default: return 'Unknown';
                 }
             }
         }

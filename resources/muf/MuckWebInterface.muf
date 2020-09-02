@@ -23,6 +23,7 @@ $ifdef is_dev
    $def allowCrossDomain 1
 $endif
 
+$def parseFloatOrInt dup "." instring if strtof else atoi then
 $include $lib/account
 $include $lib/kta/proto
 $include $lib/kta/json
@@ -117,7 +118,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 
 (Expects 'amount' and 'account', returns value in account currency)
 : handleRequest_usdToAccountCurrencyFor[ arr:webcall -- ]
-    webcall @ "amount" array_getitem ?dup if atoi else response400 exit then
+    webcall @ "amount" array_getitem ?dup if parseFloatOrInt else response400 exit then
     webcall @ "account" array_getitem ?dup if acct_any2aid else pop response400 exit then
     startAcceptedResponse
     usd2MakoFor intostr 
@@ -138,8 +139,8 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 : handleRequest_adjustAccountCurrency[ arr:webcall -- ]
     webcall @ "account" array_getitem ?dup if acct_any2aid else pop response400 exit then
     acct_aid2email (makoadjust wants such for stack order)
-    webcall @ "usdAmount" array_getitem
-    webcall @ "accountCurrency" array_getitem
+    webcall @ "usdAmount" array_getitem parseFloatOrInt
+    webcall @ "accountCurrency" array_getitem atoi
     webcall @ "subscriptionId" array_getitem 
     makoadjust var! accountCurrencyAmount
     depth popn (Other code claims Makoadjust sometimes leaves a 1 on the stack)
@@ -151,8 +152,8 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 (Excepts {account, usdAmount, accountCurrency, itemCode}, returns currency rewarded as part of such)
 : handleRequest_rewardItem[ arr:webcall -- ]
     webcall @ "account" array_getitem ?dup if acct_any2aid else pop response400 exit then var! account
-    webcall @ "usdAmount" array_getitem var! usdAmount
-    webcall @ "accountCurrency" array_getitem var! accountCurrency
+    webcall @ "usdAmount" array_getitem parseFloatOrInt var! usdAmount
+    webcall @ "accountCurrency" array_getitem atoi var! accountCurrency
     webcall @ "itemCode" array_getitem
     rewardItem var! free (Whether mako is awarded, still need to call makoadjust for other things)
     account @ usdAmount @ accountCurrency @ 
