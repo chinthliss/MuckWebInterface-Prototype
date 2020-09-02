@@ -153,12 +153,14 @@ class AccountCurrencyController extends Controller
         //Actual fulfillment is done by the MUCK still, due to ingame triggers
         $muck = resolve('App\Muck\MuckConnection');
 
-        $transaction->accountCurrencyRewarded = $muck->adjustAccountCurrency(
-            $transaction->accountId,
-            $transaction->accountCurrencyPriceUsd,
-            $transaction->accountCurrencyQuoted,
-            ''
-        );
+        if ($transaction->accountCurrencyQuoted) {
+            $transaction->accountCurrencyRewarded = $muck->adjustAccountCurrency(
+                $transaction->accountId,
+                $transaction->accountCurrencyPriceUsd,
+                $transaction->accountCurrencyQuoted,
+                ''
+            );
+        }
 
         if ($transaction->items) {
             $transaction->accountCurrencyRewardedForItems = 0;
