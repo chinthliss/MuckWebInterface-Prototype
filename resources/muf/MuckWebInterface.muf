@@ -155,8 +155,8 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     webcall @ "usdAmount" array_getitem parseFloatOrInt var! usdAmount
     webcall @ "accountCurrency" array_getitem atoi var! accountCurrency
     webcall @ "itemCode" array_getitem
-    rewardItem var! free (Whether mako is awarded, still need to call makoadjust for other things)
-    account @ usdAmount @ accountCurrency @ 
+    account @ swap usdAmount @ rewardItem var! free (Whether mako is awarded, still need to call makoadjust for other things)
+    account @ acct_aid2email usdAmount @ accountCurrency @ 
     0 (Item purchases aren't part of a subscription)
     free @ makoAdjust var! accountCurrencyAmount
     depth popn (Other code claims Makoadjust sometimes leaves a 1 on the stack)
