@@ -60,7 +60,7 @@ class CreateBillingTransactionsTable extends Migration
                 'user_declined',
                 'vendor_refused',
                 'expired',
-                'reprocess' // Does not seek to claim money, just reruns fulfillment
+                'reprocess' // Does not seek to claim money, just reruns fulfilment
             ])->nullable();
         });
     }

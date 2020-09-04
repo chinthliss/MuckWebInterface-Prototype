@@ -20,6 +20,7 @@ class FakeMuckConnection implements MuckConnection
      */
     public function retrieveByCredentials(array $credentials)
     {
+        Log::debug('MuckCall - retrieveByCredentials: ' . json_encode($credentials));
         if (array_key_exists('email', $credentials)) {
             $email = strtolower($credentials['email']);
             if ($email == 'testcharacter')
@@ -42,6 +43,8 @@ class FakeMuckConnection implements MuckConnection
      */
     public function validateCredentials(MuckCharacter $character, array $credentials)
     {
+        Log::debug('MuckCall - validateCredentials: ' . json_encode($character)
+            . ', ' . json_encode($credentials));
         if ($character->getDbref() == 1234 && $credentials['password'] == 'password') return true;
         if ($character->getDbref() == 1234 && $credentials['password'] == 'password2') return true;
         return false;
@@ -50,12 +53,12 @@ class FakeMuckConnection implements MuckConnection
     //endregion
 
 
-
     /**
      * @inheritDoc
      */
     public function getCharactersOf(int $aid)
     {
+        Log::debug('MuckCall - getCharactersOf: ' . $aid);
         $result = [];
         if ($aid == 1) {
             $result = [
@@ -72,7 +75,7 @@ class FakeMuckConnection implements MuckConnection
     public function getCharacters()
     {
         $user = auth()->user();
-        if ( !$user || !$user->getAid() ) return null;
+        if (!$user || !$user->getAid()) return null;
         return $this->getCharactersOf($user->getAid());
     }
 
@@ -81,6 +84,7 @@ class FakeMuckConnection implements MuckConnection
      */
     public function usdToAccountCurrency(float $amount): ?int
     {
+        Log::debug('MuckCall - usdToAccountCurrency: ' . $amount);
         //Fake value!
         return $amount * 3;
     }
@@ -91,6 +95,8 @@ class FakeMuckConnection implements MuckConnection
     public function adjustAccountCurrency(int $accountId, float $usdAmount,
                                           int $accountCurrency, ?string $subscriptionId): int
     {
+        Log::debug('MuckCall - adjustAccountCurrency: ' . $accountId
+            . ', ' . $usdAmount . ', ' . $accountCurrency . ', ' . $subscriptionId);
         // Nothing done by the fake method
         Log::debug(
             "Fake Muck adjustAccountCurrency call for AID#" . $accountId
@@ -105,6 +111,8 @@ class FakeMuckConnection implements MuckConnection
      */
     public function rewardItem(int $accountId, float $usdAmount, int $accountCurrency, string $itemCode): int
     {
+        Log::debug('MuckCall - rewardItem: ' . $accountId
+            . ', ' . $usdAmount . ', ' . $accountCurrency . ', ' . $itemCode);
         // Nothing done by the fake method
         Log::debug(
             "Fake Muck rewardItem call for AID#" . $accountId

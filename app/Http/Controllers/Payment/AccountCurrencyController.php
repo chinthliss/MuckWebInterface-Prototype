@@ -150,7 +150,7 @@ class AccountCurrencyController extends Controller
      */
     private function fulfillTransaction(PaymentTransaction $transaction)
     {
-        //Actual fulfillment is done by the MUCK still, due to ingame triggers
+        //Actual fulfilment is done by the MUCK still, due to ingame triggers
         $muck = resolve('App\Muck\MuckConnection');
 
         if ($transaction->accountCurrencyQuoted) {
