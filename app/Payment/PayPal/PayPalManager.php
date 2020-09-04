@@ -1,9 +1,11 @@
 <?php
 
 
-namespace App\Payment;
+namespace App\Payment\PayPal;
 
+use App\Payment\PaymentTransaction;
 use App\User;
+use App\Payment\PaymentTransactionManager;
 use Illuminate\Support\Facades\Log;
 use PayPalCheckoutSdk\Core\PayPalEnvironment;
 use PayPalCheckoutSdk\Core\PayPalHttpClient;
@@ -100,7 +102,7 @@ class PayPalManager
 
     public function getSubscriptionPlans(): array
     {
-        $request = new PayPalSubscriptionsListPlans();
+        $request = new SubscriptionsListPlans();
         try {
             $response = $this->client->execute($request);
         } catch (HttpException $ex) {
@@ -110,4 +112,18 @@ class PayPalManager
         }
         return $response->result->plans;
     }
+
+    public function getProducts(): array
+    {
+        $request = new ProductsList();
+        try {
+            $response = $this->client->execute($request);
+        } catch (HttpException $ex) {
+            Log::error("Paypal - attempt to get products got the following response: " .
+                json_encode($ex));
+            return [];
+        }
+        return $response->result->products;
+    }
+
 }

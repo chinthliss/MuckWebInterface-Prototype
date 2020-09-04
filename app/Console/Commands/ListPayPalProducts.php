@@ -5,21 +5,21 @@ namespace App\Console\Commands;
 use App\Payment\PayPal\PayPalManager;
 use Illuminate\Console\Command;
 
-class ListPayPalSubscriptions extends Command
+class ListPayPalProducts extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'paypal:listsubscriptionplans';
+    protected $signature = 'paypal:listproducts';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Lists the PayPal Subscription Plans';
+    protected $description = 'Lists the PayPal Products';
 
     /**
      * Create a new command instance.
@@ -36,7 +36,7 @@ class ListPayPalSubscriptions extends Command
      */
     public function handle(PayPalManager $payPalManager)
     {
-        $plans = $payPalManager->getSubscriptionPlans();
-        var_dump ($plans);
+        $products = $payPalManager->getProducts();
+        var_dump ($products);
     }
 }

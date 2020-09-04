@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 use App\Payment\PaymentTransactionManager;
-use App\Payment\PayPalManager;
+use App\Payment\PayPal\PayPalManager;
 use Illuminate\Support\ServiceProvider;
 use PayPalCheckoutSdk\Core\ProductionEnvironment;
 use PayPalCheckoutSdk\Core\SandboxEnvironment;

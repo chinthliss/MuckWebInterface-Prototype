@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Payment\PaymentTransaction;
 use App\Payment\PaymentTransactionItemCatalogue;
 use App\Payment\PaymentTransactionManager;
-use App\Payment\PayPalManager;
+use App\Payment\PayPal\PayPalManager;
 use App\User;
 use Exception;
 use Illuminate\Contracts\Routing\ResponseFactory;
