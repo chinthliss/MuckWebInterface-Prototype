@@ -43,7 +43,8 @@ return [
     'paypal' => [
         'account' => env('PAYPAL_ACCOUNT'),
         'clientId' => env('PAYPAL_CLIENT_ID'),
-        'secret' => env('PAYPAL_SECRET')
+        'secret' => env('PAYPAL_SECRET'),
+        'subscriptionId' => env('PAYPAL_SUBSCRIPTION_PRODUCT_ID')
     ],
 
 ];

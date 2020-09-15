@@ -31,6 +31,9 @@ class PayPalServiceProvider extends ServiceProvider
             $secret = $config['secret'];
             if (!$secret) throw new \Error('Paypal secret not set in configuration.');
 
+            $subscriptionId = $config['subscriptionId'];
+            if (!$subscriptionId) throw new \Error('Paypal subscriptionId not set in configuration.');
+
             if ($app->environment('production'))
                 $environment = new ProductionEnvironment($clientId, $secret);
             else
@@ -38,7 +41,7 @@ class PayPalServiceProvider extends ServiceProvider
 
             $paymentManager = $app->make(PaymentTransactionManager::class);
 
-            return new PayPalManager($account, $environment, $paymentManager);
+            return new PayPalManager($account, $environment, $paymentManager, $subscriptionId);
         });
     }
 

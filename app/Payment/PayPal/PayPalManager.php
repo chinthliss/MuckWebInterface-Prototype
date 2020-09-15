@@ -31,13 +31,20 @@ class PayPalManager
      */
     private $account;
 
-    public function __construct(string $account, PayPalEnvironment $environment,
-                                PaymentTransactionManager $transactionManager)
-    {
+    /**
+     * Product ID used to create subscriptions for
+     * @var string
+     */
+    private $subscriptionId;
 
+    public function __construct(string $account, PayPalEnvironment $environment,
+                                PaymentTransactionManager $transactionManager,
+                                string $subscriptionId)
+    {
         $this->account = $account;
         $this->client = new PayPalHttpClient($environment);
         $this->transactionManager = $transactionManager;
+        $this->$subscriptionId = $subscriptionId;
     }
 
     public function startPayPalOrderFor(User $user, PaymentTransaction $transaction)
@@ -102,6 +109,7 @@ class PayPalManager
 
     public function getSubscriptionPlans(): array
     {
+        Log::debug("Paypal - Getting subscription plans");
         $request = new SubscriptionsListPlans();
         try {
             $response = $this->client->execute($request);
@@ -110,7 +118,49 @@ class PayPalManager
                 json_encode($ex));
             return [];
         }
+        //TODO - Filter plans to only return appropriate ones for this application
         return $response->result->plans;
+    }
+
+    public function getSubscriptionPlan(string $frequencyDays)
+    {
+        $planId = null;
+        //TODO - write getSubscriptionPlanFor's retrival
+
+        if (!$planId) { //Need to create one
+            //TODO - Validate product exists
+            Log::debug("Paypal - creating subscription plan for " . $frequencyDays . " days for product "
+                . $this->subscriptionId);
+            $request = new SubscriptionsCreatePlan();
+            $request->prefer('return=representation');
+            $request->body = [
+                "product_id" => $this->subscriptionId ,
+                "name" => config('app.name') . " subscription plan, every " . $frequencyDays . ' days',
+                "billing_cycle" => [[
+                    "tenure_type" => "REGULAR",
+                    "total_cycles" => 0,
+                    "frequency" => [
+                        "interval_unit" => "DAY",
+                        "interval_count" => $frequencyDays
+                    ],
+                    "pricing_scheme" => [
+                        "fixed_price" => [
+                            "currency_code" => "USD",
+                            "value" => 1
+                        ]
+                    ]
+                ]]
+            ];
+            try {
+                $response = $this->client->execute($request);
+            } catch (HttpException $ex) {
+                Log::error("Paypal - attempt to create subscription plan got the following response: " .
+                    json_encode($ex));
+                return null;
+            }
+            $planId = $response->result->id;
+        }
+        return $planId;
     }
 
     public function getProducts(): array
@@ -125,5 +175,19 @@ class PayPalManager
         }
         return $response->result->products;
     }
+
+    public function getWebhooks(): array
+    {
+        $request = new WebhooksList();
+        try {
+            $response = $this->client->execute($request);
+        } catch (HttpException $ex) {
+            Log::error("Paypal - attempt to get webhooks got the following response: " .
+                json_encode($ex));
+            return [];
+        }
+        return $response->result->webhooks;
+    }
+
 
 }
