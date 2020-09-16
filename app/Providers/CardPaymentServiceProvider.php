@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Error;
 use App\Payment\CardPaymentManager;
 use App\Payment\AuthorizeNetCardPaymentManager;
 use App\Payment\FakeCardPaymentManager;
@@ -18,6 +19,9 @@ class CardPaymentServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        if (!config()->has('app.card_payment_driver'))
+            throw new Error('No card payment driver set');
+
         $this->app->singleton(CardPaymentManager::class, function($app) {
             $card_payment_driver = config('app.card_payment_driver');
             if ($card_payment_driver == 'authorizenet') {
@@ -27,7 +31,7 @@ class CardPaymentServiceProvider extends ServiceProvider
             if ($card_payment_driver == 'fake') {
                 return new FakeCardPaymentManager();
             }
-            throw new \Error('No card payment driver set');
+            throw new Error('Card payment driver set to unrecognized driver.');
         });
     }
 

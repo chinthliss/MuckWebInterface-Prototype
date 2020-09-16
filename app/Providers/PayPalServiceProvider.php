@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use Error;
 use App\Payment\PaymentTransactionManager;
 use App\Payment\PayPal\PayPalManager;
+use App\Payment\CardPaymentManager;
 use Illuminate\Support\ServiceProvider;
 use PayPalCheckoutSdk\Core\ProductionEnvironment;
 use PayPalCheckoutSdk\Core\SandboxEnvironment;
@@ -20,19 +22,26 @@ class PayPalServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton(PayPalManager::class, function ($app) {
+            if (!config()->has('services.paypal'))
+                throw new Error('Paypal settings are missing.');
+
             $config = config('services.paypal');
 
+            if (!$config->has('account'))
+                throw new Error('Paypal account not set in configuration.');
             $account = $config['account'];
-            if (!$account) throw new \Error('Paypal account not set in configuration.');
 
+            if (!$config->has('clientId'))
+                throw new Error('Paypal client_id not set in configuration.');
             $clientId = $config['clientId'];
-            if (!$clientId) throw new \Error('Paypal client_id not set in configuration.');
 
+            if (!$config->has('secret'))
+                throw new Error('Paypal secret not set in configuration.');
             $secret = $config['secret'];
-            if (!$secret) throw new \Error('Paypal secret not set in configuration.');
 
-            $subscriptionId = $config['subscriptionId'];
-            if (!$subscriptionId) throw new \Error('Paypal subscriptionId not set in configuration.');
+            if (!$config->has('subscriptionId'))
+                throw new Error('Paypal subscriptionId not set in configuration.');
+            $subscriptionId = $config[''];
 
             if ($app->environment('production'))
                 $environment = new ProductionEnvironment($clientId, $secret);
