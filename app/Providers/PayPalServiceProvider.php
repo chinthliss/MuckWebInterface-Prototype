@@ -27,21 +27,21 @@ class PayPalServiceProvider extends ServiceProvider
 
             $config = config('services.paypal');
 
-            if (!$config->has('account'))
+            if (!array_key_exists('account', $config))
                 throw new Error('Paypal account not set in configuration.');
             $account = $config['account'];
 
-            if (!$config->has('clientId'))
+            if (!array_key_exists('clientId', $config))
                 throw new Error('Paypal client_id not set in configuration.');
             $clientId = $config['clientId'];
 
-            if (!$config->has('secret'))
+            if (!array_key_exists('secret', $config))
                 throw new Error('Paypal secret not set in configuration.');
             $secret = $config['secret'];
 
-            if (!$config->has('subscriptionId'))
+            if (!array_key_exists('subscriptionId', $config))
                 throw new Error('Paypal subscriptionId not set in configuration.');
-            $subscriptionId = $config[''];
+            $subscriptionId = $config['subscriptionId'];
 
             if ($app->environment('production'))
                 $environment = new ProductionEnvironment($clientId, $secret);
