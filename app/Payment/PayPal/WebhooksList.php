@@ -13,7 +13,7 @@ class WebhooksList extends HttpRequest
 {
     function __construct()
     {
-        parent::__construct("/v1/notifications/webhooks", "GET");
+        parent::__construct("/v1/notifications/webhooks?", "GET");
 
         // $this->path = str_replace("{order_id}", urlencode($orderId), $this->path);
         $this->headers["Content-Type"] = "application/json";

@@ -13,12 +13,14 @@ class SubscriptionsListPlans extends HttpRequest
 {
     function __construct()
     {
-        parent::__construct("/v1/billing/plans", "GET");
+        parent::__construct("/v1/billing/plans?", "GET");
 
         // $this->path = str_replace("{order_id}", urlencode($orderId), $this->path);
         $this->headers["Content-Type"] = "application/json";
     }
 
-
-
+    public function prefer($prefer)
+    {
+        $this->headers["Prefer"] = $prefer;
+    }
 }

@@ -88,12 +88,17 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
     Route::get('admin/logs/{date}', 'AdminController@getLogForDate');
 });
 
+//----------------------------------------
 //Always available
+
 //Character Profiles
 Route::get('p/{characterName}', 'CharacterController@show')->name('character');
+
 //Terms of service - always viewable, does challenge if logged in.
 Route::get('account/termsofservice', 'Auth\TermsOfServiceController@view')
     ->name('auth.account.termsofservice');
 Route::post('account/termsofservice', 'Auth\TermsOfServiceController@accept')
     ->name('auth.account.termsofservice');
 
+//Paypal Notifications - this route is exempt from CSRF token. Controlled in the middleware.
+Route::post('accountcurrency/paypal_webhook', 'Payment\AccountCurrencyController@paypalWebhook');

@@ -319,7 +319,21 @@ class AccountCurrencyController extends Controller
             'transaction' => $transaction->toArray()
         ]);
     }
-    #endregion PayPal responses
 
+    public function paypalWebhook(Request $request, PayPalManager $paypalManager,
+                                 PaymentTransactionManager $transactionManager)
+    {
+        $eventType = $request->get('event_type');
+        Log::debug('Webhook occurred for event type: ' . $eventType);
+        $verified = $paypalManager->verifyWebhookIsFromPayPal($request);
+        if (!$verified) {
+            Log::warning('Call from a PayPal Webhook could not be verified: ' . $request);
+            return abort(401, 'Unverified');
+        }
+        //TODO: Paypal Webhook functionality
+        return response('OK', 200);
+    }
+
+    #endregion PayPal responses
 
 }
