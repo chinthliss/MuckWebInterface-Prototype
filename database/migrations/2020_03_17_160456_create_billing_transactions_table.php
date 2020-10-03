@@ -18,14 +18,15 @@ class CreateBillingTransactionsTable extends Migration
 
             $table->bigInteger('account_id')->index();
 
-            $table->bigInteger('paymentprofile_id')->nullable()->index()
-                ->comment('Presently used if the payment was via Authorize.Net');
+            $table->uuid('subscription_id')->nullable()->index()
+                ->comment("Optional, used if transaction was related to a subscription");
 
-            $table->string('paymentprofile_id_txt', 60)->nullable()->index()
-                ->comment("Presently used if the payment was via PayPal");
+            $table->string('vendor', 20);
 
-            $table->string('external_id', 80)->nullable()->unique()
-                ->comment("ID value for the external vendor handling the payment");
+            $table->string('vendor_profile_id', 60)->nullable()->index()
+                ->comment("With Authorize.net this is actually the cardID");
+
+            $table->string('vendor_transaction_id', 80)->nullable()->unique();
 
             $table->decimal('amount_usd', 8, 2)->unsigned()
                 ->comment("The amount for directly buying account currency.");

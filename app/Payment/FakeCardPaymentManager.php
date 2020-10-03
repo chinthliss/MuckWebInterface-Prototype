@@ -21,7 +21,6 @@ class FakeCardPaymentManager implements CardPaymentManager
         //Return if already fetched
         if (array_key_exists($accountId, $this->customerProfiles)) return $this->customerProfiles[$accountId];
 
-
         /** @var CardPaymentCustomerProfile $profile */
         $profile = null;
 
@@ -44,7 +43,6 @@ class FakeCardPaymentManager implements CardPaymentManager
                 $card->expiryDate = $row->expdate;
                 $profile->addCard($card);
             }
-
         }
         else $profile = new CardPaymentCustomerProfile(count($this->customerProfiles));
 

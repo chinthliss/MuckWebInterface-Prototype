@@ -98,8 +98,8 @@ class AccountCurrencyTransactionTest extends TestCase
         $response->assertStatus(200);
         $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
         $transaction = $transactionManager->getTransaction($token);
+        $this->assertEquals('fulfilled', $transaction->status, "Transaction status should have been fulfilled");
         $this->assertNotNull($transaction->accountCurrencyRewarded);
-
     }
 
     /**
@@ -113,9 +113,9 @@ class AccountCurrencyTransactionTest extends TestCase
         $response = $this->followingRedirects()->json('GET', 'accountcurrency/acceptTransaction', [
             'token' => $token
         ]);
-        $response->assertStatus(200);
         $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
         $transaction = $transactionManager->getTransaction($token);
+        $this->assertEquals('fulfilled', $transaction->status, "Transaction status should have been fulfilled");
         $this->assertNotNull($transaction->accountCurrencyRewardedForItems,
             "Rewarded amount for items not set.");
         $this->assertNotEquals(0, $transaction->accountCurrencyRewardedForItems,
@@ -238,30 +238,30 @@ class AccountCurrencyTransactionTest extends TestCase
     }
 
 
-    public function testUpdatedExternalIdUpdatesAndPersists()
+    public function testUpdatedVendorTransactionIdUpdatesAndPersists()
     {
         $this->seed();
         $this->loginAsValidatedUser();
         $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
         $transaction = $transactionManager->getTransaction($this->validOwnedOpenTransaction);
-        $transactionManager->updateExternalId($transaction, 'NEWTEST');
-        $this->assertTrue($transaction->externalId == 'NEWTEST', 'ExternalId not updated.');
+        $transactionManager->updateVendorTransactionId($transaction, 'NEWTEST');
+        $this->assertTrue($transaction->vendorTransactionId == 'NEWTEST', 'VendorTransactionId not updated.');
         //Refetch
         $transaction = $transactionManager->getTransaction($this->validOwnedOpenTransaction);
-        $this->assertTrue($transaction->externalId == 'NEWTEST', 'ExternalId not persisted');
+        $this->assertTrue($transaction->vendorTransactionId == 'NEWTEST', 'VendorTransactionId not persisted');
     }
 
-    public function testUpdatedPaymentProfileIdUpdatesAndPersists()
+    public function testUpdatedVendorProfileIdUpdatesAndPersists()
     {
         $this->seed();
         $this->loginAsValidatedUser();
         $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
         $transaction = $transactionManager->getTransaction($this->validOwnedOpenTransaction);
-        $transactionManager->updatePaymentProfileId($transaction, 'NEWTEST');
-        $this->assertTrue($transaction->paymentProfileId == 'NEWTEST', 'PaymentProfileId not updated.');
+        $transactionManager->updateVendorProfileId($transaction, 'NEWTEST');
+        $this->assertTrue($transaction->vendorProfileId == 'NEWTEST', 'VendorProfileId not updated.');
         //Refetch
         $transaction = $transactionManager->getTransaction($this->validOwnedOpenTransaction);
-        $this->assertTrue($transaction->paymentProfileId == 'NEWTEST', 'PaymentProfileId not persisted');
+        $this->assertTrue($transaction->vendorProfileId == 'NEWTEST', 'VendorProfileId not persisted');
     }
 
 }

@@ -39,7 +39,8 @@ class BillingTransactionsSeeder extends Seeder
         DB::table('billing_transactions')->insert([
             'id' => '00000000-0000-0000-0000-000000000001',
             'account_id' => $validAid,
-            'paymentprofile_id' => 1,
+            'vendor' => 'authorizenet',
+            'vendor_profile_id' => 1,
             'amount_usd' => 10,
             'amount_usd_items' => 0,
             'accountcurrency_quoted' => 30,
@@ -54,7 +55,8 @@ class BillingTransactionsSeeder extends Seeder
         DB::table('billing_transactions')->insert([
             'id' => '00000000-0000-0000-0000-000000000002',
             'account_id' => $validAid,
-            'paymentprofile_id' => 1,
+            'vendor' => 'authorizenet',
+            'vendor_profile_id' => 1,
             'amount_usd' => 10,
             'amount_usd_items' => 0,
             'accountcurrency_quoted' => 30,
@@ -66,7 +68,8 @@ class BillingTransactionsSeeder extends Seeder
         DB::table('billing_transactions')->insert([
             'id' => '00000000-0000-0000-0000-000000000003',
             'account_id' => $secondAid,
-            'paymentprofile_id' => 1,
+            'vendor' => 'authorizenet',
+            'vendor_profile_id' => 2,
             'amount_usd' => 10,
             'amount_usd_items' => 0,
             'accountcurrency_quoted' => 30,
@@ -85,7 +88,8 @@ class BillingTransactionsSeeder extends Seeder
         DB::table('billing_transactions')->insert([
             'id' => '00000000-0000-0000-0000-000000000004',
             'account_id' => $validAid,
-            'paymentprofile_id' => 1,
+            'vendor' => 'authorizenet',
+            'vendor_profile_id' => 1,
             'amount_usd' => 10,
             'amount_usd_items' => 0,
             'accountcurrency_quoted' => 30,

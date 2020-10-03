@@ -204,9 +204,8 @@ class AccountCurrencyController extends Controller
         $transaction = $transactionManager->getTransaction($transactionId);
 
         if ($transaction->accountId != $user->getAid() || !$transaction->open) return abort(403);
-
         // If this is a paypal transaction, we create an order with them and redirect user to their approval
-        if ($transaction->type == 'paypal') {
+        if ($transaction->vendor == 'paypal') {
             $payPalManager = resolve('App\Payment\PayPalManager');
             try {
                 $approvalUrl = $payPalManager->startPayPalOrderFor($user, $transaction);
@@ -223,12 +222,12 @@ class AccountCurrencyController extends Controller
         if ($transaction->status == 'reprocess')
             $paid = true;
         else {
-            if ($transaction->type == 'card') {
+            if ($transaction->vendor != 'paypal') {
                 $cardPaymentManager = resolve('App\Payment\CardPaymentManager');
-                $card = $cardPaymentManager->getCardFor($user, $transaction->paymentProfileId);
+                $card = $cardPaymentManager->getCardFor($user, $transaction->vendorProfileId);
                 try {
-                    $externalId = $cardPaymentManager->chargeCardFor($user, $card, $transaction);
-                    $transactionManager->updateExternalId($transaction, $externalId);
+                    $vendorTransactionId = $cardPaymentManager->chargeCardFor($user, $card, $transaction);
+                    $transactionManager->updateVendorTransactionId($transaction, $vendorTransactionId);
                     $paid = true;
                 } catch (Exception $e) {
                     Log::info("Error during card payment: " . $e);
@@ -287,13 +286,13 @@ class AccountCurrencyController extends Controller
     {
         $token = $request->get('token');
         $transaction = $transactionManager->getTransactionFromExternalId($token);
-        if (!$transaction || !$transaction->externalId) {
+        if (!$transaction || !$transaction->vendorTransactionId) {
             Log::error("PayPal - Told order " . $token . " has been accepted " .
-                ", but either failed to look it up or looked up row is missing externalID.");
+                ", but either failed to look it up or looked up row is missing vendor_transation_id.");
             abort(500);
         }
         if (!$transaction->open) {
-            Log::warning("Attempt to reclaim PayPal transaction " . $transaction->externalId .
+            Log::warning("Attempt to reclaim PayPal transaction " . $transaction->vendorTransactionId .
                 " (User may have just pressed refresh at a bad time.)");
         } else {
             if ($transaction->status == 'reprocess')

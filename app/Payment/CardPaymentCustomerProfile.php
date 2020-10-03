@@ -5,14 +5,14 @@ namespace App\Payment;
 
 
 /**
- * Basic customer profile
+ * Customer profile used for card transactions
  */
 class CardPaymentCustomerProfile
 {
     protected $id;
 
     /**
-     * @var Card[] Stored as {paymentProfileId:Card}
+     * @var Card[] Stored as {profileId:Card}
      */
     protected $cards = [];
 

@@ -74,8 +74,9 @@ class PaymentTransactionManager
         $row = [
             'id' => $transaction->id,
             'account_id' => $transaction->accountId,
-            'paymentprofile_id' => ($transaction->type == 'card' ? $transaction->paymentProfileId : null),
-            'paymentprofile_id_txt' => ($transaction->type == 'paypal' ? $transaction->paymentProfileId : null),
+            'vendor' => $transaction->vendor,
+            'vendor_profile_id' => $transaction->vendorProfileId,
+            'vendor_transaction_id' => $transaction->vendorTransactionId,
             'amount_usd' => $transaction->accountCurrencyPriceUsd,
             'amount_usd_items' => $transaction->itemPriceUsd,
             'accountcurrency_quoted' => $transaction->accountCurrencyQuoted,
@@ -93,7 +94,8 @@ class PaymentTransactionManager
                                           array $items, ?int $recurringInterval): PaymentTransaction
     {
         $transaction = $this->createStubTransaction($user, $usdForAccountCurrency, $items, $recurringInterval);
-        $transaction->type = 'card';
+        $transaction->vendor = 'authorizenet';
+        $transaction->type = 'Card';
         $transaction->paymentProfileId = $card->id;
 
         $this->insertTransactionIntoStorage($transaction);
@@ -105,7 +107,8 @@ class PaymentTransactionManager
                                             array $items, ?int $recurringInterval): PaymentTransaction
     {
         $transaction = $this->createStubTransaction($user, $usdForAccountCurrency, $items, $recurringInterval);
-        $transaction->type = 'paypal';
+        $transaction->vendor = 'paypal';
+        $transaction->type = 'Paypal';
         // PayPal payments don't get an ID until they've been through PayPal to pick an account
         $transaction->paymentProfileId = 'paypal_unattributed';
 
@@ -120,14 +123,10 @@ class PaymentTransactionManager
         $transaction = new PaymentTransaction();
         $transaction->id = $row->id;
         $transaction->accountId = $row->account_id;
-        if ($row->paymentprofile_id_txt) {
-            $transaction->paymentProfileId = $row->paymentprofile_id_txt;
-            $transaction->type = 'paypal';
-        } else {
-            $transaction->paymentProfileId = $row->paymentprofile_id;
-            $transaction->type = 'card';
-        }
-        $transaction->externalId = $row->external_id;
+        $transaction->type = ($row->vendor == 'paypal' ? 'Paypal' : 'Card');
+        $transaction->vendor = $row->vendor;
+        $transaction->vendorProfileId = $row->vendor_profile_id;
+        $transaction->vendorTransactionId = $row->vendor_transaction_id;
         $transaction->accountCurrencyPriceUsd = $row->amount_usd;
         $transaction->accountCurrencyQuoted = $row->accountcurrency_quoted;
         $transaction->accountCurrencyRewarded = $row->accountcurrency_rewarded;
@@ -179,7 +178,7 @@ class PaymentTransactionManager
 
     public function getTransactionFromExternalId($externalId): ?PaymentTransaction
     {
-        $row = DB::table('billing_transactions')->where('external_id', '=', $externalId)->first();
+        $row = DB::table('billing_transactions')->where('vendor_transaction_id', '=', $externalId)->first();
         return $this->buildTransactionFromRow($row);
     }
 
@@ -199,19 +198,19 @@ class PaymentTransactionManager
         ]);
     }
 
-    public function updateExternalId(PaymentTransaction $transaction, string $externalId)
+    public function updateVendorTransactionId(PaymentTransaction $transaction, string $vendorTransactionId)
     {
-        $transaction->externalId = $externalId;
+        $transaction->vendorTransactionId = $vendorTransactionId;
         DB::table('billing_transactions')->where('id', '=', $transaction->id)->update([
-            'external_id' => $externalId
+            'vendor_transaction_id' => $vendorTransactionId
         ]);
     }
 
-    public function updatePaymentProfileId(PaymentTransaction $transaction, string $externalId)
+    public function updateVendorProfileId(PaymentTransaction $transaction, string $vendorProfileId)
     {
-        $transaction->paymentProfileId = $externalId;
+        $transaction->vendorProfileId = $vendorProfileId;
         DB::table('billing_transactions')->where('id', '=', $transaction->id)->update([
-            'paymentprofile_id_txt' => $externalId
+            'vendor_profile_id' => $vendorProfileId
         ]);
     }
 

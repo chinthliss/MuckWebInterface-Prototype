@@ -4,18 +4,44 @@
 namespace App\Payment;
 
 //Holding class for a transactions details
-use App\User;
 
 class PaymentTransaction
 {
+    /**
+     * @var string|null
+     */
     public $id = null;
+
+    /**
+     * @var int|null
+     */
     public $accountId = null;
 
-    public $paymentProfileId = null; // May be string or int depending on vendor used
-    public $type = null; // May be Card or PayPal presently
+    /**
+     * Payment type, such as Card or Paypal
+     * @var string|null
+     */
+    public $type = null;
 
-    public $externalId = null; //Vendor's ID
+    /**
+     * Actual vendor used.
+     * @var string|null
+     */
+    public $vendor = null;
 
+    /**
+     * @var string|null
+     */
+    public $vendorProfileId = null;
+
+    /**
+     * @var string|null
+     */
+    public $vendorTransactionId = null;
+
+    /**
+     * @var string
+     */
     public $purchaseDescription = "";
 
     /**
@@ -28,6 +54,9 @@ class PaymentTransaction
      */
     public $itemPriceUsd = 0.0;
 
+    /**
+     * @var int
+     */
     public $accountCurrencyQuoted = 0;
 
     /**
@@ -40,6 +69,10 @@ class PaymentTransaction
      */
     public $accountCurrencyRewardedForItems = 0;
 
+    /**
+     * Recurring individual in days
+     * @var int|null
+     */
     public $recurringInterval = null;
 
     /**
@@ -55,12 +88,12 @@ class PaymentTransaction
     public $status = 'unknown';
     public $open = true;
 
-    public function totalPriceUsd()
+    public function totalPriceUsd(): float
     {
         return $this->accountCurrencyPriceUsd + $this->itemPriceUsd;
     }
 
-    public function totalAccountCurrencyRewarded()
+    public function totalAccountCurrencyRewarded(): int
     {
         return $this->accountCurrencyRewarded + $this->accountCurrencyRewardedForItems;
     }
@@ -70,7 +103,7 @@ class PaymentTransaction
      * Produces the array used to offer a user the chance to accept/decline the transaction
      * @return array
      */
-    public function toTransactionArray()
+    public function toTransactionArray(): array
     {
         $clientArray = [
             "token" => $this->id,
@@ -84,7 +117,7 @@ class PaymentTransaction
         return $clientArray;
     }
 
-    public function toArray()
+    public function toArray(): array
     {
         $array = [
             "id" => $this->id,

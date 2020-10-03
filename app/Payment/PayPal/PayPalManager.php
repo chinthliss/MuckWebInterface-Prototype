@@ -77,9 +77,9 @@ class PayPalManager
             Log::error("Paypal - attempt to create payment got the following response: " .
                 $ex->getMessage());
         }
-        $this->transactionManager->updateExternalId($transaction, $response->result->id);
+        $this->transactionManager->updateVendorTransactionId($transaction, $response->result->id);
         Log::debug("Paypal - created order for transaction#" . $transaction->id
-            . ", PayPalId#" . $transaction->externalId);
+            . ", PayPalId#" . $transaction->vendorTransactionId);
         // Response contains an array of links in the form {href, rel, method}.
         // We need to find the one where rel=approve
         foreach ($response->result->links as $link) {
@@ -96,8 +96,8 @@ class PayPalManager
     public function completePayPalOrder(PaymentTransaction $transaction): bool
     {
         Log::debug("Paypal - capturing transaction#" . $transaction->id
-            . ", PayPalId#" . $transaction->externalId);
-        $request = new OrdersCaptureRequest($transaction->externalId);
+            . ", PayPalId#" . $transaction->vendorTransactionId);
+        $request = new OrdersCaptureRequest($transaction->vendorTransactionId);
         try {
             $response = $this->client->execute($request);
         } catch (HttpException $ex) {
@@ -105,9 +105,9 @@ class PayPalManager
                 $ex->getMessage());
             return false;
         }
-        $this->transactionManager->updatePaymentProfileId($transaction, $response->result->payer->payer_id);
+        $this->transactionManager->updateVendorProfileId($transaction, $response->result->payer->payer_id);
         Log::debug("Paypal - captured transaction#" . $transaction->id
-            . ", PayPalId#" . $transaction->externalId . " for PayPalProfile#" . $transaction->paymentProfileId);
+            . ", PayPalId#" . $transaction->vendorTransactionId . " for PayPalProfile#" . $transaction->paymentProfileId);
         return ($response->result->status == 'COMPLETED');
     }
 
