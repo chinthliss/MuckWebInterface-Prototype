@@ -98,7 +98,7 @@ class AccountCurrencyTransactionTest extends TestCase
         $response->assertStatus(200);
         $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
         $transaction = $transactionManager->getTransaction($token);
-        $this->assertEquals('fulfilled', $transaction->status, "Transaction status should have been fulfilled");
+        $this->assertEquals('fulfilled', $transaction->result, "Transaction status should have been fulfilled");
         $this->assertNotNull($transaction->accountCurrencyRewarded);
     }
 
@@ -115,7 +115,7 @@ class AccountCurrencyTransactionTest extends TestCase
         ]);
         $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
         $transaction = $transactionManager->getTransaction($token);
-        $this->assertEquals('fulfilled', $transaction->status, "Transaction status should have been fulfilled");
+        $this->assertEquals('fulfilled', $transaction->result, "Transaction status should have been fulfilled");
         $this->assertNotNull($transaction->accountCurrencyRewardedForItems,
             "Rewarded amount for items not set.");
         $this->assertNotEquals(0, $transaction->accountCurrencyRewardedForItems,

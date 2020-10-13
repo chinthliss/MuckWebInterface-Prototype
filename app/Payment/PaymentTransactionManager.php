@@ -96,7 +96,7 @@ class PaymentTransactionManager
         $transaction = $this->createStubTransaction($user, $usdForAccountCurrency, $items, $recurringInterval);
         $transaction->vendor = 'authorizenet';
         $transaction->type = 'Card';
-        $transaction->paymentProfileId = $card->id;
+        $transaction->vendorProfileId  = $card->id;
 
         $this->insertTransactionIntoStorage($transaction);
 
@@ -110,7 +110,7 @@ class PaymentTransactionManager
         $transaction->vendor = 'paypal';
         $transaction->type = 'Paypal';
         // PayPal payments don't get an ID until they've been through PayPal to pick an account
-        $transaction->paymentProfileId = 'paypal_unattributed';
+        $transaction->vendorProfileId = 'paypal_unattributed';
 
         $this->insertTransactionIntoStorage($transaction);
 
@@ -142,8 +142,7 @@ class PaymentTransactionManager
         }
         $transaction->createdAt = $row->created_at;
         $transaction->completedAt = $row->completed_at;
-        $transaction->status = ($row->result ?? 'open');
-        $transaction->open = $row->completed_at ? false : true;
+        $transaction->result = $row->result;
         return $transaction;
     }
 
@@ -163,7 +162,7 @@ class PaymentTransactionManager
                 'accountCurrency' => $transaction->totalAccountCurrencyRewarded(),
                 'items' => count($transaction->items),
                 'timeStamp' => $transaction->completedAt ?? $transaction->createdAt,
-                'status' => ($transaction->status ?? 'open'),
+                'result' => $transaction->result,
                 'url' => route('accountcurrency.transaction', ["id" => $transaction->id])
             ];
         }
@@ -188,13 +187,21 @@ class PaymentTransactionManager
         // Closure reason must match one of the accepted entries by the DB
         if (!in_array($closure_reason, ['fulfilled', 'user_declined', 'vendor_refused', 'expired']))
             throw new Exception('Closure reason is unrecognised');
-        $transaction->status = $closure_reason;
+        $transaction->result = $closure_reason;
         $transaction->completedAt = Carbon::now();
         DB::table('billing_transactions')->where('id', '=', $transaction->id)->update([
-            'result' => $transaction->status,
+            'result' => $transaction->result,
             'completed_at' => $transaction->completedAt,
             'accountcurrency_rewarded' => $transaction->accountCurrencyRewarded,
             'accountcurrency_rewarded_items' => $transaction->accountCurrencyRewardedForItems
+        ]);
+    }
+
+    public function setPaid(PaymentTransaction $transaction)
+    {
+        $transaction->paidAt = Carbon::now();
+        DB::table('billing_transactions')->where('id', '=', $transaction->id)->update([
+            'paid_at' => $transaction->paidAt
         ]);
     }
 

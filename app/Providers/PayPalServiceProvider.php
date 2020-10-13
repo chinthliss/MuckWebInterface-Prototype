@@ -4,7 +4,7 @@ namespace App\Providers;
 
 use Error;
 use App\Payment\PaymentTransactionManager;
-use App\Payment\PayPal\PayPalManager;
+use App\Payment\PayPalManager;
 use App\Payment\CardPaymentManager;
 use Illuminate\Support\ServiceProvider;
 use PayPalCheckoutSdk\Core\ProductionEnvironment;

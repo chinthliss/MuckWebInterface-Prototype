@@ -5,15 +5,15 @@
 
 // Built using documentation at https://developer.paypal.com/docs/api/subscriptions/v1/
 
-namespace App\Payment\PayPal;
+namespace App\Payment\PayPalRequests;
 
 use PayPalHttp\HttpRequest;
 
-class SubscriptionsCreatePlan extends HttpRequest
+class ProductsList extends HttpRequest
 {
     function __construct()
     {
-        parent::__construct("/v1/billing/plans", "POST");
+        parent::__construct("/v1/catalogs/products?", "GET");
         $this->headers["Content-Type"] = "application/json";
     }
 

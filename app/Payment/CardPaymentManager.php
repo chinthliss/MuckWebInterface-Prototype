@@ -35,7 +35,7 @@ interface CardPaymentManager
      * @param float $amountToChargeUsd
      * @return string Reference
      */
-    public function chargeCardFor(User $user, Card $card, PaymentTransaction $transaction): string;
+    public function chargeCardFor(User $user, Card $card, PaymentTransaction $transaction);
 
     public function getDefaultCardFor(User $user): ?Card;
 

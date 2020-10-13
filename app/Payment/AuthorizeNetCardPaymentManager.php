@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use net\authorize\api\contract\v1 as AnetAPI;
 use net\authorize\api\controller as AnetController;
+use \Error;
+use \Exception;
+use \InvalidArgumentException;
 
 class AuthorizeNetCardPaymentManager implements CardPaymentManager
 {
@@ -17,6 +20,11 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
     private $loginId = '';
     private $transactionKey = '';
     private $endPoint = '';
+
+    /**
+     * @var PaymentTransactionManager
+     */
+    private $transactionManager;
 
     /**
      * @var array<int, AuthorizeNetCardPaymentCustomerProfile>
@@ -29,7 +37,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
      */
     private $merchantAuthentication = null;
 
-    public function __construct(array $config)
+    public function __construct(array $config, PaymentTransactionManager $transactionManager)
     {
         $endPoint = null;
         if (App::environment() !== 'production') //Not ideal but it's where they stored it.
@@ -37,10 +45,11 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
         else
             $endPoint = \net\authorize\api\constants\ANetEnvironment::PRODUCTION;
         if (!$config['loginId'] || !$config['transactionKey'])
-            throw new \Error('Configuration for Authorize.Net is missing loginId or transactionKey');
+            throw new Error('Configuration for Authorize.Net is missing loginId or transactionKey');
         $this->loginId = $config['loginId'];
         $this->transactionKey = $config['transactionKey'];
         $this->endPoint = $endPoint;
+        $this->transactionManager = $transactionManager;
     }
 
     private function refId()
@@ -164,7 +173,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
                     //Once more try to load it
                     $profile = $this->loadProfileFor($user);
                 }
-                if (!$profile) throw new \Exception("Couldn't create a profile. Response = "
+                if (!$profile) throw new Exception("Couldn't create a profile. Response = "
                     . $errorMessages[0]->getCode() . ":" . $errorMessages[0]->getText() . "\n");
             }
             DB::table('billing_profiles')->insert([
@@ -218,9 +227,9 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
             $errorMessages = $response->getMessages()->getMessage();
             if (count($errorMessages) == 1 && $errorMessages[0]->getCode() === 'E00027') {
                 // E00027 - The transaction was unsuccessful.
-                throw new \InvalidArgumentException("The transaction was unsuccessful.");
+                throw new InvalidArgumentException("The transaction was unsuccessful.");
             } else
-                throw new \Exception("Couldn't create a payment profile. Response : "
+                throw new Exception("Couldn't create a payment profile. Response : "
                     . $errorMessages[0]->getCode() . "  " . $errorMessages[0]->getText() . "\n");
         }
         $card = new Card();
@@ -261,7 +270,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
     public function deleteCardFor(User $user, Card $card): void
     {
         $profile = $this->loadProfileFor($user);
-        if (!$profile) throw new \Error("No valid profile found.");
+        if (!$profile) throw new Error("No valid profile found.");
         Log::debug('AuthorizeNet - Deleting card with PaymentProfile#' . $card->id);
         $request = new AnetAPI\DeleteCustomerPaymentProfileRequest();
         $request->setMerchantAuthentication($this->merchantAuthentication());
@@ -271,7 +280,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
         $response = $controller->executeWithApiResponse($this->endPoint);
         if (!$response || $response->getMessages()->getResultCode() != "Ok") {
             $errorMessages = $response->getMessages()->getMessage();
-            throw new \Exception("Couldn't create a payment profile. Response : "
+            throw new Exception("Couldn't create a payment profile. Response : "
                 . $errorMessages[0]->getCode() . "  " . $errorMessages[0]->getText() . "\n");
         }
         $profile->removeCard($card);
@@ -308,7 +317,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
         $response = $controller->executeWithApiResponse($this->endPoint);
         if (!$response || $response->getMessages()->getResultCode() != "Ok") {
             $errorMessages = $response->getMessages()->getMessage();
-            throw new \Exception("Couldn't update default payment profile. Response : "
+            throw new Exception("Couldn't update default payment profile. Response : "
                 . $errorMessages[0]->getCode() . "  " . $errorMessages[0]->getText() . "\n");
         }
         //This is just for historic purposes and to allow the muck easy access
@@ -325,10 +334,10 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
     /**
      * @inheritDoc
      */
-    public function chargeCardFor(User $user, Card $card, PaymentTransaction $transaction): string
+    public function chargeCardFor(User $user, Card $card, PaymentTransaction $transaction)
     {
         $profile = $this->loadProfileFor($user);
-        if (!$profile) throw new \Error("No valid profile found.");
+        if (!$profile) throw new Error("No valid profile found.");
         Log::debug('AuthorizeNet - Charging card with PaymentProfile#' . $card->id);
         $transactionPaymentProfile = new AnetAPI\PaymentProfileType();
         $transactionPaymentProfile->setPaymentProfileId($card->id);
@@ -351,7 +360,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
         $response = $controller->executeWithApiResponse($this->endPoint);
 
         if (!$response || $response->getMessages()->getResultCode() != "Ok") {
-            throw new \Exception("Error with transaction request: " .
+            throw new Exception("Error with transaction request: " .
                 $response->getMessages()->getMessage()[0]->getCode() . ":" .
                 $response->getMessages()->getMessage()[0]->getText()
             );
@@ -360,13 +369,14 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
         $transactionResponse = $response->getTransactionResponse();
 
         if (!$transactionResponse || $transactionResponse->getErrors()) {
-            throw new \Exception("Error with transaction: " .
+            throw new Exception("Error with AuthorizeNet transaction: " .
                 $transactionResponse->getErrors()[0]->getErrorCode() . ":" .
                 $transactionResponse->getErrors()[0]->getErrorText()
             );
         }
 
-        return $transactionResponse->getTransId();
+        $this->transactionManager->updateVendorTransactionId($transaction, $transactionResponse->getTransId());
+        $this->transactionManager->setPaid($transaction);
     }
 
     public function getDefaultCardFor(User $user): ?Card

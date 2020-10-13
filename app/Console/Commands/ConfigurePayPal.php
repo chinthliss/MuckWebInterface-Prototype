@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Payment\PayPal\PayPalManager;
+use App\Payment\PayPalRequests\PayPalManager;
 use Illuminate\Console\Command;
 
 class ConfigurePayPal extends Command

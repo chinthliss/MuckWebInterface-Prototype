@@ -1,11 +1,9 @@
 <?php
 
 
-namespace App\Payment\PayPal;
+namespace App\Payment;
 
-use App\Payment\PaymentTransaction;
 use App\User;
-use App\Payment\PaymentTransactionManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
@@ -14,6 +12,7 @@ use PayPalCheckoutSdk\Core\PayPalHttpClient;
 use PayPalCheckoutSdk\Orders\OrdersCaptureRequest;
 use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
 use PayPalHttp\HttpException;
+use \Exception;
 
 class PayPalManager
 {
@@ -93,7 +92,10 @@ class PayPalManager
         $this->transactionManager->closeTransaction($transaction, 'user_declined');
     }
 
-    public function completePayPalOrder(PaymentTransaction $transaction): bool
+    /**
+     * @param PaymentTransaction $transaction
+     */
+    public function completePayPalOrder(PaymentTransaction $transaction)
     {
         Log::debug("Paypal - capturing transaction#" . $transaction->id
             . ", PayPalId#" . $transaction->vendorTransactionId);
@@ -103,12 +105,17 @@ class PayPalManager
         } catch (HttpException $ex) {
             Log::error("Paypal - attempt to complete payment got the following response: " .
                 $ex->getMessage());
-            return false;
+            throw new Exception("Attempt to complete payment with Paypal failed.");
         }
+        //With PayPal we only discover the profile ID of the customer AFTER they accept
         $this->transactionManager->updateVendorProfileId($transaction, $response->result->payer->payer_id);
         Log::debug("Paypal - captured transaction#" . $transaction->id
-            . ", PayPalId#" . $transaction->vendorTransactionId . " for PayPalProfile#" . $transaction->paymentProfileId);
-        return ($response->result->status == 'COMPLETED');
+            . ", PayPalId#" . $transaction->vendorTransactionId
+            . " for PayPalProfile#" . $transaction->vendorProfileId
+            . ": " . $response->result->status);
+        if ($response->result->status == 'COMPLETED') {
+            $this->transactionManager->setPaid($transaction);
+        }
     }
 
     public function verifyWebhookIsFromPayPal(Request $webhookRequest): bool

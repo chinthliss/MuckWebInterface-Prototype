@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Payment\PaymentTransaction;
 use App\Payment\PaymentTransactionItemCatalogue;
 use App\Payment\PaymentTransactionManager;
-use App\Payment\PayPal\PayPalManager;
+use App\Payment\PayPalManager;
 use App\User;
 use Exception;
 use Illuminate\Contracts\Routing\ResponseFactory;
@@ -108,7 +108,7 @@ class AccountCurrencyController extends Controller
             $baseDetails['accountCurrencyUsd'],
             $baseDetails['items'],
             $baseDetails['recurringInterval']
-        )->toTransactionArray();
+        )->toTransactionOfferArray();
 
     }
 
@@ -142,7 +142,7 @@ class AccountCurrencyController extends Controller
             $baseDetails['accountCurrencyUsd'],
             $baseDetails['items'],
             $baseDetails['recurringInterval']
-        )->toTransactionArray();
+        )->toTransactionOfferArray();
     }
 
     /**
@@ -186,7 +186,7 @@ class AccountCurrencyController extends Controller
 
         $transaction = $transactionManager->getTransaction($transactionId);
 
-        if ($transaction->accountId != $user->getAid() || !$transaction->open) return abort(403);
+        if ($transaction->accountId != $user->getAid() || !$transaction->open()) return abort(403);
 
         $transactionManager->closeTransaction($transaction, 'user_declined');
         return "Transaction Declined";
@@ -203,7 +203,8 @@ class AccountCurrencyController extends Controller
 
         $transaction = $transactionManager->getTransaction($transactionId);
 
-        if ($transaction->accountId != $user->getAid() || !$transaction->open) return abort(403);
+        if ($transaction->accountId != $user->getAid() || !$transaction->open()) return abort(403);
+
         // If this is a paypal transaction, we create an order with them and redirect user to their approval
         if ($transaction->vendor == 'paypal') {
             $payPalManager = resolve('App\Payment\PayPalManager');
@@ -217,25 +218,20 @@ class AccountCurrencyController extends Controller
         }
 
         //Otherwise we attempt to charge the card
-        $paid = false;
-
-        if ($transaction->status == 'reprocess')
-            $paid = true;
-        else {
-            if ($transaction->vendor != 'paypal') {
+        if (!$transaction->paid())
+        {
+            if ($transaction->vendor !== 'paypal') {
                 $cardPaymentManager = resolve('App\Payment\CardPaymentManager');
                 $card = $cardPaymentManager->getCardFor($user, $transaction->vendorProfileId);
                 try {
                     $vendorTransactionId = $cardPaymentManager->chargeCardFor($user, $card, $transaction);
-                    $transactionManager->updateVendorTransactionId($transaction, $vendorTransactionId);
-                    $paid = true;
                 } catch (Exception $e) {
                     Log::info("Error during card payment: " . $e);
                 }
             }
         }
 
-        if ($paid) {
+        if ($transaction->paid()) {
             $this->fulfillTransaction($transaction);
             $transactionManager->closeTransaction($transaction, 'fulfilled');
         } else
@@ -288,18 +284,17 @@ class AccountCurrencyController extends Controller
         $transaction = $transactionManager->getTransactionFromExternalId($token);
         if (!$transaction || !$transaction->vendorTransactionId) {
             Log::error("PayPal - Told order " . $token . " has been accepted " .
-                ", but either failed to look it up or looked up row is missing vendor_transation_id.");
+                ", but either failed to look it up or looked up row is missing vendor_transaction_id.");
             abort(500);
         }
-        if (!$transaction->open) {
+        if (!$transaction->open()) {
             Log::warning("Attempt to reclaim PayPal transaction " . $transaction->vendorTransactionId .
                 " (User may have just pressed refresh at a bad time.)");
         } else {
-            if ($transaction->status == 'reprocess')
-                $paid = true;
-            else
-                $paid = $paypalManager->completePayPalOrder($transaction);
-            if ($paid) {
+            if (!$transaction->paid()) {
+                $paypalManager->completePayPalOrder($transaction);
+            }
+            if ($transaction->paid()) {
                 $this->fulfillTransaction($transaction);
                 $transactionManager->closeTransaction($transaction, 'fulfilled');
             } else
@@ -312,7 +307,7 @@ class AccountCurrencyController extends Controller
                                  PaymentTransactionManager $transactionManager)
     {
         $transaction = $transactionManager->getTransactionFromExternalId($request->get('token'));
-        if (!$transaction->open) return 403;
+        if (!$transaction->open()) return 403;
         $paypalManager->cancelPayPalOrder($transaction);
         return view('account-currency-transaction')->with([
             'transaction' => $transaction->toArray()

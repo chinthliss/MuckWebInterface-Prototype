@@ -53,15 +53,16 @@ class CreateBillingTransactionsTable extends Migration
 
             $table->timestamp('created_at')->useCurrent()->index();
 
+            $table->timestamp('paid_at')->nullable();
+
             $table->timestamp('completed_at')->nullable()
                 ->comment('Final date for this transaction. Does not imply success.');
 
             $table->enum('result', [
-                'fulfilled',
                 'user_declined',
                 'vendor_refused',
                 'expired',
-                'reprocess' // Does not seek to claim money, just reruns fulfilment
+                'fulfilled'
             ])->nullable();
         });
     }

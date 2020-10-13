@@ -5,6 +5,8 @@ namespace App\Payment;
 
 //Holding class for a transactions details
 
+use phpDocumentor\Reflection\Types\Boolean;
+
 class PaymentTransaction
 {
     /**
@@ -81,12 +83,12 @@ class PaymentTransaction
     public $items = [];
 
     public $createdAt = null;
+    public $paidAt = null;
     public $completedAt = null;
 
     public $updated = null;
 
-    public $status = 'unknown';
-    public $open = true;
+    public $result = 'unknown';
 
     public function totalPriceUsd(): float
     {
@@ -103,7 +105,7 @@ class PaymentTransaction
      * Produces the array used to offer a user the chance to accept/decline the transaction
      * @return array
      */
-    public function toTransactionArray(): array
+    public function toTransactionOfferArray(): array
     {
         $clientArray = [
             "token" => $this->id,
@@ -128,12 +130,32 @@ class PaymentTransaction
             "account_currency_rewarded_items" => $this->accountCurrencyRewardedForItems,
             "total_account_currency_rewarded" => $this->totalAccountCurrencyRewarded(),
             "total_usd" => $this->totalPriceUsd(),
-            "open" => $this->open,
+            "open" => $this->open(),
             "created_at" => $this->createdAt,
+            "paid_at" => $this->createdAt,
             "completed_at" => $this->completedAt,
-            "status" => $this->status
+            "result" => $this->result
         ];
         if ($this->recurringInterval) $array["recurring_interval"] = $this->recurringInterval;
         return $array;
     }
+
+    /**
+     * Whether a transaction can be acted upon
+     * @return bool
+     */
+    public function open(): bool
+    {
+        return ($this->completedAt ? false : true);
+    }
+
+    /**
+     * Whether a transaction has been paid
+     * @return bool
+     */
+    public function paid(): bool
+    {
+        return ($this->paidAt ? true : false);
+    }
+
 }

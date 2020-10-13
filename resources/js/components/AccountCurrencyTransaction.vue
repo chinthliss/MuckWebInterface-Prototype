@@ -34,6 +34,11 @@
                 </div>
 
                 <div class="row">
+                    <dt class="col-sm-3">Paid</dt>
+                    <dd class="col-sm-9">{{ transaction.paid_at }}</dd>
+                </div>
+
+                <div class="row">
                     <dt class="col-sm-3">Completed</dt>
                     <dd class="col-sm-9">{{ transaction.completed_at }}</dd>
                 </div>
@@ -66,13 +71,12 @@
                 return this.transaction.type[0].toUpperCase() + this.transaction.type.slice(1);
             },
             friendlyStatus: function() {
-                switch(this.transaction.status) {
-                    case 'open': return 'Open';
+                if (!this.transaction.result) return this.trasaction.paid_at ? "Paid and pending fulfillment." : 'Open';
+                switch(this.transaction.result) {
                     case 'fulfilled': return 'Fulfilled';
                     case 'user_declined': return 'User declined transaction';
                     case 'vendor_refused': return "Payment attempted but wasn't accepted";
                     case 'expired': return "Timed out (Expired)";
-                    case 'reprocess': return "Fulfilment failed and will be reattempted.";
                     default: return 'Unknown';
                 }
             }

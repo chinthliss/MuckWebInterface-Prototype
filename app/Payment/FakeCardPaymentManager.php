@@ -15,6 +15,16 @@ class FakeCardPaymentManager implements CardPaymentManager
      */
     private $customerProfiles = [];
 
+    /**
+     * @var PaymentTransactionManager
+     */
+    private $transactionManager;
+
+    public function __construct(PaymentTransactionManager $transactionManager)
+    {
+        $this->transactionManager = $transactionManager;
+    }
+
     private function loadOrCreateProfileFor(User $user)
     {
         $accountId = $user->getAid();
@@ -91,9 +101,11 @@ class FakeCardPaymentManager implements CardPaymentManager
     /**
      * @inheritDoc
      */
-    public function chargeCardFor(User $user, Card $card, PaymentTransaction $transaction): string
+    public function chargeCardFor(User $user, Card $card, PaymentTransaction $transaction)
     {
-        return 'NO';
+        $this->transactionManager->updateVendorTransactionId($transaction, 'FAKE');
+        $this->transactionManager->setPaid($transaction);
+        return;
     }
 
     /**
