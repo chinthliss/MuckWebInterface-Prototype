@@ -15,14 +15,14 @@ class FakeCardPaymentManager implements CardPaymentManager
      */
     private $customerProfiles = [];
 
-    /**
-     * @var PaymentTransactionManager
-     */
-    private $transactionManager;
-
-    public function __construct(PaymentTransactionManager $transactionManager)
+    private function transactionManager() : PaymentTransactionManager
     {
-        $this->transactionManager = $transactionManager;
+        return resolve(PaymentTransactionManager::class);
+    }
+
+    private function subscriptionManager() : PaymentSubscriptionManager
+    {
+        return resolve(PaymentSubscriptionManager::class);
     }
 
     private function loadOrCreateProfileFor(User $user)
@@ -103,8 +103,9 @@ class FakeCardPaymentManager implements CardPaymentManager
      */
     public function chargeCardFor(User $user, Card $card, PaymentTransaction $transaction)
     {
-        $this->transactionManager->updateVendorTransactionId($transaction, 'FAKE');
-        $this->transactionManager->setPaid($transaction);
+        $transactionManager = $this->transactionManager();
+        $transactionManager->updateVendorTransactionId($transaction, 'FAKE');
+        $transactionManager->setPaid($transaction);
         return;
     }
 

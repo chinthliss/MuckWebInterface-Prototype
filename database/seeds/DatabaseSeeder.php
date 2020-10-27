@@ -135,7 +135,8 @@ class DatabaseSeeder extends Seeder
         //Remember to do 'composer dump-autoload' before adding to this
         $this->call([
             BillingItemCatalogueSeeder::class,
-            BillingTransactionsSeeder::class
+            BillingTransactionSeeder::class,
+            BillingSubscriptionSeeder::class
         ]);
     }
 }

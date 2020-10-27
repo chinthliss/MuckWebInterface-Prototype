@@ -21,10 +21,15 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
     private $transactionKey = '';
     private $endPoint = '';
 
-    /**
-     * @var PaymentTransactionManager
-     */
-    private $transactionManager;
+    private function transactionManager() : PaymentTransactionManager
+    {
+        return resolve(PaymentTransactionManager::class);
+    }
+
+    private function subscriptionManager() : PaymentSubscriptionManager
+    {
+        return resolve(PaymentSubscriptionManager::class);
+    }
 
     /**
      * @var array<int, AuthorizeNetCardPaymentCustomerProfile>
@@ -37,7 +42,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
      */
     private $merchantAuthentication = null;
 
-    public function __construct(array $config, PaymentTransactionManager $transactionManager)
+    public function __construct(array $config)
     {
         $endPoint = null;
         if (App::environment() !== 'production') //Not ideal but it's where they stored it.
@@ -49,7 +54,6 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
         $this->loginId = $config['loginId'];
         $this->transactionKey = $config['transactionKey'];
         $this->endPoint = $endPoint;
-        $this->transactionManager = $transactionManager;
     }
 
     private function refId()
@@ -374,9 +378,9 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
                 $transactionResponse->getErrors()[0]->getErrorText()
             );
         }
-
-        $this->transactionManager->updateVendorTransactionId($transaction, $transactionResponse->getTransId());
-        $this->transactionManager->setPaid($transaction);
+        $transactionManager = $this->transactionManager();
+        $transactionManager->updateVendorTransactionId($transaction, $transactionResponse->getTransId());
+        $transactionManager->setPaid($transaction);
     }
 
     public function getDefaultCardFor(User $user): ?Card

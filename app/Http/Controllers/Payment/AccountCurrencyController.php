@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Payment;
 use App\Payment\CardPaymentManager;
 use App\Muck\MuckConnection;
 use App\Http\Controllers\Controller;
+use App\Payment\PaymentSubscriptionManager;
 use App\Payment\PaymentTransaction;
 use App\Payment\PaymentTransactionItemCatalogue;
 use App\Payment\PaymentTransactionManager;
@@ -103,11 +104,12 @@ class AccountCurrencyController extends Controller
             return response($e->getMessage(), 400);
         }
 
-        return $transactionManager->createPayPalTransaction(
-            $user,
+        if ($baseDetails['recurringInterval']) return response("A transaction can't have an interval.");
+
+        return $transactionManager->createTransaction(
+            $user, "paypal", "paypal_unattributed",
             $baseDetails['accountCurrencyUsd'],
-            $baseDetails['items'],
-            $baseDetails['recurringInterval']
+            $baseDetails['items']
         )->toTransactionOfferArray();
 
     }
@@ -137,13 +139,15 @@ class AccountCurrencyController extends Controller
             return response($e->getMessage(), 400);
         }
 
-        return $transactionManager->createCardTransaction(
-            $user, $card,
+        if ($baseDetails['recurringInterval']) return response("A transaction can't have an interval.");
+
+        return $transactionManager->createTransaction(
+            $user, 'authorizenet', $card->id,
             $baseDetails['accountCurrencyUsd'],
-            $baseDetails['items'],
-            $baseDetails['recurringInterval']
+            $baseDetails['items']
         )->toTransactionOfferArray();
     }
+
 
     /**
      * @param PaymentTransaction $transaction
@@ -224,7 +228,7 @@ class AccountCurrencyController extends Controller
                 $cardPaymentManager = resolve('App\Payment\CardPaymentManager');
                 $card = $cardPaymentManager->getCardFor($user, $transaction->vendorProfileId);
                 try {
-                    $vendorTransactionId = $cardPaymentManager->chargeCardFor($user, $card, $transaction);
+                    $cardPaymentManager->chargeCardFor($user, $card, $transaction);
                 } catch (Exception $e) {
                     Log::info("Error during card payment: " . $e);
                 }
@@ -329,5 +333,75 @@ class AccountCurrencyController extends Controller
     }
 
     #endregion PayPal responses
+
+    #region Subscriptions
+
+    /**
+     * @param Request $request
+     * @param CardPaymentManager $cardPaymentManager
+     * @param PaymentSubscriptionManager $subscriptionManager
+     */
+    public function newCardSubscription(Request $request, CardPaymentManager $cardPaymentManager,
+                                        PaymentSubscriptionManager $subscriptionManager)
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        $cardId = $request->input('cardId', null);
+        $card = null;
+        $card = $cardId ? $cardPaymentManager->getCardFor($user, $cardId)
+            : $cardPaymentManager->getDefaultCardFor($user);
+        if (!$card) return response("Default card couldn't be found or isn't valid.", 400);
+
+        $baseDetails = null;
+        try {
+            $baseDetails = $this->parseBaseRequest($request);
+        } catch (Exception $e) {
+            return response($e->getMessage(), 400);
+        }
+
+        if ($baseDetails['items']) return response("Subscription can't have items on it.");
+
+        return $subscriptionManager->createSubscription(
+            $user, 'authorizenet', $card->id, null,
+            $baseDetails['accountCurrencyUsd'],
+            $baseDetails['recurringInterval']
+        )->toSubscriptionOfferArray();
+    }
+
+    public function declineSubscription(Request $request, PaymentSubscriptionManager $subscriptionManager)
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        $subscriptionId = $request->input('token', null);
+
+        if (!$subscriptionId || !$user) return abort(403);
+
+        $subscription = $subscriptionManager->getSubscription($subscriptionId);
+
+        if ($subscription->accountId != $user->getAid() || !($subscription->status == 'approval_pending') ) return abort(403);
+
+        $subscriptionManager->closeSubscription($subscription, 'user_declined');
+        return "Subscription Declined";
+    }
+
+    public function viewSubscription(PaymentSubscriptionManager $subscriptionManager, string $id)
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        if (!$id) return abort(401);
+
+        $subscription = $subscriptionManager->getSubscription($id);
+
+        if ($subscription->accountId != $user->getAid()) return abort(403);
+
+        return view('account-currency-subscription')->with([
+            'subscription' => $subscription->toArray()
+        ]);
+    }
+
+    #endregion Subscriptions
 
 }

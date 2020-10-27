@@ -48,9 +48,6 @@ class CreateBillingTransactionsTable extends Migration
             $table->text('purchase_description')
                 ->comment('Text description of what was purchased, primarily used for receipting purposes.');
 
-            $table->integer('recurring_interval')->unsigned()->nullable()
-                ->comment('In days');
-
             $table->timestamp('created_at')->useCurrent()->index();
 
             $table->timestamp('paid_at')->nullable();

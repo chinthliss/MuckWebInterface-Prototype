@@ -4,7 +4,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use App\Payment\PaymentTransactionItem;
 
-class BillingTransactionsSeeder extends Seeder
+class BillingTransactionSeeder extends Seeder
 {
     /**
      * Seed the application's database for tests.

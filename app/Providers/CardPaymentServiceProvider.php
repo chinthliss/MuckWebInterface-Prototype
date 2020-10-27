@@ -25,13 +25,12 @@ class CardPaymentServiceProvider extends ServiceProvider
 
         $this->app->singleton(CardPaymentManager::class, function($app) {
             $card_payment_driver = config('app.card_payment_driver');
-            $transactionManager = $app->make(PaymentTransactionManager::class);
             if ($card_payment_driver == 'authorizenet') {
                 $config = config('services.authorizenet');
-                return new AuthorizeNetCardPaymentManager($config, $transactionManager);
+                return new AuthorizeNetCardPaymentManager($config);
             }
             if ($card_payment_driver == 'fake') {
-                return new FakeCardPaymentManager($transactionManager);
+                return new FakeCardPaymentManager();
             }
             throw new Error('Card payment driver set to unrecognized driver.');
         });

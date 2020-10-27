@@ -48,9 +48,7 @@ class PayPalServiceProvider extends ServiceProvider
             else
                 $environment = new SandboxEnvironment($clientId, $secret);
 
-            $paymentManager = $app->make(PaymentTransactionManager::class);
-
-            return new PayPalManager($account, $environment, $paymentManager, $subscriptionId);
+            return new PayPalManager($account, $environment, $subscriptionId);
         });
     }
 

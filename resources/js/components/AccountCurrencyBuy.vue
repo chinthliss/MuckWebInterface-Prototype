@@ -92,6 +92,11 @@
                                     @transaction-accepted="transactionAccepted"
                                     @transaction-declined="transactionDeclined"
         ></dialog-approve-transaction>
+        <dialog-approve-transaction id="approveSubscriptionModal"
+                                    :transaction="transaction"
+                                    @transaction-accepted="subscriptionAccepted"
+                                    @transaction-declined="subscriptionDeclined"
+        ></dialog-approve-transaction>
         <dialog-message id="messageModal"
                         :content="message_dialog_content"
                         :header="message_dialog_header"
@@ -164,13 +169,27 @@ export default {
                     $('#messageModal').modal();
                 });
         },
+        newSubscription: function (endpoint) {
+            axios.post(endpoint, this.buildPurchaseRequest())
+                .then(response => {
+                    this.transaction = response.data;
+                    $('#approveSubscriptionModal').modal();
+                })
+                .catch(error => {
+                    this.message_dialog_header = 'Subscription Declined';
+                    this.message_dialog_content = error.response.data;
+                    $('#messageModal').modal();
+                });
+        },
         startCardTransaction: function (e) {
             e.preventDefault();
-            this.newTransaction('accountcurrency/newCardTransaction');
+            if (this.recurring) this.newSubscription('accountcurrency/newCardSubscription');
+            else this.newTransaction('accountcurrency/newCardTransaction');
         },
         startPayPalTransaction: function (e) {
             e.preventDefault();
-            this.newTransaction('accountcurrency/newPayPalTransaction');
+            if (this.recurring) this.newSubscription('accountcurrency/newPayPalSubscription');
+            else this.newTransaction('accountcurrency/newPayPalTransaction');
         },
         transactionAccepted: function (token) {
             //Redirect to accept page - it should redirect us as required.
@@ -179,7 +198,16 @@ export default {
         transactionDeclined: function (token) {
             //Notify the site but don't care about the result
             axios.post('accountcurrency/declineTransaction', {'token': token});
+        },
+        subscriptionAccepted: function (token) {
+            //Redirect to accept page - it should redirect us as required.
+            window.location = 'accountcurrency/acceptSubscription?token=' + token;
+        },
+        subscriptionDeclined: function (token) {
+            //Notify the site but don't care about the result
+            axios.post('accountcurrency/declineSubscription', {'token': token});
         }
+
     }
 }
 </script>

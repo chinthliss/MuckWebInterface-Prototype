@@ -4,6 +4,13 @@
 namespace App\Payment;
 
 use App\User;
+use App\Payment\PayPalRequests\ProductsCreate;
+use App\Payment\PayPalRequests\ProductsList;
+use App\Payment\PayPalRequests\SubscriptionsCreatePlan;
+use App\Payment\PayPalRequests\SubscriptionsListPlans;
+use App\Payment\PayPalRequests\WebhooksCreate;
+use App\Payment\PayPalRequests\WebhooksList;
+use App\Payment\PayPalRequests\WebhooksVerifySignature;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
@@ -16,11 +23,6 @@ use \Exception;
 
 class PayPalManager
 {
-
-    /**
-     * @var PaymentTransactionManager
-     */
-    private $transactionManager;
 
     /**
      * @var PayPalHttpClient
@@ -41,13 +43,21 @@ class PayPalManager
     private $subscriptionPlans;
 
     public function __construct(string $account, PayPalEnvironment $environment,
-                                PaymentTransactionManager $transactionManager,
                                 string $subscriptionId)
     {
         $this->account = $account;
         $this->client = new PayPalHttpClient($environment);
-        $this->transactionManager = $transactionManager;
         $this->subscriptionId = $subscriptionId;
+    }
+
+    private function transactionManager() : PaymentTransactionManager
+    {
+        return resolve(PaymentTransactionManager::class);
+    }
+
+    private function subscriptionManager() : PaymentSubscriptionManager
+    {
+        return resolve(PaymentSubscriptionManager::class);
     }
 
     public function startPayPalOrderFor(User $user, PaymentTransaction $transaction)
@@ -76,7 +86,7 @@ class PayPalManager
             Log::error("Paypal - attempt to create payment got the following response: " .
                 $ex->getMessage());
         }
-        $this->transactionManager->updateVendorTransactionId($transaction, $response->result->id);
+        $this->transactionManager()->updateVendorTransactionId($transaction, $response->result->id);
         Log::debug("Paypal - created order for transaction#" . $transaction->id
             . ", PayPalId#" . $transaction->vendorTransactionId);
         // Response contains an array of links in the form {href, rel, method}.
@@ -89,7 +99,7 @@ class PayPalManager
 
     public function cancelPayPalOrder(PaymentTransaction $transaction)
     {
-        $this->transactionManager->closeTransaction($transaction, 'user_declined');
+        $this->transactionManager()->closeTransaction($transaction, 'user_declined');
     }
 
     /**
@@ -108,13 +118,14 @@ class PayPalManager
             throw new Exception("Attempt to complete payment with Paypal failed.");
         }
         //With PayPal we only discover the profile ID of the customer AFTER they accept
-        $this->transactionManager->updateVendorProfileId($transaction, $response->result->payer->payer_id);
+        $transactionManager = $this->transactionManager();
+        $transactionManager->updateVendorProfileId($transaction, $response->result->payer->payer_id);
         Log::debug("Paypal - captured transaction#" . $transaction->id
             . ", PayPalId#" . $transaction->vendorTransactionId
             . " for PayPalProfile#" . $transaction->vendorProfileId
             . ": " . $response->result->status);
         if ($response->result->status == 'COMPLETED') {
-            $this->transactionManager->setPaid($transaction);
+            $transactionManager->setPaid($transaction);
         }
     }
 
