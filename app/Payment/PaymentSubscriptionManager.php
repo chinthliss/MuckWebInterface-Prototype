@@ -6,6 +6,7 @@ namespace App\Payment;
 use App\Muck\MuckConnection;
 use App\User;
 use \Exception;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -24,6 +25,14 @@ class PaymentSubscriptionManager
         $this->muck = $muck;
     }
 
+    /**
+     * @return Builder
+     */
+    private function storageTable() : Builder
+    {
+        return DB::table('billing_subscriptions_combined');
+    }
+
     public function insertSubscriptionIntoStorage(PaymentSubscription $subscription)
     {
         $row = [
@@ -37,7 +46,7 @@ class PaymentSubscriptionManager
             'created_at' => Carbon::now(),
             'status' => $subscription->status
         ];
-        DB::table('billing_subscriptions_combined')->insert($row);
+        $this->storageTable()->insert($row);
     }
 
     private function buildSubscriptionFromRow($row): ?PaymentSubscription
@@ -81,13 +90,13 @@ class PaymentSubscriptionManager
 
     public function getSubscription(string $subscriptionId): ?PaymentSubscription
     {
-        $row = DB::table('billing_subscriptions_combined')->where('id', '=', $subscriptionId)->first();
+        $row = $this->storageTable()->where('id', '=', $subscriptionId)->first();
         return $this->buildSubscriptionFromRow($row);
     }
 
     public function getSubscriptionsFor(int $userId): array
     {
-        $rows = DB::table('billing_subscriptions_combined')
+        $rows = $this->storageTable()
             ->where('account_id', '=', $userId)
             ->orderBy('created_at')
             ->get();
@@ -116,7 +125,7 @@ class PaymentSubscriptionManager
         $subscription->status = $closureReason;
         $subscription->closedAt = Carbon::now();
         $subscription->nextChargeAt = null;
-        DB::table('billing_subscriptions_combined')->where('id', '=', $subscription->id)->update([
+        $this->storageTable()->where('id', '=', $subscription->id)->update([
             'status' => $subscription->status,
             'closed_at' => $subscription->closedAt,
             'next_charge_at' => $subscription->nextChargeAt
@@ -126,9 +135,31 @@ class PaymentSubscriptionManager
     public function updateVendorProfileId(PaymentSubscription $subscription, string $vendorProfileId)
     {
         $subscription->vendorProfileId = $vendorProfileId;
-        DB::table('billing_subscriptions_combined')->where('id', '=', $subscription->id)->update([
+        $this->storageTable()->where('id', '=', $subscription->id)->update([
             'vendor_profile_id' => $vendorProfileId
         ]);
     }
+
+    /**
+     * Closes off items that the user never accepted
+     */
+    public function closePending()
+    {
+        $cutOff = Carbon::now()->subMinutes(30);
+        $rows = $this->storageTable()
+            ->where('status', '=', 'approval_pending')
+            ->whereDate('created_at', '<', $cutOff)
+            ->get();
+        foreach ($rows as $row) {
+            $subscription = $this->buildSubscriptionFromRow($row);
+            if ($subscription->open()) {
+                Log::info("Closing Payment Subscription " . $subscription->id
+                    . " created at " . $subscription->createdAt . " because user never accepted it.");
+                $this->closeSubscription($subscription, 'user_declined');
+            }
+        }
+
+    }
+
 
 }

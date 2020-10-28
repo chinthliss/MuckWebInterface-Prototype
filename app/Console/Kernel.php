@@ -24,8 +24,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')
-        //          ->hourly();
+        //Clear up payment records that were never accepted
+         $schedule->command('payment:closepending')->everyTenMinutes();
     }
 
     /**
