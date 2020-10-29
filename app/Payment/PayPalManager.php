@@ -8,6 +8,7 @@ use App\Payment\PayPalRequests\ProductsCreate;
 use App\Payment\PayPalRequests\ProductsList;
 use App\Payment\PayPalRequests\SubscriptionsCreatePlan;
 use App\Payment\PayPalRequests\SubscriptionsListPlans;
+use App\Payment\PayPalRequests\SubscriptionsCreateSubscription;
 use App\Payment\PayPalRequests\WebhooksCreate;
 use App\Payment\PayPalRequests\WebhooksList;
 use App\Payment\PayPalRequests\WebhooksVerifySignature;
@@ -50,17 +51,18 @@ class PayPalManager
         $this->subscriptionId = $subscriptionId;
     }
 
-    private function transactionManager() : PaymentTransactionManager
+    private function transactionManager(): PaymentTransactionManager
     {
         return resolve(PaymentTransactionManager::class);
     }
 
-    private function subscriptionManager() : PaymentSubscriptionManager
+    private function subscriptionManager(): PaymentSubscriptionManager
     {
         return resolve(PaymentSubscriptionManager::class);
     }
 
-    public function startPayPalOrderFor(User $user, PaymentTransaction $transaction)
+    #region Order functionality
+    public function startPayPalOrderFor(User $user, PaymentTransaction $transaction): string
     {
         Log::debug("Paypal - creating order for transaction#" . $transaction->id);
         $request = new OrdersCreateRequest();
@@ -84,7 +86,8 @@ class PayPalManager
             $response = $this->client->execute($request);
         } catch (HttpException $ex) {
             Log::error("Paypal - attempt to create payment got the following response: " .
-                $ex->getMessage());
+                "(" . $ex->statusCode . ") " . $ex->getMessage());
+            throw new \Exception("There was an issue with the request to PayPal.");
         }
         $this->transactionManager()->updateVendorTransactionId($transaction, $response->result->id);
         Log::debug("Paypal - created order for transaction#" . $transaction->id
@@ -114,7 +117,7 @@ class PayPalManager
             $response = $this->client->execute($request);
         } catch (HttpException $ex) {
             Log::error("Paypal - attempt to complete payment got the following response: " .
-                $ex->getMessage());
+                "(" . $ex->statusCode . ") " . $ex->getMessage());
             throw new Exception("Attempt to complete payment with Paypal failed.");
         }
         //With PayPal we only discover the profile ID of the customer AFTER they accept
@@ -128,6 +131,45 @@ class PayPalManager
             $transactionManager->setPaid($transaction);
         }
     }
+    #endregion Order functionality
+
+    #region Subscription functionality
+    public function startPayPalSubscriptionFor(User $user, PaymentSubscription $subscription)
+    {
+        Log::debug("Paypal - creating subscription request for subscription " . $subscription->id);
+
+        $request = new SubscriptionsCreateSubscription();
+        $request->prefer('return=representation');
+        $request->body = [
+            "plan_id" => $subscription->vendorSubscriptionPlanId,
+            "quantity" => $subscription->amountUsd,
+            "application_context" => [
+                "cancel_url" => route('accountcurrency.paypal.cancel'),
+                "return_url" => route('accountcurrency.paypal.return')
+            ]
+        ];
+
+        try {
+            $response = $this->client->execute($request);
+        } catch (HttpException $ex) {
+            Log::error("Paypal - attempt to create payment got the following response: " .
+                "(" . $ex->statusCode . ") " . $ex->getMessage());
+            throw new \Exception("There was an issue with the request to PayPal.");
+        }
+
+        $this->subscriptionManager()->updateVendorSubscriptionId($subscription, $response->result->id);
+        Log::debug("Paypal - created subscription for subscription#" . $subscription->id
+            . ", PayPalId#" . $subscription->vendorSubscriptionId);
+        // Response contains an array of links in the form {href, rel, method}.
+        // We need to find the one where rel=approve
+        foreach ($response->result->links as $link) {
+            if ($link->rel == 'approve') return $link->href;
+        }
+        throw new \Exception("No approve link given in response from PayPal.");
+
+    }
+
+    #endregion Subscription functionality
 
     public function verifyWebhookIsFromPayPal(Request $webhookRequest): bool
     {
@@ -155,7 +197,7 @@ class PayPalManager
             $response = $this->client->execute($request);
         } catch (HttpException $ex) {
             Log::error("Paypal - attempt to verify webhook call got the following response: " .
-                $ex->getMessage());
+                "(" . $ex->statusCode . ") " . $ex->getMessage());
             return false;
         }
         log::info('Paypal Webhook Verification response:' . json_encode($response));
@@ -186,7 +228,7 @@ class PayPalManager
                 $response = $this->client->execute($request);
             } catch (HttpException $ex) {
                 Log::error("Paypal - attempt to get subscription plans got the following response: " .
-                    $ex->getMessage());
+                    "(" . $ex->statusCode . ") " . $ex->getMessage());
                 return [];
             }
             foreach ($response->result->plans as $plan) {
@@ -203,6 +245,7 @@ class PayPalManager
         $plans = $this->getSubscriptionPlans();
         foreach ($plans as $plan) {
             if ($plan->status != 'ACTIVE') continue;
+            if (!$plan->quantity_supported) continue;
             foreach ($plan->billing_cycles as $cycle) {
                 if ($cycle->tenure_type == 'REGULAR' && $cycle->frequency->interval_count == $frequencyDays)
                     return $plan->id;
@@ -232,9 +275,9 @@ class PayPalManager
                         "currency_code" => "USD",
                         "value" => 1
                     ]
-                ],
-                "quantity_supported" => true
+                ]
             ]],
+            "quantity_supported" => true,
             "payment_preferences" => [
                 "auto_bill_outstanding" => true,
             ]
@@ -243,7 +286,7 @@ class PayPalManager
             $response = $this->client->execute($request);
         } catch (HttpException $ex) {
             Log::error("Paypal - attempt to create subscription plan got the following response: " .
-                $ex->getMessage());
+                "(" . $ex->statusCode . ") " . $ex->getMessage());
             return null;
         }
         return $response->result->id;
@@ -257,7 +300,7 @@ class PayPalManager
             $response = $this->client->execute($request);
         } catch (HttpException $ex) {
             Log::error("Paypal - attempt to get products got the following response: " .
-                $ex->getMessage());
+                "(" . $ex->statusCode . ") " . $ex->getMessage());
             return [];
         }
         $results = [];
@@ -286,7 +329,7 @@ class PayPalManager
             $response = $this->client->execute($request);
         } catch (HttpException $ex) {
             Log::error("Paypal - attempt to create product got the following response: " .
-                $ex->getMessage());
+                "(" . $ex->statusCode . ") " . $ex->getMessage());
             return null;
         }
         return $response->result->id;
@@ -300,7 +343,7 @@ class PayPalManager
             $response = $this->client->execute($request);
         } catch (HttpException $ex) {
             Log::error("Paypal - attempt to get webhooks got the following response: " .
-                $ex->getMessage());
+                "(" . $ex->statusCode . ") " . $ex->getMessage());
             return [];
         }
         $webhooks = [];
@@ -328,7 +371,7 @@ class PayPalManager
             $response = $this->client->execute($request);
         } catch (HttpException $ex) {
             Log::error("Paypal - attempt to create webhook got the following response: " .
-                $ex->getMessage());
+                "(" . $ex->statusCode . ") " . $ex->getMessage());
             return null;
         }
         return $response->result->id;

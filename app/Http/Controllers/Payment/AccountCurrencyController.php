@@ -11,6 +11,7 @@ use App\Payment\PaymentTransactionItemCatalogue;
 use App\Payment\PaymentTransactionManager;
 use App\Payment\PayPalManager;
 use App\User;
+use Error;
 use Exception;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\Request;
@@ -222,8 +223,7 @@ class AccountCurrencyController extends Controller
         }
 
         //Otherwise we attempt to charge the card
-        if (!$transaction->paid())
-        {
+        if (!$transaction->paid()) {
             if ($transaction->vendor !== 'paypal') {
                 $cardPaymentManager = resolve('App\Payment\CardPaymentManager');
                 $card = $cardPaymentManager->getCardFor($user, $transaction->vendorProfileId);
@@ -319,7 +319,7 @@ class AccountCurrencyController extends Controller
     }
 
     public function paypalWebhook(Request $request, PayPalManager $paypalManager,
-                                 PaymentTransactionManager $transactionManager)
+                                  PaymentTransactionManager $transactionManager)
     {
         $eventType = $request->get('event_type');
         Log::debug('Webhook occurred for event type: ' . $eventType);
@@ -360,12 +360,48 @@ class AccountCurrencyController extends Controller
             return response($e->getMessage(), 400);
         }
 
-        if ($baseDetails['items']) return response("Subscription can't have items on it.");
+        if ($baseDetails['items']) return response("Subscription can't have items on it.", 400);
 
         return $subscriptionManager->createSubscription(
             $user, 'authorizenet', $card->id, null,
             $baseDetails['accountCurrencyUsd'],
             $baseDetails['recurringInterval']
+        )->toSubscriptionOfferArray();
+    }
+
+    /**
+     * @param Request $request
+     * @param PayPalManager $paypalManager
+     * @param PaymentSubscriptionManager $subscriptionManager
+     */
+    public function newPayPalSubscription(Request $request, PayPalManager $paypalManager,
+                                        PaymentSubscriptionManager $subscriptionManager)
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        $baseDetails = null;
+        try {
+            $baseDetails = $this->parseBaseRequest($request);
+        } catch (Exception $e) {
+            return response($e->getMessage(), 400);
+        }
+
+        if ($baseDetails['items']) return response("Subscription can't have items on it.", 400);
+
+        $interval = $baseDetails['recurringInterval'];
+        if (!$interval) return response("Subscription requires a recurring interval set.", 400);
+
+        $planId = $paypalManager->getSubscriptionPlan($interval);
+        if (!$planId) {
+            Log::error("Couldn't find a PayPal PlanID for the recurring interval " . $interval);
+            return response("Unable to create the subscription due to configuration error.", 500);
+        }
+
+        return $subscriptionManager->createSubscription(
+            $user, 'paypal', 'paypal_unattributed', $planId,
+            $baseDetails['accountCurrencyUsd'],
+            $interval
         )->toSubscriptionOfferArray();
     }
 
@@ -380,7 +416,7 @@ class AccountCurrencyController extends Controller
 
         $subscription = $subscriptionManager->getSubscription($subscriptionId);
 
-        if ($subscription->accountId != $user->getAid() || !($subscription->status == 'approval_pending') ) return abort(403);
+        if ($subscription->accountId != $user->getAid() || !($subscription->status == 'approval_pending')) return abort(403);
 
         $subscriptionManager->closeSubscription($subscription, 'user_declined');
         return "Subscription Declined";
@@ -402,6 +438,39 @@ class AccountCurrencyController extends Controller
         ]);
     }
 
+    public function acceptSubscription(Request $request, PaymentSubscriptionManager $subscriptionManager)
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        $subscriptionId = $request->input('token', null);
+
+        if (!$subscriptionId || !$user) return abort(403);
+
+        $subscription = $subscriptionManager->getSubscription($subscriptionId);
+
+        if ($subscription->accountId != $user->getAid() || !$subscription->open()) return abort(403);
+
+        // If this is a paypal transaction, we move over to their process
+        if ($subscription->vendor == 'paypal') {
+
+            /** @var PayPalManager $payPalManager */
+            $payPalManager = resolve('App\Payment\PayPalManager');
+            try {
+                $approvalUrl = $payPalManager->startPayPalSubscriptionFor($user, $subscription);
+                return redirect($approvalUrl);
+            } catch (Exception $e) {
+                Log::info("Error during starting paypal subscription: " . $e);
+                return abort(500);
+            }
+        }
+
+        //Otherwise we mark it as active and leave for the scheduler
+        $subscriptionManager->setSubscriptionAsActive($subscription);
+        return redirect()->route('accountcurrency.subscription', [
+            'id' => $subscription->id
+        ]);
+    }
     #endregion Subscriptions
 
 }

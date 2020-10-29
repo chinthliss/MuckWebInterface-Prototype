@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Payment\PayPalRequests\PayPalManager;
+use App\Payment\PayPalManager;
 use Illuminate\Console\Command;
 
 class ListPayPalProducts extends Command

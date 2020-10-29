@@ -48,6 +48,7 @@ class BillingSubscriptionSeeder extends Seeder
             'amount_usd' => 10,
             'recurring_interval' => 30,
             'created_at' => Carbon::now(),
+            'closed_at' => Carbon::now(),
             'status' => 'cancelled'
         ]);
 

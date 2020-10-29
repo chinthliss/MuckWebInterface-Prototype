@@ -28,7 +28,7 @@ class PaymentSubscriptionManager
     /**
      * @return Builder
      */
-    private function storageTable() : Builder
+    private function storageTable(): Builder
     {
         return DB::table('billing_subscriptions_combined');
     }
@@ -140,6 +140,15 @@ class PaymentSubscriptionManager
         ]);
     }
 
+    public function updateVendorSubscriptionId(PaymentSubscription $subscription, string $vendorSubscriptionId)
+    {
+        $subscription->vendorSubscriptionId = $vendorSubscriptionId;
+        $this->storageTable()->where('id', '=', $subscription->id)->update([
+            'vendor_subscription_id' => $vendorSubscriptionId
+        ]);
+    }
+
+
     /**
      * Closes off items that the user never accepted
      */
@@ -158,8 +167,16 @@ class PaymentSubscriptionManager
                 $this->closeSubscription($subscription, 'user_declined');
             }
         }
-
     }
 
-
+    /**
+     * @param PaymentSubscription $subscription
+     */
+    public function setSubscriptionAsActive(PaymentSubscription $subscription)
+    {
+        $subscription->status = 'active';
+        $this->storageTable()->where('id', '=', $subscription->id)->update([
+            'status' => 'active',
+        ]);
+    }
 }
