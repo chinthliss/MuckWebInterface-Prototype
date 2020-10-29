@@ -35,10 +35,10 @@ class User implements Authenticatable, MustVerifyEmail
     public $emailVerified = false;
 
     /**
-     * Characters of this user. Public since it's not stored past request
+     * Characters of this user.
      * @var Collection(MuckCharacter)
      */
-    public $characters = [];
+    private $characters = null;
 
 
     public static function fromDatabaseResponse(\stdClass $query)
@@ -157,6 +157,12 @@ class User implements Authenticatable, MustVerifyEmail
     {
         if (!$this->character) return null;
         return $this->character->getName();
+    }
+
+    public function characters()
+    {
+        if (!$this->characters) $this->getProvider()->getCharacters($this);
+        return $this->characters;
     }
 
     /**

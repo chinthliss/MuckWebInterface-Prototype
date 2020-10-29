@@ -79,13 +79,10 @@ class DatabaseForMuckUserProvider implements UserProvider
             ->first();
         if (!$accountQuery) return null;
         $user = User::fromDatabaseResponse($accountQuery);
-        //Now ask the muck for the characters on this account
-        $characters = $this->muckConnection->getCharactersOf($identifier);
-        $user->characters = $characters;
         //See if a character is saved by the session - this may be overridden later by the present page
         $characterDbref = session('lastCharacterDbref');
-        if ($characterDbref && $user->characters->has($characterDbref)) {
-            $user->setCharacter($user->characters[$characterDbref]);
+        if ($characterDbref && $user->characters()->has($characterDbref)) {
+            $user->setCharacter($user->characters()[$characterDbref]);
         }
         debug('UserProvider RetrieveById result for ' . $identifier . ', result = ' . $user->getAid());
         return $user;
@@ -302,6 +299,11 @@ class DatabaseForMuckUserProvider implements UserProvider
         ])->get();
     }
     // endregion Email
+
+    public function getCharacters(User $user)
+    {
+        return $this->muckConnection->getCharactersOf($user->getAid());
+    }
 
     public function storeTermsOfServiceAgreement(User $user, string $hash)
     {
