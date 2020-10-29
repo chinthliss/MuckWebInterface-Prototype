@@ -161,7 +161,7 @@ class User implements Authenticatable, MustVerifyEmail
 
     public function characters()
     {
-        if (!$this->characters) $this->getProvider()->getCharacters($this);
+        if (!$this->characters) $this->characters = $this->getProvider()->getCharacters($this);
         return $this->characters;
     }
 

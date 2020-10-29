@@ -5,6 +5,7 @@ namespace App;
 use App\Muck\MuckConnection;
 use App\Helpers\MuckInterop;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Auth\UserProvider;
@@ -300,7 +301,7 @@ class DatabaseForMuckUserProvider implements UserProvider
     }
     // endregion Email
 
-    public function getCharacters(User $user)
+    public function getCharacters(User $user): Collection
     {
         return $this->muckConnection->getCharactersOf($user->getAid());
     }
