@@ -1,12 +1,7 @@
 ### Account backbone (Core pages that don't require heavy muck communication)
-* JavaScript check
-* Terms of Service agreement
+* ~~JavaScript check~~
+* ~~Terms of Service agreement~~
 * ~~Log on as character with username/password~~
-* Change Active Character
-* Character order
-* Avatars (Loading)
-* ~~Manage Payment Methods - Card~~
-* Manage Payment Methods - Pre-existing Subscriptions?
 * (Started) Actual styling/theming
 * (Started) Responsive layout
 * Notices (Account-based notices)
@@ -14,9 +9,19 @@
 * Re-add webNoAvatars option and provide access to on account page
 * Re-add webUseFullWidth option and provide access to on account page
 * Implement Socialite for Facebook/Google login
-* ECommerce page (Since it mostly doesn't require a character) 
+
+### AccountCurrency (Formally ECommerce)
+* ~~Manage Cards~~
+* ~~Single payment - card~~
+* ~~Single payment - paypal~~
+* ~~Subscription - card~~
+* Subscription - paypal 
+* Manage Subscriptions
  
-### Starting Pages
+### Character Based starting pages
+* Change Active Character
+* Avatars (Loading)
+* Character Order
 * Character Creation
     * Referral during such
 * Character Dashboard

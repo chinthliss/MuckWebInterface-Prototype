@@ -101,6 +101,10 @@
         <div class="row">
             <div class="col">
                 <div id="contentwrapper">
+                    <!-- Javascript check -->
+                    <noscript>
+                        <div class="p-3 mb-2 bg-danger text-light rounded">This page requires javascript enabled in order to work.</div>
+                    </noscript>
                     <!-- Site Notice -->
                     @SiteNotice
                     <div class="p-3 mb-2 bg-warning text-dark rounded">@SiteNoticeContent</div>
