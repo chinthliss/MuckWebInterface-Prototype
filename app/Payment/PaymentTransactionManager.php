@@ -44,6 +44,7 @@ class PaymentTransactionManager
             'amount_usd_items' => $transaction->itemPriceUsd,
             'accountcurrency_quoted' => $transaction->accountCurrencyQuoted,
             'purchase_description' => $transaction->purchaseDescription,
+            'subscription_id' => $transaction->subscriptionId,
             'created_at' => Carbon::now()
         ];
         if ($transaction->items) $row['items_json'] = json_encode(array_map(function ($item) {
@@ -107,6 +108,7 @@ class PaymentTransactionManager
         $transaction->vendor = $row->vendor;
         $transaction->vendorProfileId = $row->vendor_profile_id;
         $transaction->vendorTransactionId = $row->vendor_transaction_id;
+        $transaction->subscriptionId = $row->subscription_id;
         $transaction->accountCurrencyPriceUsd = $row->amount_usd;
         $transaction->accountCurrencyQuoted = $row->accountcurrency_quoted;
         $transaction->accountCurrencyRewarded = $row->accountcurrency_rewarded;
@@ -138,6 +140,7 @@ class PaymentTransactionManager
                 'id' => $transaction->id,
                 'type' => $transaction->type(),
                 'usd' => $transaction->totalPriceUsd(),
+                'subscriptionId' => $transaction->subscriptionId,
                 'accountCurrency' => $transaction->totalAccountCurrencyRewarded(),
                 'items' => count($transaction->items),
                 'timeStamp' => $transaction->completedAt ?? $transaction->createdAt,

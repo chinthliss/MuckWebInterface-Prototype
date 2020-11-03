@@ -34,6 +34,11 @@ class PaymentTransaction
     public $vendorTransactionId = null;
 
     /**
+     * @var string|null
+     */
+    public $subscriptionId = null;
+
+    /**
      * @var string
      */
     public $purchaseDescription = "";
