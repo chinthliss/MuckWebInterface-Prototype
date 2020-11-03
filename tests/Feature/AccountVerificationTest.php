@@ -53,7 +53,7 @@ class AccountVerificationTest extends TestCase
             'email' => 'test@test.com',
             'password' => 'password'
         ]));
-        $response->assertStatus(200);
+        $response->assertSuccessful();
         $this->assertAuthenticated();
         $user = $this->getPresentUser();
         $this->assertTrue($user->hasVerifiedEmail());
@@ -66,7 +66,7 @@ class AccountVerificationTest extends TestCase
             'email' => 'testunverified@test.com',
             'password' => 'password'
         ]));
-        $response->assertStatus(200);
+        $response->assertSuccessful();
         $this->assertAuthenticated();
         $user = $this->getPresentUser();
         $this->assertFalse($user->hasVerifiedEmail());
@@ -99,7 +99,7 @@ class AccountVerificationTest extends TestCase
         Notification::assertSentTo($user,VerifyEmail::class, function(VerifyEmail $notification, $channels) use ($user) {
             $mail = $notification->toMail($user)->toArray();
             $response = $this->json('GET', $mail['actionUrl']);
-            $response->assertStatus(302);
+            $response->assertRedirect();
             $this->assertTrue($user->hasVerifiedEmail());
             $this->assertEquals($user->getEmailForVerification(), 'testnew@test.com');
             return true;
@@ -133,7 +133,7 @@ class AccountVerificationTest extends TestCase
         Notification::assertSentTo($user,VerifyEmail::class, function(VerifyEmail $notification, $channels) use ($user) {
             $mail = $notification->toMail($user)->toArray();
             $response = $this->json('GET', $mail['actionUrl']);
-            $response->assertStatus(302);
+            $response->assertRedirect();
             $this->assertDatabaseHas('account_emails', [
                 'email' => 'testbrokenunverified@test.com'
             ]);

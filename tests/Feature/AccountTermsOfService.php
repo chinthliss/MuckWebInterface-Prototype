@@ -87,7 +87,7 @@ class AccountTermsOfService extends TestCase
         $this->seed();
         $user = Auth::loginUsingId('4');
         $response = $this->get('/home');
-        $response->assertStatus(302);
+        $response->assertRedirect();
         $termsOfService = $this->app->make('App\TermsOfService');
         $hash = $termsOfService::getTermsOfServiceHash();
         $response = $this->post(route('auth.account.termsofservice'),

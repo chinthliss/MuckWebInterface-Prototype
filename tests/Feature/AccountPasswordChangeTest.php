@@ -27,7 +27,7 @@ class AccountPasswordChangeTest extends TestCase
     public function testChangePasswordRequiresLogin()
     {
         $response = $this->followingRedirects()->get('account/changepassword');
-        $response->assertStatus(200);
+        $response->assertSuccessful();
         $response->assertViewIs('auth.login');
     }
 
@@ -39,7 +39,7 @@ class AccountPasswordChangeTest extends TestCase
         $this->seed();
         $this->loginAsValidatedUser();
         $response = $this->followingRedirects()->get('account/changepassword');
-        $response->assertStatus(200);
+        $response->assertSuccessful();
         $response->assertViewIs('auth.password-change');
     }
 
@@ -85,7 +85,7 @@ class AccountPasswordChangeTest extends TestCase
             'password' => 'passwordchanged',
             'password_confirmation' => 'passwordchanged'
         ]);
-        $response->assertStatus(200);
+        $response->assertSuccessful();
         $user = auth()->guard()->getProvider()->retrieveByCredentials(['email'=>'test@test.com']);
         $this->assertFalse(auth()->guard()->getProvider()->validateCredentials($user, ['password'=>'password']),
             "Password hasn't changed.");

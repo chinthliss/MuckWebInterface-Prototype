@@ -40,7 +40,7 @@ class AccountCurrencyTransactionTest extends TestCase
         $response = $this->json('GET', 'accountcurrency/acceptTransaction', [
             'token' => $this->validUnownedTransaction
         ]);
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function testClosedTransactionCannotBeUsed()
@@ -50,7 +50,7 @@ class AccountCurrencyTransactionTest extends TestCase
         $response = $this->json('GET', 'accountcurrency/acceptTransaction', [
             'token' => $this->validOwnedCompletedTransaction
         ]);
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function testOpenTransactionCanBeDeclined()
@@ -60,7 +60,7 @@ class AccountCurrencyTransactionTest extends TestCase
         $response = $this->followingRedirects()->json('POST', 'accountcurrency/declineTransaction', [
             'token' => $this->validOwnedOpenTransaction
         ]);
-        $response->assertStatus(200);
+        $response->assertSuccessful();
     }
 
     public function testOpenTransactionCanBeAccepted()
@@ -70,7 +70,7 @@ class AccountCurrencyTransactionTest extends TestCase
         $response = $this->followingRedirects()->json('GET', 'accountcurrency/acceptTransaction', [
             'token' => $this->validOwnedOpenTransaction
         ]);
-        $response->assertStatus(200);
+        $response->assertSuccessful();
     }
 
 
@@ -81,7 +81,7 @@ class AccountCurrencyTransactionTest extends TestCase
         $response = $this->followingRedirects()->json('POST', 'accountcurrency/declineTransaction', [
             'token' => $this->validOwnedCompletedTransaction
         ]);
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     /**
@@ -95,7 +95,7 @@ class AccountCurrencyTransactionTest extends TestCase
         $response = $this->followingRedirects()->json('GET', 'accountcurrency/acceptTransaction', [
             'token' => $token
         ]);
-        $response->assertStatus(200);
+        $response->assertSuccessful();
         $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
         $transaction = $transactionManager->getTransaction($token);
         $this->assertEquals('fulfilled', $transaction->result, "Transaction status should have been fulfilled");
@@ -149,7 +149,7 @@ class AccountCurrencyTransactionTest extends TestCase
         $response = $this->followingRedirects()->json('GET', route('accountcurrency.transaction', [
             'id' => $this->validOwnedCompletedTransaction
         ]));
-        $response->assertStatus(200);
+        $response->assertSuccessful();
     }
 
     public function testUserCannotViewUnownedTransaction()
@@ -159,7 +159,7 @@ class AccountCurrencyTransactionTest extends TestCase
         $response = $this->followingRedirects()->json('GET', route('accountcurrency.transaction', [
             'id' => $this->validUnownedTransaction
         ]));
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function internalTestBaseAmountSavesCorrectly($transactionId)
@@ -178,7 +178,7 @@ class AccountCurrencyTransactionTest extends TestCase
         $response = $this->followingRedirects()->json('POST', 'accountcurrency/newPayPalTransaction', [
             'amountUsd' => 10.0
         ]);
-        $response->assertStatus(200);
+        $response->assertSuccessful();
         $transactionId = (string)$response->original['token'];
         $this->internalTestBaseAmountSavesCorrectly($transactionId);
     }
@@ -191,7 +191,7 @@ class AccountCurrencyTransactionTest extends TestCase
             'cardId' => 1,
             'amountUsd' => 10.0
         ]);
-        $response->assertStatus(200);
+        $response->assertSuccessful();
         $transactionId = (string)$response->original['token'];
         $this->internalTestBaseAmountSavesCorrectly($transactionId);
     }
@@ -219,7 +219,7 @@ class AccountCurrencyTransactionTest extends TestCase
             'amountUsd' => 0.0,
             'items' => ['TESTITEM']
         ]);
-        $response->assertStatus(200);
+        $response->assertSuccessful();
         $transactionId = (string)$response->original['token'];
         $this->internalTestItemSavesCorrectly($transactionId);
     }
@@ -232,7 +232,7 @@ class AccountCurrencyTransactionTest extends TestCase
             'amountUsd' => 0.0,
             'items' => ['TESTITEM']
         ]);
-        $response->assertStatus(200);
+        $response->assertSuccessful();
         $transactionId = (string)$response->original['token'];
         $this->internalTestItemSavesCorrectly($transactionId);
     }

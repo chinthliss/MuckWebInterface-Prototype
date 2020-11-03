@@ -17,7 +17,7 @@ class PageTest extends TestCase
     {
         $this->withSession(['message-success' => 'success message test']);
         $response = $this->get('/');
-        $response->assertStatus(200);
+        $response->assertSuccessful();
         $response->assertSeeText('success message test');
 
     }

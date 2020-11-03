@@ -29,7 +29,7 @@ class AccountEmailChangeTest extends TestCase
     public function testChangeEmailRequiresLogin()
     {
         $response = $this->followingRedirects()->get('account/changeemail');
-        $response->assertStatus(200);
+        $response->assertSuccessful();
         $response->assertViewIs('auth.login');
     }
 
@@ -41,7 +41,7 @@ class AccountEmailChangeTest extends TestCase
         $this->seed();
         $this->loginAsValidatedUser();
         $response = $this->followingRedirects()->get('account/changeemail');
-        $response->assertStatus(200);
+        $response->assertSuccessful();
         $response->assertViewIs('auth.email-change');
     }
 
@@ -89,7 +89,7 @@ class AccountEmailChangeTest extends TestCase
         Notification::assertSentTo($user,VerifyEmail::class, function(VerifyEmail $notification, $channels) use ($user) {
             $mail = $notification->toMail($user)->toArray();
             $response = $this->json('GET', $mail['actionUrl']);
-            $response->assertStatus(302);
+            $response->assertRedirect();
             return true;
         });
     }
@@ -112,7 +112,7 @@ class AccountEmailChangeTest extends TestCase
         Notification::assertSentTo($user,VerifyEmail::class, function(VerifyEmail $notification, $channels) use ($user, $newEmail) {
             $mail = $notification->toMail($user)->toArray();
             $response = $this->json('GET', $mail['actionUrl']);
-            $response->assertStatus(302);
+            $response->assertRedirect();
             $this->assertTrue($user->hasVerifiedEmail());
             $this->assertEquals($user->getEmailForVerification(), $newEmail, "Email didn't change.");
             $this->assertDatabaseHas('account_emails', [
@@ -151,7 +151,7 @@ class AccountEmailChangeTest extends TestCase
         Notification::assertSentTo($user,VerifyEmail::class, function(VerifyEmail $notification, $channels) use ($user, $newEmail) {
             $mail = $notification->toMail($user)->toArray();
             $response = $this->json('GET', $mail['actionUrl']);
-            $response->assertStatus(302);
+            $response->assertRedirect();
             $this->assertTrue($user->hasVerifiedEmail());
             return true;
         });

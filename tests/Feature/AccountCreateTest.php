@@ -42,7 +42,7 @@ class AccountCreateTest extends TestCase
             'email' => 'testnew@test.com',
             'password' => 'password'
         ]));
-        $response->assertStatus(200);
+        $response->assertSuccessful();
         $response->assertJsonStructure(['redirectUrl']);
         $this->assertAuthenticated();
     }

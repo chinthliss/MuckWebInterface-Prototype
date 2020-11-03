@@ -32,7 +32,7 @@ class AccountPasswordResetTest extends TestCase
         $response = $this->json('POST', route('auth.account.passwordforgotten', [
             'email' => 'test@test.com'
         ]));
-        $response->assertStatus(200);
+        $response->assertSuccessful();
         $response->assertViewIs('auth.password-reset-sent');
     }
 
@@ -45,7 +45,7 @@ class AccountPasswordResetTest extends TestCase
         $response = $this->json('POST', route('auth.account.passwordforgotten', [
             'email' => 'invalidemail@test.com'
         ]));
-        $response->assertStatus(200);
+        $response->assertSuccessful();
         $response->assertViewIs('auth.password-reset-sent');
     }
 
@@ -124,7 +124,7 @@ class AccountPasswordResetTest extends TestCase
         Notification::assertSentTo($user,ResetPassword::class, function(ResetPassword $notification, $channels) use ($user) {
             $mail = $notification->toMail($user)->toArray();
             $response = $this->json('GET', $mail['actionUrl']);
-            $response->assertStatus(200);
+            $response->assertSuccessful();
             return true;
         });
     }
@@ -144,11 +144,11 @@ class AccountPasswordResetTest extends TestCase
             $mail = $notification->toMail($user)->toArray();
             $response = $this->json('POST', $mail['actionUrl'],
                 ['password'=>'passwordchanged', 'password_confirmation'=>'passwordchanged']);
-            $response->assertStatus(200);
+            $response->assertSuccessful();
             //Need to re-fetch password
             $user = auth()->guard()->getProvider()->retrieveByCredentials(['email'=>'test@test.com']);
             $this->assertTrue(auth()->guard()->getProvider()->validateCredentials($user, ['password'=>'passwordchanged']));
-            $response->assertStatus(200);
+            $response->assertSuccessful();
             return true;
         });
     }

@@ -41,7 +41,7 @@ class AccountLoginTest extends TestCase
             'email' => 'test@test.com',
             'password' => 'password'
         ]));
-        $response->assertStatus(200);
+        $response->assertSuccessful();
         $this->assertAuthenticated();
     }
 
@@ -69,7 +69,7 @@ class AccountLoginTest extends TestCase
             'email' => 'testCharacter',
             'password' => 'password'
         ]));
-        $response->assertStatus(200);
+        $response->assertSuccessful();
         $this->assertAuthenticated();
         $this->assertNotNull($this->getPresentUser()->getCharacter(), "Character should be set after logging in with such.");
         $this->get('/home'); //Make sure it stays set
@@ -144,7 +144,7 @@ class AccountLoginTest extends TestCase
         $this->loginAsValidatedUser();
         $this->assertAuthenticated();
         $response = $this->post(route('logout'));
-        $response->assertStatus(302);
+        $response->assertRedirect();
         $this->assertGuest();
     }
 

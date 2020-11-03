@@ -77,7 +77,7 @@ class AccountRolesTest extends TestCase
         $this->seed();
         $this->loginAsValidatedUser();
         $response = $this->get('/admin');
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function testAdminCanAccessAdminPage()
@@ -85,7 +85,7 @@ class AccountRolesTest extends TestCase
         $this->seed();
         Auth::loginUsingId($this->adminId);
         $response = $this->get('/admin');
-        $response->assertStatus(302);
+        $response->assertRedirect();
     }
 }
 

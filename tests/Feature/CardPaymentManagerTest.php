@@ -53,7 +53,7 @@ class CardPaymentManagerTest extends TestCase
             'expiryDate' => $monthAhead->format('m/Y'),
             'securityCode' => '123'
         ]);
-        $response->assertStatus(200);
+        $response->assertSuccessful();
         $this->assertNotEmpty($this->cardPaymentManager->getCardsFor($user));
     }
 
@@ -75,7 +75,7 @@ class CardPaymentManagerTest extends TestCase
         $response = $this->json('DELETE', route('payment.cardmanagement.delete'), [
             'id' => $card->id
         ]);
-        $response->assertStatus(200);
+        $response->assertSuccessful();
         $this->assertEmpty($this->cardPaymentManager->getCardsFor($user));
     }
 
