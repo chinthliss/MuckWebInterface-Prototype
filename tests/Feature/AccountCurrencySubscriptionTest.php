@@ -40,7 +40,7 @@ class AccountCurrencySubscriptionTest extends TestCase
         $response = $this->json('GET', 'accountcurrency/acceptSubscription', [
             'token' => $this->validUnownedSubscription
         ]);
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function testClosedSubscriptionCannotBeAccepted()
@@ -50,7 +50,7 @@ class AccountCurrencySubscriptionTest extends TestCase
         $response = $this->json('GET', 'accountcurrency/acceptSubscription', [
             'token' => $this->validOwnedClosedSubscription
         ]);
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function testNewSubscriptionCanBeDeclined()
@@ -60,7 +60,7 @@ class AccountCurrencySubscriptionTest extends TestCase
         $response = $this->followingRedirects()->json('POST', 'accountcurrency/declineSubscription', [
             'token' => $this->validOwnedNewSubscription
         ]);
-        $response->assertStatus(200);
+        $response->assertSuccessful();
     }
 
     public function testNewSubscriptionCanBeAccepted()
@@ -70,7 +70,7 @@ class AccountCurrencySubscriptionTest extends TestCase
         $response = $this->followingRedirects()->json('GET', 'accountcurrency/acceptSubscription', [
             'token' => $this->validOwnedNewSubscription
         ]);
-        $response->assertStatus(200);
+        $response->assertSuccessful();
     }
 
 
@@ -81,8 +81,29 @@ class AccountCurrencySubscriptionTest extends TestCase
         $response = $this->followingRedirects()->json('POST', 'accountcurrency/declineSubscription', [
             'token' => $this->validOwnedActiveSubscription
         ]);
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
+
+    public function testActiveCardSubscriptionCanBeCancelled()
+    {
+        $this->seed();
+        $this->loginAsValidatedUser();
+        $response = $this->followingRedirects()->json('POST', 'accountcurrency/cancelSubscription', [
+            'id' => $this->validOwnedActiveSubscription
+        ]);
+        $response->assertSuccessful();
+    }
+
+    public function testUnownedActiveCardSubscriptionCannotBeCancelled()
+    {
+        $this->seed();
+        $this->loginAsValidatedUser();
+        $response = $this->followingRedirects()->json('POST', 'accountcurrency/cancelSubscription', [
+            'id' => $this->validUnownedSubscription
+        ]);
+        $response->assertForbidden();
+    }
+
 
     public function testUserGetsOwnSubscriptionsInList()
     {
@@ -111,7 +132,7 @@ class AccountCurrencySubscriptionTest extends TestCase
         $response = $this->followingRedirects()->json('GET', route('accountcurrency.subscription', [
             'id' => $this->validOwnedActiveSubscription
         ]));
-        $response->assertStatus(200);
+        $response->assertSuccessful();
     }
 
     public function testUserCannotViewUnownedSubscription()
@@ -121,7 +142,7 @@ class AccountCurrencySubscriptionTest extends TestCase
         $response = $this->followingRedirects()->json('GET', route('accountcurrency.subscription', [
             'id' => $this->validUnownedSubscription
         ]));
-        $response->assertStatus(403);
+        $response->assertForbidden();
     }
 
     public function testUpdatedVendorProfileIdUpdatesAndPersists()

@@ -76,6 +76,7 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
     Route::post('accountcurrency/newCardSubscription', 'Payment\AccountCurrencyController@newCardSubscription');
     Route::post('accountcurrency/newPayPalSubscription', 'Payment\AccountCurrencyController@newPayPalSubscription');
     Route::post('accountcurrency/declineSubscription', 'Payment\AccountCurrencyController@declineSubscription');
+    Route::post('accountcurrency/cancelSubscription', 'Payment\AccountCurrencyController@cancelSubscription');
     Route::get('accountcurrency/acceptSubscription', 'Payment\AccountCurrencyController@acceptSubscription');
     Route::get('accountcurrency/subscription/{id}', 'Payment\AccountCurrencyController@viewSubscription')
         ->name('accountcurrency.subscription');

@@ -471,6 +471,24 @@ class AccountCurrencyController extends Controller
             'id' => $subscription->id
         ]);
     }
+
+    public function CancelSubscription(Request $request, PaymentSubscriptionManager $subscriptionManager)
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        $subscriptionId = $request->input('id', null);
+
+        if (!$subscriptionId || !$user) return abort(403);
+
+        $subscription = $subscriptionManager->getSubscription($subscriptionId);
+
+        if ($subscription->accountId != $user->getAid()) return abort(403);
+
+        $subscriptionManager->closeSubscription($subscription, 'cancelled');
+        return "Subscription Cancelled.";
+
+    }
     #endregion Subscriptions
 
 }

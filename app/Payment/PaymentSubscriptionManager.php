@@ -103,17 +103,7 @@ class PaymentSubscriptionManager
         $result = [];
         foreach ($rows as $row) {
             $subscription = $this->buildSubscriptionFromRow($row);
-            $result[$subscription->id] = [
-                'id' => $subscription->id,
-                'type' => $subscription->type(),
-                'amount_usd' => $subscription->amountUsd,
-                'recurring_interval' => $subscription->recurringInterval,
-                'created' => $subscription->createdAt,
-                'closed' => $subscription->closedAt,
-                'next_charge' => $subscription->nextChargeAt,
-                'status' => $subscription->status,
-                'url' => route('accountcurrency.subscription', ["id" => $subscription->id])
-            ];
+            $result[$subscription->id] = $subscription;
         }
         return $result;
     }

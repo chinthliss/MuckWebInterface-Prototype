@@ -10,5 +10,6 @@
         primary-email="{{ $user->getEmailForVerification() }}"
         :emails="{{ $user->getEmails() }}"
         :errors="{{ $errors }}"
+        :subscriptions="{{ json_encode($subscriptions) }}"
     ></auth-account>
 @endsection

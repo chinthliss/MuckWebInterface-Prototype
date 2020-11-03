@@ -6,6 +6,34 @@
                 <dt class="col-sm-2">Created</dt>
                 <dd class="col-sm-10">{{ accountCreated }}</dd>
             </dl>
+            <div v-if="subscriptions.length > 0">
+                <h5>Subscription</h5>
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th scope="col">Type</th>
+                        <th scope="col">Amount (USD)</th>
+                        <th scope="col">Interval (days)</th>
+                        <th scope="col">Next (approx)</th>
+                        <th scope="col">Status</th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+                    <tr v-for="subscription in subscriptions">
+                        <td class="align-middle">{{ subscription.type }}</td>
+                        <td class="align-middle">${{ subscription.amount_usd }}</td>
+                        <td class="align-middle">{{ subscription.recurring_interval }}</td>
+                        <td class="align-middle">{{ subscription.next_charge }}</td>
+                        <td class="align-middle">{{ friendlySubscriptionStatus(subscription.status) }}</td>
+                        <td class="align-middle">
+                            <button class="btn btn-secondary" v-if="subscription.status === 'active'"
+                                    @click="cancelSubscription(subscription.id)">Cancel
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+                <p>Payments made via subscriptions show on the Account Transactions page.</p>
+            </div>
             <h5>Emails</h5>
             <table class="table table-hover">
                 <thead>
@@ -13,19 +41,19 @@
                     <th scope="col">Email</th>
                     <th scope="col" class="text-center">Primary?</th>
                     <th scope="col">Registered</th>
-                    <th scope="col">Validated</th>
+                    <th scope="col">Verified</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr v-for="(details, email) in emails">
-                    <td>{{ email }}</td>
-                    <td class="text-center">
+                    <td  class="align-middle">{{ email }}</td>
+                    <td class="text-center align-middle">
                         <span v-if="email === primaryEmail" class="text-muted">Primary</span>
                         <button v-else class="btn btn-secondary" @click="verifyUseEmail(email)">Make Primary
                         </button>
                     </td>
-                    <td>{{details.created_at}}</td>
-                    <td>{{details.verified_at}}</td>
+                    <td class="align-middle">{{ details.created_at }}</td>
+                    <td class="align-middle">{{ details.verified_at }}</td>
                 </tr>
                 </tbody>
             </table>
@@ -69,31 +97,72 @@
                 </div>
             </div>
         </div>
+        <dialog-message id="messageModal"
+                        :content="message_dialog_content"
+                        :header="message_dialog_header"
+        ></dialog-message>
     </div>
-
-
 </template>
 
 <script>
-    export default {
-        name: "auth-account",
-        props: ['accountCreated', 'primaryEmail', 'emails', 'errors'],
-        data: function () {
-            return {
-                csrf: document.querySelector('meta[name="csrf-token"]').content,
-                changeEmailTo: ''
-            }
+import DialogMessage from "./DialogMessage";
+
+export default {
+    name: "auth-account",
+    components: {DialogMessage},
+    props: ['accountCreated', 'primaryEmail', 'emails', 'errors', 'subscriptions'],
+    data: function () {
+        return {
+            csrf: document.querySelector('meta[name="csrf-token"]').content,
+            changeEmailTo: '',
+            message_dialog_header: '',
+            message_dialog_content: ''
+        }
+    },
+    methods: {
+        verifyUseEmail: function (email) {
+            this.changeEmailTo = email;
+            $('#changeEmailModal').modal();
         },
-        methods: {
-            verifyUseEmail: function (email) {
-                this.changeEmailTo = email;
-                $('#changeEmailModal').modal();
-            },
-            useEmail: function () {
-                $('#changeEmailForm').submit();
+        useEmail: function () {
+            $('#changeEmailForm').submit();
+        },
+        friendlySubscriptionStatus: function (status) {
+            switch (status) {
+                case 'user_declined':
+                    return 'Never Accepted';
+                case 'approval_pending':
+                    return 'Never Accepted';
+                case 'suspended':
+                    return 'Suspended';
+                case 'cancelled':
+                    return 'Cancelled';
+                case 'expired':
+                    return 'Expired';
+                case 'active':
+                    return 'Active';
             }
+            return 'Unknown'
+        },
+        cancelSubscription: function(id) {
+            axios({
+                method: 'post',
+                url: '/accountcurrency/cancelSubscription',
+                data: {
+                    'id': id
+                }
+            }).then(response => {
+                //Reload to see change
+                window.location.reload();
+            }).catch(error => {
+                this.message_dialog_header = 'Cancellation failed';
+                this.message_dialog_content = `An error occurred, please notify staff. The error was:<br/> ${error}`;
+                $('#messageModal').modal();
+            });
+
         }
     }
+}
 </script>
 
 <style scoped>

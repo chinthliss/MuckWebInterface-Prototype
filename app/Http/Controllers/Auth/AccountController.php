@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Payment\PaymentSubscriptionManager;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
@@ -52,7 +53,7 @@ class AccountController extends Controller
         $attemptResult = $this->guard()->attempt($request->only('email', 'password'), $remember);
         if ($attemptResult) {
             $request->session()->regenerate();
-            $user =  $this->guard()->user();
+            $user = $this->guard()->user();
             event(new Login($this->guard(), $user, $remember));
             //TODO: Look better at implementing loginThrottle
             // $this->clearLoginAttempts($request);
@@ -68,7 +69,7 @@ class AccountController extends Controller
         } else {
             $user = $this->guard()->getProvider()->retrieveByCredentials($request->only('email'));
             event(new Failed($this->guard(), $user, $request->only('email', 'password')));
-            throw ValidationException::withMessages(['password'=>['Unrecognized Email/Password or Character/Password combination.']]);
+            throw ValidationException::withMessages(['password' => ['Unrecognized Email/Password or Character/Password combination.']]);
         }
     }
 
@@ -80,11 +81,11 @@ class AccountController extends Controller
         ]);
 
         if (!$this->guard()->getProvider()->isEmailAvailable($request['email'])) {
-            throw ValidationException::withMessages(['email'=>['This email is already in use.']]);
+            throw ValidationException::withMessages(['email' => ['This email is already in use.']]);
         }
 
         if ($passwordCheck = $this->findIssuesWithPassword($request['password'])) {
-            throw ValidationException::withMessages(['password'=>$passwordCheck]);
+            throw ValidationException::withMessages(['password' => $passwordCheck]);
         }
 
         $user = $this->guard()->getProvider()->createAccount($request['email'], $request['password']);
@@ -107,7 +108,7 @@ class AccountController extends Controller
     /**
      * Log the user out of the application.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
     public function logout(Request $request)
@@ -119,10 +120,28 @@ class AccountController extends Controller
         return redirect()->route('login');
     }
 
-    public function show()
+    public function show(PaymentSubscriptionManager $subscriptionManager)
     {
+        $user = $this->guard()->user();
+        $subscriptionsUnparsed = $subscriptionManager->getSubscriptionsFor($user->getAid());
+        $subscriptions = [];
+        foreach ($subscriptionsUnparsed as $subscription) {
+            if ($subscription->status === 'user_declined' || $subscription->status === 'approval_pending') continue;
+            array_push($subscriptions, [
+                'id' => $subscription->id,
+                'type' => $subscription->type(),
+                'amount_usd' => $subscription->amountUsd,
+                'recurring_interval' => $subscription->recurringInterval,
+                'created' => $subscription->createdAt,
+                'closed' => $subscription->closedAt,
+                'next_charge' => $subscription->nextChargeAt,
+                'status' => $subscription->status,
+                'url' => route('accountcurrency.subscription', ["id" => $subscription->id])
+            ]);
+        }
         return view('auth.account', [
-            'user' => $this->guard()->user()
+            'user' => $user,
+            'subscriptions' => $subscriptions
         ]);
     }
 }

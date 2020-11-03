@@ -117,17 +117,16 @@ export default {
     ],
     data: function () {
         return {
-            'recurring': false,
-            'recurringInterval': '90',
-            'baseAmount': 0,
-            'baseAmountExchange': 0,
-            'baseAmountExchangeError': '',
-            'transaction': {
-                'purchase': 'test'
+            recurring: false,
+            recurringInterval: '90',
+            baseAmount: 0,
+            baseAmountExchange: 0,
+            baseAmountExchangeError: '',
+            transaction: {
+                purchase: 'test'
             },
-            'message_dialog_header': '',
-            'message_dialog_content': ''
-
+            message_dialog_header: '',
+            message_dialog_content: ''
         }
     },
     methods: {
