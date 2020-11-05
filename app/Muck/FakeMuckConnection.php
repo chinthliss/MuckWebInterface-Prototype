@@ -121,4 +121,19 @@ class FakeMuckConnection implements MuckConnection
         );
         return $accountCurrency;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function stretchGoals(): array
+    {
+        return [
+            'progress' => 100,
+            'goals' => [ // Keys can't be int in JSON, so also need to be strings here
+                '50' => 'This example goal has been achieved',
+                '200' => 'This example goal has not been achieved',
+                '5000' => 'This example goal has also not been achieved but is longer to test formatting.'
+            ]
+        ];
+    }
 }

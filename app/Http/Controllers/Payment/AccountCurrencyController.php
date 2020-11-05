@@ -45,7 +45,8 @@ class AccountCurrencyController extends Controller
             'account' => $user->getAid(),
             'defaultCardMaskedNumber' => ($defaultCard ? $defaultCard->maskedCardNumber() : null),
             'suggestedAmounts' => $parsedSuggestedAmounts,
-            'itemCatalogue' => $parsedItems
+            'itemCatalogue' => $parsedItems,
+            'stretchGoals' => $muck->stretchGoals()
         ]);
     }
 

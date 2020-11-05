@@ -61,11 +61,19 @@ interface MuckConnection
     public function adjustAccountCurrency(int $accountId, float $usdAmount, int $accountCurrency, ?string $subscriptionId): int;
 
     /**
-     * @param int $acacountId
+     * @param int $accountId
      * @param float $usdAmount
      * @param int $accountCurrency
      * @param string $itemCode
      * @return int accountCurrencyRewarded
      */
-    public function rewardItem(int $acacountId, float $usdAmount, int $accountCurrency, string $itemCode): int;
+    public function rewardItem(int $accountId, float $usdAmount, int $accountCurrency, string $itemCode): int;
+
+    /**
+     * Should return an array with the following properties:
+     *   progress(int)
+     *   goals(array) - array of amount:description. Amount is a string because of json
+     * @return array
+     */
+    public function stretchGoals(): array;
 }

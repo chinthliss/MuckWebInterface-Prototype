@@ -153,4 +153,12 @@ class HttpMuckConnection implements MuckConnection
         ]);
         return (int)$response;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function stretchGoals(): array
+    {
+        return json_decode($this->requestFromMuck('stretchGoals'));
+    }
 }

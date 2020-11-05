@@ -79,7 +79,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     else response400 then
 ; selfcall handleRequest_getCharacters
 
-(Excepts either 'email' or 'api_token', returns 'account,[playerToString]' if one is matched or returns empty response)
+(Expects either 'email' or 'api_token', returns 'account,[playerToString]' if one is matched or returns empty response)
 (Because this is passed directly from the login form, email will actually be the character name)
 : handleRequest_retrieveByCredentials[ arr:webcall -- ]
     webcall @ "email" array_getitem ?dup if
@@ -99,7 +99,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     response400
 ; selfcall handleRequest_retrieveByCredentials
 
-(Excepts 'dbref' and 'password' set, returns either 'true' or 'false')
+(Expects 'dbref' and 'password' set, returns either 'true' or 'false')
 : handleRequest_validateCredentials[ arr:webcall -- ]
     webcall @ "dbref" array_getitem ?dup if atoi dbref else #-1 then var! dbref
     webcall @ "password" array_getitem ?dup not if "" then var! password
@@ -136,7 +136,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     0 swap "startOfMonthSale" array_setitem
 ; selfcall handleRequest_bootAccountCurrency
 
-(Excepts {account, usdAmount, accountCurrency, [subscriptionId]} returns amount actually rewarded)
+(Expects {account, usdAmount, accountCurrency, [subscriptionId]} returns amount actually rewarded)
 : handleRequest_adjustAccountCurrency[ arr:webcall -- ]
     webcall @ "account" array_getitem ?dup if acct_any2aid else pop response400 exit then
     acct_aid2email (makoadjust wants such for stack order)
@@ -150,7 +150,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     descr swap descrnotify
 ; selfcall handleRequest_adjustAccountCurrency
 
-(Excepts {account, usdAmount, accountCurrency, itemCode}, returns currency rewarded as part of such)
+(Expects {account, usdAmount, accountCurrency, itemCode}, returns currency rewarded as part of such)
 : handleRequest_rewardItem[ arr:webcall -- ]
     webcall @ "account" array_getitem ?dup if acct_any2aid else pop response400 exit then var! account
     webcall @ "usdAmount" array_getitem parseFloatOrInt var! usdAmount
@@ -165,6 +165,22 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     accountCurrencyAmount @ intostr 
     descr swap descrnotify
 ; selfcall handleRequest_rewardItem
+
+(Takes no arguments, returns stretchgoals as an array of [progress:int, goals:[amount:description]].)
+: handleRequest_stretchGoals[ arr:webcall -- ]
+    startAcceptedResponse
+    {
+        "progress" #0 "Monthly Mako" getStatInt
+    }dict
+    { }dict (goals)
+    rpsys "stretch" array_get_propvals
+    foreach
+        rot rot array_setitem
+    repeat
+    swap "goals" array_setitem
+    encodeJson
+    descr swap descrnotify
+; selfcall handleRequest_stretchGoals
 
 ( -------------------------------------------------- )
 ( Routing )

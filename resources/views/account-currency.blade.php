@@ -13,5 +13,8 @@
         card-management-page="{{ route('payment.cardmanagement') }}"
         :item-catalogue="{{ json_encode($itemCatalogue) }}"
     ></account-currency-buy>
-    <game-stretch-goals></game-stretch-goals>
+    <game-stretch-goals
+        :progress="{{ $stretchGoals['progress'] }}"
+        :goals="{{ json_encode($stretchGoals['goals']) }}"
+    ></game-stretch-goals>
 @endsection
