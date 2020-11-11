@@ -6,8 +6,10 @@
                 <dt class="col-sm-2">Created</dt>
                 <dd class="col-sm-10">{{ accountCreated }}</dd>
             </dl>
+
+            <!-- Subscriptions -->
             <div v-if="subscriptions.length > 0">
-                <h5>Subscription</h5>
+                <h5 class="mt-2">Subscription</h5>
                 <table class="table table-hover">
                     <thead>
                     <tr>
@@ -34,37 +36,56 @@
                 </table>
                 <p>Payments made via subscriptions show on the Account Transactions page.</p>
             </div>
-            <h5>Emails</h5>
-            <table class="table table-hover">
-                <thead>
-                <tr>
-                    <th scope="col">Email</th>
-                    <th scope="col" class="text-center">Primary?</th>
-                    <th scope="col">Registered</th>
-                    <th scope="col">Verified</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="(details, email) in emails">
-                    <td  class="align-middle">{{ email }}</td>
-                    <td class="text-center align-middle">
-                        <span v-if="email === primaryEmail" class="text-muted">Primary</span>
-                        <button v-else class="btn btn-secondary" @click="verifyUseEmail(email)">Make Primary
-                        </button>
-                    </td>
-                    <td class="align-middle">{{ details.created_at }}</td>
-                    <td class="align-middle">{{ details.verified_at }}</td>
-                </tr>
-                </tbody>
-            </table>
-            <div class="row">
-                <div class="col">
-                    <div class="btn-toolbar" role="group" aria-label="Account Controls">
-                        <a class="btn btn-secondary mt-1 ml-1" href="/account/changepassword">Change Password</a>
-                        <a class="btn btn-secondary mt-1 ml-1" href="/account/changeemail">Change to new Email</a>
-                        <a class="btn btn-secondary mt-1 ml-1" href="/account/cardmanagement">Card Management</a>
-                        <a class="btn btn-secondary mt-1 ml-1" href="/accountcurrency/history">Account Transactions</a>
+
+            <!-- Emails -->
+            <div>
+                <h5 class="mt-2">Emails</h5>
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th scope="col">Email</th>
+                        <th scope="col" class="text-center">Primary?</th>
+                        <th scope="col">Registered</th>
+                        <th scope="col">Verified</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="(details, email) in emails">
+                        <td  class="align-middle">{{ email }}</td>
+                        <td class="text-center align-middle">
+                            <span v-if="email === primaryEmail" class="text-muted">Primary</span>
+                            <button v-else class="btn btn-secondary" @click="verifyUseEmail(email)">Make Primary
+                            </button>
+                        </td>
+                        <td class="align-middle">{{ details.created_at }}</td>
+                        <td class="align-middle">{{ details.verified_at }}</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div class="row">
+                    <div class="col">
+                        <div class="btn-toolbar" role="group" aria-label="Account Controls">
+                            <a class="btn btn-secondary mt-1 ml-1" href="/account/changepassword">Change Password</a>
+                            <a class="btn btn-secondary mt-1 ml-1" href="/account/changeemail">Change to new Email</a>
+                            <a class="btn btn-secondary mt-1 ml-1" href="/account/cardmanagement">Card Management</a>
+                            <a class="btn btn-secondary mt-1 ml-1" href="/accountcurrency/history">Account Transactions</a>
+                        </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Session settings -->
+            <div>
+                <h5 class="mt-2">Preferences</h5>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="hideAvatars"
+                           v-model="hideAvatars" @change="hideAvatarsChanged">
+                    <label class="form-check-label" for="hideAvatars">Hide Avatars</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="useFullWidth"
+                           v-model="useFullWidth" @change="useFullWidthChanged">
+                    <label class="form-check-label" for="useFullWidth">Use Full Screen Width for all pages</label>
                 </div>
             </div>
         </div>
@@ -97,10 +118,13 @@
                 </div>
             </div>
         </div>
+
+        <!-- Message Modal -->
         <dialog-message id="messageModal"
                         :content="message_dialog_content"
                         :header="message_dialog_header"
         ></dialog-message>
+
     </div>
 </template>
 
@@ -110,13 +134,18 @@ import DialogMessage from "./DialogMessage";
 export default {
     name: "auth-account",
     components: {DialogMessage},
-    props: ['accountCreated', 'primaryEmail', 'emails', 'errors', 'subscriptions'],
+    props: [
+        'accountCreated', 'primaryEmail', 'emails', 'errors', 'subscriptions',
+        'initialUseFullWidth', 'initialHideAvatars'
+    ],
     data: function () {
         return {
             csrf: document.querySelector('meta[name="csrf-token"]').content,
             changeEmailTo: '',
             message_dialog_header: '',
-            message_dialog_content: ''
+            message_dialog_content: '',
+            useFullWidth: this.initialUseFullWidth,
+            hideAvatars: this.initialHideAvatars
         }
     },
     methods: {
@@ -157,6 +186,39 @@ export default {
             }).catch(error => {
                 this.message_dialog_header = 'Cancellation failed';
                 this.message_dialog_content = `An error occurred, please notify staff. The error was:<br/> ${error}`;
+                $('#messageModal').modal();
+            });
+
+        },
+        useFullWidthChanged: function() {
+            axios({
+                method: 'post',
+                url: '/account/updatePreference',
+                data: {
+                    'useFullWidth': this.useFullWidth
+                }
+            }).then(response => {
+                //Reload to see change
+                window.location.reload();
+            }).catch(error => {
+                this.message_dialog_header = 'Preference update failed';
+                this.message_dialog_content = `An error occurred. The error was:<br/> ${error}`;
+                $('#messageModal').modal();
+            });
+        },
+        hideAvatarsChanged: function() {
+            axios({
+                method: 'post',
+                url: '/account/updatePreference',
+                data: {
+                    'hideAvatars': this.hideAvatars
+                }
+            }).then(response => {
+                //Reload to see change
+                window.location.reload();
+            }).catch(error => {
+                this.message_dialog_header = 'Preference update failed';
+                this.message_dialog_content = `An error occurred. The error was:<br/> ${error}`;
                 $('#messageModal').modal();
             });
 

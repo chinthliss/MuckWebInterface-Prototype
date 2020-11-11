@@ -53,6 +53,8 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
         ->name('auth.account.emailchange');
     Route::post('account/useexistingemail', 'Auth\AccountEmailController@useExistingEmail');
     Route::post('account/changeemail', 'Auth\AccountEmailController@changeEmail');
+    //Preference change
+    Route::post('account/updatePreference', 'Auth\AccountController@updatePreference');
     //Card Management
     Route::get('account/cardmanagement', 'Payment\CardManagementController@show')
         ->name('payment.cardmanagement');

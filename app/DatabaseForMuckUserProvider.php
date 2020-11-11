@@ -6,6 +6,7 @@ use App\Muck\MuckConnection;
 use App\Helpers\MuckInterop;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Auth\UserProvider;
@@ -73,7 +74,7 @@ class DatabaseForMuckUserProvider implements UserProvider
     //Used when user is logged in, called with accountId (aid)
     public function retrieveById($identifier)
     {
-        debug('UserProvider RetrieveById attempt for ' . $identifier);
+        Log::debug('UserProvider RetrieveById attempt for ' . $identifier);
         //Retrieve account details from database first
         $accountQuery = $this->getRetrievalQuery()
             ->where('accounts.aid', $identifier)
@@ -85,13 +86,13 @@ class DatabaseForMuckUserProvider implements UserProvider
         if ($characterDbref && $user->characters()->has($characterDbref)) {
             $user->setCharacter($user->characters()[$characterDbref]);
         }
-        debug('UserProvider RetrieveById result for ' . $identifier . ', result = ' . $user->getAid());
+        Log::debug('UserProvider RetrieveById result for ' . $identifier . ', result = ' . $user->getAid());
         return $user;
     }
 
     public function retrieveByToken($identifier, $token)
     {
-        debug('UserProvider RetrieveByToken attempt for ' . $identifier . ':' . $token);
+        Log::debug('UserProvider RetrieveByToken attempt for ' . $identifier . ':' . $token);
         $accountQuery = $this->getRetrievalQuery()
             ->where('accounts.aid', $identifier)
             ->first();
@@ -104,7 +105,7 @@ class DatabaseForMuckUserProvider implements UserProvider
 
     public function retrieveByCredentials(array $credentials)
     {
-        debug('UserProvider RetrieveByCredentials attempt for ' . json_encode($credentials));
+        Log::debug('UserProvider RetrieveByCredentials attempt for ' . json_encode($credentials));
         //If it's an email address we can try the database
         if (array_key_exists('email', $credentials) && strpos($credentials['email'], '@')) {
             $accountQuery = $this->getRetrievalQuery()
@@ -155,7 +156,7 @@ class DatabaseForMuckUserProvider implements UserProvider
     public function validateCredentials(Authenticatable $user, array $credentials)
     {
         // return Hash::check($credentials['password'], $user->getAuthPassword());
-        debug('UserProvider ValidateCredentials for ' . $user->getAid()  . ' with ' . json_encode($credentials));
+        Log::debug('UserProvider ValidateCredentials for ' . $user->getAid()  . ' with ' . json_encode($credentials));
         //Try the database retrieved details first
         if (method_exists($user, 'getPasswordType')
             && $user->getPasswordType() == 'SHA1SALT'
@@ -289,7 +290,7 @@ class DatabaseForMuckUserProvider implements UserProvider
     /**
      * Get all emails to do with a user in the form
      * @param User $user
-     * @return \Illuminate\Support\Collection
+     * @return Collection
      */
     public function getEmails(User $user)
     {
@@ -306,11 +307,28 @@ class DatabaseForMuckUserProvider implements UserProvider
         return $this->muckConnection->getCharactersOf($user->getAid());
     }
 
-    public function storeTermsOfServiceAgreement(User $user, string $hash)
+    public function updateTermsOfServiceAgreement(User $user, string $hash)
     {
         DB::table('account_properties')->updateOrInsert(
             ['aid' => $user->getAid(), 'propname'=>'tos-hash-viewed' ],
             ['propdata' => $hash, 'proptype'=>'STRING']
         );
     }
+
+    public function updatePrefersNoAvatars(User $user, bool $value)
+    {
+        DB::table('account_properties')->updateOrInsert(
+            ['aid' => $user->getAid(), 'propname'=>'webnoavatars' ],
+            ['propdata' => ($value ? 'Y' : 'N'), 'proptype'=>'STRING']
+        );
+    }
+
+    public function updatePrefersFullWidth(User $user, bool $value)
+    {
+        DB::table('account_properties')->updateOrInsert(
+            ['aid' => $user->getAid(), 'propname'=>'webusefullwidth' ],
+            ['propdata' => ($value ? 'Y' : 'N'), 'proptype'=>'STRING']
+        );
+    }
+
 }

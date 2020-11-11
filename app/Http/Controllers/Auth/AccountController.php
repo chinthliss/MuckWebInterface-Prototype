@@ -9,6 +9,7 @@ use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -19,18 +20,19 @@ class AccountController extends Controller
 {
 
     /**
+     * @return \Illuminate\Contracts\Auth\Guard|\Illuminate\Contracts\Auth\StatefulGuard
+     */
+    public function guard()
+    {
+        return auth()->guard('account');
+    }
+
+    /**
      * Show the login form.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function showLoginForm()
     {
         return view('auth.login');
-    }
-
-    public function guard()
-    {
-        return auth()->guard('account');
     }
 
     public function findIssuesWithPassword(string $password)
@@ -107,9 +109,6 @@ class AccountController extends Controller
 
     /**
      * Log the user out of the application.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
      */
     public function logout(Request $request)
     {
@@ -120,6 +119,32 @@ class AccountController extends Controller
         return redirect()->route('login');
     }
 
+    /**
+     * Update and save a preference
+     */
+    public function updatePreference(Request $request)
+    {
+        $user = $this->guard()->user();
+        if ($user) {
+            foreach ($request->all() as $preferenceName => $preferenceValue) {
+                switch ($preferenceName) {
+                    case 'hideAvatars':
+                        $user->setPrefersNoAvatars($preferenceValue);
+                        break;
+                    case 'useFullWidth':
+                        $user->setPrefersFullWidth($preferenceValue);
+                        break;
+                    default:
+                        Log::warning('Unrecognized preference to update ' . $preferenceName
+                            . ' for user ' . $user->getAid());
+                }
+            }
+        }
+    }
+
+    /**
+     * Show the main account page
+     */
     public function show(PaymentSubscriptionManager $subscriptionManager)
     {
         $user = $this->guard()->user();

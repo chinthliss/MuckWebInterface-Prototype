@@ -11,5 +11,7 @@
         :emails="{{ $user->getEmails() }}"
         :errors="{{ $errors }}"
         :subscriptions="{{ json_encode($subscriptions) }}"
+        :initial-use-full-width="{{ json_encode($user->getPrefersFullWidth()) }}"
+        :initial-hide-avatars="{{ json_encode($user->getPrefersNoAvatars()) }}"
     ></auth-account>
 @endsection

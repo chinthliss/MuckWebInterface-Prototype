@@ -97,7 +97,11 @@
             </div>
         </div>
     </nav>
-    <div class="container"> <!-- Or container-fluid here depending on prefs -->
+    @PrefersFullWidth
+    <div class="container-fluid">
+    @else
+    <div class="container">
+    @endPrefersFullWidth
         <div class="row">
             <div class="col">
                 <div id="contentwrapper">

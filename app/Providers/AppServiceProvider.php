@@ -30,6 +30,18 @@ class AppServiceProvider extends ServiceProvider
             return $user && $user->hasRole('admin');
         });
 
+        // Add the capability of blade views to pick up on fullwidth preference
+        Blade::if('PrefersFullWidth', function() {
+            $user = auth()->user();
+            return $user && $user->getPrefersFullWidth();
+        });
+
+        // Add the capability of blade views to pick up on avatar hiding preference
+        Blade::if('PrefersNoAvatars', function() {
+            $user = auth()->user();
+            return $user && $user->getPrefersNoAvatars();
+        });
+
         // Add the ability to have a customizable header on each page
         Blade::if('SiteNotice', function(){
             $filePath = public_path('site-notice.txt');
