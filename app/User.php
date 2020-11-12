@@ -265,8 +265,8 @@ class User implements Authenticatable, MustVerifyEmail
     public function ensureLatePropertiesAreLoaded()
     {
         if (!$this->latePropertiesLoaded) {
-            $this->latePropertiesLoaded = true;
             $this->getProvider()->loadLatePropertiesFor($this);
+            $this->latePropertiesLoaded = true;
         }
     }
 
@@ -290,7 +290,7 @@ class User implements Authenticatable, MustVerifyEmail
     public function setPrefersNoAvatars($value)
     {
         $this->prefersNoAvatars = $value;
-        $this->getProvider()->updatePrefersNoAvatars($this, $value);
+        if ($this->latePropertiesLoaded) $this->getProvider()->updatePrefersNoAvatars($this, $value);
     }
 
     public function getPrefersFullWidth()
@@ -302,7 +302,7 @@ class User implements Authenticatable, MustVerifyEmail
     public function setPrefersFullWidth($value)
     {
         $this->prefersFullWidth = $value;
-        $this->getProvider()->updatePrefersFullWidth($this, $value);
+        if ($this->latePropertiesLoaded) $this->getProvider()->updatePrefersFullWidth($this, $value);
     }
     //endregion Late Loading Properties
 
