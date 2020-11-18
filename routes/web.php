@@ -75,6 +75,11 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
     Route::get('accountcurrency/transaction/{id}', 'Payment\AccountCurrencyController@viewTransaction')
         ->name('accountcurrency.transaction');
     Route::get('accountcurrency/history', 'Payment\AccountCurrencyController@viewTransactions');
+    Route::get('accountcurrency/paypal_order_return', 'Payment\AccountCurrencyController@paypalOrderReturn')
+        ->name('accountcurrency.paypal.order.return');
+    Route::get('accountcurrency/paypal_order_cancel', 'Payment\AccountCurrencyController@paypalOrderCancel')
+        ->name('accountcurrency.paypal.order.cancel');
+
     Route::post('accountcurrency/newCardSubscription', 'Payment\AccountCurrencyController@newCardSubscription');
     Route::post('accountcurrency/newPayPalSubscription', 'Payment\AccountCurrencyController@newPayPalSubscription');
     Route::post('accountcurrency/declineSubscription', 'Payment\AccountCurrencyController@declineSubscription');
@@ -82,10 +87,11 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
     Route::get('accountcurrency/acceptSubscription', 'Payment\AccountCurrencyController@acceptSubscription');
     Route::get('accountcurrency/subscription/{id}', 'Payment\AccountCurrencyController@viewSubscription')
         ->name('accountcurrency.subscription');
-    Route::get('accountcurrency/paypal_return', 'Payment\AccountCurrencyController@paypalReturn')
-        ->name('accountcurrency.paypal.return');
-    Route::get('accountcurrency/paypal_cancel', 'Payment\AccountCurrencyController@paypalCancel')
-        ->name('accountcurrency.paypal.cancel');
+    Route::get('accountcurrency/paypal_subscription_return', 'Payment\AccountCurrencyController@paypalSubscriptionReturn')
+        ->name('accountcurrency.paypal.subscription.return');
+    Route::get('accountcurrency/paypal_subscription_cancel', 'Payment\AccountCurrencyController@paypalSubscriptionCancel')
+        ->name('accountcurrency.paypal.subscription.cancel');
+
 });
 
 //Website admin routes

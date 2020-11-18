@@ -108,6 +108,13 @@ class PaymentSubscriptionManager
         return $result;
     }
 
+    public function getSubscriptionFromVendorId(string $subscriptionVendorId): ?PaymentSubscription
+    {
+        $row = $this->storageTable()->where('vendor_subscription_id', '=', $subscriptionVendorId)->first();
+        return $this->buildSubscriptionFromRow($row);
+    }
+
+
     public function closeSubscription(PaymentSubscription $subscription, string $closureReason)
     {
         if (!in_array($closureReason, ['fulfilled', 'user_declined', 'cancelled', 'expired']))

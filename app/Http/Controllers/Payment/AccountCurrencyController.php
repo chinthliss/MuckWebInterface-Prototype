@@ -282,9 +282,10 @@ class AccountCurrencyController extends Controller
     }
 
     #region PayPal responses
-    public function paypalReturn(Request $request, PayPalManager $paypalManager,
-                                 PaymentTransactionManager $transactionManager)
+    public function paypalOrderReturn(Request $request, PayPalManager $paypalManager,
+                                      PaymentTransactionManager $transactionManager)
     {
+        Log::debug("Paypal - order return: " . json_encode($request->all()));
         $token = $request->get('token');
         $transaction = $transactionManager->getTransactionFromExternalId($token);
         if (!$transaction || !$transaction->vendorTransactionId) {
@@ -308,15 +309,51 @@ class AccountCurrencyController extends Controller
         return redirect()->route('accountcurrency.transaction', ['id' => $transaction->id]);
     }
 
-    public function paypalCancel(Request $request, PayPalManager $paypalManager,
-                                 PaymentTransactionManager $transactionManager)
+    public function paypalOrderCancel(Request $request, PayPalManager $paypalManager,
+                                      PaymentTransactionManager $transactionManager)
     {
+        Log::debug("Paypal - order cancel: " . json_encode($request->all()));
         $transaction = $transactionManager->getTransactionFromExternalId($request->get('token'));
         if (!$transaction->open()) return 403;
         $paypalManager->cancelPayPalOrder($transaction);
         return view('account-currency-transaction')->with([
             'transaction' => $transaction->toArray()
         ]);
+    }
+
+    public function paypalSubscriptionReturn(Request $request, PayPalManager $paypalManager,
+                                             PaymentSubscriptionManager $subscriptionManager)
+    {
+        Log::debug("Paypal - subscription return: " . json_encode($request->all()));
+        // Subscription returns subscription_id, ba_token and token
+        $subscriptionVendorId = $request->get('subscription_id');
+        $subscription = $subscriptionManager->getSubscriptionFromVendorId($subscriptionVendorId);
+        if (!$subscription) {
+            Log::error("PayPal - Told subscription " . $subscriptionVendorId . " has been accepted " .
+                ", but failed to look it up");
+            abort(500);
+        }
+        if ($subscription->status != 'approval_pending') {
+            Log::warning("Attempt to approve PayPal subscription that isn't in approval_pending " . $subscription->id .
+                " (User may have just pressed refresh at a bad time.)");
+        } else {
+            $paypalDetails = $paypalManager->getSubscriptionDetails($subscriptionVendorId);
+            if ($paypalDetails['status'] == 'ACTIVE') {
+                $subscriptionManager->updateVendorProfileId($subscription, $paypalDetails['subscriber']->payer_id);
+                $subscriptionManager->setSubscriptionAsActive($subscription);
+            }
+        }
+        return redirect()->route('accountcurrency.subscription', ['id' => $subscription->id]);
+    }
+
+    public function paypalSubscriptionCancel(Request $request, PayPalManager $paypalManager,
+                                             PaymentSubscriptionManager $subscriptionManager)
+    {
+        Log::debug("Paypal - subscription cancel: " . json_encode($request->all()));
+        $subscription = $subscriptionManager->getSubscriptionFromVendorId($request->get('subscription_id'));
+        if (!$subscription->open()) return 403;
+        $subscriptionManager->closeSubscription($subscription, 'cancelled');
+        return redirect()->route('accountcurrency.subscription', ['id' => $subscription->id]);
     }
 
     public function paypalWebhook(Request $request, PayPalManager $paypalManager,
@@ -376,7 +413,7 @@ class AccountCurrencyController extends Controller
      * @param PaymentSubscriptionManager $subscriptionManager
      */
     public function newPayPalSubscription(Request $request, PayPalManager $paypalManager,
-                                        PaymentSubscriptionManager $subscriptionManager)
+                                          PaymentSubscriptionManager $subscriptionManager)
     {
         /** @var User $user */
         $user = auth()->user();

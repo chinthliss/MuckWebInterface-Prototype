@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use App\Payment\PayPalManager;
 use Illuminate\Console\Command;
 
-class ListPayPalSubscriptions extends Command
+class ListPayPalSubscriptionPlans extends Command
 {
     /**
      * The name and signature of the console command.

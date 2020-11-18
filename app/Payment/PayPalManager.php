@@ -3,11 +3,12 @@
 
 namespace App\Payment;
 
+use App\Payment\PayPalRequests\SubscriptionsListPlans;
 use App\User;
 use App\Payment\PayPalRequests\ProductsCreate;
 use App\Payment\PayPalRequests\ProductsList;
 use App\Payment\PayPalRequests\SubscriptionsCreatePlan;
-use App\Payment\PayPalRequests\SubscriptionsListPlans;
+use App\Payment\PayPalRequests\SubscriptionsDetails;
 use App\Payment\PayPalRequests\SubscriptionsCreateSubscription;
 use App\Payment\PayPalRequests\WebhooksCreate;
 use App\Payment\PayPalRequests\WebhooksList;
@@ -77,8 +78,8 @@ class PayPalManager
                 ]
             ]],
             "application_context" => [
-                "cancel_url" => route('accountcurrency.paypal.cancel'),
-                "return_url" => route('accountcurrency.paypal.return')
+                "cancel_url" => route('accountcurrency.paypal.order.cancel'),
+                "return_url" => route('accountcurrency.paypal.order.return')
             ]
         ];
 
@@ -142,13 +143,12 @@ class PayPalManager
         $request->prefer('return=representation');
         $request->body = [
             "plan_id" => $subscription->vendorSubscriptionPlanId,
-            "quantity" => $subscription->amountUsd,
+            "quantity" => (int)$subscription->amountUsd,
             "application_context" => [
-                "cancel_url" => route('accountcurrency.paypal.cancel'),
-                "return_url" => route('accountcurrency.paypal.return')
+                "cancel_url" => route('accountcurrency.paypal.subscription.cancel'),
+                "return_url" => route('accountcurrency.paypal.subscription.return')
             ]
         ];
-
         try {
             $response = $this->client->execute($request);
         } catch (HttpException $ex) {
@@ -167,6 +167,22 @@ class PayPalManager
         }
         throw new \Exception("No approve link given in response from PayPal.");
 
+    }
+
+    public function getSubscriptionDetails(string $paypalSubscriptionId): array
+    {
+        Log::debug("Paypal - looking up subscription details for paypalId " . $paypalSubscriptionId);
+
+        $request = new SubscriptionsDetails($paypalSubscriptionId);
+        $request->prefer('return=representation');
+        try {
+            $response = $this->client->execute($request);
+        } catch (HttpException $ex) {
+            Log::error("Paypal - attempt to get subscription details got the following response: " .
+                "(" . $ex->statusCode . ") " . $ex->getMessage());
+            throw new \Exception("There was an issue with the request to PayPal.");
+        }
+        return (array)$response->result;
     }
 
     #endregion Subscription functionality
