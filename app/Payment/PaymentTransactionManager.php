@@ -229,4 +229,34 @@ class PaymentTransactionManager
             }
         }
     }
+
+    /**
+     * @param PaymentTransaction $transaction
+     */
+    public function fulfillTransaction(PaymentTransaction $transaction)
+    {
+        //Actual fulfilment is done by the MUCK still, due to ingame triggers
+        $muck = resolve('App\Muck\MuckConnection');
+
+        if ($transaction->accountCurrencyQuoted) {
+            $transaction->accountCurrencyRewarded = $muck->adjustAccountCurrency(
+                $transaction->accountId,
+                $transaction->accountCurrencyPriceUsd,
+                $transaction->accountCurrencyQuoted,
+                ''
+            );
+        }
+
+        if ($transaction->items) {
+            $transaction->accountCurrencyRewardedForItems = 0;
+            foreach ($transaction->items as $item) {
+                $transaction->accountCurrencyRewardedForItems += $muck->rewardItem(
+                    $transaction->accountId,
+                    $item->priceUsd,
+                    $item->accountCurrencyValue,
+                    $item->code
+                );
+            }
+        }
+    }
 }

@@ -108,8 +108,9 @@ class ConfigurePayPal extends Command
                 if ($updateConfiguration) {
                     if (!$host) $this->warn("Unable to fix without a specified host.");
                     else {
-                        $this->info('  Creating a webhook with the host ' . $host);
-                        $webhookId = $payPalManager->createWebhook($host . '/accountcurrency/paypal_webhook', [
+                        $url = $host . '/accountcurrency/paypal_webhook';
+                        $this->info('  Creating a webhook with the url: ' . $url);
+                        $webhookId = $payPalManager->createWebhook($url, [
                             'PAYMENT.SALE.COMPLETED', // Payment received
                             'BILLING.SUBSCRIPTION.CREATED',
                             'BILLING.SUBSCRIPTION.ACTIVATED',
@@ -124,6 +125,5 @@ class ConfigurePayPal extends Command
                 }
             }
         }
-
     }
 }

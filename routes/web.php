@@ -75,9 +75,9 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
     Route::get('accountcurrency/transaction/{id}', 'Payment\AccountCurrencyController@viewTransaction')
         ->name('accountcurrency.transaction');
     Route::get('accountcurrency/history', 'Payment\AccountCurrencyController@viewTransactions');
-    Route::get('accountcurrency/paypal_order_return', 'Payment\AccountCurrencyController@paypalOrderReturn')
+    Route::get('accountcurrency/paypal_order_return', 'Payment\PayPalController@paypalOrderReturn')
         ->name('accountcurrency.paypal.order.return');
-    Route::get('accountcurrency/paypal_order_cancel', 'Payment\AccountCurrencyController@paypalOrderCancel')
+    Route::get('accountcurrency/paypal_order_cancel', 'Payment\PayPalController@paypalOrderCancel')
         ->name('accountcurrency.paypal.order.cancel');
 
     Route::post('accountcurrency/newCardSubscription', 'Payment\AccountCurrencyController@newCardSubscription');
@@ -87,9 +87,9 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
     Route::get('accountcurrency/acceptSubscription', 'Payment\AccountCurrencyController@acceptSubscription');
     Route::get('accountcurrency/subscription/{id}', 'Payment\AccountCurrencyController@viewSubscription')
         ->name('accountcurrency.subscription');
-    Route::get('accountcurrency/paypal_subscription_return', 'Payment\AccountCurrencyController@paypalSubscriptionReturn')
+    Route::get('accountcurrency/paypal_subscription_return', 'Payment\PayPalController@paypalSubscriptionReturn')
         ->name('accountcurrency.paypal.subscription.return');
-    Route::get('accountcurrency/paypal_subscription_cancel', 'Payment\AccountCurrencyController@paypalSubscriptionCancel')
+    Route::get('accountcurrency/paypal_subscription_cancel', 'Payment\PayPalController@paypalSubscriptionCancel')
         ->name('accountcurrency.paypal.subscription.cancel');
 
 });
@@ -116,4 +116,4 @@ Route::post('account/termsofservice', 'Auth\TermsOfServiceController@accept')
     ->name('auth.account.termsofservice');
 
 //Paypal Notifications - this route is exempt from CSRF token. Controlled in the middleware.
-Route::post('accountcurrency/paypal_webhook', 'Payment\AccountCurrencyController@paypalWebhook');
+Route::post('accountcurrency/paypal_webhook', 'Payment\PayPalController@paypalWebhook');

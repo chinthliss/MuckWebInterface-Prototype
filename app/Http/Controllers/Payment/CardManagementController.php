@@ -9,7 +9,6 @@ use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
-use net\authorize\api\contract\v1\DeleteCustomerPaymentProfileRequest;
 
 class CardManagementController extends Controller
 {
