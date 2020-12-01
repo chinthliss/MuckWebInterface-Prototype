@@ -15,8 +15,11 @@
 * ~~Single payment - card~~
 * ~~Single payment - paypal~~
 * ~~Subscription - card~~
-* Subscription - paypal 
+* ~~Subscription - paypal~~ 
 * Manage Subscriptions
+* Flag when card has expired and trying to make a payment
+* ~~Notification of payment - Email~~
+* Notification of payment - Account notification
  
 ### Character Based starting pages
 * Change Active Character

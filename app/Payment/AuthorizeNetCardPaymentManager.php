@@ -3,6 +3,7 @@
 
 namespace App\Payment;
 
+use App\Notifications\PaymentTransactionPaid;
 use App\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
@@ -381,6 +382,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
         $transactionManager = $this->transactionManager();
         $transactionManager->updateVendorTransactionId($transaction, $transactionResponse->getTransId());
         $transactionManager->setPaid($transaction);
+        $user->notify(new PaymentTransactionPaid($transaction));
     }
 
     public function getDefaultCardFor(User $user): ?Card

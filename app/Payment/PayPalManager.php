@@ -3,6 +3,7 @@
 
 namespace App\Payment;
 
+use App\Notifications\PaymentTransactionPaid;
 use App\Payment\PayPalRequests\SubscriptionsListPlans;
 use App\User;
 use App\Payment\PayPalRequests\ProductsCreate;
@@ -131,6 +132,7 @@ class PayPalManager
             . ": " . $response->result->status);
         if ($response->result->status == 'COMPLETED') {
             $transactionManager->setPaid($transaction);
+            $user->notify(new PaymentTransactionPaid($transaction));
         }
     }
     #endregion Order functionality

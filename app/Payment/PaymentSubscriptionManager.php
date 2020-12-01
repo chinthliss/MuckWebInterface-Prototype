@@ -4,6 +4,7 @@
 namespace App\Payment;
 
 use App\Muck\MuckConnection;
+use App\Notifications\PaymentTransactionPaid;
 use App\User;
 use Error;
 use \Exception;
@@ -172,6 +173,7 @@ class PaymentSubscriptionManager
 
         Log::debug("Subscription - Using transaction " . $transaction->id);
         $transactionManager->setPaid($transaction);
+        $user->notify(new PaymentTransactionPaid($transaction));
         $transactionManager->fulfillTransaction($transaction);
         $transactionManager->closeTransaction($transaction, 'fulfilled');
 
