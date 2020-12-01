@@ -65,9 +65,19 @@ class User implements Authenticatable, MustVerifyEmail
      * Get expected user provider
      * @return DatabaseForMuckUserProvider
      */
-    public function getProvider()
+    public static function getProvider()
     {
         return auth()->guard('account')->getProvider();
+    }
+
+    /**
+     * Utility function to lookup user
+     * @param $id
+     * @return User|null
+     */
+    public static function find($id)
+    {
+        return self::getProvider()->retrieveById($id);
     }
 
     /**

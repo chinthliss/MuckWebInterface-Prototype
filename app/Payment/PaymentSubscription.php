@@ -5,6 +5,8 @@ namespace App\Payment;
 
 //Holding class for a subscriptions details
 
+use Illuminate\Support\Carbon;
+
 class PaymentSubscription
 {
     /**
@@ -52,6 +54,9 @@ class PaymentSubscription
 
     public $closedAt = null;
 
+    /**
+     * @var Carbon|null
+     */
     public $nextChargeAt = null;
 
     public $status = 'unknown';

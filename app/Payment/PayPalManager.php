@@ -78,6 +78,7 @@ class PayPalManager
                 ]
             ]],
             "application_context" => [
+                "shipping_preference" => "NO_SHIPPING",
                 "cancel_url" => route('accountcurrency.paypal.order.cancel'),
                 "return_url" => route('accountcurrency.paypal.order.return')
             ]
@@ -145,6 +146,7 @@ class PayPalManager
             "plan_id" => $subscription->vendorSubscriptionPlanId,
             "quantity" => (int)$subscription->amountUsd,
             "application_context" => [
+                "shipping_preference" => "NO_SHIPPING",
                 "cancel_url" => route('accountcurrency.paypal.subscription.cancel'),
                 "return_url" => route('accountcurrency.paypal.subscription.return')
             ]
@@ -208,7 +210,7 @@ class PayPalManager
             'webhook_id' => $webhookId,
             'webhook_event' => $webhookRequest->json()
         ];
-        log::info('Paypal Webhook Verification request:' . json_encode($request->body));
+        log::debug('Paypal Webhook Verification request:' . json_encode($request->body));
         try {
             $response = $this->client->execute($request);
         } catch (HttpException $ex) {
@@ -216,7 +218,7 @@ class PayPalManager
                 "(" . $ex->statusCode . ") " . $ex->getMessage());
             return false;
         }
-        log::info('Paypal Webhook Verification response:' . json_encode($response));
+        log::debug('Paypal Webhook Verification response:' . json_encode($response));
 
         //Needs to be successful unless in dev because the webhook simulated calls can't be verified
         return ($response->statusCode == 200 &&
@@ -383,6 +385,11 @@ class PayPalManager
             'url' => $url,
             'event_types' => $parsedTypes
         ];
+
+        // Override - we request all event types so we can identify changes/undocumented ones.
+        // Done because Paypal was returning a webhook (PAYMENT.SALE.PENDING) that was not listed in their ref docs
+        $request->body['event_types'] = [['name' => '*']];
+
         try {
             $response = $this->client->execute($request);
         } catch (HttpException $ex) {

@@ -5,6 +5,7 @@ namespace App\Payment;
 
 use App\Muck\MuckConnection;
 use App\User;
+use Error;
 use \Exception;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Carbon;
@@ -129,6 +130,53 @@ class PaymentSubscriptionManager
         ]);
     }
 
+    public function suspendSubscription(PaymentSubscription $subscription)
+    {
+        $subscription->status = 'suspended';
+        $subscription->nextChargeAt = null;
+        $this->storageTable()->where('id', '=', $subscription->id)->update([
+            'status' => $subscription->status,
+            'next_charge_at' => $subscription->nextChargeAt
+        ]);
+    }
+
+    // Processes a payment against a subscription.
+    // If a transaction is passed it will use that otherwise one will be created
+    public function processSubscriptionPayment(PaymentSubscription $subscription, float $amountUsd, string $vendor,
+                                               string $vendorTransactionId, PaymentTransaction $transaction = null)
+    {
+        Log::debug("Subscription#" . $subscription->id . " - Processing a payment from vendor " . $vendor);
+
+        if ($amountUsd != $subscription->amountUsd)
+            Log::warning("Attempt to pay the wrong amount (" . $amountUsd
+                . ") against subscription#" . $subscription->id
+                . " which has an amount of " . $subscription->amountUsd);
+
+        $this->updateNextCharge($subscription, Carbon::now()->addDays($subscription->recurringInterval));
+
+        $user = User::find($subscription->accountId);
+        $transactionManager = resolve(PaymentTransactionManager::class);
+
+        if (!$transaction) {
+            //Check if it maybe exists first
+            $transaction = $transactionManager->getTransactionFromExternalId($vendorTransactionId);
+            if (!$transaction) {
+                $transaction = $transactionManager->createTransaction($user, $vendor, $subscription->vendorProfileId,
+                    $amountUsd, [], $subscription->id);
+                $transactionManager->updateVendorTransactionId($transaction, $vendorTransactionId);
+            }
+        }
+
+        if (!$transaction->open()) throw new Error("Subscription#" . $subscription->id
+            . " tried to fulfill the closed transaction: " . $transaction->id);
+
+        Log::debug("Subscription - Using transaction " . $transaction->id);
+        $transactionManager->setPaid($transaction);
+        $transactionManager->fulfillTransaction($transaction);
+        $transactionManager->closeTransaction($transaction, 'fulfilled');
+
+    }
+
     public function updateVendorProfileId(PaymentSubscription $subscription, string $vendorProfileId)
     {
         $subscription->vendorProfileId = $vendorProfileId;
@@ -142,6 +190,14 @@ class PaymentSubscriptionManager
         $subscription->vendorSubscriptionId = $vendorSubscriptionId;
         $this->storageTable()->where('id', '=', $subscription->id)->update([
             'vendor_subscription_id' => $vendorSubscriptionId
+        ]);
+    }
+
+    public function updateNextCharge(PaymentSubscription $subscription, Carbon $nextChargeDate)
+    {
+        $subscription->nextChargeAt = $nextChargeDate;
+        $this->storageTable()->where('id', '=', $subscription->id)->update([
+            'next_charge_at' => $nextChargeDate
         ]);
     }
 

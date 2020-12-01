@@ -27,7 +27,7 @@ class PaymentTransactionManager
     /**
      * @return Builder
      */
-    private function storageTable() : Builder
+    private function storageTable(): Builder
     {
         return DB::table('billing_transactions');
     }
@@ -54,7 +54,7 @@ class PaymentTransactionManager
     }
 
     public function createTransaction(User $user, string $vendor, string $vendorProfileId,
-                                      int $usdForAccountCurrency, array $items): PaymentTransaction
+                                      int $usdForAccountCurrency, array $items, string $subscriptionId = null): PaymentTransaction
     {
         $purchases = [];
 
@@ -93,6 +93,8 @@ class PaymentTransactionManager
         }
 
         $transaction->purchaseDescription = implode('<br/>', $purchases);
+
+        if ($subscriptionId) $transaction->subscriptionId = $subscriptionId;
 
         $this->insertTransactionIntoStorage($transaction);
 
@@ -235,6 +237,8 @@ class PaymentTransactionManager
      */
     public function fulfillTransaction(PaymentTransaction $transaction)
     {
+        Log::debug("PaymentTransaction#" . $transaction->id . " - Being fulfilled.");
+
         //Actual fulfilment is done by the MUCK still, due to ingame triggers
         $muck = resolve('App\Muck\MuckConnection');
 

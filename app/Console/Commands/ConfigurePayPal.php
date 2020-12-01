@@ -112,6 +112,8 @@ class ConfigurePayPal extends Command
                         $this->info('  Creating a webhook with the url: ' . $url);
                         $webhookId = $payPalManager->createWebhook($url, [
                             'PAYMENT.SALE.COMPLETED', // Payment received
+                            'PAYMENT.CAPTURE.PENDING', // Payment requires manual intervention
+                            'PAYMENT.SALE.PENDING', // Payment requires manual intervention
                             'BILLING.SUBSCRIPTION.CREATED',
                             'BILLING.SUBSCRIPTION.ACTIVATED',
                             'BILLING.SUBSCRIPTION.UPDATED',
