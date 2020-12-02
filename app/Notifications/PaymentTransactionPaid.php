@@ -64,6 +64,11 @@ class PaymentTransactionPaid extends Notification
         return ['mail'];
     }
 
+    public function transactionUrl()
+    {
+        return route('accountcurrency.transaction', ['id' => $this->transactionId]);
+    }
+
     /**
      * Get the mail representation of the notification.
      *
@@ -74,16 +79,18 @@ class PaymentTransactionPaid extends Notification
     {
         $mail = new MailMessage;
         $mail->subject('Receipt of Payment for Flexible Survival')
-            ->line('The following ' . $this->paymentMethod . ' payment has been made:')
-            ->line('$' . round($this->totalAmountUsd, 2) . ' for:')
+            ->greeting('Payment Receipt')
+            ->line('A ' . $this->paymentMethod . ' payment for $'
+                . round($this->totalAmountUsd, 2) . '(USD) has been made for the following:')
             ->line($this->purchaseDescription)
-            ->line("Transaction ID: " . $this->transactionId);
+            ->action('View Further Details', $this->transactionUrl());
 
         if ($this->subscriptionId) {
             $mail->line("This payment was made as part of your subscription.");
         }
 
-        $mail->line('It may take a few moments for this transaction to appear on your account.');
+        $mail->line("Thank you for supporting " . config('app.name') . ".");
+
         return $mail;
     }
 
