@@ -48,7 +48,7 @@ class PaymentTransactionPaid extends Notification
     {
         $this->purchaseDescription = $transaction->purchaseDescription;
         $this->totalAmountUsd = $transaction->totalPriceUsd();
-        $this->paymentMethod = $transaction->vendor == 'paypal' ? 'Paypal' : 'Card';
+        $this->paymentMethod = $transaction->type();
         $this->transactionId = $transaction->id;
         $this->subscriptionId = $transaction->subscriptionId;
     }
