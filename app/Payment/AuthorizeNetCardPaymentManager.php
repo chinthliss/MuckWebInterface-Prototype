@@ -109,7 +109,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
                 $subscriptions = $response->getSubscriptionIds();
                 if ($subscriptions) {
                     //TODO Retrieve subscription
-                    dd("Subscription found!");
+                    Log::error("Unhandled Card Subscription found!");
                 }
                 // Historic thing - default is controlled by the muck (But we'll set it on ANet going forwards)
                 $defaultCardId = DB::table('billing_profiles')
@@ -244,7 +244,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
         $card->cardNumber = substr($responseParts[50], -4);
         // $expiryDate is in the form MM/YYYY
         $parts = explode('/', $expiryDate);
-        $card->expiryDate = Carbon::createFromDate($parts[1], $parts[0], 1);
+        $card->expiryDate = Carbon::createFromDate($parts[1], $parts[0], 1)->startOfDay();;
         $card->cardType = $responseParts[51];
         //This is just for historic purposes and to allow the muck easy access
         DB::table('billing_paymentprofiles')->insert([

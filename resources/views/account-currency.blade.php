@@ -7,6 +7,7 @@
 @section('content')
     <account-currency-buy
         default-card-masked-number="{{ $defaultCardMaskedNumber }}"
+        default-card-expiry-date="{{ $defaultCardExpiryDate }}"
         account="{{ $account }}"
         :suggested-amounts="{{ json_encode($suggestedAmounts) }}"
         account-currency-image="{{ asset('image/accountcurrency.png') }}"

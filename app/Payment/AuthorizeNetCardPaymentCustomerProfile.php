@@ -4,6 +4,7 @@
 namespace App\Payment;
 
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use net\authorize\api\contract\v1\CreateCustomerProfileResponse;
 use net\authorize\api\contract\v1\GetCustomerProfileResponse;
 use net\authorize\api\contract\v1\SubscriptionPaymentType;
@@ -57,7 +58,7 @@ class AuthorizeNetCardPaymentCustomerProfile extends CardPaymentCustomerProfile
                     $card->cardNumber = $receivedCard->getCardNumber();
                     // Returned from API as YYYY-MM
                     $parts = explode('-', $receivedCard->getExpirationDate());
-                    $card->expiryDate = Carbon::createFromDate($parts[0], $parts[1], 1);
+                    $card->expiryDate = Carbon::createFromDate($parts[0], $parts[1], 1)->startOfDay();
                     $card->isDefault = $paymentProfile->getDefaultPaymentProfile();
                     $customerProfile->addCard($card);
                 }

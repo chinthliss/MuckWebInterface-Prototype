@@ -75,6 +75,9 @@
             <div v-if="defaultCardMaskedNumber">
                 <div class="p-2 mb-2 bg-info text-white text-center">
                     If you pay by Card, your card ending in '{{ defaultCardMaskedNumber }}' will be used.
+                    <div v-if="Date.now() >= Date.parse(defaultCardExpiryDate)" class="bg-danger text-warning">
+                        NOTE: Your default card has expired.
+                    </div>
                 </div>
             </div>
             <div v-else class="p-2 mb-2 bg-warning text-dark text-center"><span class="sr-only">Warning: </span>
@@ -112,7 +115,7 @@ export default {
     name: "account-currency-buy",
     components: {DialogApproveTransaction, DialogMessage},
     props: [
-        'defaultCardMaskedNumber', 'account', 'suggestedAmounts',
+        'defaultCardMaskedNumber', 'defaultCardExpiryDate', 'account', 'suggestedAmounts',
         'cardManagementPage', 'accountCurrencyImage', 'itemCatalogue'
     ],
     data: function () {

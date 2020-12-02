@@ -92,7 +92,7 @@ class Card
         } else {
             [$month, $year] = explode('/', $expiryDate);
 
-            $endDate = Carbon::createFromDate($year, $month + 1, 1);
+            $endDate = Carbon::createFromDate($year, $month + 1, 1)->startOfDay();;
             if ($endDate < Carbon::now()) {
                 $errors['expiryDate'] = 'Card has expired.';
             }

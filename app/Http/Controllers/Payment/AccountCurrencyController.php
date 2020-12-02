@@ -42,6 +42,7 @@ class AccountCurrencyController extends Controller
         return view('account-currency')->with([
             'account' => $user->getAid(),
             'defaultCardMaskedNumber' => ($defaultCard ? $defaultCard->maskedCardNumber() : null),
+            'defaultCardExpiryDate' => ($defaultCard ? $defaultCard->expiryDate->addMonth() : null),
             'suggestedAmounts' => $parsedSuggestedAmounts,
             'itemCatalogue' => $parsedItems,
             'stretchGoals' => $muck->stretchGoals()
