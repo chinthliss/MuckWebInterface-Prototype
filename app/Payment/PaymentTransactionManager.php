@@ -125,6 +125,7 @@ class PaymentTransactionManager
         }
         $transaction->createdAt = $row->created_at;
         $transaction->completedAt = $row->completed_at;
+        $transaction->paidAt =  $row->paid_at;
         $transaction->result = $row->result;
         return $transaction;
     }

@@ -35,12 +35,12 @@
 
                 <div class="row">
                     <dt class="col-sm-3">Paid</dt>
-                    <dd class="col-sm-9">{{ transaction.paid_at }}</dd>
+                    <dd class="col-sm-9">{{ friendlyPaidAt }}</dd>
                 </div>
 
                 <div class="row">
-                    <dt class="col-sm-3">Completed</dt>
-                    <dd class="col-sm-9">{{ transaction.completed_at }}</dd>
+                    <dt class="col-sm-3">Completed/Finalised</dt>
+                    <dd class="col-sm-9">{{ friendlyCompletedAt }}</dd>
                 </div>
 
                 <div class="row">
@@ -79,6 +79,12 @@
                     case 'expired': return "Timed out (Expired)";
                     default: return 'Unknown';
                 }
+            },
+            friendlyPaidAt: function() {
+                return this.transaction.paid_at ?? 'Unpaid';
+            },
+            friendlyCompletedAt: function() {
+                return this.transaction.completed_at ?? 'Incomplete';
             }
         }
     }
