@@ -30,7 +30,7 @@ class BillingTransactionSeeder extends Seeder
             'paymentid' => 1,
             'cardtype' => 'MasterCard',
             'maskedcardnum' => 4444,
-            'expdate' => '10/2021',
+            'expdate' => '10-2021',
             'firstname' => '',
             'lastname' => ''
         ]);

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use net\authorize\api\contract\v1 as AnetAPI;
+use net\authorize\api\contract\v1\CustomerPaymentProfileMaskedType;
 use net\authorize\api\controller as AnetController;
 use \Error;
 use \Exception;
@@ -22,12 +23,12 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
     private $transactionKey = '';
     private $endPoint = '';
 
-    private function transactionManager() : PaymentTransactionManager
+    private function transactionManager(): PaymentTransactionManager
     {
         return resolve(PaymentTransactionManager::class);
     }
 
-    private function subscriptionManager() : PaymentSubscriptionManager
+    private function subscriptionManager(): PaymentSubscriptionManager
     {
         return resolve(PaymentSubscriptionManager::class);
     }
@@ -96,8 +97,10 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
             $request->setMerchantAuthentication($this->merchantAuthentication());
             $request->setCustomerProfileId($profileId);
             $request->setUnmaskExpirationDate(true);
+
             $controller = new AnetController\GetCustomerProfileController($request);
             $response = $controller->executeWithApiResponse($this->endPoint);
+
             if ($response && $response->getMessages()->getResultCode() == "Ok") {
                 $profile = AuthorizeNetCardPaymentCustomerProfile::fromApiResponse($response);
                 if ($profile->getMerchantCustomerId() != $accountId) {
@@ -111,6 +114,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
                     //TODO Retrieve subscription
                     Log::error("Unhandled Card Subscription found!");
                 }
+
                 // Historic thing - default is controlled by the muck (But we'll set it on ANet going forwards)
                 $defaultCardId = DB::table('billing_profiles')
                     ->leftJoin('billing_paymentprofiles', 'billing_profiles.defaultcard', '=', 'billing_paymentprofiles.id')
@@ -122,11 +126,10 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
                     }
                 }
                 $this->customerProfiles[$accountId] = $profile;
-            }
-            else {
+            } else {
                 $message = $response->getMessages()->getMessage()[0];
                 Log::error('Failed to request Authorize.net profile#' . $profileId . ', Response=' .
-                    $message->getCode() . ':' .$message->getText()
+                    $message->getCode() . ':' . $message->getText()
                 );
             }
         }
@@ -170,7 +173,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
                     );
                     DB::table('billing_profiles')->updateOrInsert([
                         'aid' => $user->getAid()
-                    ],[
+                    ], [
                         'profileid' => $attemptToFindExistingId[1],
                         'defaultcard' => 0,
                         'spendinglimit' => 0
@@ -189,6 +192,23 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
             ]);
         }
         return $profile;
+    }
+
+    /**
+     * @return string The card's ID.
+     */
+    private function insertPaymentProfileIntoStorage(Card $card, string $customerProfileId,
+                                                     string $customerPaymentProfileId): string
+    {
+        return DB::table('billing_paymentprofiles')->insertGetId([
+            'profileid' => $customerProfileId,
+            'paymentid' => $customerPaymentProfileId,
+            'firstname' => '',
+            'lastname' => '',
+            'cardtype' => $card->cardType,
+            'maskedcardnum' => 'XXXX' . substr($card->cardNumber, -4),
+            'expdate' => $card->expiryDate->format('Y-m')
+        ]);
     }
 
     /**
@@ -218,14 +238,12 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
         $anetPaymentProfile->setPayment($anetPaymentCard);
         $anetPaymentProfile->setDefaultPaymentProfile(true);
 
-        // Make the request
         $request = new AnetAPI\CreateCustomerPaymentProfileRequest();
         $request->setMerchantAuthentication($this->merchantAuthentication());
-        // Add an existing profile id to the request
         $request->setCustomerProfileId($profile->getCustomerProfileId());
         $request->setPaymentProfile($anetPaymentProfile);
         $request->setValidationMode("liveMode");
-        // Create the controller and get the response
+
         $controller = new AnetController\CreateCustomerPaymentProfileController($request);
         $response = $controller->executeWithApiResponse($this->endPoint);
         if (!$response || ($response->getMessages()->getResultCode() != "Ok")) {
@@ -244,22 +262,13 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
         $card->cardNumber = substr($responseParts[50], -4);
         // $expiryDate is in the form MM/YYYY
         $parts = explode('/', $expiryDate);
-        $card->expiryDate = Carbon::createFromDate($parts[1], $parts[0], 1)->startOfDay();;
+        $card->expiryDate = Carbon::createFromDate($parts[1], $parts[0], 1)->startOfDay();
         $card->cardType = $responseParts[51];
+
         //This is just for historic purposes and to allow the muck easy access
-        DB::table('billing_paymentprofiles')->insert([
-            'profileid' => $profile->getCustomerProfileId(),
-            'paymentid' => $response->getCustomerPaymentProfileId(),
-            'firstname' => '',
-            'lastname' => '',
-            'cardtype' => $card->cardType,
-            'maskedcardnum' => $card->cardNumber,
-            'expdate' => $card->expiryDate
-        ]);
-        $newPaymentProfileId = DB::table('billing_paymentprofiles')->where([
-            'profileid' => $profile->getCustomerProfileId(),
-            'paymentid' => $response->getCustomerPaymentProfileId()
-        ])->value('id');
+        $newPaymentProfileId = $this->insertPaymentProfileIntoStorage($card,
+            $profile->getCustomerProfileId(),
+            $response->getCustomerPaymentProfileId());
         DB::table('billing_profiles')->where([
             'profileid' => $profile->getCustomerProfileId()
         ])->update([
@@ -274,6 +283,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
      */
     public function deleteCardFor(User $user, Card $card): void
     {
+        Log::debug("AuthorizeNet - Deleting card for " . $user->getAid() . ": " . $card->id);
         $profile = $this->loadProfileFor($user);
         if (!$profile) throw new Error("No valid profile found.");
         Log::debug('AuthorizeNet - Deleting card with PaymentProfile#' . $card->id);
@@ -302,22 +312,48 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
      */
     public function setDefaultCardFor(User $user, Card $card): void
     {
+        Log::debug("AuthorizeNet - Updating default card for " . $user->getAid() . " to " . $card->id);
         $profile = $this->loadOrCreateProfileFor($user);
+
+        //Authorize.net recommendation is to fetch existing payment profile before applying an update
+        //Request requires customerProfileId and customerPaymentProfileId
+        $request = new AnetAPI\GetCustomerPaymentProfileRequest();
+        $request->setMerchantAuthentication($this->merchantAuthentication());
+        $request->setCustomerProfileId($profile->getCustomerProfileId());
+        $request->setCustomerPaymentProfileId($card->id);
+
+        $controller = new AnetController\GetCustomerPaymentProfileController($request);
+        $response = $controller->executeWithApiResponse($this->endPoint);
+        if (!$response || $response->getMessages()->getResultCode() != "Ok") {
+            $errorMessages = $response->getMessages()->getMessage();
+            throw new Exception("AuthorizeNet - Couldn't retrieve existing payment profile to updateResponse: "
+                . $errorMessages[0]->getCode() . "  " . $errorMessages[0]->getText() . "\n");
+        }
+
+        /** @var AnetAPI\CustomerPaymentProfileMaskedType $maskedPaymentProfile */
+        $maskedPaymentProfile = $response->getPaymentProfile();
+
+        /** @var AnetAPI\CreditCardMaskedType $maskedCreditCard */
+        $maskedCreditCard = $maskedPaymentProfile->getPayment()->getCreditCard();
+
+        //Need to create an unmasked type using the masked details. :/
         $creditCard = new AnetAPI\CreditCardType();
-        $creditCard->setCardNumber($card->cardNumber);
-        $creditCard->setExpirationDate($card->expiryDate);
+        $creditCard->setCardNumber($maskedCreditCard->getCardNumber());
+        $creditCard->setExpirationDate($maskedCreditCard->getExpirationDate());
 
         $paymentCreditCard = new AnetAPI\PaymentType();
         $paymentCreditCard->setCreditCard($creditCard);
         $paymentProfile = new AnetAPI\CustomerPaymentProfileExType();
-        // $paymentprofile->setBillTo($billto);
         $paymentProfile->setPayment($paymentCreditCard);
-        $paymentProfile->setCustomerPaymentProfileId($card->id);
+        $paymentProfile->setCustomerPaymentProfileId($maskedPaymentProfile->getCustomerPaymentProfileId());
+        $paymentProfile->setBillTo($maskedPaymentProfile->getBillTo());
         $paymentProfile->setDefaultPaymentProfile(true);
+
         $request = new AnetAPI\UpdateCustomerPaymentProfileRequest();
         $request->setMerchantAuthentication($this->merchantAuthentication());
         $request->setCustomerProfileId($profile->getCustomerProfileId());
         $request->setPaymentProfile($paymentProfile);
+
         $controller = new AnetController\DeleteCustomerPaymentProfileController($request);
         $response = $controller->executeWithApiResponse($this->endPoint);
         if (!$response || $response->getMessages()->getResultCode() != "Ok") {
@@ -329,6 +365,15 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
         $newPaymentProfileId = DB::table('billing_paymentprofiles')->where([
             'paymentid' => $card->id
         ])->value('id');
+
+        if (!$newPaymentProfileId) {
+            Log::warning("AuthorizeNet - Set new default - "
+                . "Our database isn't aware of the new payment profile id" . $card->id . "! Creating entry.");
+            $newPaymentProfileId = $this->insertPaymentProfileIntoStorage($card,
+                $profile->getCustomerProfileId(),
+                $paymentProfile->getCustomerPaymentProfileId());
+        }
+
         DB::table('billing_profiles')->where([
             'profileid' => $profile->getCustomerProfileId()
         ])->update([
@@ -352,7 +397,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
         $transactionCustomerProfile->setPaymentProfile($transactionPaymentProfile);
 
         $anetTransaction = new AnetAPI\TransactionRequestType();
-        $anetTransaction->setTransactionType( "authCaptureTransaction");
+        $anetTransaction->setTransactionType("authCaptureTransaction");
         $anetTransaction->setAmount($transaction->totalPriceUsd());
         $anetTransaction->setProfile($transactionCustomerProfile);
 
@@ -388,7 +433,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
     public function getDefaultCardFor(User $user): ?Card
     {
         $profile = $this->loadProfileFor($user);
-        return $profile ? $profile->getDefaultCard()  : null;
+        return $profile ? $profile->getDefaultCard() : null;
     }
 
     public function getCardFor(User $user, int $cardId): ?Card

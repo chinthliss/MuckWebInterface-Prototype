@@ -9,6 +9,10 @@ class Card
 {
     public $id;
     public $cardType;
+
+    /**
+     * @var string CardNumber - during capture this is the fullnumber but after creation becomes the masked number
+     */
     public $cardNumber;
 
     /**
@@ -23,6 +27,9 @@ class Card
      */
     public $subscriptions = [];
 
+    /**
+     * @return string This is the masked card number to show to the user
+     */
     public function maskedCardNumber()
     {
         return '..' . substr($this->cardNumber, -4);

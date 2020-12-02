@@ -22,8 +22,10 @@ class CreateBillingPaymentProfilesTable extends Migration
                 $table->char('firstname', 255);
                 $table->char('lastname', 255);
                 $table->char('cardtype',50);
-                $table->char('maskedcardnum', 25);
-                $table->char('expdate', 25);
+                $table->char('maskedcardnum', 25)
+                    ->comment("Existing format is XXXX1234");
+                $table->char('expdate', 25)
+                    ->comment("Existing format is YYYY-MM");
             });
         }
     }

@@ -72,7 +72,7 @@ class FakeCardPaymentManager implements CardPaymentManager
         $card->cardNumber = $cardNumber;
         // $expiryDate is in the form MM/YYYY
         $parts = explode('/', $expiryDate);
-        $card->expiryDate = Carbon::createFromDate($parts[1], $parts[0], 1)->startOfDay();;
+        $card->expiryDate = Carbon::createFromDate($parts[1], $parts[0], 1)->startOfDay();
         $card->cardType = 'Fake';
         $profile->addCard($card);
         $this->setDefaultCardFor($user, $card);
