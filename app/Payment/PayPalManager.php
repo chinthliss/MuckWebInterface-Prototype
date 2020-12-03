@@ -133,7 +133,7 @@ class PayPalManager
             . ": " . $response->result->status);
         if ($response->result->status == 'COMPLETED') {
             $transactionManager->setPaid($transaction);
-            $user->notify(new PaymentTransactionPaid($transaction));
+            User::find($transaction->accountId)->notify(new PaymentTransactionPaid($transaction));
         }
     }
     #endregion Order functionality
