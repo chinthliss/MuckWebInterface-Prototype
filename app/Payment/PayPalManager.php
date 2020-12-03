@@ -4,13 +4,14 @@
 namespace App\Payment;
 
 use App\Notifications\PaymentTransactionPaid;
-use App\Payment\PayPalRequests\SubscriptionsListPlans;
 use App\User;
 use App\Payment\PayPalRequests\ProductsCreate;
 use App\Payment\PayPalRequests\ProductsList;
 use App\Payment\PayPalRequests\SubscriptionsCreatePlan;
 use App\Payment\PayPalRequests\SubscriptionsDetails;
+use App\Payment\PayPalRequests\SubscriptionsCancelSubscription;
 use App\Payment\PayPalRequests\SubscriptionsCreateSubscription;
+use App\Payment\PayPalRequests\SubscriptionsListPlans;
 use App\Payment\PayPalRequests\WebhooksCreate;
 use App\Payment\PayPalRequests\WebhooksList;
 use App\Payment\PayPalRequests\WebhooksVerifySignature;
@@ -156,8 +157,8 @@ class PayPalManager
         try {
             $response = $this->client->execute($request);
         } catch (HttpException $ex) {
-            Log::error("Paypal - attempt to create payment got the following response: " .
-                "(" . $ex->statusCode . ") " . $ex->getMessage());
+            Log::error("Paypal - attempt to create payment got the following response: "
+                . "(" . $ex->statusCode . ") " . $ex->getMessage());
             throw new \Exception("There was an issue with the request to PayPal.");
         }
 
@@ -173,9 +174,46 @@ class PayPalManager
 
     }
 
+    public function cancelSubscription(PaymentSubscription $subscription)
+    {
+        Log::debug("Paypal - Cancelling subscription " . $subscription->id
+            . ", PayPalID=" . $subscription->vendorSubscriptionId);
+
+        // Request details on the subscription first to make sure it exists and isn't already cancelled
+        $paypalSubscription = null;
+        try {
+            $paypalSubscription = $this->getSubscriptionDetails($subscription->vendorSubscriptionId);
+        } catch (HttpException $ex) {
+            Log::warning("Paypal - Cancel Subscription - Querying subscription "
+                . $subscription->vendorSubscriptionId . " got the following response: " .
+                "(" . $ex->statusCode . ") " . $ex->getMessage());
+        }
+
+        if ($paypalSubscription && $paypalSubscription["status"] !== 'CANCELLED') {
+            $request = new SubscriptionsCancelSubscription($subscription->vendorSubscriptionId);
+            $request->prefer('return=representation');
+
+            $request->body = [
+                "reason" => "Cancelled"
+            ];
+            log::debug('Paypal - Cancel Subscription request:' . json_encode($request->body));
+
+            try {
+                $response = $this->client->execute($request);
+            } catch (HttpException $ex) {
+                Log::error("Paypal - attempt to cancel subscription " . $subscription->vendorSubscriptionId
+                    . " got the following response: "
+                    . "(" . $ex->statusCode . ") " . $ex->getMessage());
+                throw new \Exception("There was an issue with the request to PayPal.");
+            }
+        } else {
+            Log::warning("Paypal - Cancel Subscription - Subscription doesn't exist or is already cancelled");
+        }
+    }
+
     public function getSubscriptionDetails(string $paypalSubscriptionId): array
     {
-        Log::debug("Paypal - looking up subscription details for paypalId " . $paypalSubscriptionId);
+        Log::debug("Paypal - looking up subscription details for PayPalId#" . $paypalSubscriptionId);
 
         $request = new SubscriptionsDetails($paypalSubscriptionId);
         $request->prefer('return=representation');

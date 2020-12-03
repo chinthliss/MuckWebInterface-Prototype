@@ -17,6 +17,7 @@
 * ~~Subscription - card~~
 * ~~Subscription - paypal~~ 
 * Manage Subscriptions
+* Admin subscription view
 * ~~Flag when card has expired and trying to make a payment~~
 * ~~Notification of payment - Email~~
 * Notification of payment - Account notification

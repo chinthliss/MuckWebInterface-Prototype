@@ -59,7 +59,7 @@ class PaymentSubscriptionManager
         $subscription->accountId = $row->account_id;
         $subscription->vendor = $row->vendor;
         $subscription->vendorProfileId = $row->vendor_profile_id;
-        $subscription->vendorSubscriptionId = $row->vendor_profile_id;
+        $subscription->vendorSubscriptionId = $row->vendor_subscription_id;
         $subscription->vendorSubscriptionPlanId = $row->vendor_subscription_plan_id;
         $subscription->amountUsd = $row->amount_usd;
         $subscription->recurringInterval = $row->recurring_interval;
@@ -121,6 +121,11 @@ class PaymentSubscriptionManager
     {
         if (!in_array($closureReason, ['fulfilled', 'user_declined', 'cancelled', 'expired']))
             throw new Exception('Closure reason is unrecognised');
+        // If this is a paypal subscription, we need to notify them
+        if ($subscription->vendor === 'paypal') {
+            $paypalManager = resolve(PayPalManager::class);
+            $paypalManager->cancelSubscription($subscription);
+        }
         $subscription->status = $closureReason;
         $subscription->closedAt = Carbon::now();
         $subscription->nextChargeAt = null;
