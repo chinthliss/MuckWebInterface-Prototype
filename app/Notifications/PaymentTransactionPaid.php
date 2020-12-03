@@ -78,7 +78,7 @@ class PaymentTransactionPaid extends Notification
     public function toMail($notifiable)
     {
         $mail = new MailMessage;
-        $mail->subject('Receipt of Payment for Flexible Survival')
+        $mail->subject('Receipt of Payment for ' . config('app.name'))
             ->greeting('Payment Receipt')
             ->line('A ' . $this->paymentMethod . ' payment for $'
                 . round($this->totalAmountUsd, 2) . '(USD) has been made for the following:')
