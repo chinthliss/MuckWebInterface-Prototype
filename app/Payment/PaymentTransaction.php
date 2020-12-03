@@ -151,7 +151,8 @@ class PaymentTransaction
             "created_at" => $this->createdAt,
             "paid_at" => $this->paidAt,
             "completed_at" => $this->completedAt,
-            "result" => $this->result
+            "result" => $this->result,
+            "subscription_id" => $this->subscriptionId
         ];
     }
 
