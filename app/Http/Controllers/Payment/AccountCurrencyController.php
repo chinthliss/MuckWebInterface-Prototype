@@ -220,12 +220,10 @@ class AccountCurrencyController extends Controller
 
         /** @var User $user */
         $user = auth()->user();
-
-        if (!$id) return abort(401);
-
         $transaction = $transactionManager->getTransaction($id);
 
-        if ($transaction->accountId != $user->getAid()) return abort(403);
+        if (!$transaction) return abort(404);
+        if ($transaction->accountId != $user->getAid() && !$user->hasRole('admin')) return abort(403);
 
         return view('account-currency-transaction')->with([
             'transaction' => $transaction->toArray()
@@ -341,12 +339,10 @@ class AccountCurrencyController extends Controller
     {
         /** @var User $user */
         $user = auth()->user();
-
-        if (!$id) return abort(401);
-
         $subscription = $subscriptionManager->getSubscription($id);
 
-        if ($subscription->accountId != $user->getAid()) return abort(403);
+        if (!$subscription) return abort(404);
+        if ($subscription->accountId != $user->getAid() && !$user->hasRole('admin')) return abort(403);
 
         return view('account-currency-subscription')->with([
             'subscription' => $subscription->toArray()
