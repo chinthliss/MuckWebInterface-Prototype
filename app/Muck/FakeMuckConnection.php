@@ -60,7 +60,7 @@ class FakeMuckConnection implements MuckConnection
     {
         Log::debug('MuckCall - getCharactersOf: ' . $aid);
         $result = [];
-        if ($aid == 1) {
+        if ($aid === 1) {
             $result = [
                 1234 => MuckCharacter::fromMuckResponse('1234,TestCharacter,100,,wizard'),
                 2345 => MuckCharacter::fromMuckResponse('2345,TestCharacter2,14,,')

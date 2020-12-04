@@ -17,7 +17,11 @@ class User implements Authenticatable, MustVerifyEmail
 {
     use Notifiable;
 
+    /**
+     * @var int|null
+     */
     protected $aid = null;
+
     protected $email = null; // Primary email
     protected $emails = null;
     protected $password = null;
@@ -51,7 +55,7 @@ class User implements Authenticatable, MustVerifyEmail
             throw new \InvalidArgumentException('Database response must at least contain aid, password and email');
         }
         $user = new self();
-        $user->aid = $query->aid;
+        $user->aid = intval($query->aid);
         $user->email = $query->email;
         $user->password = $query->password;
         if (property_exists($query, 'password_type')) $user->passwordType = $query->password_type;

@@ -88,7 +88,7 @@ class HttpMuckConnection implements MuckConnection
         $response = $this->requestFromMuck('retrieveByCredentials', $credentials);
         //Muck returns character string but with an extra aid value at the front
         if ($split = strpos($response, ',')) {
-            $aid = substr($response, 0, $split);
+            $aid = intval(substr($response, 0, $split));
             $characterString = substr($response, $split + 1);
             return [$aid, MuckCharacter::fromMuckResponse($characterString)];
         }
