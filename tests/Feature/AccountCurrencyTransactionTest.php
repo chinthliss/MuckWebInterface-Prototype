@@ -264,4 +264,36 @@ class AccountCurrencyTransactionTest extends TestCase
         $this->assertTrue($transaction->vendorProfileId == 'NEWTEST', 'VendorProfileId not persisted');
     }
 
+    public function testCanViewOwnTransactionHistory()
+    {
+        $this->seed();
+        $user = $this->loginAsValidatedUser();
+        $response = $this->followingRedirects()->json('GET', route('accountcurrency.transactions', [
+            'accountId' => $user->getAid()
+        ]));
+        $response->assertSuccessful();
+
+    }
+
+    public function testCannotViewAnothersTransactionHistory()
+    {
+        $this->seed();
+        $user = $this->loginAsValidatedUser();
+        $response = $this->followingRedirects()->json('GET', route('accountcurrency.transactions', [
+            'accountId' => $user->getAid() + 1
+        ]));
+        $response->assertForbidden();
+
+    }
+
+    public function testAdminCanViewAnothersTransactionHistory()
+    {
+        $this->seed();
+        $user = $this->loginAsAdminUser();
+        $response = $this->followingRedirects()->json('GET', route('accountcurrency.transactions', [
+            'accountId' => $user->getAid() + 1
+        ]));
+        $response->assertSuccessful();
+
+    }
 }

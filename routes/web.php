@@ -74,7 +74,8 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
     Route::get('accountcurrency/acceptTransaction', 'Payment\AccountCurrencyController@acceptTransaction');
     Route::get('accountcurrency/transaction/{id}', 'Payment\AccountCurrencyController@viewTransaction')
         ->name('accountcurrency.transaction');
-    Route::get('accountcurrency/history', 'Payment\AccountCurrencyController@viewTransactions');
+    Route::get('accountcurrency/history/{accountId?}', 'Payment\AccountCurrencyController@viewTransactions')
+        ->name('accountcurrency.transactions');
     Route::get('accountcurrency/paypal_order_return', 'Payment\PayPalController@paypalOrderReturn')
         ->name('accountcurrency.paypal.order.return');
     Route::get('accountcurrency/paypal_order_cancel', 'Payment\PayPalController@paypalOrderCancel')

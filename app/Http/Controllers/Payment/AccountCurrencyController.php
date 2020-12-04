@@ -216,8 +216,6 @@ class AccountCurrencyController extends Controller
 
     public function viewTransaction(PaymentTransactionManager $transactionManager, string $id)
     {
-        // TODO: For later, from paypal docs: with PayerID and paymentId appended to the URL.
-
         /** @var User $user */
         $user = auth()->user();
         $transaction = $transactionManager->getTransaction($id);
@@ -230,20 +228,19 @@ class AccountCurrencyController extends Controller
         ]);
     }
 
-    public function viewTransactions(PaymentTransactionManager $transactionManager)
+    public function viewTransactions(PaymentTransactionManager $transactionManager, int $accountId = null)
     {
         /** @var User $user */
         $user = auth()->user();
 
-        $accountToView = $user->getAid();
+        if ($accountId !== $user->getAid() && !$user->hasRole('admin')) return abort(403);
 
-        if (!$accountToView) return abort(401);
+        if (!$accountId) $accountId = $user->getAid();
 
-        //TODO Leaving room to allow admin to view others
-        if ($accountToView !== $user->getAid()) return abort(403);
+        if (!$accountId) return abort(401);
 
         return view('account-currency-transactions')->with([
-            'transactions' => $transactionManager->getTransactionsFor($accountToView)
+            'transactions' => $transactionManager->getTransactionsFor($accountId)
         ]);
     }
 
