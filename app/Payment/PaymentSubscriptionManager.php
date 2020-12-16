@@ -10,6 +10,7 @@ use Error;
 use \Exception;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -32,7 +33,17 @@ class PaymentSubscriptionManager
      */
     private function storageTable(): Builder
     {
-        return DB::table('billing_subscriptions_combined');
+        return DB::table('billing_subscriptions_combined as subscriptions');
+    }
+
+    private function storageTableWithTransactionJoin(): Builder
+    {
+        $transactionJoin = DB::table('billing_transactions')
+            ->select('subscription_id', DB::raw('MAX(paid_at) as last_charge_at'))
+            ->groupBy('subscription_id');
+
+        return $this->storageTable()
+            ->leftJoinSub($transactionJoin, 'transactions','transactions.subscription_id', '=', 'subscriptions.id');
     }
 
     public function insertSubscriptionIntoStorage(PaymentSubscription $subscription)
@@ -65,6 +76,7 @@ class PaymentSubscriptionManager
         $subscription->recurringInterval = $row->recurring_interval;
         $subscription->createdAt = $row->created_at;
         $subscription->nextChargeAt = $row->next_charge_at;
+        if ($row->last_charge_at) $subscription->lastChargeAt = $row->last_charge_at;
         $subscription->closedAt = $row->closed_at;
         $subscription->status = $row->status;
         return $subscription;
@@ -116,6 +128,13 @@ class PaymentSubscriptionManager
         return $this->buildSubscriptionFromRow($row);
     }
 
+    public function getSubscriptions(): Collection
+    {
+        $allSubscriptions = $this->storageTableWithTransactionJoin()->get();
+        return $allSubscriptions->map(function ($row) {
+            return $this->buildSubscriptionFromRow($row);
+        });
+    }
 
     public function closeSubscription(PaymentSubscription $subscription, string $closureReason)
     {

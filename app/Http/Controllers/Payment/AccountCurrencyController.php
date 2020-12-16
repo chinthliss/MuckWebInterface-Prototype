@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Payment;
 use App\Payment\CardPaymentManager;
 use App\Muck\MuckConnection;
 use App\Http\Controllers\Controller;
+use App\Payment\PaymentSubscription;
 use App\Payment\PaymentSubscriptionManager;
 use App\Payment\PaymentTransactionItemCatalogue;
 use App\Payment\PaymentTransactionManager;
@@ -397,6 +398,20 @@ class AccountCurrencyController extends Controller
         return "Subscription Cancelled.";
 
     }
+
+    public function adminViewSubscriptions(PaymentSubscriptionManager $subscriptionManager)
+    {
+        return view('account-currency-subscriptions');
+    }
+
+    public function adminGetSubscriptions(PaymentSubscriptionManager $subscriptionManager)
+    {
+        $subscriptions = $subscriptionManager->getSubscriptions();
+        return $subscriptions->map(function (PaymentSubscription $subscription) {
+            return $subscription->toArray();
+        });
+    }
+
     #endregion Subscriptions
 
 }

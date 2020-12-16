@@ -1,5 +1,5 @@
 <template>
-    <div class="card">
+    <div class="card" v-if="this.subscription">
         <h4 class="card-header">View Subscription</h4>
         <div class="card-body">
             <dl>

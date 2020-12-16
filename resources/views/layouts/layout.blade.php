@@ -36,6 +36,7 @@
     @Admin
     <div><a href="{{ route('admin.home') }}">Admin Dashboard</a></div>
     <div><a href="{{ route('admin.logs') }}">Log Viewer</a></div>
+    <div><a href="{{ route('admin.subscriptions') }}">Subscriptions</a></div>
     @endAdmin
 </nav>
 <!-- Main/Right pane -->

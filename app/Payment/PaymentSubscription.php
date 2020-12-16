@@ -59,6 +59,11 @@ class PaymentSubscription
      */
     public $nextChargeAt = null;
 
+    /**
+     * @var Carbon|null
+     */
+    public $lastChargeAt = null;
+
     public $status = 'unknown';
 
     /**
@@ -107,7 +112,9 @@ class PaymentSubscription
             "status" => $this->status,
             "created_at" => $this->createdAt,
             "next_charge_at" => $this->nextChargeAt,
-            "closed_at" => $this->closedAt
+            "last_charge_at" => $this->lastChargeAt,
+            "closed_at" => $this->closedAt,
+            "link" => route('accountcurrency.subscription', ['id' => $this->id])
         ];
     }
 

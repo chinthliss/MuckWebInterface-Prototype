@@ -102,6 +102,12 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
     Route::get('admin/logs', 'AdminController@showLogViewer')
         ->name('admin.logs');
     Route::get('admin/logs/{date}', 'AdminController@getLogForDate');
+
+    Route::get('accountcurrency/subscriptions', 'Payment\AccountCurrencyController@adminViewSubscriptions')
+        ->name('admin.subscriptions');
+    Route::get('accountcurrency/subscriptions/api', 'Payment\AccountCurrencyController@adminGetSubscriptions');
+
+
 });
 
 //----------------------------------------
