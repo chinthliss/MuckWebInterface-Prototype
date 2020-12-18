@@ -33,7 +33,7 @@ class PaymentSubscriptionManager
      */
     private function storageTable(): Builder
     {
-        return DB::table('billing_subscriptions_combined as subscriptions');
+        return DB::table('billing_subscriptions_combined');
     }
 
     private function storageTableWithTransactionJoin(): Builder
@@ -43,7 +43,7 @@ class PaymentSubscriptionManager
             ->groupBy('subscription_id');
 
         return $this->storageTable()
-            ->leftJoinSub($transactionJoin, 'transactions','transactions.subscription_id', '=', 'subscriptions.id');
+            ->leftJoinSub($transactionJoin, 'transactions','transactions.subscription_id', '=', 'billing_subscriptions_combined.id');
     }
 
     public function insertSubscriptionIntoStorage(PaymentSubscription $subscription)
@@ -76,7 +76,7 @@ class PaymentSubscriptionManager
         $subscription->recurringInterval = $row->recurring_interval;
         $subscription->createdAt = $row->created_at;
         $subscription->nextChargeAt = $row->next_charge_at;
-        if ($row->last_charge_at) $subscription->lastChargeAt = $row->last_charge_at;
+        if (property_exists($row, 'last_charge_at')) $subscription->lastChargeAt = $row->last_charge_at;
         $subscription->closedAt = $row->closed_at;
         $subscription->status = $row->status;
         return $subscription;
