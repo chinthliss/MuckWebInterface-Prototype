@@ -104,13 +104,13 @@ class PaymentSubscriptionManager
 
     public function getSubscription(string $subscriptionId): ?PaymentSubscription
     {
-        $row = $this->storageTable()->where('id', '=', $subscriptionId)->first();
+        $row = $this->storageTableWithTransactionJoin()->where('id', '=', $subscriptionId)->first();
         return $this->buildSubscriptionFromRow($row);
     }
 
     public function getSubscriptionsFor(int $userId): array
     {
-        $rows = $this->storageTable()
+        $rows = $this->storageTableWithTransactionJoin()
             ->where('account_id', '=', $userId)
             ->orderBy('created_at')
             ->get();
@@ -124,7 +124,7 @@ class PaymentSubscriptionManager
 
     public function getSubscriptionFromVendorId(string $subscriptionVendorId): ?PaymentSubscription
     {
-        $row = $this->storageTable()->where('vendor_subscription_id', '=', $subscriptionVendorId)->first();
+        $row = $this->storageTableWithTransactionJoin()->where('vendor_subscription_id', '=', $subscriptionVendorId)->first();
         return $this->buildSubscriptionFromRow($row);
     }
 

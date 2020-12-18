@@ -33,6 +33,11 @@
                     <dd class="col-sm-9">{{ subscription.created_at }}</dd>
                 </div>
 
+                <div v-if="subscription.last_charge_at" class="row">
+                    <dt class="col-sm-3">Last Charge</dt>
+                    <dd class="col-sm-9">{{ subscription.last_charge_at }}</dd>
+                </div>
+
                 <div v-if="subscription.next_charge_at" class="row">
                     <dt class="col-sm-3">Next Charge</dt>
                     <dd class="col-sm-9">{{ subscription.next_charge_at }} (Estimated)</dd>
