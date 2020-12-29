@@ -136,7 +136,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             BillingItemCatalogueSeeder::class,
             BillingTransactionSeeder::class,
-            BillingSubscriptionSeeder::class
+            BillingSubscriptionSeeder::class,
+            PatreonSeeder::class
         ]);
     }
 }

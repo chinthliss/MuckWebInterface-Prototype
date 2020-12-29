@@ -47,4 +47,12 @@ return [
         'subscriptionId' => env('PAYPAL_SUBSCRIPTION_PRODUCT_ID')
     ],
 
+    'patreon' => [
+        'clientId' => env('PATREON_CLIENT_ID'),
+        'clientSecret' => env('PATREON_CLIENT_SECRET'),
+        'creatorAccessToken' => env('PATREON_CREATOR_ACCESS_TOKEN'),
+        'creatorRefreshToken' => env('PATREON_CREATOR_REFRESH_TOKEN'),
+        'campaigns' => env('PATREON_CAMPAIGNS')
+    ],
+
 ];

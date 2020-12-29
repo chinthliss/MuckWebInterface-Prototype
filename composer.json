@@ -15,6 +15,7 @@
         "guzzlehttp/guzzle": "~6.0",
         "laravel/framework": "^6.0",
         "laravel/tinker": "^2.0",
+        "patreon/patreon": "^1.0",
         "paypal/paypal-checkout-sdk": "1.0.1"
     },
     "require-dev": {
