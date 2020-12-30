@@ -20,7 +20,15 @@ class PatreonTest extends TestCase
     {
         $this->seed();
         $patreonManager = resolve(PatreonManager::class);
-        $patrons = $patreonManager->getPatrons();
-        $this->assertNotEmpty($patrons);
+        $pledges = $patreonManager->getPatrons();
+        $this->assertNotEmpty($pledges);
+    }
+
+    public function testLoadingLegacyClaimsFromDatabaseWorks()
+    {
+        $this->seed();
+        $patreonManager = resolve(PatreonManager::class);
+        $claims = $patreonManager->getLegacyclaims();
+        $this->assertNotEmpty($claims);
     }
 }

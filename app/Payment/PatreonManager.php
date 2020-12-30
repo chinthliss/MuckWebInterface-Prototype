@@ -35,8 +35,8 @@ class PatreonManager
 
     /**
      * Loaded on demand
-     * Indexed in the form patronId:Patron
-     * @var Patron[]|null
+     * Indexed in the form [patronId:PatreonPatron]
+     * @var PatreonUser[]|null
      */
     private $patrons = null;
 
@@ -54,21 +54,44 @@ class PatreonManager
     {
         if ($this->patrons) return;
 
-        $rows = DB::table('patreon')->get();
+        $this->patrons = [];
+        $rows = DB::table('patreon_users')->get();
         foreach ($rows as $row) {
-            $patron = Patron::fromDatabase($row);
+            $patron = PatreonUser::fromDatabase($row);
             $this->patrons[$patron->patronId] = $patron;
         }
+
+        $rows = DB::table('patreon_members')->get();
+        foreach ($rows as $row) {
+            $patreonUser = $this->patrons[$row->patron_id];
+            $member = PatreonMember::fromDatabase($row, $patreonUser);
+            $patreonUser->memberships[$member->campaignId] = $member;
+        }
+
     }
 
     /**
-     * Loads presently known patrons from the database or from memory.
+     * Loads presently known pledges from the database or from memory.
      * Does not update from Patreon.
      */
     public function getPatrons()
     {
         $this->loadFromDatabaseIfRequired();
         return $this->patrons;
+    }
+
+    /**
+     * Loads historic way of saving claims - returned in the form [patronId:[CampaignId:Amount]]
+     */
+    public function getLegacyClaims(): array
+    {
+        $results = [];
+        $rows = DB::table('patreon_claims')->get();
+        foreach ($rows as $row) {
+            if (!array_key_exists($row->patron_id, $results)) $results[$row->patron_id] = [];
+            $results[$row->patron_id][$row->campaign_id] = $row->claimed_cents;
+        }
+        return $results;
     }
 
 }
