@@ -26,6 +26,9 @@ class Kernel extends ConsoleKernel
     {
         //Clear up payment records that were never accepted
          $schedule->command('payment:closepending')->everyTenMinutes();
+
+         //Update Patreon Records
+        $schedule->command('patreon:update')->twiceDaily();
     }
 
     /**

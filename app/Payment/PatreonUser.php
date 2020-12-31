@@ -48,9 +48,14 @@ class PatreonUser
     public $updatedAt;
 
     /**
+     * @var bool Whether to save to the DB
+     */
+    public $updated = false;
+
+    /**
      * @var PatreonMember[];
      */
-    public $memberships;
+    public $memberships = [];
 
     public function __construct($patronId)
     {
@@ -64,7 +69,7 @@ class PatreonUser
             'email' => $this->email,
             'full_name' => $this->fullName,
             'vanity' => $this->vanity,
-            'hide_pledges' => $this->hidePledges ? 'Y' : 'N',
+            'hide_pledges' => $this->hidePledges,
             'url' => $this->url,
             'thumb_url' => $this->thumbUrl,
             'updated_at' => $this->updatedAt

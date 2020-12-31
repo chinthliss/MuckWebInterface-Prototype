@@ -57,10 +57,16 @@ class PatreonMember
      */
     public $updatedAt;
 
+    /**
+     * @var bool Whether to save to the DB
+     */
+    public $updated = false;
+
     public function __construct(PatreonUser $patreonUser, $campaignId)
     {
         $this->patron = $patreonUser;
         $this->campaignId = $campaignId;
+        $patreonUser->memberships[$campaignId] = $this;
     }
 
     public function toDatabase()
@@ -74,13 +80,14 @@ class PatreonMember
             'last_charge_date' => $this->lastChargeDate,
             'lifetime_support_cents' => $this->lifetimeSupportCents,
             'patron_status' => $this->patronStatus,
-            'pledge_relationship_start' => $this->pledgeRelationshipStart
+            'pledge_relationship_start' => $this->pledgeRelationshipStart,
+            'updated_at' => $this->updatedAt
         ];
     }
 
     public static function fromDatabase($row, PatreonUser $patreonUser) : PatreonMember
     {
-        $member = new PatreonMember($patreonUser, $row->patron_id);
+        $member = new PatreonMember($patreonUser, $row->campaign_id);
         $member->currentlyEntitledAmountCents = $row->currently_entitled_amount_cents;
         $member->isFollower = $row->is_follower;
         $member->lastChargeStatus = $row->last_charge_status;
