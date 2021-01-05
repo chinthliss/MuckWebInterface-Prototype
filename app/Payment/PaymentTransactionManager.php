@@ -123,9 +123,9 @@ class PaymentTransactionManager
                 array_push($transaction->items, PaymentTransactionItem::fromArray($itemArray));
             }
         }
-        $transaction->createdAt = $row->created_at;
-        $transaction->completedAt = $row->completed_at;
-        $transaction->paidAt =  $row->paid_at;
+        $transaction->createdAt = $row->created_at ? new Carbon($row->created_at) : null;
+        $transaction->completedAt = $row->completed_at ? new Carbon($row->completed_at) : null;
+        $transaction->paidAt =  $row->paid_at ? new Carbon($row->paid_at) : null;
         $transaction->result = $row->result;
         return $transaction;
     }

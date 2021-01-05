@@ -268,9 +268,7 @@ class AccountCurrencyTransactionTest extends TestCase
     {
         $this->seed();
         $user = $this->loginAsValidatedUser();
-        $response = $this->followingRedirects()->json('GET', route('accountcurrency.transactions', [
-            'accountId' => $user->getAid()
-        ]));
+        $response = $this->followingRedirects()->json('GET', route('accountcurrency.transactions'));
         $response->assertSuccessful();
 
     }

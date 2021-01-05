@@ -234,11 +234,8 @@ class AccountCurrencyController extends Controller
         /** @var User $user */
         $user = auth()->user();
 
-        if ($accountId !== $user->getAid() && !$user->hasRole('admin')) return abort(403);
-
         if (!$accountId) $accountId = $user->getAid();
-
-        if (!$accountId) return abort(401);
+        else if ($accountId !== $user->getAid() && !$user->hasRole('admin')) return abort(403);
 
         return view('account-currency-transactions')->with([
             'transactions' => $transactionManager->getTransactionsFor($accountId)
@@ -401,6 +398,7 @@ class AccountCurrencyController extends Controller
 
     public function adminViewSubscriptions(PaymentSubscriptionManager $subscriptionManager)
     {
+
         return view('account-currency-subscriptions');
     }
 

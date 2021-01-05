@@ -77,7 +77,7 @@
                 return this.transaction.type[0].toUpperCase() + this.transaction.type.slice(1);
             },
             friendlyStatus: function() {
-                if (!this.transaction.result) return this.trasaction.paid_at ? "Paid and pending fulfillment." : 'Open';
+                if (!this.transaction.result) return this.transaction.paid_at ? "Paid and pending fulfillment." : 'Open';
                 switch(this.transaction.result) {
                     case 'fulfilled': return 'Fulfilled';
                     case 'user_declined': return 'User declined transaction';
