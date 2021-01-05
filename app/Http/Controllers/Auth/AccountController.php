@@ -148,10 +148,20 @@ class AccountController extends Controller
     public function show(PaymentSubscriptionManager $subscriptionManager)
     {
         $user = $this->guard()->user();
+
         $subscriptionsUnparsed = $subscriptionManager->getSubscriptionsFor($user->getAid());
         $subscriptions = [];
+        $subscriptionActive = false; // A subscription covers 'now'
+        $subscriptionRenewing = false; // A subscription is renewing
+        $subscriptionExpires = null; // latest date a subscription expires
         foreach ($subscriptionsUnparsed as $subscription) {
             if ($subscription->status === 'user_declined' || $subscription->status === 'approval_pending') continue;
+            if ($subscription->renewing()) $subscriptionRenewing = true;
+            if ($subscription->active()) {
+                $subscriptionActive = true;
+                if (!$subscriptionExpires || $subscription->expires() > $subscriptionExpires)
+                    $subscriptionExpires = $subscription->expires();
+            }
             array_push($subscriptions, [
                 'id' => $subscription->id,
                 'type' => $subscription->type(),
@@ -164,9 +174,13 @@ class AccountController extends Controller
                 'url' => route('accountcurrency.subscription', ["id" => $subscription->id])
             ]);
         }
+
         return view('auth.account', [
             'user' => $user,
-            'subscriptions' => $subscriptions
+            'subscriptions' => $subscriptions,
+            'subscriptionActive' => $subscriptionActive,
+            'subscriptionRenewing' => $subscriptionRenewing,
+            'subscriptionExpires' => $subscriptionExpires
         ]);
     }
 }

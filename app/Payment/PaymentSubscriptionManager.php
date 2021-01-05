@@ -74,10 +74,10 @@ class PaymentSubscriptionManager
         $subscription->vendorSubscriptionPlanId = $row->vendor_subscription_plan_id;
         $subscription->amountUsd = $row->amount_usd;
         $subscription->recurringInterval = $row->recurring_interval;
-        $subscription->createdAt = $row->created_at;
-        $subscription->nextChargeAt = $row->next_charge_at;
-        if (property_exists($row, 'last_charge_at')) $subscription->lastChargeAt = $row->last_charge_at;
-        $subscription->closedAt = $row->closed_at;
+        $subscription->createdAt = new Carbon($row->created_at);
+        $subscription->nextChargeAt = $row->next_charge_at ? new Carbon($row->next_charge_at) : null;
+        if (property_exists($row, 'last_charge_at')) $subscription->lastChargeAt = new Carbon($row->last_charge_at);
+        $subscription->closedAt = $row->closed_at ? new Carbon($row->closed_at) : null;
         $subscription->status = $row->status;
         return $subscription;
     }
@@ -108,6 +108,10 @@ class PaymentSubscriptionManager
         return $this->buildSubscriptionFromRow($row);
     }
 
+    /**
+     * @param int $userId
+     * @return PaymentSubscription[]
+     */
     public function getSubscriptionsFor(int $userId): array
     {
         $rows = $this->storageTableWithTransactionJoin()

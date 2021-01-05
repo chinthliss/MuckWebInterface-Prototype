@@ -6,6 +6,10 @@
                 <dt class="col-sm-2">Created</dt>
                 <dd class="col-sm-10">{{ accountCreated }}</dd>
             </dl>
+            <dl class="row">
+                <dt class="col-sm-2">Subscription</dt>
+                <dd class="col-sm-10" >{{ overallSubscriptionStatus() }}</dd>
+            </dl>
 
             <!-- Subscriptions -->
             <div v-if="subscriptions.length > 0">
@@ -135,7 +139,8 @@ export default {
     name: "auth-account",
     components: {DialogMessage},
     props: [
-        'accountCreated', 'primaryEmail', 'emails', 'errors', 'subscriptions',
+        'accountCreated', 'primaryEmail', 'emails', 'errors',
+        'subscriptions', 'subscriptionActive', 'subscriptionRenewing', 'subscriptionExpires',
         'initialUseFullWidth', 'initialHideAvatars'
     ],
     data: function () {
@@ -189,6 +194,11 @@ export default {
                 $('#messageModal').modal();
             });
 
+        },
+        overallSubscriptionStatus: function() {
+            if (!this.subscriptionActive) return 'No Subscription';
+            if (this.subscriptionRenewing) return 'Active, renews sometime before ' + this.subscriptionExpires;
+            return 'Active, expires sometime before ' + this.subscriptionExpires;
         },
         useFullWidthChanged: function() {
             axios({

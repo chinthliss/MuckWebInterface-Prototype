@@ -50,8 +50,14 @@ class PaymentSubscription
      */
     public $recurringInterval = null;
 
+    /**
+     * @var Carbon|null
+     */
     public $createdAt = null;
 
+    /**
+     * @var Carbon|null
+     */
     public $closedAt = null;
 
     /**
@@ -64,6 +70,9 @@ class PaymentSubscription
      */
     public $lastChargeAt = null;
 
+    /**
+     * @var string One of: approval_pending, user_declined, active, suspended, cancelled, expired
+     */
     public $status = 'unknown';
 
     /**
@@ -85,6 +94,28 @@ class PaymentSubscription
     public function open(): bool
     {
         return ($this->closedAt ? false : true);
+    }
+
+    /**
+     * @return Carbon When a subscription will expire unless renewed.
+     */
+    public function expires(): Carbon
+    {
+        return $this->lastChargeAt ? $this->lastChargeAt->addDays($this->recurringInterval + 1)->startOfDay()
+            : $this->createdAt;
+    }
+
+    /**
+     * @return bool Whether a subscription covers 'now' (even if no longer renewing)
+     */
+    public function active(): bool
+    {
+        return $this->expires() >= Carbon::now();
+    }
+
+    public function renewing(): bool
+    {
+        return $this->status == 'active';
     }
 
     /**
