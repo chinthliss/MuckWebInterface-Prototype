@@ -5,10 +5,10 @@
 * (Started) Actual styling/theming
 * (Started) Responsive layout
 * Notices (Account-based notices)
-* Browser notifications (Opt-in rather than forced)
-* Re-add webNoAvatars option and provide access to on account page
-* Re-add webUseFullWidth option and provide access to on account page
-* Implement Socialite for Facebook/Google login
+  * Browser notifications (Opt-in rather than forced)
+* ~~Re-add webNoAvatars option and provide access to on account page~~
+* ~~Re-add webUseFullWidth option and provide access to on account page~~
+* Implement Socialite for Facebook/Google login?
 
 ### AccountCurrency (Formally ECommerce)
 * ~~Manage Cards~~
@@ -17,12 +17,18 @@
 * ~~Subscription - card~~
 * ~~Subscription - paypal~~ 
 * Manage Subscriptions - Admin view all
+  * Exists, need further work (filters and/or pagination)
 * Manage Subscriptions - View transactions from subscription
-* Admin subscription view
 * ~~Flag when card has expired and trying to make a payment~~
 * ~~Notification of payment - Email~~
 * Notification of payment - Account notification
- 
+
+### Patreon integration
+* ~~Automatically update from Patreon~~ 
+* Link to Patreon account
+* Save claims in new format
+* Automatic claiming
+
 ### Character Based starting pages
 * Change Active Character
 * Avatars (Loading)
@@ -42,3 +48,4 @@
 ### Stuff to do once system goes live
 * Remove tos-hash-viewed from account_properties
 * drop billing_sessions
+* drop patreon_claims
