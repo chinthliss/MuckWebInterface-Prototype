@@ -29,6 +29,10 @@ class Kernel extends ConsoleKernel
 
          //Update Patreon Records
         $schedule->command('patreon:update')->twiceDaily();
+
+        if (config('process_payment_subscriptions')) {
+            $schedule->command('payment:processsubscriptions')->hourly();
+        }
     }
 
     /**

@@ -76,7 +76,8 @@ class PaymentSubscriptionManager
         $subscription->recurringInterval = $row->recurring_interval;
         $subscription->createdAt = new Carbon($row->created_at);
         $subscription->nextChargeAt = $row->next_charge_at ? new Carbon($row->next_charge_at) : null;
-        if (property_exists($row, 'last_charge_at')) $subscription->lastChargeAt = new Carbon($row->last_charge_at);
+        if (property_exists($row, 'last_charge_at') && $row->last_charge_at)
+            $subscription->lastChargeAt = new Carbon($row->last_charge_at);
         $subscription->closedAt = $row->closed_at ? new Carbon($row->closed_at) : null;
         $subscription->status = $row->status;
         return $subscription;
@@ -128,7 +129,9 @@ class PaymentSubscriptionManager
 
     public function getSubscriptionFromVendorId(string $subscriptionVendorId): ?PaymentSubscription
     {
-        $row = $this->storageTableWithTransactionJoin()->where('vendor_subscription_id', '=', $subscriptionVendorId)->first();
+        $row = $this->storageTableWithTransactionJoin()
+            ->where('vendor_subscription_id', '=', $subscriptionVendorId)
+            ->first();
         return $this->buildSubscriptionFromRow($row);
     }
 
@@ -138,6 +141,24 @@ class PaymentSubscriptionManager
         return $allSubscriptions->map(function ($row) {
             return $this->buildSubscriptionFromRow($row);
         });
+    }
+
+    /**
+     * @return PaymentSubscription[]
+     */
+    public function getSubscriptionsDuePayment(): array
+    {
+        $subscriptions = [];
+
+        $rows = $this->storageTableWithTransactionJoin()
+            ->where('status', '=',  'active')
+            ->get();
+
+        foreach ($rows as $row) {
+            $subscription = $this->buildSubscriptionFromRow($row);
+            if ($subscription->nextChargeAt < Carbon::now()) array_push($subscriptions, $subscription);
+        }
+        return $subscriptions;
     }
 
     public function closeSubscription(PaymentSubscription $subscription, string $closureReason)

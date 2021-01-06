@@ -36,9 +36,9 @@ class ClosePendingPayments extends Command
      * Execute the console command.
      */
     public function handle(PaymentTransactionManager $transactionManager,
-                           PaymentSubscriptionManager  $subcriptionManager)
+                           PaymentSubscriptionManager  $subscriptionManager)
     {
         $transactionManager->closePending();
-        $subcriptionManager->closePending();
+        $subscriptionManager->closePending();
     }
 }

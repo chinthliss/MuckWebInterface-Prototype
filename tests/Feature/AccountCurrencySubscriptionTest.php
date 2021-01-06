@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Payment\PaymentSubscription;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class AccountCurrencySubscriptionTest extends TestCase
@@ -16,6 +17,7 @@ class AccountCurrencySubscriptionTest extends TestCase
     private $validOwnedActiveSubscription = '00000000-0000-0000-0000-000000000002';
     private $validOwnedClosedSubscription = '00000000-0000-0000-0000-000000000003';
     private $validUnownedSubscription = '00000000-0000-0000-0000-000000000004';
+    private $validOwedActiveAndDueSubscription = '00000000-0000-0000-0000-000000000005';
 
     public function testValidSubscriptionIsRetrievedOkay()
     {
@@ -156,6 +158,18 @@ class AccountCurrencySubscriptionTest extends TestCase
         //Refetch
         $subscription = $subscriptionManager->getSubscription($this->validOwnedActiveSubscription);
         $this->assertTrue($subscription->vendorProfileId == 'NEWTEST', 'VendorProfileId not persisted');
+    }
+
+    public function testActiveAndDueSubscriptionIsProcessed()
+    {
+        $this->seed();
+        $subscriptionManager = $this->app->make('App\Payment\PaymentSubscriptionManager');
+        $subscription = $subscriptionManager->getSubscription($this->validOwedActiveAndDueSubscription);
+        $this->artisan('payment:processsubscriptions')
+            ->assertExitCode(0);
+        //Adding an hour to give processing time leeway
+        $this->assertTrue($subscription->lastChargeAt && $subscription->lastChargeAt->addHour() < Carbon::now(),
+            "Subscription's last charge is either unset or in the past.");
     }
 
 }

@@ -27,7 +27,7 @@ class BillingSubscriptionSeeder extends Seeder
             'status' => 'approval_pending'
         ]);
 
-        //Valid Owned active Subscription with transaction
+        //Valid Owned active Subscription with recent transaction
         DB::table('billing_subscriptions_combined')->insert([
             'id' => '00000000-0000-0000-0000-000000000002',
             'account_id' => $validAid,
@@ -36,6 +36,7 @@ class BillingSubscriptionSeeder extends Seeder
             'amount_usd' => 10,
             'recurring_interval' => 30,
             'created_at' => Carbon::now(),
+            'next_charge_at' => Carbon::now()->addDays(30),
             'status' => 'active'
         ]);
         DB::table('billing_transactions')->insert([
@@ -79,6 +80,20 @@ class BillingSubscriptionSeeder extends Seeder
             'created_at' => Carbon::now(),
             'status' => 'approval_pending'
         ]);
+
+        //Valid due subscription
+        DB::table('billing_subscriptions_combined')->insert([
+            'id' => '00000000-0000-0000-0000-000000000005',
+            'account_id' => $validAid,
+            'vendor' => 'authorizenet',
+            'vendor_profile_id' => 1,
+            'amount_usd' => 10,
+            'recurring_interval' => 30,
+            'created_at' => Carbon::now()->subDays(31),
+            'next_charge_at' => Carbon::now()->subDay(),
+            'status' => 'active'
+        ]);
+
 
     }
 }
