@@ -47,7 +47,7 @@ class ProcessSubscriptions extends Command
 
             // Sanity check to avoid re-charging too soon
             if ($subscription->lastChargeAt
-                && $subscription->lastChargeAt->addDays($subscription->recurringInterval) > Carbon::now()) {
+                && $subscription->lastChargeAt->copy()->addDays($subscription->recurringInterval) > Carbon::now()) {
                 Log::warning("Skipping payment processing on subscription " . $subscription->id
                     . ", because its last charge date (" . $subscription->lastChargeAt
                     . ") is too recent. Next charge date possibly set incorrectly.");

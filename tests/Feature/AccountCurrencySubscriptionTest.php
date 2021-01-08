@@ -163,13 +163,13 @@ class AccountCurrencySubscriptionTest extends TestCase
     public function testActiveAndDueSubscriptionIsProcessed()
     {
         $this->seed();
-        $subscriptionManager = $this->app->make('App\Payment\PaymentSubscriptionManager');
-        $subscription = $subscriptionManager->getSubscription($this->validOwedActiveAndDueSubscription);
         $this->artisan('payment:processsubscriptions')
             ->assertExitCode(0);
-        //Adding an hour to give processing time leeway
-        $this->assertTrue($subscription->lastChargeAt && $subscription->lastChargeAt->addHour() < Carbon::now(),
-            "Subscription's last charge is either unset or in the past.");
+        $subscriptionManager = $this->app->make('App\Payment\PaymentSubscriptionManager');
+        $subscription = $subscriptionManager->getSubscription($this->validOwedActiveAndDueSubscription);
+        $this->assertTrue($subscription->lastChargeAt
+            && $subscription->lastChargeAt->diffInMinutes(Carbon::now()) < 5,
+            "Subscription's last charge should be approximately now but is: {$subscription->lastChargeAt}");
     }
 
 }

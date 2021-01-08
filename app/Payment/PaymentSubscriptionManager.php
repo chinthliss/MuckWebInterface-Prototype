@@ -75,9 +75,10 @@ class PaymentSubscriptionManager
         $subscription->amountUsd = $row->amount_usd;
         $subscription->recurringInterval = $row->recurring_interval;
         $subscription->createdAt = new Carbon($row->created_at);
-        $subscription->nextChargeAt = $row->next_charge_at ? new Carbon($row->next_charge_at) : null;
-        if (property_exists($row, 'last_charge_at') && $row->last_charge_at)
+        if (property_exists($row, 'last_charge_at') && $row->last_charge_at) {
             $subscription->lastChargeAt = new Carbon($row->last_charge_at);
+            $subscription->nextChargeAt = $subscription->lastChargeAt->copy()->addDays($subscription->recurringInterval);
+        }
         $subscription->closedAt = $row->closed_at ? new Carbon($row->closed_at) : null;
         $subscription->status = $row->status;
         return $subscription;
@@ -172,21 +173,17 @@ class PaymentSubscriptionManager
         }
         $subscription->status = $closureReason;
         $subscription->closedAt = Carbon::now();
-        $subscription->nextChargeAt = null;
         $this->storageTable()->where('id', '=', $subscription->id)->update([
             'status' => $subscription->status,
-            'closed_at' => $subscription->closedAt,
-            'next_charge_at' => $subscription->nextChargeAt
+            'closed_at' => $subscription->closedAt
         ]);
     }
 
     public function suspendSubscription(PaymentSubscription $subscription)
     {
         $subscription->status = 'suspended';
-        $subscription->nextChargeAt = null;
         $this->storageTable()->where('id', '=', $subscription->id)->update([
-            'status' => $subscription->status,
-            'next_charge_at' => $subscription->nextChargeAt
+            'status' => $subscription->status
         ]);
     }
 
@@ -201,8 +198,6 @@ class PaymentSubscriptionManager
             Log::warning("Attempt to pay the wrong amount (" . $amountUsd
                 . ") against subscription#" . $subscription->id
                 . " which has an amount of " . $subscription->amountUsd);
-
-        $this->updateNextCharge($subscription, Carbon::now()->addDays($subscription->recurringInterval));
 
         $user = User::find($subscription->accountId);
         $transactionManager = resolve(PaymentTransactionManager::class);
@@ -243,15 +238,6 @@ class PaymentSubscriptionManager
             'vendor_subscription_id' => $vendorSubscriptionId
         ]);
     }
-
-    public function updateNextCharge(PaymentSubscription $subscription, Carbon $nextChargeDate)
-    {
-        $subscription->nextChargeAt = $nextChargeDate;
-        $this->storageTable()->where('id', '=', $subscription->id)->update([
-            'next_charge_at' => $nextChargeDate
-        ]);
-    }
-
 
     /**
      * Closes off items that the user never accepted

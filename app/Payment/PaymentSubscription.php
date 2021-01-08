@@ -101,7 +101,7 @@ class PaymentSubscription
      */
     public function expires(): Carbon
     {
-        return $this->lastChargeAt ? $this->lastChargeAt->addDays($this->recurringInterval + 1)->startOfDay()
+        return $this->lastChargeAt ? $this->lastChargeAt->copy()->addDays($this->recurringInterval + 1)->startOfDay()
             : $this->createdAt;
     }
 

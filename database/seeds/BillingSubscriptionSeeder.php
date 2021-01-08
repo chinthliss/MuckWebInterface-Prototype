@@ -36,7 +36,6 @@ class BillingSubscriptionSeeder extends Seeder
             'amount_usd' => 10,
             'recurring_interval' => 30,
             'created_at' => Carbon::now(),
-            'next_charge_at' => Carbon::now()->addDays(30),
             'status' => 'active'
         ]);
         DB::table('billing_transactions')->insert([
@@ -90,10 +89,24 @@ class BillingSubscriptionSeeder extends Seeder
             'amount_usd' => 10,
             'recurring_interval' => 30,
             'created_at' => Carbon::now()->subDays(31),
-            'next_charge_at' => Carbon::now()->subDay(),
             'status' => 'active'
         ]);
-
+        DB::table('billing_transactions')->insert([
+            'id' => '00000000-0000-0000-0000-0000000000s2',
+            'account_id' => $validAid,
+            'vendor' => 'authorizenet',
+            'vendor_profile_id' => 1,
+            'amount_usd' => 10,
+            'amount_usd_items' => 0,
+            'accountcurrency_quoted' => 30,
+            'accountcurrency_rewarded' => 30,
+            'purchase_description' => '30 bananas for a subscription',
+            'created_at' => Carbon::now()->subDays(31),
+            'completed_at' => Carbon::now()->subDays(31),
+            'paid_at' => Carbon::now()->subDays(31),
+            'result' => 'fulfilled',
+            'subscription_id' => '00000000-0000-0000-0000-000000000005'
+        ]);
 
     }
 }

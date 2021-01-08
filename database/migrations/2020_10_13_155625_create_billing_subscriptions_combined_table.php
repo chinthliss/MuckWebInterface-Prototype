@@ -35,9 +35,6 @@ class CreateBillingSubscriptionsCombinedTable extends Migration
 
             $table->timestamp('closed_at')->nullable();
 
-            $table->timestamp('next_charge_at')->nullable()->index()
-                ->comment('This is an estimate if the charging is done by an external vendor. Also null if first charge is due.');
-
             $table->enum('status', [
                 'approval_pending',
                 'user_declined',
