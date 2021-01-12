@@ -37,28 +37,10 @@ class ProcessSubscriptions extends Command
     /**
      * Execute the console command.
      */
-    public function handle(PaymentTransactionManager $transactionManager,
-                           PaymentSubscriptionManager $subscriptionManager)
+    public function handle(PaymentSubscriptionManager $subscriptionManager)
     {
         Log::debug('Processing subscriptions due payment starts');
-        $subscriptions = $subscriptionManager->getSubscriptionsDuePayment();
-        foreach ($subscriptions as $subscription) {
-            if ($subscription->vendor == 'paypal') continue; // Done externally.
-
-            // Sanity check to avoid re-charging too soon
-            if ($subscription->lastChargeAt
-                && $subscription->lastChargeAt->copy()->addDays($subscription->recurringInterval) > Carbon::now()) {
-                Log::warning("Skipping payment processing on subscription " . $subscription->id
-                    . ", because its last charge date (" . $subscription->lastChargeAt
-                    . ") is too recent. Next charge date possibly set incorrectly.");
-                continue;
-            }
-
-            Log::info('Processing subscription payment for ' . $subscription->id
-                . ' which has a last payment date of: ' . ($subscription->lastChargeAt ?? 'None'));
-
-            Log::warning('Payment subscription processing not implemented yet.');
-        }
+        $subscriptionManager->processSubscriptions();
         Log::debug('Processing subscriptions due payment finished');
     }
 }

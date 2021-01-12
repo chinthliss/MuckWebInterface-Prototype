@@ -187,6 +187,43 @@ class PaymentSubscriptionManager
         ]);
     }
 
+    function processSubscriptions()
+    {
+        $transactionManager = resolve(PaymentTransactionManager::class);
+        $subscriptions = $this->getSubscriptionsDuePayment();
+        foreach ($subscriptions as $subscription) {
+            if ($subscription->vendor == 'paypal') continue; // Done externally.
+
+            Log::info('Processing subscription payment for ' . $subscription->id
+                . ' which has a last payment date of: ' . ($subscription->lastChargeAt ?? 'None'));
+
+            $transactions = $transactionManager->getTransactionsFromSubscriptionId($subscription->id,
+                $subscription->lastChargeAt);
+
+            $lastAttempt = null;
+            foreach ($transactions as $transaction) {
+                if (!$lastAttempt || $transaction->createdAt > $lastAttempt) $lastAttempt = $transaction->createdAt;
+            }
+
+            if ($lastAttempt && $lastAttempt->diffInHours(Carbon::now()) < 6) {
+                Log::warning("Skipped processing of subscription {$subscription->id} due to recent previous attempt.");
+                continue;
+            }
+
+            //Start some sort of payment off
+            $user = User::find($subscription->accountId);
+            $transactionManager->createTransaction($user, $subscription->vendor, $subscription->vendorProfileId,
+                $subscription->amountUsd, [], $subscription->id);
+
+            //This should be somewhere else!
+            if (count($transactions) > 5) {
+                Log::warning("Suspended subscription {$subscription->id} due to too many failures.");
+                $this->suspendSubscription($subscription);
+            }
+
+        }
+    }
+
     // Processes a payment against a subscription.
     // If a transaction is passed it will use that otherwise one will be created
     public function processSubscriptionPayment(PaymentSubscription $subscription, float $amountUsd, string $vendor,
@@ -220,7 +257,6 @@ class PaymentSubscriptionManager
         $user->notify(new PaymentTransactionPaid($transaction));
         $transactionManager->fulfillTransaction($transaction);
         $transactionManager->closeTransaction($transaction, 'fulfilled');
-
     }
 
     public function updateVendorProfileId(PaymentSubscription $subscription, string $vendorProfileId)

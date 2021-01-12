@@ -18,6 +18,7 @@ class AccountCurrencySubscriptionTest extends TestCase
     private $validOwnedClosedSubscription = '00000000-0000-0000-0000-000000000003';
     private $validUnownedSubscription = '00000000-0000-0000-0000-000000000004';
     private $validOwedActiveAndDueSubscription = '00000000-0000-0000-0000-000000000005';
+    private $validOwedActiveAndFailedSubscription = '00000000-0000-0000-0000-000000000006';
 
     public function testValidSubscriptionIsRetrievedOkay()
     {
@@ -170,6 +171,17 @@ class AccountCurrencySubscriptionTest extends TestCase
         $this->assertTrue($subscription->lastChargeAt
             && $subscription->lastChargeAt->diffInMinutes(Carbon::now()) < 5,
             "Subscription's last charge should be approximately now but is: {$subscription->lastChargeAt}");
+    }
+
+    public function testActiveSubscriptionWithARecentlyFailedTransactionDoesNotRun()
+    {
+        $this->seed();
+        $this->artisan('payment:processsubscriptions')
+            ->assertExitCode(0);
+        $subscriptionManager = $this->app->make('App\Payment\PaymentSubscriptionManager');
+        $subscription = $subscriptionManager->getSubscription($this->validOwedActiveAndFailedSubscription);
+        $this->assertNull($subscription->lastChargeAt,
+            "Subscription's last charge should be null but is: {$subscription->lastChargeAt}");
     }
 
 }

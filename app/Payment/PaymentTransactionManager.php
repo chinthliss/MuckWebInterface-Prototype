@@ -130,6 +130,10 @@ class PaymentTransactionManager
         return $transaction;
     }
 
+    /**
+     * @param int $userId
+     * @return PaymentTransaction[]
+     */
     public function getTransactionsFor(int $userId): array
     {
         $rows = $this->storageTable()
@@ -166,6 +170,22 @@ class PaymentTransactionManager
         return $this->buildTransactionFromRow($row);
     }
 
+    /**
+     * @param $subscriptionId
+     * @param Carbon|null $after Cut off date
+     * @return PaymentTransaction[]
+     */
+    public function getTransactionsFromSubscriptionId($subscriptionId, Carbon $after = null): array
+    {
+        $rows = $this->storageTable()->where('subscription_id', '=', $subscriptionId)->get();
+        $result = [];
+        foreach ($rows as $row) {
+            $transaction = $this->buildTransactionFromRow($row);
+            if ($after && $transaction->createdAt < $after) continue;
+            $result[$transaction->id] = $transaction;
+        }
+        return $result;
+    }
 
     /**
      * @param PaymentTransaction $transaction

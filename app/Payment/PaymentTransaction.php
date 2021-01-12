@@ -5,6 +5,8 @@ namespace App\Payment;
 
 //Holding class for a transactions details
 
+use Illuminate\Support\Carbon;
+
 class PaymentTransaction
 {
     /**
@@ -73,10 +75,19 @@ class PaymentTransaction
      */
     public $items = [];
 
+    /**
+     * @var Carbon|null
+     */
     public $createdAt = null;
 
+    /**
+     * @var Carbon|null
+     */
     public $paidAt = null;
 
+    /**
+     * @var Carbon|null
+     */
     public $completedAt = null;
 
     public $result = 'unknown';

@@ -108,5 +108,30 @@ class BillingSubscriptionSeeder extends Seeder
             'subscription_id' => '00000000-0000-0000-0000-000000000005'
         ]);
 
+        //Valid Owned active Subscription with recent failed transaction
+        DB::table('billing_subscriptions_combined')->insert([
+            'id' => '00000000-0000-0000-0000-000000000006',
+            'account_id' => $validAid,
+            'vendor' => 'authorizenet',
+            'vendor_profile_id' => 1,
+            'amount_usd' => 10,
+            'recurring_interval' => 30,
+            'created_at' => Carbon::now(),
+            'status' => 'active'
+        ]);
+        DB::table('billing_transactions')->insert([
+            'id' => '00000000-0000-0000-0000-0000000000s3',
+            'account_id' => $validAid,
+            'vendor' => 'authorizenet',
+            'vendor_profile_id' => 1,
+            'amount_usd' => 10,
+            'amount_usd_items' => 0,
+            'accountcurrency_quoted' => 30,
+            'accountcurrency_rewarded' => 30,
+            'purchase_description' => '30 bananas for a subscription',
+            'created_at' => Carbon::now(),
+            'result' => 'vendor_refused',
+            'subscription_id' => '00000000-0000-0000-0000-000000000006'
+        ]);
     }
 }
