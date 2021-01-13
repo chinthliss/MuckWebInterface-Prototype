@@ -144,17 +144,7 @@ class PaymentTransactionManager
         $result = [];
         foreach ($rows as $row) {
             $transaction = $this->buildTransactionFromRow($row);
-            $result[$transaction->id] = [
-                'id' => $transaction->id,
-                'type' => $transaction->type(),
-                'usd' => $transaction->totalPriceUsd(),
-                'subscriptionId' => $transaction->subscriptionId,
-                'accountCurrency' => $transaction->totalAccountCurrencyRewarded(),
-                'items' => count($transaction->items),
-                'timeStamp' => $transaction->completedAt ?? $transaction->createdAt,
-                'result' => $transaction->result,
-                'url' => route('accountcurrency.transaction', ["id" => $transaction->id])
-            ];
+            $result[$transaction->id] = $transaction;
         }
         return $result;
     }

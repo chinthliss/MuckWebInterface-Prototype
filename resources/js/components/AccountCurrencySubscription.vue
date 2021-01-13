@@ -53,8 +53,9 @@
                 <table class="table table-hover table-striped table-responsive-lg">
                     <thead>
                     <tr>
-                        <th scope="col">id</th>
-                        <th scope="col">Date/Time</th>
+                        <th scope="col">ID</th>
+                        <th scope="col">Created</th>
+                        <th scope="col">Completed</th>
                         <th scope="col">Account Currency</th>
                         <th scope="col">Result</th>
                     </tr>
@@ -63,6 +64,7 @@
                     <tr v-for="transaction in transactions">
                         <td><a :href="transaction.url">{{ transaction.id }}</a></td>
                         <td>{{ outputCarbonString(transaction.created_at) }}</td>
+                        <td>{{ outputCarbonString(transaction.completed_at) }}</td>
                         <td>{{ transaction.total_account_currency_rewarded }}</td>
                         <td>{{ transaction.result }}</td>
                     </tr>
@@ -96,6 +98,7 @@
         },
         methods: {
             outputCarbonString: function(carbonString) {
+                if (!carbonString) return '--';
                 return new Date(carbonString).toLocaleString();
             }
         }

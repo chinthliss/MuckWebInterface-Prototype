@@ -17,7 +17,7 @@
                 </tr>
                 </thead>
                 <tr v-for="subscription in subscriptions">
-                    <td class="small text-truncate" data-toggle="tooltip" data-placement="right" :title="subscription.id">
+                    <td class="small text-truncate align-middle" data-toggle="tooltip" data-placement="right" :title="subscription.id">
                         <a :href="subscription.url">{{ subscription.id }}</a>
                     </td>
                     <td>{{ subscription.type }}</td>

@@ -235,8 +235,12 @@ class AccountCurrencyController extends Controller
         if (!$accountId) $accountId = $user->getAid();
         else if ($accountId !== $user->getAid() && !$user->hasRole('admin')) return abort(403);
 
+        $transactions = [];
+        foreach ($transactionManager->getTransactionsFor($accountId) as $transaction) {
+            array_push($transactions, $transaction->toArray());
+        }
         return view('account-currency-transactions')->with([
-            'transactions' => $transactionManager->getTransactionsFor($accountId)
+            'transactions' => $transactions
         ]);
     }
 
