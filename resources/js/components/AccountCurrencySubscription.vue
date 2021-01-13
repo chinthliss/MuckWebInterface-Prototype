@@ -30,22 +30,22 @@
 
                 <div class="row">
                     <dt class="col-sm-3">Created</dt>
-                    <dd class="col-sm-9">{{ subscription.created_at }}</dd>
+                    <dd class="col-sm-9">{{ outputCarbonString(subscription.created_at) }}</dd>
                 </div>
 
                 <div v-if="subscription.last_charge_at" class="row">
                     <dt class="col-sm-3">Last Charge</dt>
-                    <dd class="col-sm-9">{{ subscription.last_charge_at }}</dd>
+                    <dd class="col-sm-9">{{ outputCarbonString(subscription.last_charge_at) }}</dd>
                 </div>
 
                 <div v-if="subscription.next_charge_at" class="row">
                     <dt class="col-sm-3">Next Charge</dt>
-                    <dd class="col-sm-9">{{ subscription.next_charge_at }} (Estimated)</dd>
+                    <dd class="col-sm-9">{{ outputCarbonString(subscription.next_charge_at) }} (Estimated)</dd>
                 </div>
 
                 <div v-if="subscription.closed_at" class="row">
                     <dt class="col-sm-3">Closed</dt>
-                    <dd class="col-sm-9">{{ subscription.closed_at }}</dd>
+                    <dd class="col-sm-9">{{ outputCarbonString(subscription.closed_at) }}</dd>
                 </div>
 
             </dl>
@@ -71,6 +71,11 @@
                     case 'expired': return "Expired";
                     default: return 'Unknown';
                 }
+            }
+        },
+        methods: {
+            outputCarbonString: function(carbonString) {
+                return new Date(carbonString).toLocaleString();
             }
         }
     }

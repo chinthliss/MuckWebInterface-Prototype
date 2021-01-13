@@ -18,12 +18,12 @@
                 </thead>
                 <tr v-for="subscription in subscriptions">
                     <td class="small text-truncate" data-toggle="tooltip" data-placement="right" :title="subscription.id">
-                        <a :href="subscription.link">{{ subscription.id }}</a>
+                        <a :href="subscription.url">{{ subscription.id }}</a>
                     </td>
                     <td>{{ subscription.type }}</td>
-                    <td>{{ subscription.created_at }}</td>
-                    <td>{{ subscription.next_charge_at }}</td>
-                    <td>{{ subscription.last_charge_at }}</td>
+                    <td>{{ outputCarbonString(subscription.created_at) }}</td>
+                    <td>{{ outputCarbonString(subscription.next_charge_at) }}</td>
+                    <td>{{ outputCarbonString(subscription.last_charge_at) }}</td>
                     <td>${{ subscription.amount_usd }}</td>
                     <td>{{ subscription.recurring_interval }}</td>
                     <td>{{ subscription.status }}</td>
@@ -43,6 +43,12 @@ export default {
     },
     props: [],
     computed: {},
+    methods: {
+        outputCarbonString: function(carbonString) {
+            if (!carbonString) return '--';
+            return new Date(carbonString).toLocaleString();
+        }
+    },
     mounted() {
         axios.get('/accountcurrency/subscriptions/api')
             .then(response => {
@@ -51,7 +57,7 @@ export default {
     },
     updated() {
         $('[data-toggle="tooltip"]').tooltip();
-    }
+    },
 }
 </script>
 

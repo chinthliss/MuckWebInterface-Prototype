@@ -30,17 +30,17 @@
 
                 <div class="row">
                     <dt class="col-sm-3">Created</dt>
-                    <dd class="col-sm-9">{{ transaction.created_at }}</dd>
+                    <dd class="col-sm-9">{{ outputCarbonString(transaction.created_at) }}</dd>
                 </div>
 
                 <div class="row">
                     <dt class="col-sm-3">Paid</dt>
-                    <dd class="col-sm-9">{{ friendlyPaidAt }}</dd>
+                    <dd class="col-sm-9">{{ outputCarbonString(transaction.paid_at) }}</dd>
                 </div>
 
                 <div class="row">
                     <dt class="col-sm-3">Completed/Finalised</dt>
-                    <dd class="col-sm-9">{{ friendlyCompletedAt }}</dd>
+                    <dd class="col-sm-9">{{ outputCarbonString(transaction.completed_at) }}</dd>
                 </div>
 
                 <div class="row">
@@ -85,12 +85,12 @@
                     case 'expired': return "Timed out (Expired)";
                     default: return 'Unknown';
                 }
-            },
-            friendlyPaidAt: function() {
-                return this.transaction.paid_at ?? 'Unpaid';
-            },
-            friendlyCompletedAt: function() {
-                return this.transaction.completed_at ?? 'Incomplete';
+            }
+        },
+        methods: {
+            outputCarbonString: function(carbonString) {
+                if (!carbonString) return '--';
+                return new Date(carbonString).toLocaleString();
             }
         }
     }

@@ -29,7 +29,7 @@
                         <td class="align-middle">{{ subscription.type }}</td>
                         <td class="align-middle">${{ subscription.amount_usd }}</td>
                         <td class="align-middle">{{ subscription.recurring_interval }}</td>
-                        <td class="align-middle">{{ subscription.next_charge }}</td>
+                        <td class="align-middle">{{ outputCarbonString(subscription.next_charge_at) }}</td>
                         <td class="align-middle">{{ friendlySubscriptionStatus(subscription.status) }}</td>
                         <td class="align-middle">
                             <button class="btn btn-secondary" v-if="subscription.status === 'active'"
@@ -231,7 +231,10 @@ export default {
                 this.message_dialog_content = `An error occurred. The error was:<br/> ${error}`;
                 $('#messageModal').modal();
             });
-
+        },
+        outputCarbonString: function(carbonString) {
+            if (!carbonString) return '--';
+            return new Date(carbonString).toLocaleString();
         }
     }
 }

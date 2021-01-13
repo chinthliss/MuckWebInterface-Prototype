@@ -162,17 +162,7 @@ class AccountController extends Controller
                 if (!$subscriptionExpires || $subscription->expires() > $subscriptionExpires)
                     $subscriptionExpires = $subscription->expires();
             }
-            array_push($subscriptions, [
-                'id' => $subscription->id,
-                'type' => $subscription->type(),
-                'amount_usd' => $subscription->amountUsd,
-                'recurring_interval' => $subscription->recurringInterval,
-                'created' => $subscription->createdAt,
-                'closed' => $subscription->closedAt,
-                'next_charge' => $subscription->nextChargeAt,
-                'status' => $subscription->status,
-                'url' => route('accountcurrency.subscription', ["id" => $subscription->id])
-            ]);
+            array_push($subscriptions, $subscription->toArray());
         }
 
         return view('auth.account', [
