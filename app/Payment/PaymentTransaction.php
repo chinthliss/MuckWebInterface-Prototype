@@ -158,12 +158,14 @@ class PaymentTransaction
             "account_currency_rewarded_items" => $this->accountCurrencyRewardedForItems,
             "total_account_currency_rewarded" => $this->totalAccountCurrencyRewarded(),
             "total_usd" => $this->totalPriceUsd(),
+            "items" => count($this->items),
             "open" => $this->open(),
             "created_at" => $this->createdAt,
             "paid_at" => $this->paidAt,
             "completed_at" => $this->completedAt,
             "result" => $this->result,
-            "subscription_id" => $this->subscriptionId
+            "subscription_id" => $this->subscriptionId,
+            "url" => route('accountcurrency.transaction', ['id' => $this->id])
         ];
     }
 

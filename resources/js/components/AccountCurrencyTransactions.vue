@@ -18,7 +18,7 @@
                 <tbody>
                     <tr v-for="transaction in transactions">
                         <td class="small"><a :href="transaction.url">{{ transaction.id }}</a></td>
-                        <td>{{ transaction.timeStamp }}</td>
+                        <td>{{ outputCarbonString(transaction.timeStamp) }}</td>
                         <td>{{ transaction.type }}</td>
                         <td>${{ transaction.usd }}</td>
                         <td>{{ transaction.accountCurrency }}</td>
@@ -35,7 +35,12 @@
 <script>
     export default {
         name: "account-currency-transactions",
-        props: ['transactions', 'transaction-view']
+        props: ['transactions', 'transaction-view'],
+        methods: {
+            outputCarbonString: function(carbonString) {
+                return new Date(carbonString).toLocaleString();
+            }
+        }
     }
 </script>
 

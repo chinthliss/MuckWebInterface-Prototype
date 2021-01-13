@@ -328,7 +328,8 @@ class AccountCurrencyController extends Controller
         return "Subscription Declined";
     }
 
-    public function viewSubscription(PaymentSubscriptionManager $subscriptionManager, string $id)
+    public function viewSubscription(PaymentSubscriptionManager $subscriptionManager,
+                                     PaymentTransactionManager $transactionManager, string $id)
     {
         /** @var User $user */
         $user = auth()->user();
@@ -337,8 +338,14 @@ class AccountCurrencyController extends Controller
         if (!$subscription) return abort(404);
         if ($subscription->accountId != $user->getAid() && !$user->hasRole('admin')) return abort(403);
 
+        $transactions = [];
+        foreach ($transactionManager->getTransactionsFromSubscriptionId($subscription->id) as $transaction) {
+            array_push($transactions, $transaction->toArray());
+        }
+
         return view('account-currency-subscription')->with([
-            'subscription' => $subscription->toArray()
+            'subscription' => $subscription->toArray(),
+            'transactions' => $transactions
         ]);
     }
 

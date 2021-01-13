@@ -7,5 +7,6 @@
 @section('content')
     <account-currency-subscription
         :subscription="{{ json_encode($subscription) }}"
+        :transactions="{{ json_encode($transactions) }}"
     ></account-currency-subscription>
 @endsection

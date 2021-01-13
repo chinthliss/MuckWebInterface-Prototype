@@ -23,6 +23,7 @@
                         <th scope="col">Next (approx)</th>
                         <th scope="col">Status</th>
                         <th scope="col"></th>
+                        <th scope="col"></th>
                     </tr>
                     </thead>
                     <tr v-for="subscription in subscriptions">
@@ -31,6 +32,9 @@
                         <td class="align-middle">{{ subscription.recurring_interval }}</td>
                         <td class="align-middle">{{ outputCarbonString(subscription.next_charge_at) }}</td>
                         <td class="align-middle">{{ friendlySubscriptionStatus(subscription.status) }}</td>
+                        <td class="align-middle"><a :href="subscription.url">
+                            <i class="goal-lock fas fa-search"></i>
+                        </a></td>
                         <td class="align-middle">
                             <button class="btn btn-secondary" v-if="subscription.status === 'active'"
                                     @click="cancelSubscription(subscription.id)">Cancel

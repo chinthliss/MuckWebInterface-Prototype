@@ -47,8 +47,29 @@
                     <dt class="col-sm-3">Closed</dt>
                     <dd class="col-sm-9">{{ outputCarbonString(subscription.closed_at) }}</dd>
                 </div>
-
             </dl>
+            <div v-if="transactions.length > 0">
+                <h5 class="mt-2">Transactions</h5>
+                <table class="table table-hover table-striped table-responsive-lg">
+                    <thead>
+                    <tr>
+                        <th scope="col">id</th>
+                        <th scope="col">Date/Time</th>
+                        <th scope="col">Account Currency</th>
+                        <th scope="col">Result</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="transaction in transactions">
+                        <td><a :href="transaction.url">{{ transaction.id }}</a></td>
+                        <td>{{ outputCarbonString(transaction.created_at) }}</td>
+                        <td>{{ transaction.total_account_currency_rewarded }}</td>
+                        <td>{{ transaction.result }}</td>
+                    </tr>
+                    </tbody>
+                </table>
+
+            </div>
         </div>
     </div>
 </template>
@@ -56,7 +77,7 @@
 <script>
     export default {
         name: "account-currency-subscription",
-        props: ['subscription'],
+        props: ['subscription', 'transactions'],
         computed: {
             typeCapitalized: function() {
                 return this.subscription.type[0].toUpperCase() + this.subscription.type.slice(1);
