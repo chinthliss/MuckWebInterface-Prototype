@@ -369,8 +369,9 @@ class AccountCurrencyController extends Controller
             }
         }
 
-        //Otherwise we mark it as active and leave for the scheduler
+        //Otherwise we mark it as active and attempt to process
         $subscriptionManager->setSubscriptionAsActive($subscription);
+        $subscriptionManager->processSubscription($subscription);
         return redirect()->route('accountcurrency.subscription', [
             'id' => $subscription->id
         ]);
