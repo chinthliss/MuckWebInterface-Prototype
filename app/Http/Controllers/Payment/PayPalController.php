@@ -136,7 +136,15 @@ class PayPalController extends Controller
                 if ($subscription) {
                     $amount = $request->input('resource.amount.total');
                     $vendorTransactionId = $request->input('resource.id');
-                    $subscriptionManager->processSubscriptionPayment($subscription, $amount, 'paypal', $vendorTransactionId);
+                    //Need a transaction to represent the payment that's already occurred
+                    $transactionManager = resolve(PaymentTransactionManager::class);
+                    $transaction = $transactionManager->getTransactionFromExternalId($vendorTransactionId);
+                    if (!$transaction) {
+                        $transaction = $subscriptionManager->createTransactionForSubscription($subscription);
+                        $transactionManager->updateVendorTransactionId($transaction, $vendorTransactionId);
+                        $transactionManager->setPaid($transaction);
+                    }
+                    $subscriptionManager->processPaidSubscriptionTransaction($subscription, $transaction);
                 } else {
                     Log::info("Paypal Webhook - no subscription found to pay against.");
                 }

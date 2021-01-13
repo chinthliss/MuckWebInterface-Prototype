@@ -107,7 +107,6 @@ class FakeCardPaymentManager implements CardPaymentManager
         $transactionManager = $this->transactionManager();
         $transactionManager->updateVendorTransactionId($transaction, 'FAKE');
         $transactionManager->setPaid($transaction);
-        $user->notify(new PaymentTransactionPaid($transaction));
         return;
     }
 

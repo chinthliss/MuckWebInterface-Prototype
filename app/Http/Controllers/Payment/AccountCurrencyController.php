@@ -195,12 +195,10 @@ class AccountCurrencyController extends Controller
         //Otherwise we attempt to charge the card
         if (!$transaction->paid()) {
             if ($transaction->vendor !== 'paypal') {
-                $cardPaymentManager = resolve('App\Payment\CardPaymentManager');
-                $card = $cardPaymentManager->getCardFor($user, $transaction->vendorProfileId);
                 try {
-                    $cardPaymentManager->chargeCardFor($user, $card, $transaction);
+                    $transactionManager->chargeTransaction($transaction);
                 } catch (Exception $e) {
-                    Log::info("Error during card payment: " . $e);
+                    Log::info("Error during account currency card payment: " . $e);
                 }
             }
         }

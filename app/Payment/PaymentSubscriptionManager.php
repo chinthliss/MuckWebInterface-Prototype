@@ -43,7 +43,7 @@ class PaymentSubscriptionManager
             ->groupBy('subscription_id');
 
         return $this->storageTable()
-            ->leftJoinSub($transactionJoin, 'transactions','transactions.subscription_id', '=', 'billing_subscriptions_combined.id');
+            ->leftJoinSub($transactionJoin, 'transactions', 'transactions.subscription_id', '=', 'billing_subscriptions_combined.id');
     }
 
     public function insertSubscriptionIntoStorage(PaymentSubscription $subscription)
@@ -152,7 +152,7 @@ class PaymentSubscriptionManager
         $subscriptions = [];
 
         $rows = $this->storageTableWithTransactionJoin()
-            ->where('status', '=',  'active')
+            ->where('status', '=', 'active')
             ->get();
 
         foreach ($rows as $row) {
@@ -189,74 +189,87 @@ class PaymentSubscriptionManager
 
     function processSubscriptions()
     {
-        $transactionManager = resolve(PaymentTransactionManager::class);
+
         $subscriptions = $this->getSubscriptionsDuePayment();
         foreach ($subscriptions as $subscription) {
-            if ($subscription->vendor == 'paypal') continue; // Done externally.
-
-            Log::info('Processing subscription payment for ' . $subscription->id
-                . ' which has a last payment date of: ' . ($subscription->lastChargeAt ?? 'None'));
-
-            $transactions = $transactionManager->getTransactionsFromSubscriptionId($subscription->id,
-                $subscription->lastChargeAt);
-
-            $lastAttempt = null;
-            foreach ($transactions as $transaction) {
-                if (!$lastAttempt || $transaction->createdAt > $lastAttempt) $lastAttempt = $transaction->createdAt;
-            }
-
-            if ($lastAttempt && $lastAttempt->diffInHours(Carbon::now()) < 6) {
-                Log::warning("Skipped processing of subscription {$subscription->id} due to recent previous attempt.");
-                continue;
-            }
-
-            //Start some sort of payment off
-            $user = User::find($subscription->accountId);
-            $transactionManager->createTransaction($user, $subscription->vendor, $subscription->vendorProfileId,
-                $subscription->amountUsd, [], $subscription->id);
-
-            //This should be somewhere else!
-            if (count($transactions) > 5) {
-                Log::warning("Suspended subscription {$subscription->id} due to too many failures.");
-                $this->suspendSubscription($subscription);
-            }
-
+            $this->processSubscription($subscription);
         }
     }
 
-    // Processes a payment against a subscription.
-    // If a transaction is passed it will use that otherwise one will be created
-    public function processSubscriptionPayment(PaymentSubscription $subscription, float $amountUsd, string $vendor,
-                                               string $vendorTransactionId, PaymentTransaction $transaction = null)
+    /**
+     * Runs either after a subscription is created to attempt a payment or through regular processing
+     * @param PaymentSubscription $subscription
+     */
+    function processSubscription(PaymentSubscription $subscription)
     {
-        Log::debug("Subscription#" . $subscription->id . " - Processing a payment from vendor " . $vendor);
+        if ($subscription->vendor == 'paypal') return; // Done externally.
 
-        if ($amountUsd != $subscription->amountUsd)
-            Log::warning("Attempt to pay the wrong amount (" . $amountUsd
-                . ") against subscription#" . $subscription->id
-                . " which has an amount of " . $subscription->amountUsd);
+        Log::info('Processing subscription payment for ' . $subscription->id
+            . ' which has a last payment date of: ' . ($subscription->lastChargeAt ?? 'None'));
 
-        $user = User::find($subscription->accountId);
         $transactionManager = resolve(PaymentTransactionManager::class);
+        $transactions = $transactionManager->getTransactionsFromSubscriptionId($subscription->id,
+            $subscription->lastChargeAt);
 
-        if (!$transaction) {
-            //Check if it maybe exists first
-            $transaction = $transactionManager->getTransactionFromExternalId($vendorTransactionId);
-            if (!$transaction) {
-                $transaction = $transactionManager->createTransaction($user, $vendor, $subscription->vendorProfileId,
-                    $amountUsd, [], $subscription->id);
-                $transactionManager->updateVendorTransactionId($transaction, $vendorTransactionId);
+        $lastAttempt = null;
+        foreach ($transactions as $transaction) {
+            if (!$lastAttempt || $transaction->createdAt > $lastAttempt) $lastAttempt = $transaction->createdAt;
+        }
+
+        if ($lastAttempt && $lastAttempt->diffInHours(Carbon::now()) < 6) {
+            Log::warning("Skipped processing of subscription {$subscription->id} due to recent previous attempt at {$lastAttempt}.");
+            return;
+        }
+
+        //Start some sort of payment off
+        $user = User::find($subscription->accountId);
+        $transaction = $this->createTransactionForSubscription($subscription);
+
+        try {
+            $transactionManager->chargeTransaction($transaction);
+        } catch (Exception $e) {
+            Log::info("Error during subscription card payment: " . $e);
+        }
+
+        if ($transaction->paid()) {
+            $this->processPaidSubscriptionTransaction($subscription, $transaction);
+        } else {
+            if (count($transactions) > 4) {
+                Log::warning("Suspended subscription {$subscription->id} due to too many failures.");
+                $this->suspendSubscription($subscription);
             }
         }
+    }
+
+    // Processes a payment that has occurred against a subscription.
+    public function processPaidSubscriptionTransaction(PaymentSubscription $subscription, PaymentTransaction $transaction)
+    {
+        Log::debug("Subscription#" . $subscription->id
+            . " - Processing a payment from vendor " . $transaction->vendor
+            . ", using Transaction#" . $transaction->id);
+
+        if ($transaction->accountCurrencyPriceUsd != $subscription->amountUsd)
+            Log::warning("Attempt to pay the wrong amount (" . $transaction->accountCurrencyPriceUsd
+                . ") against subscription#" . $subscription->id
+                . " which has an amount of " . $subscription->amountUsd);
 
         if (!$transaction->open()) throw new Error("Subscription#" . $subscription->id
             . " tried to fulfill the closed transaction: " . $transaction->id);
 
-        Log::debug("Subscription - Using transaction " . $transaction->id);
-        $transactionManager->setPaid($transaction);
-        $user->notify(new PaymentTransactionPaid($transaction));
+        if (!$transaction->paid()) throw new Error("Subscription#" . $subscription->id
+            . " tried to fulfill the paid transaction: " . $transaction->id);
+
+        $transactionManager = resolve(PaymentTransactionManager::class);
         $transactionManager->fulfillTransaction($transaction);
         $transactionManager->closeTransaction($transaction, 'fulfilled');
+    }
+
+    public function createTransactionForSubscription(PaymentSubscription  $subscription)
+    {
+        $transactionManager = resolve(PaymentTransactionManager::class);
+        $user = User::find($subscription->accountId);
+        return $transactionManager->createTransaction($user, $subscription->vendor, $subscription->vendorProfileId,
+            $subscription->amountUsd, [], $subscription->id);
     }
 
     public function updateVendorProfileId(PaymentSubscription $subscription, string $vendorProfileId)

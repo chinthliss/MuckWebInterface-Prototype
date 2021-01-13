@@ -4,6 +4,7 @@
 namespace App\Payment;
 
 use App\Muck\MuckConnection;
+use App\Notifications\PaymentTransactionPaid;
 use App\User;
 use Exception;
 use Illuminate\Database\Query\Builder;
@@ -213,6 +214,8 @@ class PaymentTransactionManager
         $this->storageTable()->where('id', '=', $transaction->id)->update([
             'paid_at' => $transaction->paidAt
         ]);
+        $user = User::find($transaction->accountId);
+        $user->notify(new PaymentTransactionPaid($transaction));
     }
 
     public function updateVendorTransactionId(PaymentTransaction $transaction, string $vendorTransactionId)
@@ -251,6 +254,27 @@ class PaymentTransactionManager
                 $this->closeTransaction($transaction, 'user_declined');
             }
         }
+    }
+
+    public function chargeTransaction(PaymentTransaction $transaction)
+    {
+        switch($transaction->vendor) {
+            case 'authorizenet':
+                $user = User::find($transaction->accountId);
+                $cardPaymentManager = resolve('App\Payment\CardPaymentManager');
+                $card = $cardPaymentManager->getCardFor($user, $transaction->vendorProfileId);
+                try {
+                    $cardPaymentManager->chargeCardFor($user, $card, $transaction);
+                } catch (Exception $e) {
+                    Log::info("Error during chargeTransaction authorizenet payment: " . $e);
+                    throw $e;
+                }
+                break;
+            default:
+                Log::error("Attempt to charge transaction {$transaction->id} with an unknown or non-charging vendor: {$transaction->vendor}");
+                throw new \Error("Transaction isn't chargeable - potentially because it's handled externally.");
+        }
+
     }
 
     /**
