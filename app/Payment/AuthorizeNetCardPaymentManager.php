@@ -295,7 +295,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
         $response = $controller->executeWithApiResponse($this->endPoint);
         if (!$response || $response->getMessages()->getResultCode() != "Ok") {
             $errorMessages = $response->getMessages()->getMessage();
-            throw new Exception("Couldn't create a payment profile. Response : "
+            throw new Exception("Couldn't delete a payment profile. Response : "
                 . $errorMessages[0]->getCode() . "  " . $errorMessages[0]->getText() . "\n");
         }
         $profile->removeCard($card);
