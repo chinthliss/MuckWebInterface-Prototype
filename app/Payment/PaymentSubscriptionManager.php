@@ -4,7 +4,6 @@
 namespace App\Payment;
 
 use App\Muck\MuckConnection;
-use App\Notifications\PaymentTransactionPaid;
 use App\User;
 use Error;
 use \Exception;
@@ -222,7 +221,6 @@ class PaymentSubscriptionManager
         }
 
         //Start some sort of payment off
-        $user = User::find($subscription->accountId);
         $transaction = $this->createTransactionForSubscription($subscription);
 
         try {

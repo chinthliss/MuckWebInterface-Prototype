@@ -55,15 +55,15 @@ class AccountCurrencyController extends Controller
      * @param MuckConnection $muck
      * @return void|int;
      */
-    public function usdToAccountCurrency(Request $request, MuckConnection $muck)
+    public function usdToAccountCurrency(Request $request, MuckConnection $muck): int
     {
         $amountUsd = $request->input('amount', 0);
 
         if (!is_numeric($amountUsd) || $amountUsd - floor($amountUsd) > 0.0)
-            return abort(400, 'Whole numbers only');
+            abort(400, 'Whole numbers only');
 
         if (!$amountUsd || $amountUsd < self::minimumAmountUsd)
-            return abort(400, 'Below minimum amount of $' . self::minimumAmountUsd);
+            abort(400, 'Below minimum amount of $' . self::minimumAmountUsd);
 
         return $muck->usdToAccountCurrency($amountUsd);
     }
@@ -157,11 +157,11 @@ class AccountCurrencyController extends Controller
 
         $transactionId = $request->input('token', null);
 
-        if (!$transactionId || !$user) return abort(403);
+        if (!$transactionId || !$user) abort(403);
 
         $transaction = $transactionManager->getTransaction($transactionId);
 
-        if ($transaction->accountId != $user->getAid() || !$transaction->open()) return abort(403);
+        if ($transaction->accountId != $user->getAid() || !$transaction->open()) abort(403);
 
         $transactionManager->closeTransaction($transaction, 'user_declined');
         return "Transaction Declined";
@@ -174,11 +174,11 @@ class AccountCurrencyController extends Controller
 
         $transactionId = $request->input('token', null);
 
-        if (!$transactionId || !$user) return abort(403);
+        if (!$transactionId || !$user) abort(403);
 
         $transaction = $transactionManager->getTransaction($transactionId);
 
-        if ($transaction->accountId != $user->getAid() || !$transaction->open()) return abort(403);
+        if ($transaction->accountId != $user->getAid() || !$transaction->open()) abort(403);
 
         // If this is a paypal transaction, we create an order with them and redirect user to their approval
         if ($transaction->vendor == 'paypal') {
@@ -188,7 +188,7 @@ class AccountCurrencyController extends Controller
                 return redirect($approvalUrl);
             } catch (Exception $e) {
                 Log::info("Error during starting paypal payment: " . $e);
-                return abort(500);
+                abort(500);
             }
         }
 
@@ -219,8 +219,8 @@ class AccountCurrencyController extends Controller
         $user = auth()->user();
         $transaction = $transactionManager->getTransaction($id);
 
-        if (!$transaction) return abort(404);
-        if ($transaction->accountId != $user->getAid() && !$user->hasRole('admin')) return abort(403);
+        if (!$transaction) abort(404);
+        if ($transaction->accountId != $user->getAid() && !$user->hasRole('admin')) abort(403);
 
         return view('account-currency-transaction')->with([
             'transaction' => $transaction->toArray()
@@ -233,7 +233,7 @@ class AccountCurrencyController extends Controller
         $user = auth()->user();
 
         if (!$accountId) $accountId = $user->getAid();
-        else if ($accountId !== $user->getAid() && !$user->hasRole('admin')) return abort(403);
+        else if ($accountId !== $user->getAid() && !$user->hasRole('admin')) abort(403);
 
         $transactions = [];
         foreach ($transactionManager->getTransactionsFor($accountId) as $transaction) {
@@ -322,11 +322,11 @@ class AccountCurrencyController extends Controller
 
         $subscriptionId = $request->input('token', null);
 
-        if (!$subscriptionId || !$user) return abort(403);
+        if (!$subscriptionId || !$user) abort(403);
 
         $subscription = $subscriptionManager->getSubscription($subscriptionId);
 
-        if ($subscription->accountId != $user->getAid() || !($subscription->status == 'approval_pending')) return abort(403);
+        if ($subscription->accountId != $user->getAid() || !($subscription->status == 'approval_pending')) abort(403);
 
         $subscriptionManager->closeSubscription($subscription, 'user_declined');
         return "Subscription Declined";
@@ -339,8 +339,8 @@ class AccountCurrencyController extends Controller
         $user = auth()->user();
         $subscription = $subscriptionManager->getSubscription($id);
 
-        if (!$subscription) return abort(404);
-        if ($subscription->accountId != $user->getAid() && !$user->hasRole('admin')) return abort(403);
+        if (!$subscription) abort(404);
+        if ($subscription->accountId != $user->getAid() && !$user->hasRole('admin')) abort(403);
 
         $transactions = [];
         foreach ($transactionManager->getTransactionsFromSubscriptionId($subscription->id) as $transaction) {
@@ -360,11 +360,11 @@ class AccountCurrencyController extends Controller
 
         $subscriptionId = $request->input('token', null);
 
-        if (!$subscriptionId || !$user) return abort(403);
+        if (!$subscriptionId || !$user) abort(403);
 
         $subscription = $subscriptionManager->getSubscription($subscriptionId);
 
-        if ($subscription->accountId != $user->getAid() || !$subscription->open()) return abort(403);
+        if ($subscription->accountId != $user->getAid() || !$subscription->open()) abort(403);
 
         // If this is a paypal transaction, we move over to their process
         if ($subscription->vendor == 'paypal') {
@@ -376,7 +376,7 @@ class AccountCurrencyController extends Controller
                 return redirect($approvalUrl);
             } catch (Exception $e) {
                 Log::info("Error during starting paypal subscription: " . $e);
-                return abort(500);
+                abort(500);
             }
         }
 
@@ -395,18 +395,18 @@ class AccountCurrencyController extends Controller
 
         $subscriptionId = $request->input('id', null);
 
-        if (!$subscriptionId || !$user) return abort(403);
+        if (!$subscriptionId || !$user) abort(403);
 
         $subscription = $subscriptionManager->getSubscription($subscriptionId);
 
-        if ($subscription->accountId != $user->getAid()) return abort(403);
+        if ($subscription->accountId != $user->getAid()) abort(403);
 
         $subscriptionManager->closeSubscription($subscription, 'cancelled');
         return "Subscription Cancelled.";
 
     }
 
-    public function adminViewSubscriptions(PaymentSubscriptionManager $subscriptionManager)
+    public function adminViewSubscriptions()
     {
 
         return view('account-currency-subscriptions');

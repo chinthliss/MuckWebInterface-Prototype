@@ -95,7 +95,7 @@ class PayPalController extends Controller
         $verified = $paypalManager->verifyWebhookIsFromPayPal($request);
         if (!$verified) {
             Log::warning('Call from a PayPal Webhook could not be verified: ' . $request);
-            return abort(401, 'Unverified');
+            abort(401, 'Unverified');
         }
         // Setup subscription if provided
         $subscription = null;

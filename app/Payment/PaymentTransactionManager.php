@@ -6,6 +6,7 @@ namespace App\Payment;
 use App\Muck\MuckConnection;
 use App\Notifications\PaymentTransactionPaid;
 use App\User;
+use Error;
 use Exception;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Carbon;
@@ -262,7 +263,7 @@ class PaymentTransactionManager
                 break;
             default:
                 Log::error("Attempt to charge transaction {$transaction->id} with an unknown or non-charging vendor: {$transaction->vendor}");
-                throw new \Error("Transaction isn't chargeable - potentially because it's handled externally.");
+                throw new Error("Transaction isn't chargeable - potentially because it's handled externally.");
         }
 
     }
