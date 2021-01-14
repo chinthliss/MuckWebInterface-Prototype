@@ -199,14 +199,21 @@ class PaymentTransactionManager
         ]);
     }
 
-    public function setPaid(PaymentTransaction $transaction)
+    /**
+     * Sets a transaction as paid. Triggers notification to the user unless told suppress it.
+     * @param PaymentTransaction $transaction
+     * @param false $suppressNotification
+     */
+    public function setPaid(PaymentTransaction $transaction, $suppressNotification=false)
     {
         $transaction->paidAt = Carbon::now();
         $this->storageTable()->where('id', '=', $transaction->id)->update([
             'paid_at' => $transaction->paidAt
         ]);
-        $user = User::find($transaction->accountId);
-        $user->notify(new PaymentTransactionPaid($transaction));
+        if (!$suppressNotification) {
+            $user = User::find($transaction->accountId);
+            $user->notify(new PaymentTransactionPaid($transaction));
+        }
     }
 
     public function updateVendorTransactionId(PaymentTransaction $transaction, string $vendorTransactionId)
