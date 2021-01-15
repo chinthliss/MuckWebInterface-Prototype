@@ -283,10 +283,8 @@ class PaymentTransactionManager
         Log::debug("PaymentTransaction#" . $transaction->id . " - Being fulfilled.");
 
         //Actual fulfilment is done by the MUCK still, due to ingame triggers
-        $muck = resolve('App\Muck\MuckConnection');
-
         if ($transaction->accountCurrencyQuoted) {
-            $transaction->accountCurrencyRewarded = $muck->adjustAccountCurrency(
+            $transaction->accountCurrencyRewarded = $this->muck->adjustAccountCurrency(
                 $transaction->accountId,
                 $transaction->accountCurrencyPriceUsd,
                 $transaction->accountCurrencyQuoted,
@@ -297,7 +295,7 @@ class PaymentTransactionManager
         if ($transaction->items) {
             $transaction->accountCurrencyRewardedForItems = 0;
             foreach ($transaction->items as $item) {
-                $transaction->accountCurrencyRewardedForItems += $muck->rewardItem(
+                $transaction->accountCurrencyRewardedForItems += $this->muck->rewardItem(
                     $transaction->accountId,
                     $item->priceUsd,
                     $item->accountCurrencyValue,
