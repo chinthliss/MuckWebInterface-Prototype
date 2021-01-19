@@ -266,7 +266,7 @@ class PaymentSubscriptionManager
     {
         $transactionManager = resolve(PaymentTransactionManager::class);
         $user = User::find($subscription->accountId);
-        return $transactionManager->createTransaction($user, $subscription->vendor, $subscription->vendorProfileId,
+        return $transactionManager->createTransactionForDirectSupport($user, $subscription->vendor, $subscription->vendorProfileId,
             $subscription->amountUsd, [], $subscription->id);
     }
 

@@ -55,8 +55,9 @@ class PaymentTransactionManager
         $this->storageTable()->insert($row);
     }
 
-    public function createTransaction(User $user, string $vendor, string $vendorProfileId,
-                                      int $usdForAccountCurrency, array $items, string $subscriptionId = null): PaymentTransaction
+    private function createTransaction(User $user, string $vendor, string $vendorProfileId,
+                                       int $usdForAccountCurrency, int $accountCurrency, array $items,
+                                       string $subscriptionId = null): PaymentTransaction
     {
         $purchases = [];
 
@@ -65,12 +66,10 @@ class PaymentTransactionManager
         $transaction->id = Str::uuid();
         $transaction->vendor = $vendor;
         $transaction->vendorProfileId = $vendorProfileId;
-
-        $transaction->accountCurrencyQuoted = $this->muck->usdToAccountCurrency($usdForAccountCurrency);
-        if ($transaction->accountCurrencyQuoted) {
-            $transaction->accountCurrencyPriceUsd = $usdForAccountCurrency;
+        $transaction->accountCurrencyQuoted = $accountCurrency;
+        $transaction->accountCurrencyPriceUsd = $usdForAccountCurrency;
+        if ($accountCurrency)
             array_push($purchases, $transaction->accountCurrencyQuoted . ' Mako');
-        }
 
         if ($items) {
             $itemCatalogue = resolve('App\Payment\PaymentTransactionItemCatalogue')->itemsCatalogue();
@@ -101,6 +100,43 @@ class PaymentTransactionManager
         $this->insertTransactionIntoStorage($transaction);
 
         return $transaction;
+    }
+
+    /**
+     * Creates a transaction for directly supporting the muck, where muck chooses accountCurrency gained.
+     * @param User $user
+     * @param string $vendor
+     * @param string $vendorProfileId
+     * @param int $usdForAccountCurrency
+     * @param array $items
+     * @param string|null $subscriptionId
+     * @return PaymentTransaction
+     */
+    public function createTransactionForDirectSupport(User $user, string $vendor, string $vendorProfileId,
+                                                      int $usdForAccountCurrency, array $items, string $subscriptionId = null): PaymentTransaction
+    {
+        $accountCurrency = $this->muck->usdToAccountCurrency($usdForAccountCurrency);
+        return $this->createTransaction($user, $vendor, $vendorProfileId,
+            $usdForAccountCurrency, $accountCurrency, $items, $subscriptionId);
+    }
+
+    /**
+     * Creates a transaction where the accountCurrency amount can be specified.
+     * @param User $user
+     * @param string $vendor
+     * @param string $vendorProfileId
+     * @param int $usdForAccountCurrency
+     * @param int $accountCurrency
+     * @param array $items
+     * @param string|null $subscriptionId
+     * @return PaymentTransaction
+     */
+    public function createTransactionForOtherReason(User $user, string $vendor, string $vendorProfileId,
+                                                    int $usdForAccountCurrency, int $accountCurrency,
+                                                    array $items, string $subscriptionId = null): PaymentTransaction
+    {
+        return $this->createTransaction($user, $vendor, $vendorProfileId,
+            $usdForAccountCurrency, $accountCurrency, $items, $subscriptionId);
     }
 
     private function buildTransactionFromRow($row): ?PaymentTransaction

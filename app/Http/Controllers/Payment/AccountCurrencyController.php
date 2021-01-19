@@ -108,7 +108,7 @@ class AccountCurrencyController extends Controller
 
         if ($baseDetails['recurringInterval']) return response("A transaction can't have an interval.");
 
-        return $transactionManager->createTransaction(
+        return $transactionManager->createTransactionForDirectSupport(
             $user, "paypal", "paypal_unattributed",
             $baseDetails['accountCurrencyUsd'],
             $baseDetails['items']
@@ -143,7 +143,7 @@ class AccountCurrencyController extends Controller
 
         if ($baseDetails['recurringInterval']) return response("A transaction can't have an interval.");
 
-        return $transactionManager->createTransaction(
+        return $transactionManager->createTransactionForDirectSupport(
             $user, 'authorizenet', $card->id,
             $baseDetails['accountCurrencyUsd'],
             $baseDetails['items']
