@@ -56,7 +56,7 @@ class PaymentTransactionManager
     }
 
     private function createTransaction(User $user, string $vendor, string $vendorProfileId,
-                                       int $usdForAccountCurrency, int $accountCurrency, array $items,
+                                       float $usdForAccountCurrency, int $accountCurrency, array $items,
                                        string $subscriptionId = null): PaymentTransaction
     {
         $purchases = [];
@@ -107,13 +107,13 @@ class PaymentTransactionManager
      * @param User $user
      * @param string $vendor
      * @param string $vendorProfileId
-     * @param int $usdForAccountCurrency
+     * @param float $usdForAccountCurrency
      * @param array $items
      * @param string|null $subscriptionId
      * @return PaymentTransaction
      */
     public function createTransactionForDirectSupport(User $user, string $vendor, string $vendorProfileId,
-                                                      int $usdForAccountCurrency, array $items, string $subscriptionId = null): PaymentTransaction
+                                                      float $usdForAccountCurrency, array $items, string $subscriptionId = null): PaymentTransaction
     {
         $accountCurrency = $this->muck->usdToAccountCurrency($usdForAccountCurrency);
         return $this->createTransaction($user, $vendor, $vendorProfileId,
@@ -125,14 +125,14 @@ class PaymentTransactionManager
      * @param User $user
      * @param string $vendor
      * @param string $vendorProfileId
-     * @param int $usdForAccountCurrency
+     * @param float $usdForAccountCurrency
      * @param int $accountCurrency
      * @param array $items
      * @param string|null $subscriptionId
      * @return PaymentTransaction
      */
     public function createTransactionForOtherReason(User $user, string $vendor, string $vendorProfileId,
-                                                    int $usdForAccountCurrency, int $accountCurrency,
+                                                    float $usdForAccountCurrency, int $accountCurrency,
                                                     array $items, string $subscriptionId = null): PaymentTransaction
     {
         return $this->createTransaction($user, $vendor, $vendorProfileId,
@@ -202,14 +202,17 @@ class PaymentTransactionManager
      * @param string|null $vendor
      * @param string|null $vendorProfileId
      * @param string|null $vendorTransactionId
+     * @param string|null $subscriptionId
      * @return PaymentTransaction[]
      */
-    public function findTransactions(string $vendor = null, string $vendorProfileId = null, string $vendorTransactionId = null): array
+    public function findTransactions(string $vendor = null, string $vendorProfileId = null,
+                                     string $vendorTransactionId = null, $subscriptionId = null): array
     {
         $criteria = [];
         if ($vendor) array_push($criteria, ['vendor', '=', $vendor]);
         if ($vendorProfileId) array_push($criteria, ['vendor_profile_id', '=', $vendorProfileId]);
         if ($vendorTransactionId) array_push($criteria, ['vendor_transaction_id', '=', $vendorTransactionId]);
+        if ($subscriptionId) array_push($criteria, ['subscription_id', '=', $subscriptionId]);
 
         if (!count($criteria))
             throw new Error("Need to specify at least one search parameter.");

@@ -232,11 +232,9 @@ class PatreonManager
     public function getPreviouslyClaimedCents(PatreonUser $patreonUser, int $campaignId): int
     {
         $transactionManager = resolve(PaymentTransactionManager::class);
-        $transactions = $transactionManager->findTransactions('patreon', $patreonUser->patronId);
+        $transactions = $transactionManager->findTransactions('patreon', $patreonUser->patronId,null, $campaignId);
         $totalCents = 0;
         foreach($transactions as $transaction) {
-            [$transactionCampaign, $transactionId] = explode(':', $transaction->vendorTransactionId);
-            if ($transactionCampaign != $campaignId) continue;
             if (!$transaction->paid()) continue;
             $totalCents += (int)($transaction->accountCurrencyPriceUsd * 100);
         }

@@ -79,9 +79,19 @@ class User implements Authenticatable, MustVerifyEmail
      * @param $id
      * @return User|null
      */
-    public static function find($id)
+    public static function find($id) : ?User
     {
         return self::getProvider()->retrieveById($id);
+    }
+
+    /**
+     * Utility function to lookup user by email
+     * @param $email
+     * @return User|null
+     */
+    public static function findByEmail($email) : ?User
+    {
+        return self::getProvider()->retrieveByCredentials(['email' => $email]);
     }
 
     /**
