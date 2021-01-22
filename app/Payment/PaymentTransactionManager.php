@@ -199,6 +199,33 @@ class PaymentTransactionManager
     }
 
     /**
+     * @param string|null $vendor
+     * @param string|null $vendorProfileId
+     * @param string|null $vendorTransactionId
+     * @return PaymentTransaction[]
+     */
+    public function findTransactions(string $vendor = null, string $vendorProfileId = null, string $vendorTransactionId = null): array
+    {
+        $criteria = [];
+        if ($vendor) array_push($criteria, ['vendor', '=', $vendor]);
+        if ($vendorProfileId) array_push($criteria, ['vendor_profile_id', '=', $vendorProfileId]);
+        if ($vendorTransactionId) array_push($criteria, ['vendor_transaction_id', '=', $vendorTransactionId]);
+
+        if (!count($criteria))
+            throw new Error("Need to specify at least one search parameter.");
+
+        $results = [];
+        $rows = $this->storageTable()->where($criteria)->get();
+        foreach ($rows as $row) {
+            $transaction = $this->buildTransactionFromRow($row);
+            array_push($results, $transaction);
+        }
+        return $results;
+
+
+    }
+
+    /**
      * @param $subscriptionId
      * @param Carbon|null $after Cut off date
      * @return PaymentTransaction[]

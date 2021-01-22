@@ -36,12 +36,40 @@ class PatreonSeeder extends Seeder
             'pledge_relationship_start' => Carbon::now()
         ]);
 
-        DB::table('patreon_claims')->insert(
-            [
-                'campaign_id' => 1,
-                'patron_id' => 1,
-                'claimed_cents' => 50
-            ]
-        );
+        //Legacy claims
+        DB::table('patreon_claims')->insert([
+            'campaign_id' => 1,
+            'patron_id' => 1,
+            'claimed_cents' => 50
+        ]);
+
+        //Existing claims
+        DB::table('billing_transactions')->insert([
+            'id' => 'PatreonSeederTransaction1',
+            'account_id' => 1,
+            'vendor' => 'patreon',
+            'vendor_profile_id' => '1',
+            'vendor_transaction_id' => '1:1',
+            'amount_usd' => 1.00,
+            'amount_usd_items' => 0.00,
+            'accountcurrency_quoted' => 2,
+            'accountcurrency_rewarded' => 2,
+            'purchase_description'=>'test',
+            'paid_at' => Carbon::now()
+        ]);
+
+        DB::table('billing_transactions')->insert([
+            'id' => 'PatreonSeederTransaction2',
+            'account_id' => 1,
+            'vendor' => 'patreon',
+            'vendor_profile_id' => '1',
+            'vendor_transaction_id' => '1:2',
+            'amount_usd' => 0.50,
+            'amount_usd_items' => 0.00,
+            'accountcurrency_quoted' => 1,
+            'accountcurrency_rewarded' => 1,
+            'purchase_description'=>'test',
+            'paid_at' => Carbon::now()
+        ]);
     }
 }
