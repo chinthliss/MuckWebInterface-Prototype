@@ -40,7 +40,7 @@ class PatreonSeeder extends Seeder
         DB::table('patreon_claims')->insert([
             'campaign_id' => 1,
             'patron_id' => 1,
-            'claimed_cents' => 50
+            'claimed_cents' => 250
         ]);
 
         //Existing claims

@@ -44,6 +44,17 @@ class PatreonTest extends TestCase
         $previousAmountCents = $patreonManager->getPreviouslyClaimedCents($patron, 1);
         $this->assertTrue($previousAmountCents == 150,
             "Previous claims didn't total correctly. Should have been 150, was {$previousAmountCents}.");
+    }
 
+    public function testLegacyClaimsTotalCorrectly()
+    {
+        $this->seed();
+        $this->seed(PatreonSeeder::class);
+        $this->artisan('patreon:convertlegacy')
+            ->assertExitCode(0);
+        $patreonManager = resolve(PatreonManager::class);
+        $patron = $patreonManager->getPatron(1);
+        $previousAmountCents = $patreonManager->getPreviouslyClaimedCents($patron, 1);
+        $this->assertEquals($previousAmountCents,250);
     }
 }
