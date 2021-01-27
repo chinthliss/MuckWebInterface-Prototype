@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Payment\PatreonManager;
+use Illuminate\Support\Facades\Notification;
 use PatreonSeeder;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -44,6 +45,16 @@ class PatreonTest extends TestCase
         $previousAmountCents = $patreonManager->getPreviouslyClaimedCents($patron, 1);
         $this->assertTrue($previousAmountCents == 150,
             "Previous claims didn't total correctly. Should have been 150, was {$previousAmountCents}.");
+    }
+
+    public function testLegacyClaimsDoNotSendNotification()
+    {
+        Notification::fake();
+        $this->seed();
+        $this->seed(PatreonSeeder::class);
+        $this->artisan('patreon:convertlegacy')
+            ->assertExitCode(0);
+        Notification::assertNothingSent();
     }
 
     public function testLegacyClaimsTotalCorrectly()
