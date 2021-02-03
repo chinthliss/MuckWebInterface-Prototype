@@ -20,7 +20,12 @@ class PatreonMember
     /**
      * @var integer
      */
-    public $currentlyEntitledAmountCents;
+    public $currentlyEntitledAmountCents = 0;
+
+    /**
+     * @var integer
+     */
+    public $rewardedCents = 0;
 
     /**
      * @var bool
@@ -93,6 +98,8 @@ class PatreonMember
         $member->lastChargeStatus = $row->last_charge_status;
         $member->lastChargeDate = $row->last_charge_date;
         $member->lifetimeSupportCents = $row->lifetime_support_cents;
+        if (property_exists($row, 'rewarded_usd') && $row->rewarded_usd)
+            $member->rewardedCents = $row->rewarded_usd * 100;
         $member->patronStatus = $row->patron_status;
         $member->pledgeRelationshipStart = $row->pledge_relationship_start;
         $member->updatedAt = $row->updated_at;

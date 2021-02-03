@@ -42,7 +42,7 @@ class PatreonTest extends TestCase
         $this->seed(PatreonSeeder::class);
         $patreonManager = resolve(PatreonManager::class);
         $patron = $patreonManager->getPatron(1);
-        $previousAmountCents = $patreonManager->getPreviouslyClaimedCents($patron, 1);
+        $previousAmountCents = $patron->memberships[1]->rewardedCents;
         $this->assertTrue($previousAmountCents == 150,
             "Previous claims didn't total correctly. Should have been 150, was {$previousAmountCents}.");
     }
@@ -61,11 +61,16 @@ class PatreonTest extends TestCase
     {
         $this->seed();
         $this->seed(PatreonSeeder::class);
-        $this->artisan('patreon:convertlegacy')
-            ->assertExitCode(0);
+
         $patreonManager = resolve(PatreonManager::class);
         $patron = $patreonManager->getPatron(1);
-        $previousAmountCents = $patreonManager->getPreviouslyClaimedCents($patron, 1);
-        $this->assertEquals($previousAmountCents,250);
+        $this->assertEquals(150, $patron->memberships[1]->rewardedCents);
+
+        $this->artisan('patreon:convertlegacy')
+            ->assertExitCode(0);
+
+        $patreonManager->clearCache();
+        $patron = $patreonManager->getPatron(1);
+        $this->assertEquals(250, $patron->memberships[1]->rewardedCents);
     }
 }

@@ -56,7 +56,7 @@ class ConvertLegacyPatreonClaims extends Command
                     $this->info('  No associated User, skipping');
                     return;
                 }
-                $previousCents = $patreonManager->getPreviouslyClaimedCents($patron, $campaignId);
+                $previousCents = array_key_exists($campaignId, $patron->memberships) ? $patron->memberships[$campaignId]->rewardedCents : 0;
                 $dueCents = $cents - $previousCents;
                 $this->info(  "Identified as User#{$user->getAid()}. Previous claims = {$previousCents}. Due cents = {$dueCents}");
                 if ($dueCents > 0) {
@@ -71,6 +71,7 @@ class ConvertLegacyPatreonClaims extends Command
                     $transactionManager->setPaid($transaction, true);
                     $transaction->accountCurrencyRewarded = $transaction->accountCurrencyQuoted;
                     $transactionManager->closeTransaction($transaction, 'fulfilled');
+                    $patron->memberships[$campaignId]->rewardedCents += $dueCents;
                 }
             }
         }

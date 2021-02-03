@@ -38,7 +38,7 @@ class PaymentSubscriptionManager
     private function storageTableWithTransactionJoin(): Builder
     {
         $transactionJoin = DB::table('billing_transactions')
-            ->select('subscription_id', DB::raw('MAX(paid_at) as last_charge_at'))
+            ->select(['subscription_id', DB::raw('MAX(paid_at) as last_charge_at')])
             ->groupBy('subscription_id');
 
         return $this->storageTable()

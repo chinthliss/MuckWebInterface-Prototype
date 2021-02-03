@@ -4,6 +4,7 @@
 namespace App\Payment;
 
 
+use App\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -64,12 +65,26 @@ class PatreonManager
             $this->patrons[$patron->patronId] = $patron;
         }
 
-        $rows = DB::table('patreon_members')->get();
+        // Join to transactions, where subscriptionId is the campaign and vendorProfileId is the patronId
+        $transactionJoin = DB::table('billing_transactions')
+            ->select(['subscription_id', 'vendor_profile_id', DB::raw('SUM(amount_usd) as rewarded_usd')])
+            ->where('vendor', '=', 'patreon')
+            ->whereNotNull('paid_at')
+            ->groupBy(['subscription_id', 'vendor_profile_id']);
+
+        $rows = DB::table('patreon_members')
+            ->leftJoinSub($transactionJoin, 'transactions', function($join) {
+                $join->on('transactions.subscription_id', '=', 'patreon_members.campaign_id');
+                $join->on('transactions.vendor_profile_id', '=', 'patreon_members.patron_id');
+            })
+            ->get();
+
         foreach ($rows as $row) {
             $patreonUser = $this->patrons[$row->patron_id];
             $member = PatreonMember::fromDatabase($row, $patreonUser);
             $patreonUser->memberships[$member->campaignId] = $member;
         }
+
 
     }
 
@@ -140,6 +155,7 @@ class PatreonManager
     {
         $this->loadFromDatabaseIfRequired();
 
+        Log::info('Updating Patreon details from Patreon.');
         $apiClient = new API($this->creatorAccessToken);
 
         foreach ($this->campaigns as $campaignId) {
@@ -174,7 +190,6 @@ class PatreonManager
                     }
                 }
 
-
                 if (isset($response["links"]["next"])) {
                     $url = str_replace($apiClient->api_endpoint, '', $response["links"]["next"]);
                 } else {
@@ -182,12 +197,23 @@ class PatreonManager
                 }
             }
         }
+
         // Look for updated entries
         foreach ($this->patrons as $patron) {
             if ($patron->updated) {
                 Log::debug("Patreon updating/creating " . $patron->patronId);
                 $this->savePatron($patron);
             }
+        }
+    }
+
+    public function processRewards()
+    {
+        $this->loadFromDatabaseIfRequired();
+        foreach($this->patrons as $patron) {
+            $user = User::findByEmail($patron->email);
+            if (!$user) continue;
+
         }
     }
 
@@ -229,16 +255,12 @@ class PatreonManager
         }
     }
 
-    public function getPreviouslyClaimedCents(PatreonUser $patreonUser, int $campaignId): int
+    /**
+     * Utility function to wipe the cache first and force a reload
+     */
+    public function clearCache()
     {
-        $transactionManager = resolve(PaymentTransactionManager::class);
-        $transactions = $transactionManager->findTransactions('patreon', $patreonUser->patronId,null, $campaignId);
-        $totalCents = 0;
-        foreach($transactions as $transaction) {
-            if (!$transaction->paid()) continue;
-            $totalCents += (int)($transaction->accountCurrencyPriceUsd * 100);
-        }
-        return $totalCents;
+        $this->patrons = null;
     }
 
     /**
