@@ -30,10 +30,13 @@ class Kernel extends ConsoleKernel
         //Update Patreon Records
         $schedule->command('patreon:update')->twiceDaily();
 
+        //Process Patreon Rewards
+        $schedule->command('patreon:processrewards')->twiceDaily();
+
+
         //Since these should only be done in the environment handling rewarding things
-        if (config('process_payment_subscriptions')) {
+        if (config('process_automated_payments')) {
             $schedule->command('payment:processsubscriptions')->hourly();
-            $schedule->command('patreon:processrewards')->twiceDaily();
         }
     }
 

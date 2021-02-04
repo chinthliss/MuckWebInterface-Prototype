@@ -43,8 +43,12 @@ class PatreonServiceProvider extends ServiceProvider
                 throw new Error('Patreon Campaigns not set in configuration.');
             $campaigns = $config['campaigns'];
 
+            if (!config()->has('app.process_automated_payments'))
+                throw new Error('Process Automated Payments setting not set in configuration.');
+            $processRewards = config('app.process_automated_payments');
+
             return new PatreonManager($clientId, $clientSecret,
-                $creatorAccessToken, $creatorRefreshToken, $campaigns);
+                $creatorAccessToken, $creatorRefreshToken, $campaigns, $processRewards);
         });
     }
 

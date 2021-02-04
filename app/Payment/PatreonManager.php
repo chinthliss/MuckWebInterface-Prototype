@@ -38,20 +38,26 @@ class PatreonManager
     private $creationRefreshToken;
 
     /**
+     * @var bool
+     */
+    private $processRewards = false;
+
+    /**
      * Loaded on demand
      * Indexed in the form [patronId:PatreonPatron]
      * @var PatreonUser[]|null
      */
     private $patrons = null;
 
-    public function __construct(string $clientId, string $clientSecret,
-                                string $creatorAccessToken, string $creatorRefreshToken, string $campaigns)
+    public function __construct(string $clientId, string $clientSecret, string $creatorAccessToken,
+                                string $creatorRefreshToken, string $campaigns, bool $processRewards)
     {
         $this->clientId = $clientId;
         $this->clientSecret = $clientSecret;
         $this->creatorAccessToken = $creatorAccessToken;
         $this->creationRefreshToken = $creatorRefreshToken;
         $this->campaigns = explode(',', $campaigns);
+        $this->processRewards = $processRewards;
     }
 
     private function loadFromDatabaseIfRequired()
@@ -211,7 +217,9 @@ class PatreonManager
     {
         $this->loadFromDatabaseIfRequired();
         $transactionManager = resolve(PaymentTransactionManager::class);
+        $phrase = $this->processRewards ? 'is being' : 'would have been';
         Log::debug("Patreon - processRewards started");
+        if (!$this->processRewards) Log::info("Patreon - Reward processing is disabled, so only checking for eligibility.");
 
         foreach($this->patrons as $patron) {
             $user = $patron->email ? User::findByEmail($patron->email) : null;
@@ -220,22 +228,22 @@ class PatreonManager
             foreach($patron->memberships as $membership) {
                 $rewardCents = $membership->lifetimeSupportCents - $membership->rewardedCents;
                 if ($rewardCents > 0) {
-                    Log::info("Patreon - Reward worth {$rewardCents} cents for Patron#{$patron->patronId}, campaign#{$membership->campaignId} is being given to user#{$user->getAid()}.");
-
-                    $transaction = $transactionManager->createTransactionForOtherReason(
-                        $user,
-                        'patreon',
-                        $patron->patronId,
-                        round($rewardCents / 100.0, 2),
-                        round($rewardCents / 100.0, 2) * 2, [],
-                        $membership->campaignId
-                    );
-                    $transactionManager->setPaid($transaction, true);
-                    $transaction->accountCurrencyRewarded = $transaction->accountCurrencyQuoted;
-                    $transactionManager->fulfillTransaction($transaction);
-                    $transactionManager->closeTransaction($transaction, 'fulfilled');
-                    $membership->rewardedCents += $rewardCents;
-
+                    Log::info("Patreon - Reward of {$rewardCents} cents for Patron#{$patron->patronId}, campaign#{$membership->campaignId} {$phrase} given to user#{$user->getAid()}.");
+                    if ($this->processRewards) {
+                        $transaction = $transactionManager->createTransactionForOtherReason(
+                            $user,
+                            'patreon',
+                            $patron->patronId,
+                            round($rewardCents / 100.0, 2),
+                            round($rewardCents / 100.0, 2) * 2, [],
+                            $membership->campaignId
+                        );
+                        $transactionManager->setPaid($transaction, true);
+                        $transaction->accountCurrencyRewarded = $transaction->accountCurrencyQuoted;
+                        $transactionManager->fulfillTransaction($transaction);
+                        $transactionManager->closeTransaction($transaction, 'fulfilled');
+                        $membership->rewardedCents += $rewardCents;
+                    }
                 }
             }
         }

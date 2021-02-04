@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Payment\PatreonManager;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Notification;
 use PatreonSeeder;
 use Tests\TestCase;
@@ -89,6 +90,23 @@ class PatreonTest extends TestCase
         $patreonManager->clearCache();
         $patron = $patreonManager->getPatron(1);
         $this->assertEquals($patron->memberships[1]->lifetimeSupportCents, $patron->memberships[1]->rewardedCents);
-
     }
+
+    /**
+     * @depends testRewardsProcessCorrectly
+     */
+    public function testRewardsDoNotProcessWhenDisabled()
+    {
+        $this->seed();
+        $this->seed(PatreonSeeder::class);
+        Config::set('app.process_automated_payments', false);
+
+        $this->artisan('patreon:processrewards')
+            ->assertExitCode(0);
+
+        $patreonManager = resolve(PatreonManager::class);
+        $patron = $patreonManager->getPatron(1);
+        $this->assertNotEquals($patron->memberships[1]->lifetimeSupportCents, $patron->memberships[1]->rewardedCents);
+    }
+
 }

@@ -237,7 +237,7 @@ return [
 
     // Whether to process subscriptions, can be set to false to allow for a staging site
     // Will not stop external vendors, such as PayPal.
-    'process_payment_subscriptions' => env('PROCESS_PAYMENT_SUBSCRIPTIONS', false),
+    'process_automated_payments' => env('PROCESS_AUTOMATED_PAYMENTS', false),
 
     //Payment drivers. Not using a default to avoid accidentally using a fake one
     'card_payment_driver' => env('CARD_PAYMENT_DRIVER'),
