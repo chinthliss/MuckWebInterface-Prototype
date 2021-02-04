@@ -51,7 +51,7 @@ class ConvertLegacyPatreonClaims extends Command
                     continue;
                 }
                 $patron = $patrons[$patronId];
-                $user = User::findByEmail($patron->email);
+                $user = $patron->email ? User::findByEmail($patron->email) : null;
                 if (!$user) {
                     $this->info('  No associated User, skipping');
                     return;

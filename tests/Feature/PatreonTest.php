@@ -73,4 +73,22 @@ class PatreonTest extends TestCase
         $patron = $patreonManager->getPatron(1);
         $this->assertEquals(250, $patron->memberships[1]->rewardedCents);
     }
+
+    public function testRewardsProcessCorrectly()
+    {
+        $this->seed();
+        $this->seed(PatreonSeeder::class);
+
+        $patreonManager = resolve(PatreonManager::class);
+        $patron = $patreonManager->getPatron(1);
+        $this->assertEquals(150, $patron->memberships[1]->rewardedCents);
+
+        $this->artisan('patreon:processrewards')
+            ->assertExitCode(0);
+
+        $patreonManager->clearCache();
+        $patron = $patreonManager->getPatron(1);
+        $this->assertEquals($patron->memberships[1]->lifetimeSupportCents, $patron->memberships[1]->rewardedCents);
+
+    }
 }

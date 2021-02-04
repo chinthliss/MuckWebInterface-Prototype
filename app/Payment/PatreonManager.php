@@ -210,11 +210,37 @@ class PatreonManager
     public function processRewards()
     {
         $this->loadFromDatabaseIfRequired();
+        $transactionManager = resolve(PaymentTransactionManager::class);
+        Log::debug("Patreon - processRewards started");
+
         foreach($this->patrons as $patron) {
-            $user = User::findByEmail($patron->email);
+            $user = $patron->email ? User::findByEmail($patron->email) : null;
             if (!$user) continue;
 
+            foreach($patron->memberships as $membership) {
+                $rewardCents = $membership->lifetimeSupportCents - $membership->rewardedCents;
+                if ($rewardCents > 0) {
+                    Log::info("Patreon - Reward worth {$rewardCents} cents for Patron#{$patron->patronId}, campaign#{$membership->campaignId} is being given to user#{$user->getAid()}.");
+
+                    $transaction = $transactionManager->createTransactionForOtherReason(
+                        $user,
+                        'patreon',
+                        $patron->patronId,
+                        round($rewardCents / 100.0, 2),
+                        round($rewardCents / 100.0, 2) * 2, [],
+                        $membership->campaignId
+                    );
+                    $transactionManager->setPaid($transaction, true);
+                    $transaction->accountCurrencyRewarded = $transaction->accountCurrencyQuoted;
+                    $transactionManager->fulfillTransaction($transaction);
+                    $transactionManager->closeTransaction($transaction, 'fulfilled');
+                    $membership->rewardedCents += $rewardCents;
+
+                }
+            }
         }
+
+        Log::debug("Patreon - processRewards finished");
     }
 
     /**
