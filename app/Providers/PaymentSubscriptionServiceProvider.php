@@ -3,12 +3,12 @@
 namespace App\Providers;
 
 use App\Muck\MuckConnection;
-use App\Payment\PaymentTransactionItemCatalogue;
-use App\Payment\PaymentTransactionManager;
+use App\Payment\PaymentSubscriptionManager;
+use Error;
 use Illuminate\Support\ServiceProvider;
 
 
-class PaymentTransactionServiceProvider extends ServiceProvider
+class PaymentSubscriptionServiceProvider extends ServiceProvider
 {
     protected $defer = true;
 
@@ -19,12 +19,13 @@ class PaymentTransactionServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->singleton(PaymentTransactionManager::class, function($app) {
+        if (!config()->has('app.process_automated_payments'))
+            throw new Error('Process Automated Payments setting not set in configuration.');
+
+        $this->app->singleton(PaymentSubscriptionManager::class, function($app) {
             $muck = $app->make(MuckConnection::class);
-            return new PaymentTransactionManager($muck);
-        });
-        $this->app->singleton(PaymentTransactionItemCatalogue::class, function($app) {
-            return new PaymentTransactionItemCatalogue();
+            $processSubscriptionPayments = config('app.process_automated_payments');
+            return new PaymentSubscriptionManager($muck, $processSubscriptionPayments);
         });
     }
 
@@ -46,8 +47,7 @@ class PaymentTransactionServiceProvider extends ServiceProvider
     public function provides()
     {
         return [
-            PaymentTransactionManager::class,
-            PaymentTransactionItemCatalogue::class
+            PaymentSubscriptionManager::class,
         ];
     }
 }

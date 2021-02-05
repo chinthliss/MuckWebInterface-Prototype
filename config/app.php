@@ -177,6 +177,7 @@ return [
         App\Providers\DatabaseForMuckSessionServiceProvider::class,
         App\Providers\MuckServiceProvider::class,
         App\Providers\PaymentTransactionServiceProvider::class,
+        App\Providers\PaymentSubscriptionServiceProvider::class,
         App\Providers\CardPaymentServiceProvider::class,
         App\Providers\PayPalServiceProvider::class,
         App\Providers\PatreonServiceProvider::class,

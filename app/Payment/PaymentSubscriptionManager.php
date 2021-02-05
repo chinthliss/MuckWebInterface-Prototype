@@ -22,9 +22,15 @@ class PaymentSubscriptionManager
      */
     protected $muck;
 
-    public function __construct(MuckConnection $muck)
+    /**
+     * @var bool
+     */
+    private $processSubscriptionPayments = false;
+
+    public function __construct(MuckConnection $muck, bool $processSubscriptionPayments)
     {
         $this->muck = $muck;
+        $this->processSubscriptionPayments = $processSubscriptionPayments;
     }
 
     /**
@@ -188,11 +194,13 @@ class PaymentSubscriptionManager
 
     function processSubscriptions()
     {
-
+        Log::debug("PaymentSubscription - processSubscriptions started");
         $subscriptions = $this->getSubscriptionsDuePayment();
+        if (!$this->processSubscriptionPayments) Log::info("PaymentSubscription - Processing is disabled, so only checking for eligibility.");
         foreach ($subscriptions as $subscription) {
             $this->processSubscription($subscription);
         }
+        Log::debug("PaymentSubscription - processSubscriptions finished");
     }
 
     /**
@@ -203,8 +211,8 @@ class PaymentSubscriptionManager
     {
         if ($subscription->vendor == 'paypal') return; // Done externally.
 
-        Log::info('Processing subscription payment for ' . $subscription->id
-            . ' which has a last payment date of: ' . ($subscription->lastChargeAt ?? 'None'));
+        Log::info("PaymentSubscription - Payment for {$subscription->id} which has a last payment date of: "
+            . ($subscription->lastChargeAt ?? 'None'));
 
         $transactionManager = resolve(PaymentTransactionManager::class);
         $transactions = $transactionManager->getTransactionsFromSubscriptionId($subscription->id,
@@ -216,7 +224,12 @@ class PaymentSubscriptionManager
         }
 
         if ($lastAttempt && $lastAttempt->diffInHours(Carbon::now()) < 6) {
-            Log::warning("Skipped processing of subscription {$subscription->id} due to recent previous attempt at {$lastAttempt}.");
+            Log::warning("PaymentSubscription - Skipped {$subscription->id} due to recent previous attempt at {$lastAttempt}.");
+            return;
+        }
+
+        if (!$this->processSubscriptionPayments) {
+            Log::info("PaymentSubscription - Skipped {$subscription->id} due to reward processing turned off.");
             return;
         }
 
