@@ -79,6 +79,7 @@ class PatreonTest extends TestCase
     {
         $this->seed();
         $this->seed(PatreonSeeder::class);
+        Config::set('app.process_automated_payments', true);
 
         $patreonManager = resolve(PatreonManager::class);
         $patron = $patreonManager->getPatron(1);
