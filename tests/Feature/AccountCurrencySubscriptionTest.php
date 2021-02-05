@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Payment\PaymentSubscription;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 
 class AccountCurrencySubscriptionTest extends TestCase
@@ -176,6 +177,7 @@ class AccountCurrencySubscriptionTest extends TestCase
     public function testActiveSubscriptionWithARecentlyFailedTransactionDoesNotRun()
     {
         $this->seed();
+        Config::set('app.process_automated_payments', true);
         $this->artisan('payment:processsubscriptions')
             ->assertExitCode(0);
         $subscriptionManager = $this->app->make('App\Payment\PaymentSubscriptionManager');
@@ -183,5 +185,22 @@ class AccountCurrencySubscriptionTest extends TestCase
         $this->assertNull($subscription->lastChargeAt,
             "Subscription's last charge should be null but is: {$subscription->lastChargeAt}");
     }
+
+    /**
+     * @depends testActiveAndDueSubscriptionIsProcessed
+     */
+    public function testActiveAndDueSubscriptionIsNotProcessedIfDisabled()
+    {
+        $this->seed();
+        Config::set('app.process_automated_payments', false);
+        $this->artisan('payment:processsubscriptions')
+            ->assertExitCode(0);
+        $subscriptionManager = $this->app->make('App\Payment\PaymentSubscriptionManager');
+        $subscription = $subscriptionManager->getSubscription($this->validOwedActiveAndDueSubscription);
+        $this->assertTrue($subscription->lastChargeAt
+            && $subscription->lastChargeAt->diffInMinutes(Carbon::now()) > 5,
+            "Subscription's last charge should not be approximately now but is: {$subscription->lastChargeAt}");
+    }
+
 
 }
