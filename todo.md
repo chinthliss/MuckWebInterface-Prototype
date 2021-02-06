@@ -15,19 +15,19 @@
 * ~~Single payment - card~~
 * ~~Single payment - paypal~~
 * ~~Subscription - card~~
-* ~~Subscription - paypal~~ 
+* ~~Subscription - paypal~~
+* ~~Card subscription processing (payment)~~
 * Manage Subscriptions - Admin view all
   * Exists, need further work (filters and/or pagination)
-* Manage Subscriptions - View transactions from subscription
+* ~~Manage Subscriptions - View transactions from subscription~~
 * ~~Flag when card has expired and trying to make a payment~~
 * ~~Notification of payment - Email~~
-* Notification of payment - Account notification
+* ~~Notification of payment - Account notification~~
 
 ### Patreon integration
 * ~~Automatically update from Patreon~~ 
-* Link to Patreon account
-* Save claims in new format
-* Automatic claiming
+* ~~Save claims in new format~~
+* ~~Automatic claiming~~
 
 ### Character Based starting pages
 * Change Active Character
