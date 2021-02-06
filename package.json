@@ -14,7 +14,7 @@
         "ide-helper": "php artisan ide-helper:generate"
     },
     "devDependencies": {
-        "axios": "^0.19",
+        "axios": "^0.21.0",
         "bootstrap": "^4.5.2",
         "browser-sync": "^2.26.12",
         "browser-sync-webpack-plugin": "^2.2.2",
