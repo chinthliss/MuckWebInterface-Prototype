@@ -6,106 +6,119 @@
 |--------------------------------------------------------------------------
 */
 
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Auth\AccountController;
+use App\Http\Controllers\Auth\AccountEmailController;
+use App\Http\Controllers\Auth\AccountPasswordController;
+use App\Http\Controllers\Auth\TermsOfServiceController;
+use App\Http\Controllers\CharacterController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\Payment\AccountCurrencyController;
+use App\Http\Controllers\Payment\CardManagementController;
+use App\Http\Controllers\Payment\PayPalController;
+use App\Http\Controllers\WelcomeController;
+
 //Only available when NOT logged in
 Route::group(['middleware' => ['web', 'guest']], function() {
-    Route::get('/', 'WelcomeController@show')
+    Route::get('/', [WelcomeController::class, 'show'])
         ->name('welcome');
-    Route::get('login', 'Auth\AccountController@showLoginForm')
+    Route::get('login', [AccountController::class, 'showLoginForm'])
         ->name('login');
-    Route::post('account/login', 'Auth\AccountController@loginAccount')
+    Route::post('account/login', [AccountController::class, 'loginAccount'])
         ->name('auth.account.login')->middleware('throttle:8,1');
-    Route::post('account/create', 'Auth\AccountController@createAccount')
+    Route::post('account/create', [AccountController::class, 'createAccount'])
         ->name('auth.account.create');
     //Password forgot / reset
-    Route::get('account/passwordforgotten', 'Auth\AccountPasswordController@showForgotten')
+    Route::get('account/passwordforgotten', [AccountPasswordController::class, 'showForgotten'])
         ->name('auth.account.passwordforgotten');
-    Route::post('account/passwordforgotten', 'Auth\AccountPasswordController@showEmailSent')
+    Route::post('account/passwordforgotten', [AccountPasswordController::class, 'showEmailSent'])
         ->middleware('throttle:3,1');
-    Route::get('account/passwordreset/{id}/{hash}', 'Auth\AccountPasswordController@showReset')
+    Route::get('account/passwordreset/{id}/{hash}', [AccountPasswordController::class, 'showReset'])
         ->name('auth.account.passwordreset')->middleware('signed', 'throttle:8,1');
-    Route::post('account/passwordreset/{id}/{hash}', 'Auth\AccountPasswordController@resetPassword')
+    Route::post('account/passwordreset/{id}/{hash}', [AccountPasswordController::class, 'resetPassword'])
         ->middleware('signed', 'throttle:8,1');
 });
 
 //Requires an account but DOESN'T require verification or Terms of Service acceptance
 Route::group(['middleware' => ['web', 'auth:account']], function() {
-    Route::post('logout', 'Auth\AccountController@logout')->name('logout');
-    Route::get('account/verifyemail', 'Auth\AccountEmailController@show')
+    Route::post('logout', [AccountController::class, 'logout'])->name('logout');
+    Route::get('account/verifyemail', [AccountEmailController::class, 'show'])
         ->name('verification.notice'); // Name is required for Laravel's verification middleware
-    Route::get('account/verifyemail/{id}/{hash}', 'Auth\AccountEmailController@verify')
+    Route::get('account/verifyemail/{id}/{hash}', [AccountEmailController::class, 'verify'])
         ->name('auth.account.verifyemail')->middleware('signed', 'throttle:8,1');
-    Route::get('account/resendverifyemail', 'Auth\AccountEmailController@resend')
+    Route::get('account/resendverifyemail', [AccountEmailController::class, 'resend'])
         ->name('auth.account.resendverifyemail')->middleware('throttle:8,1');
 });
 
 //Requires account, verification and terms of service acceptance
 Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']], function() {
-    Route::get('home', 'HomeController@show')->name('home');
+    Route::get('home', [HomeController::class, 'show'])
+        ->name('home');
 
 
-    Route::get('account', 'Auth\AccountController@show')->name('auth.account');
+    Route::get('account', [AccountController::class, 'show'])->name('auth.account');
     //Password change
-    Route::get('account/changepassword', 'Auth\AccountPasswordController@showChange')
+    Route::get('account/changepassword', [AccountPasswordController::class, 'showChange'])
         ->name('auth.account.passwordchange');
-    Route::post('account/changepassword', 'Auth\AccountPasswordController@changePassword');
+    Route::post('account/changepassword', [AccountPasswordController::class, 'changePassword']);
     //Email change
-    Route::get('account/changeemail', 'Auth\AccountEmailController@showChangeEmail')
+    Route::get('account/changeemail', [AccountEmailController::class, 'showChangeEmail'])
         ->name('auth.account.emailchange');
-    Route::post('account/useexistingemail', 'Auth\AccountEmailController@useExistingEmail');
-    Route::post('account/changeemail', 'Auth\AccountEmailController@changeEmail');
+    Route::post('account/useexistingemail', [AccountEmailController::class, 'useExistingEmail']);
+    Route::post('account/changeemail', [AccountEmailController::class, 'changeEmail']);
     //Preference change
-    Route::post('account/updatePreference', 'Auth\AccountController@updatePreference');
+    Route::post('account/updatePreference', [AccountController::class, 'updatePreference']);
     //Card Management
-    Route::get('account/cardmanagement', 'Payment\CardManagementController@show')
+    Route::get('account/cardmanagement', [CardManagementController::class, 'show'])
         ->name('payment.cardmanagement');
-    Route::post('account/cardmanagement', 'Payment\CardManagementController@addCard')
+    Route::post('account/cardmanagement', [CardManagementController::class, 'addCard'])
         ->name('payment.cardmanagement.add');
-    Route::delete('account/cardmanagement', 'Payment\CardManagementController@deleteCard')
+    Route::delete('account/cardmanagement', [CardManagementController::class, 'deleteCard'])
         ->name('payment.cardmanagement.delete');
-    Route::patch('account/cardmanagement', 'Payment\CardManagementController@updateDefaultCard');
+    Route::patch('account/cardmanagement', [CardManagementController::class, 'updateDefaultCard']);
 
     //Account Currency
-    Route::get('accountcurrency', 'Payment\AccountCurrencyController@show')
+    Route::get('accountcurrency', [AccountCurrencyController::class, 'show'])
         ->name('accountcurrency');
-    Route::post('accountcurrency/fromUsd', 'Payment\AccountCurrencyController@usdToAccountCurrency');
-    Route::post('accountcurrency/newCardTransaction', 'Payment\AccountCurrencyController@newCardTransaction');
-    Route::post('accountcurrency/newPayPalTransaction', 'Payment\AccountCurrencyController@newPayPalTransaction');
-    Route::post('accountcurrency/declineTransaction', 'Payment\AccountCurrencyController@declineTransaction');
-    Route::get('accountcurrency/acceptTransaction', 'Payment\AccountCurrencyController@acceptTransaction');
-    Route::get('accountcurrency/transaction/{id}', 'Payment\AccountCurrencyController@viewTransaction')
+    Route::post('accountcurrency/fromUsd', [AccountCurrencyController::class, 'usdToAccountCurrency']);
+    Route::post('accountcurrency/newCardTransaction', [AccountCurrencyController::class, 'newCardTransaction']);
+    Route::post('accountcurrency/newPayPalTransaction', [AccountCurrencyController::class, 'newPayPalTransaction']);
+    Route::post('accountcurrency/declineTransaction', [AccountCurrencyController::class, 'declineTransaction']);
+    Route::get('accountcurrency/acceptTransaction', [AccountCurrencyController::class, 'acceptTransaction']);
+    Route::get('accountcurrency/transaction/{id}', [AccountCurrencyController::class, 'viewTransaction'])
         ->name('accountcurrency.transaction');
-    Route::get('accountcurrency/history/{accountId?}', 'Payment\AccountCurrencyController@viewTransactions')
+    Route::get('accountcurrency/history/{accountId?}', [AccountCurrencyController::class, 'viewTransactions'])
         ->name('accountcurrency.transactions');
-    Route::get('accountcurrency/paypal_order_return', 'Payment\PayPalController@paypalOrderReturn')
+    Route::get('accountcurrency/paypal_order_return', [PayPalController::class, 'paypalOrderReturn'])
         ->name('accountcurrency.paypal.order.return');
-    Route::get('accountcurrency/paypal_order_cancel', 'Payment\PayPalController@paypalOrderCancel')
+    Route::get('accountcurrency/paypal_order_cancel', [PayPalController::class, 'paypalOrderCancel'])
         ->name('accountcurrency.paypal.order.cancel');
 
-    Route::post('accountcurrency/newCardSubscription', 'Payment\AccountCurrencyController@newCardSubscription');
-    Route::post('accountcurrency/newPayPalSubscription', 'Payment\AccountCurrencyController@newPayPalSubscription');
-    Route::post('accountcurrency/declineSubscription', 'Payment\AccountCurrencyController@declineSubscription');
-    Route::post('accountcurrency/cancelSubscription', 'Payment\AccountCurrencyController@cancelSubscription');
-    Route::get('accountcurrency/acceptSubscription', 'Payment\AccountCurrencyController@acceptSubscription');
-    Route::get('accountcurrency/subscription/{id}', 'Payment\AccountCurrencyController@viewSubscription')
+    Route::post('accountcurrency/newCardSubscription', [AccountCurrencyController::class, 'newCardSubscription']);
+    Route::post('accountcurrency/newPayPalSubscription', [AccountCurrencyController::class, 'newPayPalSubscription']);
+    Route::post('accountcurrency/declineSubscription', [AccountCurrencyController::class, 'declineSubscription']);
+    Route::post('accountcurrency/cancelSubscription', [AccountCurrencyController::class, 'cancelSubscription']);
+    Route::get('accountcurrency/acceptSubscription', [AccountCurrencyController::class, 'acceptSubscription']);
+    Route::get('accountcurrency/subscription/{id}', [AccountCurrencyController::class, 'viewSubscription'])
         ->name('accountcurrency.subscription');
-    Route::get('accountcurrency/paypal_subscription_return', 'Payment\PayPalController@paypalSubscriptionReturn')
+    Route::get('accountcurrency/paypal_subscription_return', [PayPalController::class, 'paypalSubscriptionReturn'])
         ->name('accountcurrency.paypal.subscription.return');
-    Route::get('accountcurrency/paypal_subscription_cancel', 'Payment\PayPalController@paypalSubscriptionCancel')
+    Route::get('accountcurrency/paypal_subscription_cancel', [PayPalController::class, 'paypalSubscriptionCancel'])
         ->name('accountcurrency.paypal.subscription.cancel');
 
 });
 
 //Website admin routes
 Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'role:admin']], function() {
-    Route::get('admin', 'AdminController@show')
+    Route::get('admin', [AdminController::class, 'show'])
         ->name('admin.home');
-    Route::get('admin/logs', 'AdminController@showLogViewer')
+    Route::get('admin/logs', [AdminController::class, 'showLogViewer'])
         ->name('admin.logs');
-    Route::get('admin/logs/{date}', 'AdminController@getLogForDate');
+    Route::get('admin/logs/{date}', [AdminController::class, 'getLogForDate']);
 
-    Route::get('accountcurrency/subscriptions', 'Payment\AccountCurrencyController@adminViewSubscriptions')
+    Route::get('accountcurrency/subscriptions', [AccountCurrencyController::class, 'adminViewSubscriptions'])
         ->name('admin.subscriptions');
-    Route::get('accountcurrency/subscriptions/api', 'Payment\AccountCurrencyController@adminGetSubscriptions');
+    Route::get('accountcurrency/subscriptions/api', [AccountCurrencyController::class, 'adminGetSubscriptions']);
 
 
 });
@@ -114,13 +127,13 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
 //Always available
 
 //Character Profiles
-Route::get('p/{characterName}', 'CharacterController@show')->name('character');
+Route::get('p/{characterName}', [CharacterController::class, 'show'])->name('character');
 
 //Terms of service - always viewable, does challenge if logged in.
-Route::get('account/termsofservice', 'Auth\TermsOfServiceController@view')
+Route::get('account/termsofservice', [TermsOfServiceController::class, 'view'])
     ->name('auth.account.termsofservice');
-Route::post('account/termsofservice', 'Auth\TermsOfServiceController@accept')
+Route::post('account/termsofservice', [TermsOfServiceController::class, 'accept'])
     ->name('auth.account.termsofservice');
 
 //Paypal Notifications - this route is exempt from CSRF token. Controlled in the middleware.
-Route::post('accountcurrency/paypal_webhook', 'Payment\PayPalController@paypalWebhook');
+Route::post('accountcurrency/paypal_webhook', [PayPalController::class, 'paypalWebhook']);
