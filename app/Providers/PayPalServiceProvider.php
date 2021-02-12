@@ -48,7 +48,11 @@ class PayPalServiceProvider extends ServiceProvider
             else
                 $environment = new SandboxEnvironment($clientId, $secret);
 
-            return new PayPalManager($account, $environment, $subscriptionId);
+            if (!config()->has('app.process_automated_payments'))
+                throw new Error('Process Automated Payments setting not set in configuration.');
+            $processSubscriptions = config('app.process_automated_payments');
+
+            return new PayPalManager($account, $environment, $subscriptionId, $processSubscriptions);
         });
     }
 

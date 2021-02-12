@@ -15,6 +15,7 @@ use App\Payment\PayPalRequests\SubscriptionsListPlans;
 use App\Payment\PayPalRequests\WebhooksCreate;
 use App\Payment\PayPalRequests\WebhooksList;
 use App\Payment\PayPalRequests\WebhooksVerifySignature;
+use Error;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
@@ -46,12 +47,18 @@ class PayPalManager
 
     private $subscriptionPlans;
 
+    /**
+     * @var bool
+     */
+    private $processSubscriptions;
+
     public function __construct(string $account, PayPalEnvironment $environment,
-                                string $subscriptionId)
+                                string $subscriptionId, $processSubscriptions)
     {
         $this->account = $account;
         $this->client = new PayPalHttpClient($environment);
         $this->subscriptionId = $subscriptionId;
+        $this->processSubscriptions = $processSubscriptions;
     }
 
     private function transactionManager(): PaymentTransactionManager
@@ -440,4 +447,99 @@ class PayPalManager
     }
     #endregion Configuration functionality
 
+    #region Webhook functionality
+    public function processWebhookRequest(Request $request)
+    {
+        $eventType = $request->input('event_type');
+        // Setup subscription if provided
+        $subscription = null;
+        $subscriptionManager = null;
+        $subscriptionId = null;
+
+        // On subscription events:
+        if ($request->input('resource_type') == 'subscription' && $request->input("resource.id")) {
+            $subscriptionId = $request->input("resource.id");
+        }
+        // On payment events that relate to a subscription:
+        if ($request->input('resource.billing_agreement_id')) {
+            $subscriptionId = $request->input("resource.billing_agreement_id");
+        }
+        if ($subscriptionId) {
+            $subscriptionManager = $this->subscriptionManager();
+            $subscription = $subscriptionManager->getSubscriptionFromVendorId($subscriptionId);
+            //This might occur with old subscriptions?
+            if (!$subscription) throw new Error('Paypal webhook ' . $eventType . ' refers to unknown subscription: ' . $subscriptionId);
+        }
+        if ($subscription) Log::debug('Using subscription ' . json_encode($subscription));
+
+        switch ($eventType) {
+
+            case 'PAYMENT.CAPTURE.PENDING':
+            case 'PAYMENT.SALE.PENDING':
+                //Shouldn't see these unless something didn't auto-capture
+                //Happened in local dev due to the sandbox business account not being set to use USD
+                Log::warning('Paypal Webhook ' . $eventType . ' notified us of a payment that went to pending:'
+                    . ': ' . json_encode($request->all()));
+                break;
+
+
+            case 'PAYMENT.CAPTURE.COMPLETED':
+                //Nothing to do, as we already know from the response
+                break;
+
+            case 'PAYMENT.SALE.COMPLETED':
+                if ($subscription) {
+                    if ($this->processSubscriptions) {
+                        $amount = $request->input('resource.amount.total');
+                        $vendorTransactionId = $request->input('resource.id');
+                        //Need a transaction to represent the payment that's already occurred
+                        $transactionManager = resolve(PaymentTransactionManager::class);
+                        $transaction = $transactionManager->getTransactionFromExternalId($vendorTransactionId);
+                        if (!$transaction) {
+                            $transaction = $subscriptionManager->createTransactionForSubscription($subscription);
+                            $transactionManager->updateVendorTransactionId($transaction, $vendorTransactionId);
+                            $transactionManager->setPaid($transaction);
+                        }
+                        $subscriptionManager->processPaidSubscriptionTransaction($subscription, $transaction);
+                    } else {
+                        Log::info("Paypal Webhook - Notified of subscription payment against Subscription#{$subscription->id} but skipping due to processing being disabled.");
+                    }
+                } else {
+                    Log::info("Paypal Webhook - Notified of subscription payment but found no subscription to pay against.");
+                }
+                break;
+
+            case 'BILLING.SUBSCRIPTION.CREATED':
+                //We made it, so don't need to react
+                break;
+
+            case 'BILLING.SUBSCRIPTION.ACTIVATED':
+                //For an initial subscription we should already know but this might be used be continuations
+                //Witnessed this arriving AFTER a payment so not reliable for order
+                $subscriptionManager->setSubscriptionAsActive($subscription);
+                break;
+
+            case 'BILLING.SUBSCRIPTION.CANCELLED':
+                $subscriptionManager->closeSubscription($subscription, 'cancelled');
+                break;
+
+            case 'BILLING.SUBSCRIPTION.EXPIRED':
+                $subscriptionManager->closeSubscription($subscription, 'expired');
+                break;
+
+            case 'BILLING.SUBSCRIPTION.SUSPENDED':
+                $subscriptionManager->suspendSubscription($subscription);
+                break;
+
+            case 'BILLING.SUBSCRIPTION.PAYMENT.FAILED':
+                Log::debug('TODO: PayPal Webhook Implementation - failed payment');
+                break;
+
+            default:
+                Log::debug('No code to run for Paypal webhook: ' . $eventType);
+                break;
+        }
+        return response('OK', 200);
+    }
+    #endregion Webhook functionality
 }
