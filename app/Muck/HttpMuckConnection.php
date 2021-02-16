@@ -159,6 +159,6 @@ class HttpMuckConnection implements MuckConnection
      */
     public function stretchGoals(): array
     {
-        return json_decode($this->requestFromMuck('stretchGoals'));
+        return json_decode($this->requestFromMuck('stretchGoals'), true);
     }
 }
