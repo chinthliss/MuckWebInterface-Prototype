@@ -60,8 +60,8 @@
             </dl>
             <div v-if="transaction.subscription_id">
                 This transaction was made as part of subscription {{ transaction.subscription_id }}.
-                <div v-if="subscriptionLink">
-                    <a :href="subscriptionLink">View subscription</a>
+                <div v-if="transaction.subscription_url">
+                    <a :href="transaction.subscription_url">View subscription</a>
                 </div>
             </div>
         </div>
@@ -71,7 +71,7 @@
 <script>
     export default {
         name: "account-currency-transaction",
-        props: ['transaction', 'subscriptionLink'],
+        props: ['transaction'],
         computed: {
             typeCapitalized: function() {
                 return this.transaction.type[0].toUpperCase() + this.transaction.type.slice(1);

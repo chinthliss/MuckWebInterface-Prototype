@@ -150,7 +150,7 @@ class PaymentTransaction
 
     public function toArray(): array
     {
-        return [
+        $array = [
             "id" => $this->id,
             "type" => $this->type(),
             "purchase_description" => $this->purchaseDescription,
@@ -168,6 +168,9 @@ class PaymentTransaction
             "subscription_id" => $this->subscriptionId,
             "url" => route('accountcurrency.transaction', ['id' => $this->id])
         ];
+        if ($this->subscriptionId && $this->vendor != 'patreon')
+            $array['subscription_url'] = route('accountcurrency.subscription', ["id" => $this->subscriptionId]);
+        return $array;
     }
 
 }
