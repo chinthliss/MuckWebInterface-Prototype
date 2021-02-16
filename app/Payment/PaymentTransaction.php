@@ -130,6 +130,7 @@ class PaymentTransaction
     {
         if ($this->vendor === 'paypal') return 'Paypal';
         if ($this->vendor === 'authorizenet') return 'Card';
+        if ($this->vendor === 'patreon') return 'Patreon';
         return 'Unknown';
 
     }
