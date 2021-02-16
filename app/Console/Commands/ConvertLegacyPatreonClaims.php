@@ -54,7 +54,7 @@ class ConvertLegacyPatreonClaims extends Command
                 $user = $patron->email ? User::findByEmail($patron->email) : null;
                 if (!$user) {
                     $this->info('  No associated User, skipping');
-                    return;
+                    continue;
                 }
                 $previousCents = array_key_exists($campaignId, $patron->memberships) ? $patron->memberships[$campaignId]->rewardedCents : 0;
                 $dueCents = $cents - $previousCents;
