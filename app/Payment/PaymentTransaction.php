@@ -152,6 +152,7 @@ class PaymentTransaction
     {
         $array = [
             "id" => $this->id,
+            "account_id" => $this->accountId,
             "type" => $this->type(),
             "purchase_description" => $this->purchaseDescription,
             "account_currency_quoted" => $this->accountCurrencyQuoted,

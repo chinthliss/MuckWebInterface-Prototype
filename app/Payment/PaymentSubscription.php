@@ -137,6 +137,7 @@ class PaymentSubscription
     {
         return [
             "id" => $this->id,
+            "account_id" => $this->accountId,
             "type" => $this->type(),
             "amount_usd" => $this->amountUsd,
             "recurring_interval" => $this->recurringInterval,

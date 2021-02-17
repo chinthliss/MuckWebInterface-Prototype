@@ -3,6 +3,11 @@
         <h4 class="card-header">View Transaction</h4>
         <div class="card-body">
             <dl>
+                <div class="row" v-if="this.accountId !== transaction.account_id">
+                    <dt class="col-sm-3">Account ID</dt>
+                    <dd class="col-sm-9">{{ transaction.account_id }}</dd>
+                </div>
+
                 <div class="row">
                     <dt class="col-sm-3">Id</dt>
                     <dd class="col-sm-9">{{ transaction.id }}</dd>
@@ -72,6 +77,11 @@
     export default {
         name: "account-currency-transaction",
         props: ['transaction'],
+        data: function() {
+            return {
+                accountId: document.querySelector('meta[name="account-id"]').content
+            }
+        },
         computed: {
             typeCapitalized: function() {
                 return this.transaction.type[0].toUpperCase() + this.transaction.type.slice(1);
