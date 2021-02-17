@@ -7,6 +7,12 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    <!-- Account if logged in -->
+    @auth
+    <meta name="account-id" content="{{ Auth::user()->getAid() }}"
+    @endauth
+
+    <!-- Title -->
     @hasSection('title')
         <title>@yield('title') ({{ config('app.name', 'MuckWebInterface') }})</title>
     @else
