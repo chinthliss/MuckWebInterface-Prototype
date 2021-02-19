@@ -321,6 +321,7 @@ class DatabaseForMuckUserProvider implements UserProvider
         $row = DB::table('account_properties')
             ->where(['aid' => $user->getAid(), 'propname' => $property])
             ->first();
+        if (!$row) return null;
         switch ($row->proptype) {
             case 'INTEGER':
                 return (int)$row->propdata;
