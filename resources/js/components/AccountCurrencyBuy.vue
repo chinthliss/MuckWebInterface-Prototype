@@ -1,5 +1,17 @@
 <template>
     <div class="card">
+        <div v-if="isFirstPurchaseOfMonth">
+            <h3 class="text-center">Monthly Special</h3>
+            <div class="text-center mb-2">You qualify for a free gift if you donate $5 or more! You can only get this gift once per month, and once the month is gone, so is your opportunity, so help support the game and enjoy your gift. It can be any mako item up to a cost of 5 of the One Use or Drug type. Cheaper items give <i>multiples</i> at once!.</div>
+        </div>
+        <div v-if="firstDonation">
+            <h3 class="text-center">First Time Special</h3>
+            <div class="text-center mb-2">How exciting! Welcome aboard and thanks for considering supporting the game. If you purchase at least $10, then you'll get a special goodie bag. Rip it open for valuable prizes that are entirely free and in addition to the currency you purchased.</div>
+        </div>
+        <div v-if="currencyDiscountDateTime > Date.now() && currencyDiscount">
+            <h3 class="text-center">Currency Discount {{currencyDiscount}}% extra mako!</h3>
+            <div class="text-center mb-2">Act quickly, this will only last until {{currencyDiscountTimeDisplay}} or your first purchase, whichever comes first!</div>
+        </div>
         <div class="text-center">You are buying for account {{ account }}.</div>
         <h4 class="card-header">Buy Mako</h4>
         <div class="card-body">
@@ -116,7 +128,8 @@ export default {
     components: {DialogApproveTransaction, DialogMessage},
     props: [
         'defaultCardMaskedNumber', 'defaultCardExpiryDate', 'account', 'suggestedAmounts',
-        'cardManagementPage', 'accountCurrencyImage', 'itemCatalogue'
+        'cardManagementPage', 'accountCurrencyImage', 'itemCatalogue',
+        'firstDonation', 'lastDonationTime', 'currencyDiscountTime', 'currencyDiscount'
     ],
     data: function () {
         return {
@@ -129,7 +142,9 @@ export default {
                 purchase: 'test'
             },
             message_dialog_header: '',
-            message_dialog_content: ''
+            message_dialog_content: '',
+            currencyDiscountDateTime: this.currencyDiscountTime ? new Date(this.currencyDiscountTime * 1000) : null,
+            lastDonationDateTime: this.lastDonationTime ? new Date(this.lastDonationTime * 1000) : null
         }
     },
     methods: {
@@ -210,6 +225,15 @@ export default {
             axios.post('accountcurrency/declineSubscription', {'token': token});
         }
 
+    },
+    computed: {
+        isFirstPurchaseOfMonth: function() {
+            if (!this.lastDonationDateTime) return true;
+            return this.lastDonationDateTime.getMonth() !== new Date().getMonth();
+        },
+        currencyDiscountTimeDisplay: function() {
+            return this.currencyDiscountDateTime.toLocaleString();
+        }
     }
 }
 </script>

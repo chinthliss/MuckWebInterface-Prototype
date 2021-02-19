@@ -42,6 +42,10 @@ class AccountCurrencyController extends Controller
 
         return view('account-currency')->with([
             'account' => $user->getAid(),
+            'lastDonation' => $user->getAccountProperty('Last Donation'),
+            'firstDonation' => $user->getAccountProperty('First Donation') ? false : true,
+            'currencyDiscountTime' => $user->getAccountProperty('Currency Discount Time'),
+            'currencyDiscount' => $user->getAccountProperty('Currency Discount'),
             'defaultCardMaskedNumber' => ($defaultCard ? $defaultCard->maskedCardNumber() : null),
             'defaultCardExpiryDate' => ($defaultCard ? $defaultCard->expiryDate->addMonth() : null),
             'suggestedAmounts' => $parsedSuggestedAmounts,

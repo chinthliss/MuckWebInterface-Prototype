@@ -13,6 +13,10 @@
         account-currency-image="{{ asset('image/accountcurrency.png') }}"
         card-management-page="{{ route('payment.cardmanagement') }}"
         :item-catalogue="{{ json_encode($itemCatalogue) }}"
+        first-donation="{{ $firstDonation }}"
+        last-donation-time="{{ $lastDonation }}"
+        currency-discount-time="{{ $currencyDiscountTime }}"
+        currency-discount="{{ $currencyDiscount }}"
     ></account-currency-buy>
     <game-stretch-goals
         :progress="{{ $stretchGoals['progress'] }}"
