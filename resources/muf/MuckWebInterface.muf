@@ -126,16 +126,6 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     descr swap descrnotify
 ; selfcall handleRequest_usdToAccountCurrencyFor
 
-(Expects 'account' and 'suggestedAmounts', returns several values on multiple lines for account currency page's opening status)
-: handleRequest_bootAccountCurrency[ arr:webcall -- ]
-    webcall @ "account" array_getitem ?dup if acct_any2aid else pop response400 exit then
-    { }dict
-    0 swap "firstOfMonth" array_setitem
-    0 swap "firstDonation" array_setitem
-    0 swap "currencyDiscountTime" array_setitem
-    0 swap "startOfMonthSale" array_setitem
-; selfcall handleRequest_bootAccountCurrency
-
 (Expects {account, usdAmount, accountCurrency, [subscriptionId]} returns amount actually rewarded)
 : handleRequest_adjustAccountCurrency[ arr:webcall -- ]
     webcall @ "account" array_getitem ?dup if acct_any2aid else pop response400 exit then

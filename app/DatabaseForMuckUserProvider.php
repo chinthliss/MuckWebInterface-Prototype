@@ -3,7 +3,7 @@
 namespace App;
 
 use App\Muck\MuckConnection;
-use App\Helpers\MuckInterop;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -11,6 +11,8 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Error;
+use MuckInterop;
 
 /**
  * Class DatabaseForMuckUserProvider
@@ -19,7 +21,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 class DatabaseForMuckUserProvider implements UserProvider
 {
 
-    private $muckConnection = null;
+    private $muckConnection;
 
     public function __construct(MuckConnection $muckConnection)
     {
@@ -30,9 +32,9 @@ class DatabaseForMuckUserProvider implements UserProvider
 
     /**
      * Gets a base query that contains the required columns for creating a User object.
-     * @return \Illuminate\Database\Query\Builder
+     * @return Builder
      */
-    protected function getRetrievalQuery()
+    protected function getRetrievalQuery(): Builder
     {
         return DB::table('accounts')
             ->select('accounts.*', 'account_emails.verified_at')
@@ -41,6 +43,7 @@ class DatabaseForMuckUserProvider implements UserProvider
 
     /**
      * Retrieves properties that effect web views
+     * @param User $user
      */
     public function loadLatePropertiesFor(User $user)
     {
@@ -49,7 +52,7 @@ class DatabaseForMuckUserProvider implements UserProvider
             ->whereIn('propname', ['webNoAvatars', 'webUseFullWidth', 'tos-hash-viewed'])
             ->get();
         foreach ($preferences as $preference) {
-            switch(strtolower($preference->propname)) {
+            switch (strtolower($preference->propname)) {
                 case 'webnoavatars':
                     $user->setPrefersNoAvatars($preference->propdata == 'Y');
                     break;
@@ -127,7 +130,7 @@ class DatabaseForMuckUserProvider implements UserProvider
                     ->first();
                 if (!$accountQuery) return null; //Account referenced by muck but wasn't found in DB!
                 $user = User::fromDatabaseResponse($accountQuery);
-                session(['lastCharacterDbref'=>$character->getDbref()]);
+                session(['lastCharacterDbref' => $character->getDbref()]);
                 $user->setCharacter($character);
                 return $user;
             }
@@ -138,6 +141,10 @@ class DatabaseForMuckUserProvider implements UserProvider
 
     //endregion Retrieval
 
+    /**
+     * @param User $user
+     * @param string $token
+     */
     public function updateRememberToken(Authenticatable $user, $token)
     {
         DB::table('accounts')
@@ -149,14 +156,14 @@ class DatabaseForMuckUserProvider implements UserProvider
     /**
      * Validate a user against the given credentials.
      *
-     * @param Authenticatable $user
+     * @param User $user
      * @param array $credentials
      * @return bool
      */
-    public function validateCredentials(Authenticatable $user, array $credentials)
+    public function validateCredentials($user, array $credentials): bool
     {
         // return Hash::check($credentials['password'], $user->getAuthPassword());
-        Log::debug('UserProvider ValidateCredentials for ' . $user->getAid()  . ' with ' . json_encode($credentials));
+        Log::debug('UserProvider ValidateCredentials for ' . $user->getAid() . ' with ' . json_encode($credentials));
         //Try the database retrieved details first
         if (method_exists($user, 'getPasswordType')
             && $user->getPasswordType() == 'SHA1SALT'
@@ -174,9 +181,8 @@ class DatabaseForMuckUserProvider implements UserProvider
      * @param string $email
      * @param string $password
      * @return User
-     * @throws \Exception
      */
-    public function createAccount(string $email, string $password)
+    public function createAccount(string $email, string $password): User
     {
         // Need to insert into DB first in order to get the id assigned
         DB::table('accounts')->insert([
@@ -224,7 +230,7 @@ class DatabaseForMuckUserProvider implements UserProvider
      * @param string $email
      * @return bool Whether new email is verified
      */
-    public function updateEmail(User $user, string $email)
+    public function updateEmail(User $user, string $email): bool
     {
         //Because historic code may not have made an entry for existing mail, check on such
         if ($existingEmail = $user->getEmailForVerification()) {
@@ -259,7 +265,7 @@ class DatabaseForMuckUserProvider implements UserProvider
         return ($newEmailQuery && $newEmailQuery->verified_at);
     }
 
-    public function isEmailAvailable(string $email)
+    public function isEmailAvailable(string $email): bool
     {
         $aid = DB::table('accounts')->where([
             'email' => $email
@@ -292,7 +298,7 @@ class DatabaseForMuckUserProvider implements UserProvider
      * @param User $user
      * @return Collection
      */
-    public function getEmails(User $user)
+    public function getEmails(User $user): Collection
     {
         return DB::table('account_emails')->select([
             'email', 'created_at', 'verified_at'
@@ -300,6 +306,7 @@ class DatabaseForMuckUserProvider implements UserProvider
             'aid' => $user->getAid()
         ])->get();
     }
+
     // endregion Email
 
     public function getCharacters(User $user): Collection
@@ -307,28 +314,67 @@ class DatabaseForMuckUserProvider implements UserProvider
         return $this->muckConnection->getCharactersOf($user->getAid());
     }
 
+    // region Properties
+
+    public function getAccountProperty(User $user, string $property)
+    {
+        $row = DB::table('account_properties')
+            ->where(['aid' => $user->getAid(), 'propname' => $property])
+            ->first();
+        switch ($row->proptype) {
+            case 'INTEGER':
+                return (int)$row->propdata;
+            case 'FLOAT':
+                return (float)$row->propdata;
+            // Other values are 'STRING' and 'OBJECT'
+            //TODO: Add MuckObject class to handle loading dbrefs
+            default:
+                return $row->propdata;
+        }
+    }
+
+    public function setAccountProperty(User $user, string $propertyName, $propertyValue)
+    {
+        $propertyType = null;
+        switch (gettype($propertyValue)) {
+            case 'integer':
+                $propertyType = 'INTEGER';
+                break;
+            case 'double':
+                $propertyType = 'FLOAT';
+                break;
+            case 'string':
+                $propertyType = 'STRING';
+                break;
+            case 'boolean':
+                $propertyType = 'STRING';
+                $propertyValue = $propertyValue ? 'Y' : 'N';
+                break;
+            //TODO: Add MuckObject class to handle saving dbrefs
+            default:
+                throw new Error('Unknown property type to save: ' . typeof($propertyValue));
+        }
+        DB::table('account_properties')->updateOrInsert(
+            ['aid' => $user->getAid(), 'propname' => $propertyName],
+            ['propdata' => $propertyValue, 'proptype' => $propertyType]
+        );
+
+    }
+
     public function updateTermsOfServiceAgreement(User $user, string $hash)
     {
-        DB::table('account_properties')->updateOrInsert(
-            ['aid' => $user->getAid(), 'propname'=>'tos-hash-viewed' ],
-            ['propdata' => $hash, 'proptype'=>'STRING']
-        );
+        $this->setAccountProperty($user, 'tos-hash-viewed', $hash);
     }
 
     public function updatePrefersNoAvatars(User $user, bool $value)
     {
-        DB::table('account_properties')->updateOrInsert(
-            ['aid' => $user->getAid(), 'propname'=>'webnoavatars' ],
-            ['propdata' => ($value ? 'Y' : 'N'), 'proptype'=>'STRING']
-        );
+        $this->setAccountProperty($user, 'webnoavatars', $value);
     }
 
     public function updatePrefersFullWidth(User $user, bool $value)
     {
-        DB::table('account_properties')->updateOrInsert(
-            ['aid' => $user->getAid(), 'propname'=>'webusefullwidth' ],
-            ['propdata' => ($value ? 'Y' : 'N'), 'proptype'=>'STRING']
-        );
+        $this->setAccountProperty($user, 'webusefullwidth', $value);
     }
 
+    #endregion Properties
 }

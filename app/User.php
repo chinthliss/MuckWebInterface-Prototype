@@ -335,6 +335,13 @@ class User implements Authenticatable, MustVerifyEmail
         $this->getProvider()->updateTermsOfServiceAgreement($this, $hash);
     }
 
+    #region Account Properties
+    public function getAccountProperty(string $property)
+    {
+        return self::getProvider()->getAccountProperty($this, $property);
+    }
+    #endregion Account Properties
+
     #region Roles
     protected $roles = null;
 
