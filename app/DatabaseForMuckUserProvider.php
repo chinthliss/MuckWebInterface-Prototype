@@ -41,39 +41,6 @@ class DatabaseForMuckUserProvider implements UserProvider
             ->leftJoin('account_emails', 'account_emails.email', '=', 'accounts.email');
     }
 
-    /**
-     * Retrieves properties that effect web views
-     * @param User $user
-     */
-    public function loadLatePropertiesFor(User $user)
-    {
-        $preferences = DB::table('account_properties')
-            ->where('aid', $user->getAid())
-            ->whereIn('propname', ['webNoAvatars', 'webUseFullWidth', 'tos-hash-viewed'])
-            ->get();
-        foreach ($preferences as $preference) {
-            switch (strtolower($preference->propname)) {
-                case 'webnoavatars':
-                    $user->setPrefersNoAvatars($preference->propdata == 'Y');
-                    break;
-                case 'webusefullwidth':
-                    $user->setPrefersFullWidth($preference->propdata == 'Y');
-                    break;
-                case 'tos-hash-viewed':
-                    $user->setAgreedToTermsOfService($preference->propdata == TermsOfService::getTermsOfServiceHash());
-                    break;
-            }
-        }
-    }
-
-    public function loadRolesFor(User $user)
-    {
-        $row = DB::table('account_roles')
-            ->where('aid', $user->getAid())
-            ->first();
-        $user->setRoles($row ? explode(',', $row->roles) : []);
-    }
-
     //Used when user is logged in, called with accountId (aid)
     public function retrieveById($identifier)
     {
@@ -140,6 +107,39 @@ class DatabaseForMuckUserProvider implements UserProvider
     }
 
     //endregion Retrieval
+
+    /**
+     * Retrieves properties that effect web views
+     * @param User $user
+     */
+    public function loadLatePropertiesFor(User $user)
+    {
+        $preferences = DB::table('account_properties')
+            ->where('aid', $user->getAid())
+            ->whereIn('propname', ['webNoAvatars', 'webUseFullWidth', 'tos-hash-viewed'])
+            ->get();
+        foreach ($preferences as $preference) {
+            switch (strtolower($preference->propname)) {
+                case 'webnoavatars':
+                    $user->setPrefersNoAvatars($preference->propdata == 'Y');
+                    break;
+                case 'webusefullwidth':
+                    $user->setPrefersFullWidth($preference->propdata == 'Y');
+                    break;
+                case 'tos-hash-viewed':
+                    $user->setAgreedToTermsOfService($preference->propdata == TermsOfService::getTermsOfServiceHash());
+                    break;
+            }
+        }
+    }
+
+    public function loadRolesFor(User $user)
+    {
+        $row = DB::table('account_roles')
+            ->where('aid', $user->getAid())
+            ->first();
+        $user->setRoles($row ? explode(',', $row->roles) : []);
+    }
 
     /**
      * @param User $user
