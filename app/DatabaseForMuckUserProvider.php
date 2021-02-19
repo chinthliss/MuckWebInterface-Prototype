@@ -326,8 +326,9 @@ class DatabaseForMuckUserProvider implements UserProvider
                 return (int)$row->propdata;
             case 'FLOAT':
                 return (float)$row->propdata;
-            // Other values are 'STRING' and 'OBJECT'
-            //TODO: Add MuckObject class to handle loading dbrefs
+            case 'OBJECT':
+                return new MuckDbref($row->propdata);
+            // Other values are 'STRING'
             default:
                 return $row->propdata;
         }
@@ -350,7 +351,12 @@ class DatabaseForMuckUserProvider implements UserProvider
                 $propertyType = 'STRING';
                 $propertyValue = $propertyValue ? 'Y' : 'N';
                 break;
-            //TODO: Add MuckObject class to handle saving dbrefs
+            case 'object':
+                if (is_a($propertyValue, MuckDbref::class)) {
+                    $propertyType = 'Object';
+                    $propertyValue = $propertyValue->toInt();
+                } else throw new Error('Attempt to set account property to unknown value: ' . $propertyValue);
+                break;
             default:
                 throw new Error('Unknown property type to save: ' . typeof($propertyValue));
         }
