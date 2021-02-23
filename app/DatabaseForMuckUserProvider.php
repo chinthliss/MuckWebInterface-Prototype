@@ -106,6 +106,23 @@ class DatabaseForMuckUserProvider implements UserProvider
         return null;
     }
 
+    /**
+     * Function to find an account by any email, not just the primary one.
+     * @param string $email
+     * @return int|null AccountID
+     */
+    public function retrieveByAnyEmail(string $email): ?User
+    {
+        $accountId = DB::table('account_emails')
+            ->where('account_emails.email', '=', $email)
+            ->value('aid');
+
+        if ($accountId)
+            return $this->retrieveById($accountId);
+
+        return null;
+    }
+
     //endregion Retrieval
 
     /**

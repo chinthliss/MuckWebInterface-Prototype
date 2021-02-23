@@ -85,13 +85,18 @@ class User implements Authenticatable, MustVerifyEmail
     }
 
     /**
-     * Utility function to lookup user by email
+     * Utility function to lookup user by email.
+     * If true is passed to $allowAlternative will return any match, otherwise will only return primary emails.
      * @param $email
+     * @param false $allowAlternative
      * @return User|null
      */
-    public static function findByEmail($email) : ?User
+    public static function findByEmail($email, $allowAlternative = false) : ?User
     {
-        return self::getProvider()->retrieveByCredentials(['email' => $email]);
+        if ($allowAlternative)
+            return self::getProvider()->retrieveByAnyEmail($email);
+        else
+            return self::getProvider()->retrieveByCredentials(['email' => $email]);
     }
 
     /**

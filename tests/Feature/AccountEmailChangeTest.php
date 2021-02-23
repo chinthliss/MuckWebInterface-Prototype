@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Notifications\VerifyEmail;
+use App\User;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -86,15 +87,13 @@ class AccountEmailChangeTest extends TestCase
             'password' => 'password',
             'email' => 'testnew@test.com'
         ]);
-        Notification::assertSentTo($user,VerifyEmail::class, function(VerifyEmail $notification, $channels) use ($user) {
+        Notification::assertSentTo($user, VerifyEmail::class, function (VerifyEmail $notification, $channels) use ($user) {
             $mail = $notification->toMail($user)->toArray();
             $response = $this->json('GET', $mail['actionUrl']);
             $response->assertRedirect();
             return true;
         });
     }
-
-
 
     /**
      * @depends testChangeEmailSendsVerification
@@ -109,7 +108,7 @@ class AccountEmailChangeTest extends TestCase
             'password' => 'password',
             'email' => $newEmail
         ]);
-        Notification::assertSentTo($user,VerifyEmail::class, function(VerifyEmail $notification, $channels) use ($user, $newEmail) {
+        Notification::assertSentTo($user, VerifyEmail::class, function (VerifyEmail $notification, $channels) use ($user, $newEmail) {
             $mail = $notification->toMail($user)->toArray();
             $response = $this->json('GET', $mail['actionUrl']);
             $response->assertRedirect();
@@ -122,7 +121,7 @@ class AccountEmailChangeTest extends TestCase
         });
     }
 
-    //region Use Existing Email
+    #region Use Existing Email
     public function testUseExistingEmailWorksWithVerifiedMail()
     {
         $this->seed();
@@ -148,7 +147,7 @@ class AccountEmailChangeTest extends TestCase
         ]);
         $this->assertFalse($user->hasVerifiedEmail());
         $this->assertEquals($user->getEmailForVerification(), $newEmail, "Email wasn't changed.");
-        Notification::assertSentTo($user,VerifyEmail::class, function(VerifyEmail $notification, $channels) use ($user, $newEmail) {
+        Notification::assertSentTo($user, VerifyEmail::class, function (VerifyEmail $notification, $channels) use ($user, $newEmail) {
             $mail = $notification->toMail($user)->toArray();
             $response = $this->json('GET', $mail['actionUrl']);
             $response->assertRedirect();
@@ -169,6 +168,21 @@ class AccountEmailChangeTest extends TestCase
         $this->assertNotEquals($user->getEmailForVerification(), $newEmail, "Email changed to new email.");
         Notification::assertNothingSent();
     }
-    //endregion
+    #endregion Use Existing Email
+
+    public function testFindByAnyEmailReturnsAlternativeEmail()
+    {
+        $this->seed();
+        $user = User::findByEmail('testalt@test.com', true);
+        $this->assertNotNull($user);
+    }
+
+    public function testFindByPrimaryEmailDoesNotReturnAlternativeEmail()
+    {
+        $this->seed();
+        $user = User::findByEmail('testalt@test.com', false);
+        $this->assertNull($user);
+    }
+
 }
 
