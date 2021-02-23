@@ -86,8 +86,8 @@ class DatabaseForMuckUserProvider implements UserProvider
 
         //If it's an email that might be a character name or an api_token we try the muck
         if (
-            array_key_exists('email', $credentials) ||
-            array_key_exists('api_token', $credentials)
+            (array_key_exists('email', $credentials) && !strpos($credentials['email'], '@'))
+            || array_key_exists('api_token', $credentials)
         ) {
             $lookup = $this->muckConnection->retrieveByCredentials($credentials);
             if ($lookup) {
