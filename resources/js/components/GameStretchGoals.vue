@@ -7,8 +7,7 @@
             <div class="goal-container">
                 <div class="goal" v-bind:class="[ amount <= progress ? 'text-primary' : 'text-secondary' ]"
                      v-for="(goal,amount) in goals">
-                    <b-icon-unlock-fill v-if="amount < progress"></b-icon-unlock-fill>
-                    <b-icon-lock-fill v-else></b-icon-lock-fill>
+                    <i class="goal-lock fas" v-bind:class="[ amount < progress ? 'fa-lock-open' : 'fa-lock' ]"></i>
                     <span class="goal-amount">${{ amount }}</span>
                     <span class="goal-description">{{ goal }}</span>
                 </div>

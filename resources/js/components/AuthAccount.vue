@@ -33,7 +33,7 @@
                         <td class="align-middle">{{ outputCarbonString(subscription.next_charge_at) }}</td>
                         <td class="align-middle">{{ friendlySubscriptionStatus(subscription.status) }}</td>
                         <td class="align-middle"><a :href="subscription.url">
-                            <b-icon-search></b-icon-search>
+                            <i class="goal-lock fas fa-search"></i>
                         </a></td>
                         <td class="align-middle">
                             <button class="btn btn-secondary" v-if="subscription.status === 'active'"
