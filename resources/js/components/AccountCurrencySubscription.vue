@@ -3,9 +3,9 @@
         <h4 class="card-header">View Subscription</h4>
         <div class="card-body">
             <dl>
-                <div class="row" v-if="this.accountId !== transaction.account_id">
+                <div class="row" v-if="this.accountId !== subscription.account_id">
                     <dt class="col-sm-3">Account ID</dt>
-                    <dd class="col-sm-9">{{ transaction.account_id }}</dd>
+                    <dd class="col-sm-9">{{ subscription.account_id }}</dd>
                 </div>
 
                 <div class="row">
