@@ -9,6 +9,9 @@ $fa-font-path: "../webfonts";
 @import "~@fortawesome/fontawesome-free/scss/fontawesome.scss";
 @import "~@fortawesome/fontawesome-free/scss/solid.scss";
 
+// Bootstrap-Vue
+@import '~bootstrap-vue/src/index.scss';
+
 // Headers get a brighter color
 h1, h2, h3, h4, h5, h6 {
     color: $headerColor
