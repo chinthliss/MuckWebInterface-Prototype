@@ -17,5 +17,6 @@ mix
     .sass('resources/sass/app.scss', 'public/css')
     //.extract(['vue', 'bootstrap', 'jquery', 'axios', 'lodash', 'popper.js', 'process', 'setimmediate', 'timers-browserify'])
     .extract() // This now extracts all external dependencies
-    .browserSync({proxy:'homestead.test', open:false})
+    .browserSync({proxy:'local-homestead.com', open:false})
+    .sourceMaps(false)
 ;
