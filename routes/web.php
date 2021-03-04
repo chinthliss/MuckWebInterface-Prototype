@@ -15,6 +15,7 @@ use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Payment\AccountCurrencyController;
 use App\Http\Controllers\Payment\CardManagementController;
+use App\Http\Controllers\Payment\PatreonController;
 use App\Http\Controllers\Payment\PayPalController;
 use App\Http\Controllers\WelcomeController;
 
@@ -118,8 +119,15 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
 
     Route::get('accountcurrency/subscriptions', [AccountCurrencyController::class, 'adminViewSubscriptions'])
         ->name('admin.subscriptions');
-    Route::get('accountcurrency/subscriptions/api', [AccountCurrencyController::class, 'adminGetSubscriptions']);
+    //TODO: Replace with api call
+    Route::get('accountcurrency/subscriptions/api', [AccountCurrencyController::class, 'adminGetSubscriptions'])
+        ->name('admin.subscriptions.api');
 
+    Route::get('admin/patreons', [PatreonController::class, 'adminShow'])
+        ->name('admin.patrons');
+    //TODO: Replace with api call
+    Route::get('admin/patreons/api', [PatreonController::class, 'adminGetPatrons'])
+        ->name('admin.patrons.api');
 
 });
 

@@ -94,6 +94,11 @@ class PatreonManager
 
     }
 
+    public function userForPatron(PatreonUser $patreonUser) : ?User
+    {
+        return $patreonUser->email ? User::findByEmail($patreonUser->email) : null;
+    }
+
     private function updateOrCreatePatronFromArray($campaignId, $patronId, $data)
     {
         $patron = $this->getPatron($patronId);
@@ -222,7 +227,7 @@ class PatreonManager
         if (!$this->processRewards) Log::info("Patreon - Reward processing is disabled, so only checking for eligibility.");
 
         foreach($this->patrons as $patron) {
-            $user = $patron->email ? User::findByEmail($patron->email) : null;
+            $user = $this->userForPatron($patron);
             if (!$user) continue;
 
             foreach($patron->memberships as $membership) {
@@ -254,13 +259,18 @@ class PatreonManager
     /**
      * Loads presently known pledges from the database or from memory.
      * Does not update from Patreon.
+     * @return PatreonUser[]
      */
-    public function getPatrons()
+    public function getPatrons(): array
     {
         $this->loadFromDatabaseIfRequired();
         return $this->patrons;
     }
 
+    /**
+     * @param $patronId
+     * @return PatreonUser|null
+     */
     public function getPatron($patronId)
     {
         $this->loadFromDatabaseIfRequired();
