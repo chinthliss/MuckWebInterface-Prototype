@@ -8,16 +8,23 @@
     <div class="card">
         <h4 class="card-header">Patreon Supporter Browser</h4>
         <div class="card-body">
-            <div class="row justify-content-end">
-            <b-form-group label="Has Account?" label-cols="auto" v-slot="{ ariaDescribedby }">
-                <b-form-radio-group v-model="filter.filterOnAccount" name="has-account" buttons
-                                    :aria-describedby="ariaDescribedby">
-                    <b-form-radio value="both">Both</b-form-radio>
-                    <b-form-radio value="yes">Yes</b-form-radio>
-                    <b-form-radio value="no">No</b-form-radio>
-                </b-form-radio-group>
-            </b-form-group>
-        </div>
+            <div class="row">
+                <div class="col-md">
+                    <b-form-group label="Has Account?" label-cols="auto" v-slot="{ ariaDescribedby }">
+                        <b-form-radio-group v-model="filter.filterOnAccount" name="has-account" buttons
+                                            :aria-describedby="ariaDescribedby">
+                            <b-form-radio value="both">Both</b-form-radio>
+                            <b-form-radio value="yes">Yes</b-form-radio>
+                            <b-form-radio value="no">No</b-form-radio>
+                        </b-form-radio-group>
+                    </b-form-group>
+                </div>
+                <div class="col-md">
+                    <b-input-group prepend="Filter">
+                        <b-form-input v-model="filter.filterString"></b-form-input>
+                    </b-input-group>
+                </div>
+            </div>
 
             <b-table dark striped hover small
                      :items="patronData"
@@ -45,7 +52,7 @@ export default {
         return {
             patronData: [],
             loadingPatrons: false,
-            filter: {filterOnAccount: 'both'},
+            filter: {filterOnAccount: 'both', filterString: ''},
             fields: [
                 {
                     key: 'patronId',
@@ -98,8 +105,15 @@ export default {
         },
         filterPatrons(row, filter) {
             let show = true;
-            if (this.filter.filterOnAccount === 'yes' && !row.accountId) show = false;
-            if (this.filter.filterOnAccount === 'no' && row.accountId) show = false;
+            let accountId = row?.accountId;
+            if (filter.filterString !== '') {
+                show = false;
+                if (row.name.toLowerCase().indexOf(filter.filterString.toLowerCase()) !== -1) show = true;
+                if (row.patronId.toString().toLowerCase().indexOf(filter.filterString.toLowerCase()) !== -1) show = true;
+                if (accountId && accountId.toString().toLowerCase().indexOf(filter.filterString.toLowerCase()) !== -1) show = true;
+            }
+            if (this.filter.filterOnAccount === 'yes' && accountId) show = false;
+            if (this.filter.filterOnAccount === 'no' && !accountId) show = false;
             return show;
         }
     },

@@ -96,7 +96,7 @@ class PatreonManager
 
     public function userForPatron(PatreonUser $patreonUser) : ?User
     {
-        return $patreonUser->email ? User::findByEmail($patreonUser->email) : null;
+        return $patreonUser->email ? User::findByEmail($patreonUser->email, true) : null;
     }
 
     private function updateOrCreatePatronFromArray($campaignId, $patronId, $data)
