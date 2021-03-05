@@ -39,6 +39,10 @@
                         <strong>Loading...</strong>
                     </div>
                 </template>
+
+                <template #cell(accountId)="data">
+                    <a :href="data.item.account_url">{{ data.value }}</a>
+                </template>
             </b-table>
         </div>
     </div>

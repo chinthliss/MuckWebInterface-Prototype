@@ -113,6 +113,10 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
 Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'role:admin']], function() {
     Route::get('admin', [AdminController::class, 'show'])
         ->name('admin.home');
+
+    Route::get('admin/account/{accountId?}', [AdminController::class, 'showAccount'])
+        ->name('admin.account');
+
     Route::get('admin/logs', [AdminController::class, 'showLogViewer'])
         ->name('admin.logs');
     Route::get('admin/logs/{date}', [AdminController::class, 'getLogForDate']);

@@ -24,7 +24,10 @@ class PatreonController extends Controller
             //For the purpose of this interface we don't include followers
             if ($patronArray['totalSupportUsd'] == 0) continue;
             $user = $patreonManager->userForPatron($patron);
-            if ($user) $patronArray['accountId'] = $user->getAid();
+            if ($user) {
+                $patronArray['accountId'] = $user->getAid();
+                $patronArray['account_url'] = route('admin.account', ['accountId' => $user->getAid()]);
+            }
             array_push($response, $patronArray);
         }
         return $response;
