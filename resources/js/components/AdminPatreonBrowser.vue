@@ -112,8 +112,8 @@ export default {
                 if (row.patronId.toString().toLowerCase().indexOf(filter.filterString.toLowerCase()) !== -1) show = true;
                 if (accountId && accountId.toString().toLowerCase().indexOf(filter.filterString.toLowerCase()) !== -1) show = true;
             }
-            if (this.filter.filterOnAccount === 'yes' && accountId) show = false;
-            if (this.filter.filterOnAccount === 'no' && !accountId) show = false;
+            if (this.filter.filterOnAccount === 'yes' && !accountId) show = false;
+            if (this.filter.filterOnAccount === 'no' && accountId) show = false;
             return show;
         }
     },
