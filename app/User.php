@@ -79,7 +79,7 @@ class User implements Authenticatable, MustVerifyEmail
      * @param $id
      * @return User|null
      */
-    public static function find($id) : ?User
+    public static function find($id): ?User
     {
         return self::getProvider()->retrieveById($id);
     }
@@ -91,7 +91,7 @@ class User implements Authenticatable, MustVerifyEmail
      * @param false $allowAlternative
      * @return User|null
      */
-    public static function findByEmail($email, $allowAlternative = false) : ?User
+    public static function findByEmail($email, $allowAlternative = false): ?User
     {
         if ($allowAlternative)
             return self::getProvider()->retrieveByAnyEmail($email);
@@ -284,7 +284,28 @@ class User implements Authenticatable, MustVerifyEmail
         return $this->character;
     }
 
-    //region Late Loading Properties
+    #region Admin functionality
+    public function getAccountNotes(): array
+    {
+        return $this->getProvider()->getAccountNotes($this);
+    }
+
+    public function toAdminArray(): array
+    {
+        $characters = [];
+        foreach ($this->characters() as $character) {
+            array_push($characters, $character->toArray());
+        }
+        return [
+            'id' => $this->getAid(),
+            'created' => $this->createdAt,
+            'characters' => $characters,
+            'notes' => $this->getProvider()->getAccountNotes($this)
+        ];
+    }
+    #endregion Admin functionality
+
+    #region Late Loading Properties
     // These are loaded late because they're not required for api calls.
     protected $latePropertiesLoaded = false;
     protected $agreedToTermsOfService = false;
@@ -333,12 +354,12 @@ class User implements Authenticatable, MustVerifyEmail
         $this->prefersFullWidth = $value;
         if ($this->latePropertiesLoaded) $this->getProvider()->updatePrefersFullWidth($this, $value);
     }
-    //endregion Late Loading Properties
 
     public function storeTermsOfServiceAgreement($hash)
     {
         $this->getProvider()->updateTermsOfServiceAgreement($this, $hash);
     }
+    #endregion Late Loading Properties
 
     #region Account Properties
     public function getAccountProperty(string $property)

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Admin\LogManager;
+use App\User;
 
 class AdminController extends Controller
 {
@@ -15,6 +16,15 @@ class AdminController extends Controller
     {
         return view('admin/logviewer')->with([
             'dates' => LogManager::getDates()
+        ]);
+    }
+
+    public function showAccount(int $accountId)
+    {
+        $user = User::find($accountId);
+        if (!$user) abort(404);
+        return view('admin/account')->with([
+            'account' => $user->toAdminArray()
         ]);
     }
 

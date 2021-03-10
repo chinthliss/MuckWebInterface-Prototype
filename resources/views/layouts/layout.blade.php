@@ -40,8 +40,10 @@
     @endauth
 
     @Admin
+    <h4 class="mt-2">Admin</h4>
     <div><a href="{{ route('admin.home') }}">Admin Dashboard</a></div>
     <div><a href="{{ route('admin.logs') }}">Log Viewer</a></div>
+    <div><a href="{{ route('admin.patrons') }}">Patreon Supporter Browser</a></div>
     <div><a href="{{ route('admin.subscriptions') }}">Subscriptions</a></div>
     @endAdmin
 </nav>

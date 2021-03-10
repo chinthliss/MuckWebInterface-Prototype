@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Admin\AccountNote;
 use App\Muck\MuckConnection;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Carbon;
@@ -28,7 +29,7 @@ class DatabaseForMuckUserProvider implements UserProvider
         $this->muckConnection = $muckConnection;
     }
 
-    //region Retrieval
+    #region Retrieval
 
     /**
      * Gets a base query that contains the required columns for creating a User object.
@@ -123,7 +124,7 @@ class DatabaseForMuckUserProvider implements UserProvider
         return null;
     }
 
-    //endregion Retrieval
+    #endregion Retrieval
 
     /**
      * Retrieves properties that effect web views
@@ -240,7 +241,7 @@ class DatabaseForMuckUserProvider implements UserProvider
         ]);
     }
 
-    //region Email
+    #region Email
 
     /**
      * @param User $user
@@ -324,14 +325,14 @@ class DatabaseForMuckUserProvider implements UserProvider
         ])->get();
     }
 
-    // endregion Email
+    #endregion Email
 
     public function getCharacters(User $user): Collection
     {
         return $this->muckConnection->getCharactersOf($user->getAid());
     }
 
-    // region Properties
+    #region Properties
 
     public function getAccountProperty(User $user, string $property)
     {
@@ -401,4 +402,29 @@ class DatabaseForMuckUserProvider implements UserProvider
     }
 
     #endregion Properties
+
+    #region Administrative functionality
+
+    /**
+     * @param User $user
+     * @return AccountNote[]
+     */
+    public function getAccountNotes(User $user): array
+    {
+        $rows = DB::table('account_notes')
+            ->where('aid', '=', $user->getAid())
+            ->where('game', '=', config('muck.muck_name'))
+            ->get();
+        $result = [];
+        foreach ($rows as $row) {
+            $nextNote = new AccountNote();
+            $nextNote->accountId = $row->aid;
+            $nextNote->whenAt = Carbon::createFromTimestampUTC($row->when);
+            $nextNote->body = $row->message;
+            $nextNote->staffMember = $row->staff_member;
+            array_push($result, $nextNote);
+        }
+        return $result;
+    }
+    #endregion Administrative functionality
 }

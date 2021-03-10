@@ -41,7 +41,7 @@
                 </template>
 
                 <template #cell(accountId)="data">
-                    <a :href="data.item.account_url">{{ data.value }}</a>
+                    <a target="_blank" :href="data.item.account_url">{{ data.value }}</a>
                 </template>
             </b-table>
         </div>
