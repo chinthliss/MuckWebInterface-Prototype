@@ -12,7 +12,7 @@
                     <dd class="col-sm-10">{{ account.created }}</dd>
                 </div>
                 <div class="row">
-                    <dt class="col-sm-2">Characters</dt>
+                    <dt class="col-sm-2">Characters ({{ muckName }})</dt>
                     <dd class="col-sm-10">
                         <div v-if="!account.characters.length">None</div>
                         <div v-for="character in account.characters"><character-card :character="character" mode="tag"></character-card></div>
@@ -37,7 +37,7 @@ import CharacterCard from "./CharacterCard";
 export default {
     name: "admin-account",
     components: {CharacterCard},
-    props: ['account'],
+    props: ['account', 'muckName'],
     data: function () {
         return {}
     },

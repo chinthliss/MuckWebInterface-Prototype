@@ -7,5 +7,6 @@
 @section('content')
     <admin-account
         :account="{{ json_encode($account) }}"
+        muck-name="{{ $muckName }}"
     ></admin-account>
 @endsection
