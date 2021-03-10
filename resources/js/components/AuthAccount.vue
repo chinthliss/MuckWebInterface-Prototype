@@ -2,13 +2,15 @@
     <div class="card">
         <h4 class="card-header">Account</h4>
         <div class="card-body">
-            <dl class="row">
-                <dt class="col-sm-2">Created</dt>
-                <dd class="col-sm-10">{{ accountCreated }}</dd>
-            </dl>
-            <dl class="row">
-                <dt class="col-sm-2">Subscription</dt>
-                <dd class="col-sm-10" >{{ overallSubscriptionStatus() }}</dd>
+            <dl>
+                <div class="row">
+                    <dt class="col-sm-2">Created</dt>
+                    <dd class="col-sm-10">{{ accountCreated }}</dd>
+                </div>
+                <div class="row">
+                    <dt class="col-sm-2">Subscription</dt>
+                    <dd class="col-sm-10">{{ overallSubscriptionStatus() }}</dd>
+                </div>
             </dl>
 
             <!-- Subscriptions -->
@@ -59,7 +61,7 @@
                     </thead>
                     <tbody>
                     <tr v-for="(details, email) in emails">
-                        <td  class="align-middle">{{ email }}</td>
+                        <td class="align-middle">{{ email }}</td>
                         <td class="text-center align-middle">
                             <span v-if="email === primaryEmail" class="text-muted">Primary</span>
                             <button v-else class="btn btn-secondary" @click="verifyUseEmail(email)">Make Primary
@@ -182,7 +184,7 @@ export default {
             }
             return 'Unknown'
         },
-        cancelSubscription: function(id) {
+        cancelSubscription: function (id) {
             axios({
                 method: 'post',
                 url: '/accountcurrency/cancelSubscription',
@@ -199,12 +201,12 @@ export default {
             });
 
         },
-        overallSubscriptionStatus: function() {
+        overallSubscriptionStatus: function () {
             if (!this.subscriptionActive) return 'No Subscription';
             if (this.subscriptionRenewing) return 'Active, renews sometime before ' + this.subscriptionExpires;
             return 'Active, expires sometime before ' + this.subscriptionExpires;
         },
-        useFullWidthChanged: function() {
+        useFullWidthChanged: function () {
             axios({
                 method: 'post',
                 url: '/account/updatePreference',
@@ -220,7 +222,7 @@ export default {
                 $('#messageModal').modal();
             });
         },
-        hideAvatarsChanged: function() {
+        hideAvatarsChanged: function () {
             axios({
                 method: 'post',
                 url: '/account/updatePreference',
@@ -236,7 +238,7 @@ export default {
                 $('#messageModal').modal();
             });
         },
-        outputCarbonString: function(carbonString) {
+        outputCarbonString: function (carbonString) {
             if (!carbonString) return '--';
             return new Date(carbonString).toLocaleString();
         }
