@@ -23,7 +23,7 @@
                     <dd class="col-sm-10">
                         <div v-if="!account.notes.length">None</div>
                         <div v-for="note in account.notes">
-                            {{ outputCarbonString(note.whenAt) + ' ' + note.staffMember + ': ' + note.body }}
+                            {{ outputCarbonString(note.whenAt) + ' ' + note.staffMember + '@' + note.game + ': ' + note.body }}
                         </div>
                     </dd>
                 </div>

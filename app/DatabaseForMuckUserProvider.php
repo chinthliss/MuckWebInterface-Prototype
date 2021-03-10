@@ -414,7 +414,6 @@ class DatabaseForMuckUserProvider implements UserProvider
     {
         $rows = DB::table('account_notes')
             ->where('aid', '=', $user->getAid())
-            ->where('game', '=', config('muck.muck_name'))
             ->get();
         $result = [];
         foreach ($rows as $row) {
@@ -423,6 +422,7 @@ class DatabaseForMuckUserProvider implements UserProvider
             $nextNote->whenAt = Carbon::createFromTimestampUTC($row->when);
             $nextNote->body = $row->message;
             $nextNote->staffMember = $row->staff_member;
+            $nextNote->game = $row->game;
             array_push($result, $nextNote);
         }
         return $result;
