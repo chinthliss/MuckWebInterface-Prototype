@@ -5,35 +5,46 @@ namespace App\Muck;
 
 /**
  * Class MuckCharacter
+ * Builds on MuckDbref to add unique character details
  * This is largely an empty stub to pass to the client - at which point the client will query for more info as appropriate
  * @package App\Muck
  */
-class MuckCharacter
+class MuckCharacter extends MuckDbref
 {
+    /**
+     * @var string
+     */
     private $name;
-    private $dbref;
+
+    /**
+     * @var bool
+     */
     private $wizard = false;
+
+    /**
+     * @var int|null
+     */
     private $level;
 
     public function __construct(int $dbref, string $name, int $level = null, array $flags = [])
     {
-        $this->dbref = $dbref;
+        parent::__construct($dbref);
         $this->name = $name;
         $this->level = $level;
         if (in_array('wizard', $flags)) $this->wizard = true;
     }
 
-    public function getDbref()
+    public function getDbref(): int
     {
-        return $this->dbref;
+        return $this->toInt();
     }
 
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
 
-    public function toArray()
+    public function toArray(): array
     {
         return [
             'dbref' => $this->dbref,
@@ -43,7 +54,7 @@ class MuckCharacter
         ];
     }
 
-    public static function fromMuckResponse(string $muckResponse)
+    public static function fromMuckResponse(string $muckResponse): MuckCharacter
     {
         $parts = explode(',', $muckResponse);
         if (count($parts) !== 5)

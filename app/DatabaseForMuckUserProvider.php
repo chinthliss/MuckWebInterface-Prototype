@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Admin\AccountNote;
+use App\Muck\MuckDbref;
 use App\Muck\MuckConnection;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Carbon;

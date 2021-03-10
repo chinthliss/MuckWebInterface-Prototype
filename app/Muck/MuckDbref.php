@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App;
+namespace App\Muck;
 
 /**
  * Utility class to represent a muck dbRef and allow type inference.
@@ -11,7 +11,7 @@ class MuckDbref
     /**
      * @var int
      */
-    private $dbref;
+    protected $dbref;
 
     /**
      * @param int|string $dbref
@@ -23,6 +23,6 @@ class MuckDbref
 
     public function toInt()
     {
-        return $this->toInt();
+        return $this->dbref;
     }
 }
