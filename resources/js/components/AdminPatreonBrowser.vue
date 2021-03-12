@@ -90,18 +90,15 @@ export default {
 
     methods: {
         getPatrons(context) {
-            console.log("Getting patrons from API for campaign");
             this.loadingPatrons = true;
             let promise = axios.get(this.apiUrl, {
                 params: context
             });
             return promise
                 .then(response => {
-                    console.log("Got patrons from API");
-                    console.log(response.data);
                     this.patronData = response.data;
                 }).catch(error => {
-                    console.log("Failed to get patrons from API");
+                    console.log("Failed to get patrons from API: ", error);
                     this.patronData = [];
                 }).finally(() => {
                     this.loadingPatrons = false;
@@ -122,7 +119,7 @@ export default {
         }
     },
 
-    created: function () {
+    mounted: function () {
         this.getPatrons();
     }
 }
