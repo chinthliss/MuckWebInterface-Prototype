@@ -1,4 +1,7 @@
-### Account backbone (Core pages that don't require heavy muck communication)
+## Core website
+ Pages with no or minimal muck communication
+
+### Accounts
 * ~~JavaScript check~~
 * ~~Terms of Service agreement~~
 * ~~Log on as character with username/password~~
@@ -17,8 +20,7 @@
 * ~~Subscription - card~~
 * ~~Subscription - paypal~~
 * ~~Card subscription processing (payment)~~
-* Manage Subscriptions - Admin view all
-  * Exists, need further work (filters and/or pagination)
+* ~~Manage Subscriptions - Admin view all~~
 * ~~Manage Subscriptions - View transactions from subscription~~
 * ~~Flag when card has expired and trying to make a payment~~
 * ~~Notification of payment - Email~~
@@ -28,6 +30,9 @@
 * ~~Automatically update from Patreon~~ 
 * ~~Save claims in new format~~
 * ~~Automatic claiming~~
+* ~~Status browser~~
+
+## Multiplayer pages
 
 ### Character Based starting pages
 * Change Active Character
@@ -42,6 +47,7 @@
 ### Telnet Replacement
 * Write server-based websocket process to allow telnet control
 * Maybe move all websocket functionality into such
+* This goal neds to be reworked due to upcoming muck WS integration
 
 ### Onto individual pages..
 
