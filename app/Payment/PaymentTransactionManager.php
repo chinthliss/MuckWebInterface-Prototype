@@ -354,7 +354,7 @@ class PaymentTransactionManager
                 $transaction->accountId,
                 $transaction->accountCurrencyPriceUsd,
                 $transaction->accountCurrencyQuoted,
-                ''
+                $transaction->subscriptionId ?? ''
             );
         }
 
