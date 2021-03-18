@@ -134,7 +134,7 @@ class FakeMuckConnection implements MuckConnection
     {
         self::fakeMuckCall('fulfillAccountCurrencyPurchase', [
             'accountId' => $accountId,
-            'usdAmount' => $accountCurrency,
+            'usdAmount' => $usdAmount,
             'accountCurrency' => $accountCurrency,
             'subscriptionId' => $subscriptionId
         ]);
@@ -148,7 +148,7 @@ class FakeMuckConnection implements MuckConnection
     {
         self::fakeMuckCall('rewardItem', [
             'accountId' => $accountId,
-            'usdAmount' => $accountCurrency,
+            'usdAmount' => $usdAmount,
             'accountCurrency' => $accountCurrency,
             'itemCode' => $itemCode
         ]);
