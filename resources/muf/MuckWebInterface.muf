@@ -127,7 +127,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 ; selfcall handleRequest_usdToAccountCurrencyFor
 
 (Expects {account, usdAmount, accountCurrency, [subscriptionId]} returns amount actually rewarded)
-: handleRequest_adjustAccountCurrency[ arr:webcall -- ]
+: handleRequest_fulfillAccountCurrencyPurchase[ arr:webcall -- ]
     webcall @ "account" array_getitem ?dup if acct_any2aid else pop response400 exit then
     acct_aid2email (makoadjust wants such for stack order)
     webcall @ "usdAmount" array_getitem parseFloatOrInt
@@ -138,7 +138,34 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     startAcceptedResponse
     accountCurrencyAmount @ intostr 
     descr swap descrnotify
-; selfcall handleRequest_adjustAccountCurrency
+; selfcall handleRequest_fulfillAccountCurrencyPurchase
+
+(Expects {account, accountCurrency, reason} returns whether it sueceeded)
+: handleRequest_spendAccountCurrency[ arr:webcall -- ]
+    webcall @ "account" array_getitem ?dup if acct_any2aid else pop response400 exit then
+    webcall @ "accountCurrency" array_getitem atoi
+    dup 0 < if pop pop response400 exit then
+    webcall @ "reason" array_getitem 
+    makospend var! result
+    startAcceptedResponse
+    result @ intostr
+    descr swap descrnotify
+; selfcall handleRequest_spendAccountCurrency
+
+(Expects {account, accountCurrency, reason} returns whether it sueceeded)
+: handleRequest_rewardAccountCurrency[ arr:webcall -- ]
+    (This function is separate from spendAccountCurrency only to allow a chance to avoid unintentional negative bounds mishaps)
+    webcall @ "account" array_getitem ?dup if acct_any2aid else pop response400 exit then
+    webcall @ "accountCurrency" array_getitem atoi
+    dup 0 < if pop pop response400 exit then
+    -1 * (Rewards are just negative spending.)
+    webcall @ "reason" array_getitem 
+    makospend var! result
+    startAcceptedResponse
+    result @ intostr
+    descr swap descrnotify
+; selfcall handleRequest_rewardAccountCurrency
+
 
 (Expects {account, usdAmount, accountCurrency, itemCode}, returns currency rewarded as part of such)
 : handleRequest_rewardItem[ arr:webcall -- ]
@@ -201,7 +228,10 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         (Request should have a 'mwi_request' value)
         request @ ?dup if
             $ifdef is_dev
-                "[MWI Gateway] Request: " over strcat ", Data: " strcat parsedBody @ encodeJson strcat logStatus
+                "[MWI Gateway] Request: " over strcat ", Data: " strcat parsedBody @ 
+                (Redact certain fields)
+                dup "password" array_getitem if "[Redacted]" swap "password" array_setitem then
+                encodeJson strcat logStatus
             $endif 
             prog "handleRequest_" rot strcat
             over over cancall? if parsedBody @ rot rot call 

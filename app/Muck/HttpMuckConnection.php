@@ -4,8 +4,9 @@
 namespace App\Muck;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Client;
-use Illuminate\Support\Carbon;
 use Error;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
 class HttpMuckConnection implements MuckConnection
@@ -29,7 +30,13 @@ class HttpMuckConnection implements MuckConnection
         $this->uri = $config['uri'];
     }
 
-    protected function requestFromMuck(string $request, array $data = [])
+    /**
+     * @param string $request
+     * @param array $data
+     * @return string
+     * @throws GuzzleException
+     */
+    protected function requestFromMuck(string $request, array $data = []): string
     {
         Log::debug('requestFromMuck calling ' . $request . ' with: ' . json_encode($data));
         $data['mwi_request'] = $request;
@@ -55,7 +62,7 @@ class HttpMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function getCharactersOf(int $aid)
+    public function getCharactersOf(int $aid): ?Collection
     {
         $characters = [];
         $response = $this->requestFromMuck('getCharacters', ['aid'=>$aid]);
@@ -71,7 +78,7 @@ class HttpMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function getCharacters()
+    public function getCharacters(): ?Collection
     {
         $user = auth()->user();
         if ( !$user || !$user->getAid() ) return null;
@@ -83,7 +90,7 @@ class HttpMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function retrieveByCredentials(array $credentials)
+    public function retrieveByCredentials(array $credentials): ?array
     {
         $response = $this->requestFromMuck('retrieveByCredentials', $credentials);
         //Muck returns character string but with an extra aid value at the front
@@ -98,14 +105,13 @@ class HttpMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function validateCredentials(MuckCharacter $character, array $credentials)
+    public function validateCredentials(MuckCharacter $character, array $credentials): bool
     {
         if (!array_key_exists('password', $credentials)) return false;
-        $response = $this->requestFromMuck('validateCredentials', [
+        return $this->requestFromMuck('validateCredentials', [
             'dbref' => $character->getDbref(),
             'password' => $credentials['password']
         ]);
-        return $response;
     }
 
     // endregion Auth Requests
@@ -113,13 +119,13 @@ class HttpMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function usdToAccountCurrency(float $amount): ?int
+    public function usdToAccountCurrency(float $usdAmount): ?int
     {
         $user = auth()->user();
         if ( !$user || !$user->getAid() ) return null;
 
         $response = $this->requestFromMuck('usdToAccountCurrencyFor', [
-            'amount' => $amount,
+            'amount' => $usdAmount,
             'account' => $user->getAid()
         ]);
         return (int)$response;
@@ -128,10 +134,38 @@ class HttpMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function adjustAccountCurrency(int $accountId, float $usdAmount,
+    public function rewardAccountCurrency(int $accountId, int $accountCurrency, string $reason): bool
+    {
+        if ($accountCurrency < 0) throw new Error("Negative value used for rewarding account currency. Use the spend function if this was intentional.");
+        $response = $this->requestFromMuck('rewardAccountCurrency', [
+            'account' => $accountId,
+            'accountCurrency' => $accountCurrency,
+            'reason' => $reason
+        ]);
+        return $response == 1;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function spendAccountCurrency(int $accountId, int $accountCurrency, string $reason): bool
+    {
+        if ($accountCurrency < 0) throw new Error("Negative value used for spending account currency. Use the reward function if this was intentional.");
+        $response = $this->requestFromMuck('spendAccountCurrency', [
+            'account' => $accountId,
+            'accountCurrency' => $accountCurrency,
+            'reason' => $reason
+        ]);
+        return $response == 1;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function fulfillAccountCurrencyPurchase(int $accountId, float $usdAmount,
                                           int $accountCurrency, ?string $subscriptionId): int
     {
-        $response = $this->requestFromMuck('adjustAccountCurrency', [
+        $response = $this->requestFromMuck('fulfillAccountCurrencyPurchase', [
             'account' => $accountId,
             'usdAmount' => $usdAmount,
             'accountCurrency' => $accountCurrency,

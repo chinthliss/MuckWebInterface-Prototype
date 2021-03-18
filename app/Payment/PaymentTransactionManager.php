@@ -350,7 +350,7 @@ class PaymentTransactionManager
 
         //Actual fulfilment is done by the MUCK still, due to ingame triggers
         if ($transaction->accountCurrencyQuoted) {
-            $transaction->accountCurrencyRewarded = $this->muck->adjustAccountCurrency(
+            $transaction->accountCurrencyRewarded = $this->muck->fulfillAccountCurrencyPurchase(
                 $transaction->accountId,
                 $transaction->accountCurrencyPriceUsd,
                 $transaction->accountCurrencyQuoted,

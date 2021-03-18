@@ -13,13 +13,13 @@ interface MuckConnection
      * @param int $aid
      * @return null|Collection in the form [characterDbref:[MuckCharacter]]
      */
-    public function getCharactersOf(int $aid);
+    public function getCharactersOf(int $aid): ?Collection;
 
     /**
      * Get characters of present authenticated user
      * @return null|Collection in the form [characterDbref:[MuckCharacter]]
      */
-    public function getCharacters();
+    public function getCharacters(): ?Collection;
 
     //region Auth
     //These functions mimic the equivalent Laravel database calls
@@ -31,7 +31,7 @@ interface MuckConnection
      * @param array $credentials
      * @return array|null
      */
-    public function retrieveByCredentials(array $credentials);
+    public function retrieveByCredentials(array $credentials): ?array;
 
     /**
      * Given a character and credentials, asks the muck to verify them (via password)
@@ -39,7 +39,7 @@ interface MuckConnection
      * @param array $credentials
      * @return bool
      */
-    public function validateCredentials(MuckCharacter $character, array $credentials);
+    public function validateCredentials(MuckCharacter $character, array $credentials): bool;
 
     //endregion Auth
 
@@ -51,14 +51,32 @@ interface MuckConnection
     public function usdToAccountCurrency(float $usdAmount): ?int;
 
     /**
-     * Asks the muck to handle account currency rewards
+     * Asks the muck to handle account currency purchases. Allows for bonuses / monthly contributions / etc.
      * @param int $accountId
      * @param float $usdAmount
      * @param int $accountCurrency
      * @param ?string $subscriptionId
      * @return int accountCurrencyRewarded
      */
-    public function adjustAccountCurrency(int $accountId, float $usdAmount, int $accountCurrency, ?string $subscriptionId): int;
+    public function fulfillAccountCurrencyPurchase(int $accountId, float $usdAmount, int $accountCurrency, ?string $subscriptionId): int;
+
+    /**
+     * Spends account currency
+     * @param int $accountId
+     * @param int $accountCurrency
+     * @param string $reason
+     * @return bool success?
+     */
+    public function spendAccountCurrency(int $accountId, int $accountCurrency, string $reason): bool;
+
+    /**
+     * Rewards account currency
+     * @param int $accountId
+     * @param int $accountCurrency
+     * @param string $reason
+     * @return bool success?
+     */
+    public function rewardAccountCurrency(int $accountId, int $accountCurrency, string $reason): bool;
 
     /**
      * @param int $accountId
