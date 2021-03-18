@@ -47,13 +47,13 @@
                     <input id="recurring" v-model="recurring" type="checkbox">
                 </div>
             </div>
-            <div class="row mb-2 justify-content-center" v-if="recurring.valueOf()">
+            <div class="row mb-2 justify-content-center" v-if="recurring">
                 <div class="col-12 col-md-6 text-center">
                     <label for="recurringInterval">Recurring Interval</label>
                     <select v-model="recurringInterval" id="recurringInterval" class="custom-select">
                         <option value="7">Every 7 days</option>
                         <option value="14">Every 14 days</option>
-                        <option value="30" selected>Every 30 days</option>
+                        <option value="30">Every 30 days</option>
                         <option value="60">Every 60 days</option>
                         <option value="90">Every 90 days</option>
                         <option value="120">Every 120 days</option>
@@ -64,7 +64,7 @@
                 </div>
             </div>
             <!-- Items -->
-            <div>
+            <div v-if="!recurring">
                 <h4>Add-on Items</h4>
                 <p>Some items marked below reward supporter points. TODO: Add link to help page on supporter once help page exists.</p>
                 <div v-for="item in itemCatalogue">
@@ -134,7 +134,7 @@ export default {
     data: function () {
         return {
             recurring: false,
-            recurringInterval: '90',
+            recurringInterval: '30',
             baseAmount: 0,
             baseAmountExchange: 0,
             baseAmountExchangeError: '',
@@ -153,10 +153,12 @@ export default {
                 'amountUsd': this.baseAmount
             }
             if (this.recurring) data.recurringInterval = this.recurringInterval;
-            let items = $.map($('.purchase-item-input:checked'), function (item) {
-                return $(item).data('item-code');
-            });
-            if (items.length > 0) data.items = items;
+            else { // Only process items if not recurring
+                let items = $.map($('.purchase-item-input:checked'), function (item) {
+                    return $(item).data('item-code');
+                });
+                if (items.length > 0) data.items = items;
+            }
             return data;
         },
         cardUseSuggestedAmount: function (e) {
@@ -234,6 +236,10 @@ export default {
         currencyDiscountTimeDisplay: function() {
             return this.currencyDiscountDateTime.toLocaleString();
         }
+    },
+    mounted() {
+        this.baseAmount = 5;
+        this.baseAmountChanged();
     }
 }
 </script>
