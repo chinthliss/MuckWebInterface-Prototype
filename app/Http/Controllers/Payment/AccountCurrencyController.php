@@ -186,7 +186,7 @@ class AccountCurrencyController extends Controller
 
         // If this is a paypal transaction, we create an order with them and redirect user to their approval
         if ($transaction->vendor == 'paypal') {
-            $payPalManager = resolve('App\Payment\PayPalManager');
+            $payPalManager = resolve(PayPalManager::class);
             try {
                 $approvalUrl = $payPalManager->startPayPalOrderFor($user, $transaction);
                 return redirect($approvalUrl);
@@ -374,7 +374,7 @@ class AccountCurrencyController extends Controller
         if ($subscription->vendor == 'paypal') {
 
             /** @var PayPalManager $payPalManager */
-            $payPalManager = resolve('App\Payment\PayPalManager');
+            $payPalManager = resolve(PayPalManager::class);
             try {
                 $approvalUrl = $payPalManager->startPayPalSubscriptionFor($user, $subscription);
                 return redirect($approvalUrl);

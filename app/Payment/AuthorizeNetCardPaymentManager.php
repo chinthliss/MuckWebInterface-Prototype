@@ -3,14 +3,12 @@
 
 namespace App\Payment;
 
-use App\Notifications\PaymentTransactionPaid;
 use App\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use net\authorize\api\contract\v1 as AnetAPI;
-use net\authorize\api\contract\v1\CustomerPaymentProfileMaskedType;
 use net\authorize\api\controller as AnetController;
 use \Error;
 use \Exception;
@@ -79,7 +77,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
      * @param User $user
      * @return AuthorizeNetCardPaymentCustomerProfile|null
      */
-    private function loadProfileFor(User $user)
+    private function loadProfileFor(User $user): ?AuthorizeNetCardPaymentCustomerProfile
     {
         $accountId = $user->getAid();
         //Return if already fetched
@@ -103,6 +101,7 @@ class AuthorizeNetCardPaymentManager implements CardPaymentManager
 
             if ($response && $response->getMessages()->getResultCode() == "Ok") {
                 $profile = AuthorizeNetCardPaymentCustomerProfile::fromApiResponse($response);
+                Log::debug("Retrieved Authorize.net customer {$profile->getCustomerProfileId()} for AID {$accountId}.");
                 if ($profile->getMerchantCustomerId() != $accountId) {
                     // $profile = null;
                     Log::warning("Retrieved Authorize.net customer profile for AID " . $accountId . " didn't have a matching merchantId.");

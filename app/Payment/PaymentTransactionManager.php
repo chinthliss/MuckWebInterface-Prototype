@@ -72,7 +72,7 @@ class PaymentTransactionManager
             array_push($purchases, $transaction->accountCurrencyQuoted . ' Mako');
 
         if ($items) {
-            $itemCatalogue = resolve('App\Payment\PaymentTransactionItemCatalogue')->itemsCatalogue();
+            $itemCatalogue = resolve(PaymentTransactionItemCatalogue::class)->itemsCatalogue();
             $itemsRecord = [];
             foreach ($items as $itemCode) {
                 if (!array_key_exists($itemCode, $itemCatalogue)) {
@@ -322,10 +322,11 @@ class PaymentTransactionManager
 
     public function chargeTransaction(PaymentTransaction $transaction)
     {
+        Log::debug("Charging transaction {$transaction->id}");
         switch($transaction->vendor) {
             case 'authorizenet':
                 $user = User::find($transaction->accountId);
-                $cardPaymentManager = resolve('App\Payment\CardPaymentManager');
+                $cardPaymentManager = resolve(CardPaymentManager::class);
                 $card = $cardPaymentManager->getCardFor($user, $transaction->vendorProfileId);
                 try {
                     $cardPaymentManager->chargeCardFor($user, $card, $transaction);
