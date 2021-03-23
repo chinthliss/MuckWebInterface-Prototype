@@ -163,7 +163,7 @@ class PaymentTransactionManager
         }
         $transaction->createdAt = $row->created_at ? new Carbon($row->created_at) : null;
         $transaction->completedAt = $row->completed_at ? new Carbon($row->completed_at) : null;
-        $transaction->paidAt =  $row->paid_at ? new Carbon($row->paid_at) : null;
+        $transaction->paidAt = $row->paid_at ? new Carbon($row->paid_at) : null;
         $transaction->result = $row->result;
         return $transaction;
     }
@@ -270,7 +270,7 @@ class PaymentTransactionManager
      * @param PaymentTransaction $transaction
      * @param false $suppressNotification
      */
-    public function setPaid(PaymentTransaction $transaction, $suppressNotification=false)
+    public function setPaid(PaymentTransaction $transaction, $suppressNotification = false)
     {
         $transaction->paidAt = Carbon::now();
         $this->storageTable()->where('id', '=', $transaction->id)->update([
@@ -323,7 +323,7 @@ class PaymentTransactionManager
     public function chargeTransaction(PaymentTransaction $transaction)
     {
         Log::debug("Charging transaction {$transaction->id}");
-        switch($transaction->vendor) {
+        switch ($transaction->vendor) {
             case 'authorizenet':
                 $user = User::find($transaction->accountId);
                 $cardPaymentManager = resolve(CardPaymentManager::class);
@@ -351,12 +351,21 @@ class PaymentTransactionManager
 
         //Actual fulfilment is done by the MUCK still, due to ingame triggers
         if ($transaction->accountCurrencyQuoted) {
-            $transaction->accountCurrencyRewarded = $this->muck->fulfillAccountCurrencyPurchase(
-                $transaction->accountId,
-                $transaction->accountCurrencyPriceUsd,
-                $transaction->accountCurrencyQuoted,
-                $transaction->subscriptionId ?? ''
-            );
+            if ($transaction->vendor != 'patreon') {
+                //Normal route
+                $transaction->accountCurrencyRewarded = $this->muck->fulfillAccountCurrencyPurchase(
+                    $transaction->accountId,
+                    $transaction->accountCurrencyPriceUsd,
+                    $transaction->accountCurrencyQuoted,
+                    $transaction->subscriptionId ?? ''
+                );
+            } else {
+                //Patreon route - we use reward instead since the support wasn't direct to the MUCK
+                if ($this->muck->rewardAccountCurrency(
+                    $transaction->accountId,
+                    $transaction->accountCurrencyQuoted,
+                    'Patreon Reward')) $transaction->accountCurrencyRewarded = $transaction->accountCurrencyQuoted;
+            }
         }
 
         if ($transaction->items) {
