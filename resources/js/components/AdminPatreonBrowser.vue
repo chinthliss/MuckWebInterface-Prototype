@@ -69,6 +69,12 @@ export default {
                     sortable: true
                 },
                 {
+                    key: 'lastConnect',
+                    label: 'Last Connect',
+                    sortable: true,
+                    formatter: 'outputCarbonString'
+                },
+                {
                     key: 'name',
                     label: 'Fullname (Vanity)',
                     class: 'limit-column-width',
@@ -116,6 +122,10 @@ export default {
             if (this.filter.filterOnAccount === 'yes' && !accountId) show = false;
             if (this.filter.filterOnAccount === 'no' && accountId) show = false;
             return show;
+        },
+        outputCarbonString: function (carbonString) {
+            if (!carbonString) return '--';
+            return new Date(carbonString).toLocaleString();
         }
     },
 

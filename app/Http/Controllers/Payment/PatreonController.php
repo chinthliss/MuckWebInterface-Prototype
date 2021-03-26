@@ -27,6 +27,7 @@ class PatreonController extends Controller
             if ($user) {
                 $patronArray['accountId'] = $user->getAid();
                 $patronArray['account_url'] = route('admin.account', ['accountId' => $user->getAid()]);
+                $patronArray['lastConnect'] = $user->getLastConnect();
             }
             array_push($response, $patronArray);
         }
