@@ -333,6 +333,12 @@ class DatabaseForMuckUserProvider implements UserProvider
         return $this->muckConnection->getCharactersOf($user->getAid());
     }
 
+    public function getAccountLastConnect(User $user): ?Carbon
+    {
+        //TODO : getAccountLastConnect should look at actual account last connect, not just character based ones
+        return $this->muckConnection->getLastConnect($user->getAid());
+    }
+
     #region Properties
 
     public function getAccountProperty(User $user, string $property)

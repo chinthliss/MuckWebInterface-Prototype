@@ -19,6 +19,9 @@ i
 $def salt prog "@salt" getpropstr (Stored on prop to avoid being in source. This program is committed to a public respository so do not copy into program!)
 $def allowCrossDomain 0           (Whether to allow cross-domain connections. This should only really be on during testing/development.)
 
+$def PROP_lastConnect    "/@/ConnectTime"
+$def PROP_lastDisconnect "/@/DisconnTime"
+
 $ifdef is_dev
    $def allowCrossDomain 1
 $endif
@@ -27,6 +30,7 @@ $def parseFloatOrInt dup "." instring if strtof else atoi then
 $include $lib/account
 $include $lib/kta/proto
 $include $lib/kta/json
+$include $lib/kta/misc
 $include $lib/rp
 $include $lib/accountpurchases
 
@@ -60,7 +64,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 ;
 
 ( -------------------------------------------------- )
-( Handlers - Auth )
+( Handlers - Nonspecific )
 ( -------------------------------------------------- )
 
 : handleRequest_test[ arr:webcall -- ]
@@ -78,6 +82,26 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         repeat
     else response400 then
 ; selfcall handleRequest_getCharacters
+
+(Expects 'aid' set, returns lastConnected or 0 for never connected)
+: handleRequest_getLastConnect[ arr:webcall -- ]
+    webcall @ "aid" array_getitem ?dup if
+        startAcceptedResponse
+        0 swap
+        acct_getalts
+        foreach nip
+            dup PROP_lastConnect getprop
+            swap PROP_lastDisconnect getprop
+            math.max math.max
+        repeat
+    else response400 then
+; selfcall handleRequest_getLastConnect
+
+( -------------------------------------------------- )
+( Handlers - Auth )
+( -------------------------------------------------- )
+
+
 
 (Expects either 'email' or 'api_token', returns 'account,[playerToString]' if one is matched or returns empty response)
 (Because this is passed directly from the login form, email will actually be the character name)

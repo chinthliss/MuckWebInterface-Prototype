@@ -3,6 +3,7 @@
 
 namespace App\Muck;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
@@ -168,5 +169,13 @@ class FakeMuckConnection implements MuckConnection
                 '5000' => 'This example goal has also not been achieved but is longer to test formatting.'
             ]
         ];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getLastConnect(int $aid): ?Carbon
+    {
+        return Carbon::now();
     }
 }

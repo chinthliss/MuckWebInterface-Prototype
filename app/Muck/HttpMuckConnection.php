@@ -2,6 +2,7 @@
 
 
 namespace App\Muck;
+
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Client;
 use Error;
@@ -18,7 +19,7 @@ class HttpMuckConnection implements MuckConnection
 
     public function __construct(array $config)
     {
-        if(!array_key_exists('salt', $config))
+        if (!array_key_exists('salt', $config))
             throw new Error("Salt hasn't been set in Muck connection config. Ensure MUCK_SALT is set.");
         $this->salt = $config['salt'];
         if (!$config['host'] || !$config['port'] || !$config['uri'])
@@ -65,9 +66,9 @@ class HttpMuckConnection implements MuckConnection
     public function getCharactersOf(int $aid): ?Collection
     {
         $characters = [];
-        $response = $this->requestFromMuck('getCharacters', ['aid'=>$aid]);
+        $response = $this->requestFromMuck('getCharacters', ['aid' => $aid]);
         //Form of result is \r\n separated lines of dbref,name,level,flags
-        foreach(explode(chr(13) . chr(10), $response) as $line) {
+        foreach (explode(chr(13) . chr(10), $response) as $line) {
             if (!trim($line)) continue;
             $character = MuckCharacter::fromMuckResponse($line);
             $characters[$character->getDbref()] = $character;
@@ -81,7 +82,7 @@ class HttpMuckConnection implements MuckConnection
     public function getCharacters(): ?Collection
     {
         $user = auth()->user();
-        if ( !$user || !$user->getAid() ) return null;
+        if (!$user || !$user->getAid()) return null;
         return $this->getCharactersOf($user->getAid());
     }
 
@@ -122,7 +123,7 @@ class HttpMuckConnection implements MuckConnection
     public function usdToAccountCurrency(float $usdAmount): ?int
     {
         $user = auth()->user();
-        if ( !$user || !$user->getAid() ) return null;
+        if (!$user || !$user->getAid()) return null;
 
         $response = $this->requestFromMuck('usdToAccountCurrencyFor', [
             'amount' => $usdAmount,
@@ -163,7 +164,7 @@ class HttpMuckConnection implements MuckConnection
      * @inheritDoc
      */
     public function fulfillAccountCurrencyPurchase(int $accountId, float $usdAmount,
-                                          int $accountCurrency, ?string $subscriptionId): int
+                                                   int $accountCurrency, ?string $subscriptionId): int
     {
         $response = $this->requestFromMuck('fulfillAccountCurrencyPurchase', [
             'account' => $accountId,
@@ -195,4 +196,15 @@ class HttpMuckConnection implements MuckConnection
     {
         return json_decode($this->requestFromMuck('stretchGoals'), true);
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function getLastConnect(int $aid): ?Carbon
+    {
+        $response = $this->requestFromMuck('getLastConnect', ['aid' => $aid]);
+        if ($response > 0) return Carbon::createFromTimestampUTC($response);
+        return null;
+    }
+
 }

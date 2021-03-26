@@ -3,6 +3,7 @@
 
 namespace App\Muck;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 interface MuckConnection
@@ -20,6 +21,13 @@ interface MuckConnection
      * @return null|Collection in the form [characterDbref:[MuckCharacter]]
      */
     public function getCharacters(): ?Collection;
+
+    /**
+     * Returns the latest connect or disconnect from any character on the account
+     * @param int $aid
+     * @return Carbon|null
+     */
+    public function getLastConnect(int $aid): ?Carbon;
 
     //region Auth
     //These functions mimic the equivalent Laravel database calls

@@ -9,7 +9,11 @@
                 </div>
                 <div class="row">
                     <dt class="col-sm-2">Created</dt>
-                    <dd class="col-sm-10">{{ account.created }}</dd>
+                    <dd class="col-sm-10">{{ outputCarbonString(account.created) }}</dd>
+                </div>
+                <div class="row">
+                    <dt class="col-sm-2">Last Connected</dt>
+                    <dd class="col-sm-10">{{ outputCarbonString(account.lastConnected) }}</dd>
                 </div>
                 <div class="row">
                     <dt class="col-sm-2">Characters ({{ muckName }})</dt>

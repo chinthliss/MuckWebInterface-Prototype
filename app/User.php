@@ -4,6 +4,7 @@ namespace App;
 
 use App\Helpers\MuckInterop;
 use App\Muck\MuckCharacter;
+use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Notifications\Notifiable;
@@ -60,8 +61,8 @@ class User implements Authenticatable, MustVerifyEmail
         $user->password = $query->password;
         if (property_exists($query, 'password_type')) $user->passwordType = $query->password_type;
         if (property_exists($query, 'verified_at') && $query->verified_at) $user->emailVerified = true;
-        if (property_exists($query, 'created_at') && $query->created_at) $user->createdAt = $query->created_at;
-        if (property_exists($query, 'updated_at') && $query->updated_at) $user->updatedAt = $query->updated_at;
+        if (property_exists($query, 'created_at') && $query->created_at) $user->createdAt = new Carbon($query->created_at);
+        if (property_exists($query, 'updated_at') && $query->updated_at) $user->updatedAt = new Carbon($query->updated_at);
         return $user;
     }
 
@@ -284,6 +285,14 @@ class User implements Authenticatable, MustVerifyEmail
         return $this->character;
     }
 
+    /**
+     * @return Carbon|null
+     */
+    public function getLastConnect(): ?Carbon
+    {
+        return $this->getProvider()->getAccountLastConnect($this);
+    }
+
     #region Admin functionality
     public function getAccountNotes(): array
     {
@@ -300,7 +309,8 @@ class User implements Authenticatable, MustVerifyEmail
             'id' => $this->getAid(),
             'created' => $this->createdAt,
             'characters' => $characters,
-            'notes' => $this->getProvider()->getAccountNotes($this)
+            'notes' => $this->getProvider()->getAccountNotes($this),
+            'lastConnected' => $this->getLastConnect()
         ];
     }
     #endregion Admin functionality
