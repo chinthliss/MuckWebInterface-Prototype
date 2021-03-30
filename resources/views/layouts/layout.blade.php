@@ -36,7 +36,7 @@
     <div><span class="navbar-text">Some text!</span></div>
 
     @auth
-        <h4 class="mt-2">Singeplayer</h4>
+        <h4 class="mt-2">Singleplayer</h4>
         <div>???</div>
         <h4 class="mt-2">Multiplayer</h4>
         <div><a href="{{ route('accountcurrency') }}">Buy Account Currency</a></div>
