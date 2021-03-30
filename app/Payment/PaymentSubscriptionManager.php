@@ -240,6 +240,7 @@ class PaymentSubscriptionManager
             $transactionManager->chargeTransaction($transaction);
         } catch (Exception $e) {
             Log::info("Error during subscription card payment: " . $e);
+            $transactionManager->closeTransaction($transaction, 'vendor_refused');
         }
 
         if ($transaction->paid()) {

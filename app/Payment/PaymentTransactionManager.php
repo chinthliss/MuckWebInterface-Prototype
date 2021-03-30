@@ -327,8 +327,8 @@ class PaymentTransactionManager
             case 'authorizenet':
                 $user = User::find($transaction->accountId);
                 $cardPaymentManager = resolve(CardPaymentManager::class);
-                $card = $cardPaymentManager->getCardFor($user, $transaction->vendorProfileId);
                 try {
+                    $card = $cardPaymentManager->getCardFor($user, $transaction->vendorProfileId);
                     $cardPaymentManager->chargeCardFor($user, $card, $transaction);
                 } catch (Exception $e) {
                     Log::info("Error during chargeTransaction authorizenet payment: " . $e);
