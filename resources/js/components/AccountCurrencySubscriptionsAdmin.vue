@@ -87,6 +87,11 @@ export default {
                     formatter: 'outputCarbonString'
                 },
                 {
+                    key: 'attempts_since_last_success',
+                    label: 'Fails',
+                    sortable: true
+                },
+                {
                     key: 'amount_usd',
                     label: 'Amount (USD)',
                     sortable: true,

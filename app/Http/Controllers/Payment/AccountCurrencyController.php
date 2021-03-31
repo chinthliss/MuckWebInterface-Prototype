@@ -416,11 +416,14 @@ class AccountCurrencyController extends Controller
         return view('account-currency-subscriptions');
     }
 
-    public function adminGetSubscriptions(PaymentSubscriptionManager $subscriptionManager)
+    public function adminGetSubscriptions(PaymentSubscriptionManager $subscriptionManager,
+                                          PaymentTransactionManager $transactionManager)
     {
         $subscriptions = $subscriptionManager->getSubscriptions();
-        return $subscriptions->map(function (PaymentSubscription $subscription) {
-            return $subscription->toArray();
+        return $subscriptions->map(function (PaymentSubscription $subscription) use ($transactionManager) {
+            $subscriptionArray = $subscription->toArray();
+            $subscriptionArray['attempts_since_last_success'] = count($transactionManager->getTransactionsSinceLastPaymentForSubscription($subscription));
+            return $subscriptionArray;
         });
     }
 
