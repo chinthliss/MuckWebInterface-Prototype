@@ -215,8 +215,7 @@ class PaymentSubscriptionManager
             . ($subscription->lastChargeAt ?? 'None'));
 
         $transactionManager = resolve(PaymentTransactionManager::class);
-        $transactions = $transactionManager->getTransactionsFromSubscriptionId($subscription->id,
-            $subscription->lastChargeAt);
+        $transactions = $transactionManager->getTransactionsSinceLastPaymentForSubscription($subscription);
 
         $lastAttempt = null;
         foreach ($transactions as $transaction) {

@@ -229,13 +229,13 @@ class PaymentTransactionManager
     }
 
     /**
-     * @param $subscriptionId
-     * @param Carbon|null $after Cut off date
+     * @param PaymentSubscription $subscription
+     * @param Carbon|null $after Optional cut off date
      * @return PaymentTransaction[]
      */
-    public function getTransactionsFromSubscriptionId($subscriptionId, Carbon $after = null): array
+    public function getTransactionsForSubscription(PaymentSubscription $subscription, Carbon $after = null): array
     {
-        $rows = $this->storageTable()->where('subscription_id', '=', $subscriptionId)->get();
+        $rows = $this->storageTable()->where('subscription_id', '=', $subscription->id)->get();
         $result = [];
         foreach ($rows as $row) {
             $transaction = $this->buildTransactionFromRow($row);
@@ -243,6 +243,16 @@ class PaymentTransactionManager
             $result[$transaction->id] = $transaction;
         }
         return $result;
+    }
+
+    /**
+     * Utility class to call getTransactionsFromSubscriptionId with the date of the last successful payment
+     * @param PaymentSubscription $subscription
+     * @return array
+     */
+    public function getTransactionsSinceLastPaymentForSubscription(PaymentSubscription $subscription): array
+    {
+        return $this->getTransactionsForSubscription($subscription, $subscription->lastChargeAt);
     }
 
     /**

@@ -347,7 +347,7 @@ class AccountCurrencyController extends Controller
         if ($subscription->accountId != $user->getAid() && !$user->hasRole('admin')) abort(403);
 
         $transactions = [];
-        foreach ($transactionManager->getTransactionsFromSubscriptionId($subscription->id) as $transaction) {
+        foreach ($transactionManager->getTransactionsForSubscription($subscription) as $transaction) {
             array_push($transactions, $transaction->toArray());
         }
 
