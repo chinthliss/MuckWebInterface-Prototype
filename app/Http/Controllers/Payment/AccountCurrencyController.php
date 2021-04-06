@@ -7,6 +7,7 @@ use App\Muck\MuckConnection;
 use App\Http\Controllers\Controller;
 use App\Payment\PaymentSubscription;
 use App\Payment\PaymentSubscriptionManager;
+use App\Payment\PaymentTransaction;
 use App\Payment\PaymentTransactionItemCatalogue;
 use App\Payment\PaymentTransactionManager;
 use App\Payment\PayPalManager;
@@ -246,6 +247,22 @@ class AccountCurrencyController extends Controller
         return view('account-currency-transactions')->with([
             'transactions' => $transactions
         ]);
+    }
+
+    public function adminViewTransactions()
+    {
+
+        return view('account-currency-transactions-admin');
+    }
+
+    public function adminGetTransactions(PaymentTransactionManager $transactionManager)
+    {
+        $transactions = $transactionManager->getAllTransactions();
+        $transactionArray = [];
+        foreach($transactions as $transaction) {
+            array_push($transactionArray, $transaction->toArray());
+        }
+        return $transactionArray;
     }
 
     #region Subscriptions

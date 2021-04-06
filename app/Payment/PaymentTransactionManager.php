@@ -169,6 +169,23 @@ class PaymentTransactionManager
     }
 
     /**
+     * @return PaymentTransaction[]
+     */
+    public function getAllTransactions(): array
+    {
+        $rows = $this->storageTable()
+            ->orderBy('created_at')
+            ->get();
+        $result = [];
+        foreach ($rows as $row) {
+            $transaction = $this->buildTransactionFromRow($row);
+            $result[$transaction->id] = $transaction;
+        }
+        return $result;
+    }
+
+
+    /**
      * @param int $userId
      * @return PaymentTransaction[]
      */
