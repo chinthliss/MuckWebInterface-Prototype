@@ -39,8 +39,6 @@ class ProcessSubscriptions extends Command
      */
     public function handle(PaymentSubscriptionManager $subscriptionManager)
     {
-        Log::debug('Processing subscriptions due payment starts');
         $subscriptionManager->processSubscriptions();
-        Log::debug('Processing subscriptions due payment finished');
     }
 }

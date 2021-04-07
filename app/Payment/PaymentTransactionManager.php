@@ -356,9 +356,14 @@ class PaymentTransactionManager
                 $cardPaymentManager = resolve(CardPaymentManager::class);
                 try {
                     $card = $cardPaymentManager->getCardFor($user, $transaction->vendorProfileId);
-                    $cardPaymentManager->chargeCardFor($user, $card, $transaction);
+                    if ($card) {
+                        $cardPaymentManager->chargeCardFor($user, $card, $transaction);
+                    } else {
+                        Log::info("chargeTransaction - Unable to lookup card with ID {$transaction->vendorProfileId} for User {$user->getAid()} on Transaction {$transaction->id}.");
+                        throw new Exception("Invalid card Id on PaymentTransaction");
+                    }
                 } catch (Exception $e) {
-                    Log::info("Error during chargeTransaction authorizenet payment: " . $e);
+                    Log::info("chargeTransaction - Error during authorizenet payment: " . $e);
                     throw $e;
                 }
                 break;
@@ -366,7 +371,6 @@ class PaymentTransactionManager
                 Log::error("Attempt to charge transaction {$transaction->id} with an unknown or non-charging vendor: {$transaction->vendor}");
                 throw new Error("Transaction isn't chargeable - potentially because it's handled externally.");
         }
-
     }
 
     /**
