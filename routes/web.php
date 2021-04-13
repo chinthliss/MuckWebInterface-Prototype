@@ -122,14 +122,14 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
     Route::get('admin/logs/{date}', [AdminController::class, 'getLogForDate']);
 
     Route::get('accountcurrency/subscriptions', [AccountCurrencyController::class, 'adminViewSubscriptions'])
-        ->name('admin.subscriptions'); //TODO: Replace with api call
+        ->name('admin.subscriptions');
     Route::get('accountcurrency/subscriptions/api', [AccountCurrencyController::class, 'adminGetSubscriptions'])
-        ->name('admin.subscriptions.api');
+        ->name('admin.subscriptions.api'); //TODO: Replace with api call
 
     Route::get('accountcurrency/transactions', [AccountCurrencyController::class, 'adminViewTransactions'])
-        ->name('admin.transactions'); //TODO: Replace with api call
+        ->name('admin.transactions');
     Route::get('accountcurrency/transactions/api', [AccountCurrencyController::class, 'adminGetTransactions'])
-        ->name('admin.transactions.api');
+        ->name('admin.transactions.api'); //TODO: Replace with api call
 
     Route::get('admin/patreons', [PatreonController::class, 'adminShow'])
         ->name('admin.patrons');
