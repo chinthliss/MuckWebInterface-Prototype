@@ -44,7 +44,7 @@
                         </td>
                     </tr>
                 </table>
-                <p>Payments made via subscriptions show on the Account Transactions page.</p>
+                <p>Payments made via subscriptions also show on the Account Transactions page.</p>
             </div>
 
             <!-- Emails -->

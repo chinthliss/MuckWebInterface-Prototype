@@ -81,6 +81,12 @@ export default {
                     tdClass: 'text-truncate small'
                 },
                 {
+                    key: 'email',
+                    label: 'Email',
+                    class: 'limit-column-width',
+                    tdClass: 'text-truncate small'
+                },
+                {
                     key: 'totalSupportUsd',
                     label: 'Total Support (USD)',
                     sortable: true
@@ -116,6 +122,7 @@ export default {
             if (filter.filterString !== '') {
                 show = false;
                 if (row.name.toLowerCase().indexOf(filter.filterString.toLowerCase()) !== -1) show = true;
+                if (row.email && row.email.toLowerCase().indexOf(filter.filterString.toLowerCase()) !== -1) show = true;
                 if (row.patronId.toString().toLowerCase().indexOf(filter.filterString.toLowerCase()) !== -1) show = true;
                 if (accountId && accountId.toString().toLowerCase().indexOf(filter.filterString.toLowerCase()) !== -1) show = true;
             }

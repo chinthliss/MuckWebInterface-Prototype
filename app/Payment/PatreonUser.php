@@ -100,6 +100,7 @@ class PatreonUser
         return [
             'patronId' => $this->patronId,
             'name' => $this->fullName . ( $this->vanity ? ' (' . $this->vanity . ')' : ''),
+            'email' => $this->email,
             'url' => $this->url,
             'thumbUrl' => $this->thumbUrl,
             'updatedAt' => $this->updatedAt,
