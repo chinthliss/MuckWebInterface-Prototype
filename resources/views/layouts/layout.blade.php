@@ -119,6 +119,9 @@
             <div class="col">
                 <div id="contentwrapper">
 
+                    <!-- Breadcrumbs -->
+                    @yield('breadcrumbs')
+
                     <!-- Javascript check -->
                     <noscript>
                         <div class="p-3 mb-2 bg-danger text-light rounded">This page requires javascript enabled in order to work.</div>
@@ -138,9 +141,6 @@
                             </button>
                         </div>
                     @endif
-
-                    <!-- Breadcrumbs -->
-                    @yield('breadcrumbs')
 
                     <!-- Content -->
                     <main id="app">

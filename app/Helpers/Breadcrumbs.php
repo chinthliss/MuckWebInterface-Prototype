@@ -12,11 +12,15 @@ class Breadcrumbs
      * @param array $breadcrumbs
      * @return HtmlString
      */
-    public static function render(array $breadcrumbs)
+    public static function render(array $breadcrumbs) : HtmlString
     {
         $listItems = [];
         foreach ($breadcrumbs as $item) {
-            array_push($listItems, '<li class="breadcrumb-item active" aria-current="page">' . $item['label'] . '</li>');
+            if (isset($item['route']))
+                $innerContent = '<a href="' . route($item['route']) . '">' . $item['label'] . '</a>';
+            else
+                $innerContent = $item['label'];
+            array_push($listItems, '<li class="breadcrumb-item active" aria-current="page">' . $innerContent . '</li>');
         }
         return new HtmlString(
         '<nav aria-label="breadcrumb">

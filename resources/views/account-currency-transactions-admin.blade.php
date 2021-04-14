@@ -7,7 +7,7 @@
 @section('breadcrumbs')
     {{ Breadcrumbs::render([
         [ 'route' => 'home', 'label' => 'Home' ],
-        [ 'route' => 'admin', 'label' => 'Admin' ],
+        [ 'route' => 'admin.home', 'label' => 'Admin' ],
         [ 'route' => 'admin.transactions', 'label' => 'Transactions' ],
     ]) }}
 @endsection
