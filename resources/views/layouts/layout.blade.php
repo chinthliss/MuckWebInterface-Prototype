@@ -45,7 +45,7 @@
     @Admin
     <h4 class="mt-2">Admin</h4>
     <div><a href="{{ route('admin.home') }}">Admin Dashboard</a></div>
-    <div><a href="{{ route('admin.logs') }}">Log Viewer</a></div>
+    <div><a href="{{ route('admin.logs') }}">Site Log Viewer</a></div>
     <div><a href="{{ route('admin.patrons') }}">Patreon Supporter Browser</a></div>
     <div><a href="{{ route('admin.subscriptions') }}">Payment Subscriptions</a></div>
     <div><a href="{{ route('admin.transactions') }}">Payment Transactions</a></div>

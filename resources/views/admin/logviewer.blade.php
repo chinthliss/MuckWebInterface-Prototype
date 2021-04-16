@@ -1,7 +1,15 @@
 @extends('layouts.layout')
 
 @section('title')
-    Log Viewer
+    Site Log Viewer
+@endsection
+
+@section('breadcrumbs')
+    {{ Breadcrumbs::render([
+        [ 'route' => 'home', 'label' => 'Home' ],
+        [ 'route' => 'admin.home', 'label' => 'Admin' ],
+        [ 'route' => 'admin.logs', 'label' => 'Site Log Viewer' ],
+    ]) }}
 @endsection
 
 @section('content')
