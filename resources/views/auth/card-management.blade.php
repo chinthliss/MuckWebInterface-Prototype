@@ -4,6 +4,14 @@
     Card Management
 @endsection
 
+@section('breadcrumbs')
+    {{ Breadcrumbs::render([
+        [ 'route' => 'home', 'label' => 'Home' ],
+        [ 'route' => 'auth.account', 'label' => 'Account' ],
+        [ 'route' => 'payment.cardmanagement', 'label' => 'Card Management' ]
+    ]) }}
+@endsection
+
 @section('content')
     <account-card-management
         @isset($profileId)

@@ -142,7 +142,7 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
 //Always available
 
 //Character Profiles
-Route::get('p/{characterName}', [CharacterController::class, 'show'])->name('character');
+Route::get('p/{characterName}', [CharacterController::class, 'show'])->name('multiplayer.character');
 
 //Terms of service - always viewable, does challenge if logged in.
 Route::get('account/termsofservice', [TermsOfServiceController::class, 'view'])

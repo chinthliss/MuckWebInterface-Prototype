@@ -4,6 +4,13 @@
     Account
 @endsection
 
+@section('breadcrumbs')
+    {{ Breadcrumbs::render([
+        [ 'route' => 'home', 'label' => 'Home' ],
+        [ 'route' => 'auth.account', 'label' => 'Account' ]
+    ]) }}
+@endsection
+
 @section('content')
     <auth-account
         account-created="{{ $user->createdAt ?? 'Prior to this being recorded' }}"

@@ -4,6 +4,14 @@
     Terms of Service
 @endsection
 
+@section('breadcrumbs')
+    {{ Breadcrumbs::render([
+        [ 'route' => 'home', 'label' => 'Home' ],
+        [ 'route' => 'auth.account', 'label' => 'Account' ],
+        [ 'route' => 'auth.account.termsofservice', 'label' => 'Terms of Service' ]
+    ]) }}
+@endsection
+
 @section('content')
     <div class="container">
         <div class="row justify-content-center">

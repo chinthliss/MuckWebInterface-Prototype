@@ -4,6 +4,14 @@
     Account Currency
 @endsection
 
+@section('breadcrumbs')
+    {{ Breadcrumbs::render([
+        [ 'route' => 'home', 'label' => 'Home' ],
+        [ 'label' => 'Multiplayer' ],
+        [ 'route' => 'accountcurrency', 'label' => 'Account Currency' ]
+    ]) }}
+@endsection
+
 @section('content')
     <account-currency-buy
         default-card-masked-number="{{ $defaultCardMaskedNumber }}"

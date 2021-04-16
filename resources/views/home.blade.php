@@ -4,6 +4,12 @@
     Character Dashboard
 @endsection
 
+@section('breadcrumbs')
+    {{ Breadcrumbs::render([
+        [ 'route' => 'home', 'label' => 'Home' ]
+    ]) }}
+@endsection
+
 @section('content')
     <character-dashboard
         :characters="{{ $characters }}"
