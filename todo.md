@@ -55,3 +55,4 @@
 * Remove tos-hash-viewed from account_properties
 * drop billing_sessions
 * drop patreon_claims
+* Rewrite muck notifications to account notifications

@@ -9,6 +9,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Auth\AccountController;
 use App\Http\Controllers\Auth\AccountEmailController;
+use App\Http\Controllers\AccountNotificationsController;
 use App\Http\Controllers\Auth\AccountPasswordController;
 use App\Http\Controllers\Auth\TermsOfServiceController;
 use App\Http\Controllers\CharacterController;
@@ -77,6 +78,11 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
     Route::delete('account/cardmanagement', [CardManagementController::class, 'deleteCard'])
         ->name('payment.cardmanagement.delete');
     Route::patch('account/cardmanagement', [CardManagementController::class, 'updateDefaultCard']);
+    //Notifications
+    Route::get('account/notifications', [AccountNotificationsController::class, 'show'])
+        ->name('account.notifications');
+    Route::get('account/notifications/api', [AccountNotificationsController::class, 'getNotifications'])
+        ->name('account.notifications.api');  //TODO: Replace with api call
 
     //Account Currency
     Route::get('accountcurrency', [AccountCurrencyController::class, 'show'])
