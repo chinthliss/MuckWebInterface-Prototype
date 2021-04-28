@@ -330,7 +330,7 @@ class DatabaseForMuckUserProvider implements UserProvider
 
     public function getCharacters(User $user): Collection
     {
-        return $this->muckConnection->getCharactersOf($user->getAid());
+        return $this->muckConnection->getCharactersOf($user);
     }
 
     public function getAccountLastConnect(User $user): ?Carbon

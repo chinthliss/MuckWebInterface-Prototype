@@ -3,6 +3,7 @@
 
 namespace App\Muck;
 
+use App\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -68,11 +69,11 @@ class FakeMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function getCharactersOf(int $aid): ?Collection
+    public function getCharactersOf(User $user): ?Collection
     {
-        self::fakeMuckCall('getCharactersOf', ['aid' => $aid]);
+        self::fakeMuckCall('getCharactersOf', ['aid' => $user->getAid()]);
         $result = [];
-        if ($aid === 1) {
+        if ($user->getAid() === 1) {
             $result = [
                 1234 => MuckCharacter::fromMuckResponse('1234,TestCharacter,100,,wizard'),
                 2345 => MuckCharacter::fromMuckResponse('2345,TestCharacter2,14,,')
@@ -87,9 +88,10 @@ class FakeMuckConnection implements MuckConnection
     public function getCharacters(): ?Collection
     {
         self::fakeMuckCall('getCharacters');
+        /** @var User $user */
         $user = auth()->user();
         if (!$user || !$user->getAid()) return null;
-        return $this->getCharactersOf($user->getAid());
+        return $this->getCharactersOf($user);
     }
 
     /**

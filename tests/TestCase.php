@@ -30,6 +30,13 @@ abstract class TestCase extends BaseTestCase
     }
 
     // Also returns user for chaining
+    protected function loginAsOtherValidatedUser(): ?User
+    {
+        Auth::loginUsingId('5');
+        return $this->getPresentUser();
+    }
+
+    // Also returns user for chaining
     protected function loginAsAdminUser(): ?User
     {
         Auth::loginUsingId('6');

@@ -3,6 +3,7 @@
 
 namespace App\Muck;
 
+use App\User;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Client;
 use Error;
@@ -63,10 +64,10 @@ class HttpMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function getCharactersOf(int $aid): ?Collection
+    public function getCharactersOf(User $user): ?Collection
     {
         $characters = [];
-        $response = $this->requestFromMuck('getCharacters', ['aid' => $aid]);
+        $response = $this->requestFromMuck('getCharacters', ['aid' => $user->getAid()]);
         //Form of result is \r\n separated lines of dbref,name,level,flags
         foreach (explode(chr(13) . chr(10), $response) as $line) {
             if (!trim($line)) continue;
@@ -81,9 +82,10 @@ class HttpMuckConnection implements MuckConnection
      */
     public function getCharacters(): ?Collection
     {
+        /** @var User $user */
         $user = auth()->user();
         if (!$user || !$user->getAid()) return null;
-        return $this->getCharactersOf($user->getAid());
+        return $this->getCharactersOf($user);
     }
 
     //region Auth Requests

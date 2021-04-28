@@ -5,16 +5,17 @@ namespace App\Muck;
 
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use App\User;
 
 interface MuckConnection
 {
 
     /**
-     * Get all the characters of a given accountId
-     * @param int $aid
+     * Get all the characters of a given account
+     * @param User $user
      * @return null|Collection in the form [characterDbref:[MuckCharacter]]
      */
-    public function getCharactersOf(int $aid): ?Collection;
+    public function getCharactersOf(User $user): ?Collection;
 
     /**
      * Get characters of present authenticated user

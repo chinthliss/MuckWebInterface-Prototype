@@ -31,6 +31,7 @@
 * ~~Save claims in new format~~
 * ~~Automatic claiming~~
 * ~~Status browser~~
+* Badges need to be rewarded
 
 ## Multiplayer pages
 
