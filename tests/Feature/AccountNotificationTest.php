@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\AccountNotificationManager;
 use App\Muck\MuckCharacter;
 use App\Notifications\MuckWebInterfaceNotification;
 use Tests\TestCase;
@@ -44,4 +45,68 @@ class AccountNotificationTest extends TestCase
             'character_dbref' => $character->getDbref()
         ]);
     }
+
+    public function testUserGetsNotifications()
+    {
+        $this->seed();
+        $user = $this->loginAsValidatedUser();
+        MuckWebInterfaceNotification::NotifyAccount($user, 'Test');
+        $transactionManager = resolve(AccountNotificationManager::class);
+        $notifications = $transactionManager->getNotificationsFor($user);
+        $this->assertArrayHasKey('user', $notifications);
+        $this->assertCount(1, $notifications['user']);
+    }
+
+    /**
+     * @depends testUserGetsNotifications
+     */
+    public function testUserDoesNotGetAnotherUsersNotifications()
+    {
+        $this->seed();
+        $user = $this->loginAsOtherValidatedUser();
+        MuckWebInterfaceNotification::NotifyAccount($user, 'Test');
+        $user = $this->loginAsValidatedUser();
+        $transactionManager = resolve(AccountNotificationManager::class);
+        $notifications = $transactionManager->getNotificationsFor($user);
+        $this->assertCount(0, $notifications['user']);
+    }
+
+    /**
+     * @depends testUserGetsNotifications
+     */
+    public function testUserCanDeleteOwnNotifications()
+    {
+        $this->seed();
+        $user = $this->loginAsValidatedUser();
+        MuckWebInterfaceNotification::NotifyAccount($user, 'Test');
+        $transactionManager = resolve(AccountNotificationManager::class);
+        $notifications = $transactionManager->getNotificationsFor($user);
+        $notification = $notifications['user'][0];
+        $response = $this->delete(route('account.notifications.api') . '/' . $notification->id);
+        $response->assertSuccessful();
+
+        $notifications = $transactionManager->getNotificationsFor($user);
+        $this->assertCount(0, $notifications['user'], 'Call worked but notification not deleted');
+    }
+
+    /**
+     * @depends testUserGetsNotifications
+     */
+    public function testUserCannotDeleteOthersNotifications()
+    {
+        $this->seed();
+        $originalUser = $this->loginAsOtherValidatedUser();
+        MuckWebInterfaceNotification::NotifyAccount($originalUser, 'Test');
+        $transactionManager = resolve(AccountNotificationManager::class);
+        $notifications = $transactionManager->getNotificationsFor($originalUser);
+        $notification = $notifications['user'][0];
+
+        $this->loginAsValidatedUser();
+        $response = $this->delete(route('account.notifications.api') . '/' . $notification->id);
+        $response->assertUnauthorized();
+
+        $notifications = $transactionManager->getNotificationsFor($originalUser);
+        $this->assertCount(1, $notifications['user']);
+    }
+
 }

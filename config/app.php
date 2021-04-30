@@ -181,6 +181,7 @@ return [
         App\Providers\CardPaymentServiceProvider::class,
         App\Providers\PayPalServiceProvider::class,
         App\Providers\PatreonServiceProvider::class,
+        App\Providers\AccountNotificationsServiceProvider::class,
 
     ],
 

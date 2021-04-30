@@ -92,6 +92,11 @@
                                 <a class="nav-link" href="{{ route('auth.account') }}">Account</a>
                             </li>
                         @endif
+                        @if (Route::has('account.notifications'))
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('account.notifications') }}">Notifications</a>
+                            </li>
+                        @endif
                         @if (Route::has('logout'))
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('logout') }}"

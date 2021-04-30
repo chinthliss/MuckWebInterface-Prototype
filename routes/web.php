@@ -83,6 +83,9 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
         ->name('account.notifications');
     Route::get('account/notifications/api', [AccountNotificationsController::class, 'getNotifications'])
         ->name('account.notifications.api');  //TODO: Replace with api call
+    Route::delete('account/notifications/api/{id}', [AccountNotificationsController::class, 'deleteNotification']); //TODO: Replace with api call
+    Route::delete('account/notifications/api', [AccountNotificationsController::class, 'deleteAllNotifications']); //TODO: Replace with api call
+
 
     //Account Currency
     Route::get('accountcurrency', [AccountCurrencyController::class, 'show'])
