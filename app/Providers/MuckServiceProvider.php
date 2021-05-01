@@ -12,8 +12,6 @@ use Illuminate\Support\ServiceProvider;
 
 class MuckServiceProvider extends ServiceProvider implements DeferrableProvider
 {
-    protected $defer = true;
-
     /**
      * Register services.
      *

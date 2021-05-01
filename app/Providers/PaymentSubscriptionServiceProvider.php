@@ -11,7 +11,6 @@ use Illuminate\Support\ServiceProvider;
 
 class PaymentSubscriptionServiceProvider extends ServiceProvider implements DeferrableProvider
 {
-    protected $defer = true;
 
     /**
      * Register services.

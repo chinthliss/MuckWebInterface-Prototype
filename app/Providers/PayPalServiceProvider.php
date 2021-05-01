@@ -12,7 +12,6 @@ use PayPalCheckoutSdk\Core\SandboxEnvironment;
 
 class PayPalServiceProvider extends ServiceProvider implements DeferrableProvider
 {
-    protected $defer = true;
 
     /**
      * Register services.

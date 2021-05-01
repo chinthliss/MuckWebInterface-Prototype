@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Payment\PaymentTransactionManager;
 use Error;
 use App\Payment\CardPaymentManager;
 use App\Payment\AuthorizeNetCardPaymentManager;
@@ -12,7 +11,6 @@ use Illuminate\Support\ServiceProvider;
 
 class CardPaymentServiceProvider extends ServiceProvider implements DeferrableProvider
 {
-    protected $defer = true;
 
     /**
      * Register services.

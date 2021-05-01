@@ -9,7 +9,6 @@ use Illuminate\Support\ServiceProvider;
 
 class PatreonServiceProvider extends ServiceProvider implements DeferrableProvider
 {
-    protected $defer = true;
 
     /**
      * Register services.
