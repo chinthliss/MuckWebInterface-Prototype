@@ -6,10 +6,11 @@ use App\Muck\MuckConnection;
 use App\Muck\FakeMuckConnection;
 use App\Muck\HttpMuckConnection;
 use Error;
+use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
 
 
-class MuckServiceProvider extends ServiceProvider
+class MuckServiceProvider extends ServiceProvider implements DeferrableProvider
 {
     protected $defer = true;
 

@@ -5,10 +5,11 @@ namespace App\Providers;
 use App\Muck\MuckConnection;
 use App\Payment\PaymentSubscriptionManager;
 use Error;
+use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
 
 
-class PaymentSubscriptionServiceProvider extends ServiceProvider
+class PaymentSubscriptionServiceProvider extends ServiceProvider implements DeferrableProvider
 {
     protected $defer = true;
 

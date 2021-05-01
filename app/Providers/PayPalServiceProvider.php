@@ -3,14 +3,14 @@
 namespace App\Providers;
 
 use Error;
-use App\Payment\PaymentTransactionManager;
 use App\Payment\PayPalManager;
 use App\Payment\CardPaymentManager;
+use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
 use PayPalCheckoutSdk\Core\ProductionEnvironment;
 use PayPalCheckoutSdk\Core\SandboxEnvironment;
 
-class PayPalServiceProvider extends ServiceProvider
+class PayPalServiceProvider extends ServiceProvider implements DeferrableProvider
 {
     protected $defer = true;
 

@@ -4,9 +4,10 @@ namespace App\Providers;
 
 use App\Payment\PatreonManager;
 use Error;
+use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
 
-class PatreonServiceProvider extends ServiceProvider
+class PatreonServiceProvider extends ServiceProvider implements DeferrableProvider
 {
     protected $defer = true;
 

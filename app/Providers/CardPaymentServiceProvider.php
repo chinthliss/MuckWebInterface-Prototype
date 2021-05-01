@@ -7,9 +7,10 @@ use Error;
 use App\Payment\CardPaymentManager;
 use App\Payment\AuthorizeNetCardPaymentManager;
 use App\Payment\FakeCardPaymentManager;
+use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
 
-class CardPaymentServiceProvider extends ServiceProvider
+class CardPaymentServiceProvider extends ServiceProvider implements DeferrableProvider
 {
     protected $defer = true;
 
