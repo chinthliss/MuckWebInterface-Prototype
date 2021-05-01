@@ -72,6 +72,6 @@ class PayPalServiceProvider extends ServiceProvider implements DeferrableProvide
      */
     public function provides()
     {
-        return [CardPaymentManager::class];
+        return [PayPalManager::class];
     }
 }
