@@ -7,7 +7,7 @@
                 <strong>Loading...</strong>
             </div>
 
-            <div v-if="contentData.length === 0 && !loadingContent">
+            <div v-if="noNotifications">
                 You have no notifications. <i class="fas fa-thumbs-up"></i>
             </div>
             <div v-else class="d-flex justify-content-center mb-2">
@@ -16,7 +16,7 @@
                 </button>
             </div>
             <!-- Account or game notifications -->
-            <div v-if="contentData.user">
+            <div v-if="contentData.user && contentData.user.length">
                 <b-table dark striped hover small
                          :items="contentData.user"
                          :fields="contentFields"
@@ -35,7 +35,7 @@
 
             <!-- Character notifications -->
             <div
-                v-if="contentData.character"
+                v-if="contentData.character && contentData.character.length"
                 v-for="(notifications, character) in contentData.character"
                 v-bind:data="notifications"
                 v-bind:key="character"
@@ -135,6 +135,14 @@ export default {
                 }).catch(error => {
                     console.log("Failed to delete all: ", error);
                 });
+        }
+    },
+    computed: {
+        noNotifications: function() {
+            if (this.loadingContent) return false;
+            if (!this.contentData || this.contentData.length === 0) return true;
+            if (this.contentData.user.length === 0 && this.contentData.character.length === 0) return true;
+            return false;
         }
     }
 }
