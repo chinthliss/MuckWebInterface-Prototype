@@ -24,7 +24,7 @@ class CardPaymentManagerTest extends TestCase
 
     public function testCanGetCustomerIdForUser()
     {
-        $this->seed();
+        $this->seed()->seed(\BillingTransactionSeeder::class);
         $user = $this->loginAsValidatedUser();
         $customerId = $this->cardPaymentManager->getCustomerIdFor($user);
         $this->assertNotNull($customerId);
@@ -32,7 +32,7 @@ class CardPaymentManagerTest extends TestCase
 
     public function testUserCannotAddInvalidCard()
     {
-        $this->seed();
+        $this->seed()->seed(\BillingTransactionSeeder::class);
         $user = $this->loginAsValidatedUser();
         $startingCardCount = count($this->cardPaymentManager->getCardsFor($user));
         $response = $this->json('POST', route('payment.cardmanagement.add', [
@@ -45,7 +45,7 @@ class CardPaymentManagerTest extends TestCase
 
     public function testUserCanAddValidCard()
     {
-        $this->seed();
+        $this->seed()->seed(\BillingTransactionSeeder::class);
         $user = $this->loginAsValidatedUser();
         $monthAhead = Carbon::now()->addMonth();
         $response = $this->json('POST', route('payment.cardmanagement.add'), [
@@ -62,7 +62,7 @@ class CardPaymentManagerTest extends TestCase
      */
     public function testUserCanDeleteCard()
     {
-        $this->seed();
+        $this->seed()->seed(\BillingTransactionSeeder::class);
         $user = $this->loginAsValidatedUser();
         $monthAhead = Carbon::now()->addMonth();
         $this->json('POST', route('payment.cardmanagement.delete'), [
