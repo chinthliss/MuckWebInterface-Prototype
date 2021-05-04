@@ -2,11 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Helpers\MuckInterop;
-use App\Notifications\VerifyEmail;
-use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -16,12 +12,17 @@ class AccountRolesTest extends TestCase
 
     private $adminId = 5;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed();
+    }
+
     public function testCheckSeedIsOkay()
     {
-        $this->seed();
-        //TODO: Find way to test the test password!
         $this->assertDatabaseHas('accounts', [
-            'email' => 'test@test.com'
+            'email' => 'test@test.com',
+            'password' => '0A095F587AFCB082:EC2F0D2ACB7788E26E0A36C32C6475C589860589' // Password
         ]);
         $this->assertDatabaseHas('account_emails', [
             'email' => 'test@test.com'
@@ -36,7 +37,6 @@ class AccountRolesTest extends TestCase
      */
     public function testUserDoesNotHaveAdminRole()
     {
-        $this->seed();
         $user = $this->loginAsValidatedUser();
         $this->assertFalse($user->hasRole('admin'));
     }
@@ -46,7 +46,6 @@ class AccountRolesTest extends TestCase
      */
     public function testAdminDoesHaveAdminRole()
     {
-        $this->seed();
         $user = $this->loginAsAdminUser();
         $this->asserttrue($user->hasRole('admin'));
     }
@@ -56,7 +55,6 @@ class AccountRolesTest extends TestCase
      */
     public function testAdminHasAnyRole()
     {
-        $this->seed();
         $user = $this->loginAsAdminUser();
         $this->assertTrue($user->hasRole('other_role'));
     }
@@ -66,7 +64,6 @@ class AccountRolesTest extends TestCase
      */
     public function testUserWithRoleHasThatRole()
     {
-        $this->seed();
         Auth::loginUsingId($this->adminId);
         $user = $this->getPresentUser();
         $this->assertTrue($user->hasRole('other_role'));
@@ -74,7 +71,6 @@ class AccountRolesTest extends TestCase
 
     public function testUserCannotAccessAdminPage()
     {
-        $this->seed();
         $this->loginAsValidatedUser();
         $response = $this->get('/admin');
         $response->assertForbidden();
@@ -82,7 +78,6 @@ class AccountRolesTest extends TestCase
 
     public function testAdminCanAccessAdminPage()
     {
-        $this->seed();
         Auth::loginUsingId($this->adminId);
         $response = $this->get('/admin');
         $response->assertRedirect();

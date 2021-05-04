@@ -12,9 +12,14 @@ class AccountEmailChangeTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed();
+    }
+
     public function testCheckSeedIsOkay()
     {
-        $this->seed();
         $this->assertDatabaseHas('accounts', [
             'aid' => 1,
             'email' => 'test@test.com'
@@ -39,7 +44,6 @@ class AccountEmailChangeTest extends TestCase
      */
     public function testChangeEmailAccessibleWithLogin()
     {
-        $this->seed();
         $this->loginAsValidatedUser();
         $response = $this->followingRedirects()->get('account/changeemail');
         $response->assertSuccessful();
@@ -51,7 +55,6 @@ class AccountEmailChangeTest extends TestCase
      */
     public function testChangeEmailRequiresValidExistingPassword()
     {
-        $this->seed();
         $this->loginAsValidatedUser();
         $response = $this->JSON('POST', 'account/changeemail', [
             'password' => 'wrongpassword',
@@ -65,7 +68,6 @@ class AccountEmailChangeTest extends TestCase
      */
     public function testChangeEmailRequiresUnusedEmail()
     {
-        $this->seed();
         $this->loginAsValidatedUser();
         $response = $this->JSON('POST', 'account/changeemail', [
             'password' => 'password',
@@ -79,11 +81,10 @@ class AccountEmailChangeTest extends TestCase
      */
     public function testChangeEmailSendsVerification()
     {
-        $this->seed();
         Notification::fake();
         Notification::assertNothingSent();
         $user = $this->loginAsValidatedUser();
-        $response = $this->post('account/changeemail', [
+        $this->post('account/changeemail', [
             'password' => 'password',
             'email' => 'testnew@test.com'
         ]);
@@ -100,7 +101,6 @@ class AccountEmailChangeTest extends TestCase
      */
     public function testChangeEmailWorks()
     {
-        $this->seed();
         Notification::fake();
         $user = $this->loginAsValidatedUser();
         $newEmail = 'testnew@test.com';
@@ -124,7 +124,6 @@ class AccountEmailChangeTest extends TestCase
     #region Use Existing Email
     public function testUseExistingEmailWorksWithVerifiedMail()
     {
-        $this->seed();
         Notification::fake();
         $user = $this->loginAsValidatedUser();
         $newEmail = 'testalt@test.com';
@@ -138,7 +137,6 @@ class AccountEmailChangeTest extends TestCase
 
     public function testUseExistingEmailWorksWithUnverifiedMail()
     {
-        $this->seed();
         Notification::fake();
         $user = $this->loginAsValidatedUser();
         $newEmail = 'testaltunverified@test.com';
@@ -158,7 +156,6 @@ class AccountEmailChangeTest extends TestCase
 
     public function testUseExistingEmailRequiresExistingEmail()
     {
-        $this->seed();
         Notification::fake();
         $user = $this->loginAsValidatedUser();
         $newEmail = 'notexistingemail@test.com';
@@ -172,14 +169,12 @@ class AccountEmailChangeTest extends TestCase
 
     public function testFindByAnyEmailReturnsAlternativeEmail()
     {
-        $this->seed();
         $user = User::findByEmail('testalt@test.com', true);
         $this->assertNotNull($user);
     }
 
     public function testFindByPrimaryEmailDoesNotReturnAlternativeEmail()
     {
-        $this->seed();
         $user = User::findByEmail('testalt@test.com', false);
         $this->assertNull($user);
     }

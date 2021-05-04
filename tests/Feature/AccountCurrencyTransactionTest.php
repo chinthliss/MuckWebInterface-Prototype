@@ -3,8 +3,9 @@
 
 namespace Tests\Feature;
 
-
 use App\Payment\PaymentTransactionItem;
+use App\Payment\PaymentTransactionManager;
+use BillingTransactionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -17,25 +18,28 @@ class AccountCurrencyTransactionTest extends TestCase
     private $validUnownedTransaction = '00000000-0000-0000-0000-000000000003';
     private $validOwnedOpenTransactionWithItem = '00000000-0000-0000-0000-000000000004';
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed()->seed(BillingTransactionSeeder::class);
+    }
+
     public function testValidTransactionIsRetrievedOkay()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
-        $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
+        $transactionManager = $this->app->make(PaymentTransactionManager::class);
         $transaction = $transactionManager->getTransaction($this->validOwnedCompletedTransaction);
         $this->assertnotnull($transaction);
     }
 
     public function testInvalidTransactionRetrievesNull()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
-        $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
+        $transactionManager = $this->app->make(PaymentTransactionManager::class);
         $transaction = $transactionManager->getTransaction('00000000-0000-0000-0000-00000000000A');
         $this->assertNull($transaction);
     }
 
     public function testCannotAcceptAnotherUsersTransaction()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
         $this->loginAsValidatedUser();
         $response = $this->json('GET', 'accountcurrency/acceptTransaction', [
             'token' => $this->validUnownedTransaction
@@ -45,7 +49,6 @@ class AccountCurrencyTransactionTest extends TestCase
 
     public function testClosedTransactionCannotBeUsed()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
         $this->loginAsValidatedUser();
         $response = $this->json('GET', 'accountcurrency/acceptTransaction', [
             'token' => $this->validOwnedCompletedTransaction
@@ -55,7 +58,6 @@ class AccountCurrencyTransactionTest extends TestCase
 
     public function testOpenTransactionCanBeDeclined()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
         $this->loginAsValidatedUser();
         $response = $this->followingRedirects()->json('POST', 'accountcurrency/declineTransaction', [
             'token' => $this->validOwnedOpenTransaction
@@ -65,7 +67,6 @@ class AccountCurrencyTransactionTest extends TestCase
 
     public function testOpenTransactionCanBeAccepted()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
         $this->loginAsValidatedUser();
         $response = $this->followingRedirects()->json('GET', 'accountcurrency/acceptTransaction', [
             'token' => $this->validOwnedOpenTransaction
@@ -76,7 +77,6 @@ class AccountCurrencyTransactionTest extends TestCase
 
     public function testClosedTransactionCannotBeDeclined()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
         $this->loginAsValidatedUser();
         $response = $this->followingRedirects()->json('POST', 'accountcurrency/declineTransaction', [
             'token' => $this->validOwnedCompletedTransaction
@@ -89,14 +89,13 @@ class AccountCurrencyTransactionTest extends TestCase
      */
     public function testCompletedTransactionHasRewardedAmountRecorded()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
         $this->loginAsValidatedUser();
         $token = $this->validOwnedOpenTransaction;
         $response = $this->followingRedirects()->json('GET', 'accountcurrency/acceptTransaction', [
             'token' => $token
         ]);
         $response->assertSuccessful();
-        $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
+        $transactionManager = $this->app->make(PaymentTransactionManager::class);
         $transaction = $transactionManager->getTransaction($token);
         $this->assertEquals('fulfilled', $transaction->result, "Transaction status should have been fulfilled");
         $this->assertNotNull($transaction->accountCurrencyRewarded);
@@ -107,13 +106,12 @@ class AccountCurrencyTransactionTest extends TestCase
      */
     public function testCompletedTransactionWithItemsHasItemsRewardedAmountRecorded()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
         $this->loginAsValidatedUser();
         $token = $this->validOwnedOpenTransactionWithItem;
-        $response = $this->followingRedirects()->json('GET', 'accountcurrency/acceptTransaction', [
+        $this->followingRedirects()->json('GET', 'accountcurrency/acceptTransaction', [
             'token' => $token
         ]);
-        $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
+        $transactionManager = $this->app->make(PaymentTransactionManager::class);
         $transaction = $transactionManager->getTransaction($token);
         $this->assertEquals('fulfilled', $transaction->result, "Transaction status should have been fulfilled");
         $this->assertNotNull($transaction->accountCurrencyRewardedForItems,
@@ -125,9 +123,8 @@ class AccountCurrencyTransactionTest extends TestCase
 
     public function testUserGetsOwnTransactionsInList()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
         $user = $this->loginAsValidatedUser();
-        $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
+        $transactionManager = $this->app->make(PaymentTransactionManager::class);
         $transactions = $transactionManager->getTransactionsFor($user->getAid());
         $this->assertArrayHasKey($this->validOwnedOpenTransaction, $transactions);
         $this->assertArrayHasKey($this->validOwnedCompletedTransaction, $transactions);
@@ -135,16 +132,14 @@ class AccountCurrencyTransactionTest extends TestCase
 
     public function testUserDoesNotGetUnowedTransactionsInList()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
         $user = $this->loginAsValidatedUser();
-        $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
+        $transactionManager = $this->app->make(PaymentTransactionManager::class);
         $transactions = $transactionManager->getTransactionsFor($user->getAid());
         $this->assertArrayNotHasKey($this->validUnownedTransaction, $transactions);
     }
 
     public function testUserCanViewOwnedTransaction()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
         $this->loginAsValidatedUser();
         $response = $this->followingRedirects()->json('GET', route('accountcurrency.transaction', [
             'id' => $this->validOwnedCompletedTransaction
@@ -154,7 +149,6 @@ class AccountCurrencyTransactionTest extends TestCase
 
     public function testUserCannotViewUnownedTransaction()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
         $this->loginAsValidatedUser();
         $response = $this->followingRedirects()->json('GET', route('accountcurrency.transaction', [
             'id' => $this->validUnownedTransaction
@@ -164,7 +158,7 @@ class AccountCurrencyTransactionTest extends TestCase
 
     public function internalTestBaseAmountSavesCorrectly($transactionId)
     {
-        $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
+        $transactionManager = $this->app->make(PaymentTransactionManager::class);
         $transaction = $transactionManager->getTransaction($transactionId);
         $this->assertEquals(10, $transaction->accountCurrencyPriceUsd, "Amount didn't save");
         $this->assertEquals(0, $transaction->itemPriceUsd, "Item price should be 0");
@@ -173,7 +167,6 @@ class AccountCurrencyTransactionTest extends TestCase
 
     public function testBaseAmountOnPayPalSavesCorrectly()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
         $this->loginAsValidatedUser();
         $response = $this->followingRedirects()->json('POST', 'accountcurrency/newPayPalTransaction', [
             'amountUsd' => 10.0
@@ -185,7 +178,6 @@ class AccountCurrencyTransactionTest extends TestCase
 
     public function testBaseAmountOnCardSavesCorrectly()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
         $this->loginAsValidatedUser();
         $response = $this->followingRedirects()->json('POST', 'accountcurrency/newCardTransaction', [
             'cardId' => 1,
@@ -198,7 +190,7 @@ class AccountCurrencyTransactionTest extends TestCase
 
     private function internalTestItemSavesCorrectly($transactionId)
     {
-        $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
+        $transactionManager = $this->app->make(PaymentTransactionManager::class);
         $transaction = $transactionManager->getTransaction($transactionId);
         $this->assertEquals(0, $transaction->accountCurrencyPriceUsd, "Amount should be 0");
         $this->assertNotNull($transaction->itemPriceUsd, "Item price should be set");
@@ -207,12 +199,11 @@ class AccountCurrencyTransactionTest extends TestCase
         $item = $transaction->items[0];
         $this->assertTrue(is_a($item, PaymentTransactionItem::class), "Item isn't the right class");
         $this->assertEquals(1, $item->quantity, "Item should have a quantity of 1 set.");
-        $this->assertNotEquals(0,$item->accountCurrencyValue, "Item should have a quoted value.");
+        $this->assertNotEquals(0, $item->accountCurrencyValue, "Item should have a quoted value.");
     }
 
     public function testItemsOnCardSavesCorrectly()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
         $this->loginAsValidatedUser();
         $response = $this->followingRedirects()->json('POST', 'accountcurrency/newCardTransaction', [
             'cardId' => 1,
@@ -226,7 +217,6 @@ class AccountCurrencyTransactionTest extends TestCase
 
     public function testItemsOnPayPalSavesCorrectly()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
         $this->loginAsValidatedUser();
         $response = $this->followingRedirects()->json('POST', 'accountcurrency/newPayPalTransaction', [
             'amountUsd' => 0.0,
@@ -240,9 +230,8 @@ class AccountCurrencyTransactionTest extends TestCase
 
     public function testUpdatedVendorTransactionIdUpdatesAndPersists()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
         $this->loginAsValidatedUser();
-        $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
+        $transactionManager = $this->app->make(PaymentTransactionManager::class);
         $transaction = $transactionManager->getTransaction($this->validOwnedOpenTransaction);
         $transactionManager->updateVendorTransactionId($transaction, 'NEWTEST');
         $this->assertTrue($transaction->vendorTransactionId == 'NEWTEST', 'VendorTransactionId not updated.');
@@ -253,9 +242,8 @@ class AccountCurrencyTransactionTest extends TestCase
 
     public function testUpdatedVendorProfileIdUpdatesAndPersists()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
         $this->loginAsValidatedUser();
-        $transactionManager = $this->app->make('App\Payment\PaymentTransactionManager');
+        $transactionManager = $this->app->make(PaymentTransactionManager::class);
         $transaction = $transactionManager->getTransaction($this->validOwnedOpenTransaction);
         $transactionManager->updateVendorProfileId($transaction, 'NEWTEST');
         $this->assertTrue($transaction->vendorProfileId == 'NEWTEST', 'VendorProfileId not updated.');
@@ -266,8 +254,7 @@ class AccountCurrencyTransactionTest extends TestCase
 
     public function testCanViewOwnTransactionHistory()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
-        $user = $this->loginAsValidatedUser();
+        $this->loginAsValidatedUser();
         $response = $this->followingRedirects()->json('GET', route('accountcurrency.transactions'));
         $response->assertSuccessful();
 
@@ -275,7 +262,6 @@ class AccountCurrencyTransactionTest extends TestCase
 
     public function testCannotViewAnothersTransactionHistory()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
         $user = $this->loginAsValidatedUser();
         $response = $this->followingRedirects()->json('GET', route('accountcurrency.transactions', [
             'accountId' => $user->getAid() + 1
@@ -286,7 +272,6 @@ class AccountCurrencyTransactionTest extends TestCase
 
     public function testAdminCanViewAnothersTransactionHistory()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
         $user = $this->loginAsAdminUser();
         $response = $this->followingRedirects()->json('GET', route('accountcurrency.transactions', [
             'accountId' => $user->getAid() + 1

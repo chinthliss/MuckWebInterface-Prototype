@@ -2,19 +2,21 @@
 
 namespace Tests\Feature;
 
-use Auth;
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 
 class AccountLoginTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed();
+    }
+
     public function testCheckSeedIsOkay()
     {
-        $this->seed();
         //TODO: Find way to test the test password!
         $this->assertDatabaseHas('accounts', [
             'email' => 'test@test.com'
@@ -36,7 +38,6 @@ class AccountLoginTest extends TestCase
      */
     public function testCanLoginWithCorrectCredentials()
     {
-        $this->seed();
         $response = $this->json('POST', route('auth.account.login', [
             'email' => 'test@test.com',
             'password' => 'password'
@@ -50,7 +51,6 @@ class AccountLoginTest extends TestCase
      */
     public function testCannotLoginWithAlternativeEmail()
     {
-        $this->seed();
         $response = $this->json('POST', route('auth.account.login', [
             'email' => 'testalt@test.com',
             'password' => 'password'
@@ -64,7 +64,6 @@ class AccountLoginTest extends TestCase
      */
     public function testCanLoginWithCorrectMuckCredentials()
     {
-        $this->seed();
         $response = $this->json('POST', route('auth.account.login', [
             'email' => 'testCharacter',
             'password' => 'password'
@@ -81,10 +80,9 @@ class AccountLoginTest extends TestCase
      */
     public function testCannotLoginWithIncorrectMuckCredentials()
     {
-        $this->seed();
         $response = $this->json('POST', route('auth.account.login', [
             'email' => 'testCharacter',
-            'password' => 'wrongpassword'
+            'password' => 'wrongPassword'
         ]));
         $response->assertStatus(422);
         $this->assertGuest();
@@ -95,7 +93,6 @@ class AccountLoginTest extends TestCase
      */
     public function testCannotAccessLoginPageWhenLoggedIn()
     {
-        $this->seed();
         $this->loginAsValidatedUser();
         $this->assertAuthenticated();
         $response = $this->get('/login');
@@ -113,7 +110,6 @@ class AccountLoginTest extends TestCase
      */
     public function testCannotLoginWithIncorrectCredentials()
     {
-        $this->seed();
         $response = $this->json('POST', route('auth.account.login', [
             'email' => 'test@test.com',
             'password' => 'wrong'
@@ -127,7 +123,6 @@ class AccountLoginTest extends TestCase
      */
     public function testLoginResponseContainsRedirectUrl()
     {
-        $this->seed();
         $response = $this->json('POST', route('auth.account.login', [
             'email' => 'test@test.com',
             'password' => 'password'
@@ -140,7 +135,6 @@ class AccountLoginTest extends TestCase
      */
     public function testCanLogout()
     {
-        $this->seed();
         $this->loginAsValidatedUser();
         $this->assertAuthenticated();
         $response = $this->post(route('logout'));
@@ -153,8 +147,7 @@ class AccountLoginTest extends TestCase
      */
     public function testLoginPopulatesRememberToken()
     {
-        $this->seed();
-        $response = $this->json('POST', route('auth.account.login', [
+        $this->json('POST', route('auth.account.login', [
             'email' => 'test@test.com',
             'password' => 'password'
         ]));
@@ -167,8 +160,7 @@ class AccountLoginTest extends TestCase
      */
     public function testLoginDoesNotPopulateRememberTokenIfRequested()
     {
-        $this->seed();
-        $response = $this->json('POST', route('auth.account.login', [
+        $this->json('POST', route('auth.account.login', [
             'email' => 'test@test.com',
             'password' => 'password',
             'forget' => true

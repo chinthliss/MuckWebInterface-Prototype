@@ -12,9 +12,14 @@ class AccountNotificationTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed();
+    }
+
     public function testNotifyingWithoutCharacterOrGameWorks()
     {
-        $this->seed();
         $user = $this->loginAsValidatedUser();
         MuckWebInterfaceNotification::NotifyAccount($user, 'Test');
         $this->assertDatabaseHas('account_notifications', [
@@ -24,7 +29,6 @@ class AccountNotificationTest extends TestCase
 
     public function testNotifyingWithGameButWithoutCharacterWorks()
     {
-        $this->seed();
         $user = $this->loginAsValidatedUser();
         MuckWebInterfaceNotification::NotifyUser($user, 'Test');
         $this->assertDatabaseHas('account_notifications', [
@@ -35,7 +39,6 @@ class AccountNotificationTest extends TestCase
 
     public function testNotifyingWithGameAndCharacterWorks()
     {
-        $this->seed();
         $user = $this->loginAsValidatedUser();
         $character = new MuckCharacter(1234, 'test', 1, []);
         MuckWebInterfaceNotification::NotifyCharacter($user, $character, 'Test');
@@ -48,7 +51,6 @@ class AccountNotificationTest extends TestCase
 
     public function testUserGetsNotifications()
     {
-        $this->seed();
         $user = $this->loginAsValidatedUser();
         MuckWebInterfaceNotification::NotifyAccount($user, 'Test');
         $transactionManager = resolve(AccountNotificationManager::class);
@@ -62,7 +64,6 @@ class AccountNotificationTest extends TestCase
      */
     public function testUserDoesNotGetAnotherUsersNotifications()
     {
-        $this->seed();
         $user = $this->loginAsOtherValidatedUser();
         MuckWebInterfaceNotification::NotifyAccount($user, 'Test');
         $user = $this->loginAsValidatedUser();
@@ -76,7 +77,6 @@ class AccountNotificationTest extends TestCase
      */
     public function testUserCanDeleteOwnNotifications()
     {
-        $this->seed();
         $user = $this->loginAsValidatedUser();
         MuckWebInterfaceNotification::NotifyAccount($user, 'Test');
         $transactionManager = resolve(AccountNotificationManager::class);
@@ -94,7 +94,6 @@ class AccountNotificationTest extends TestCase
      */
     public function testUserCannotDeleteOthersNotifications()
     {
-        $this->seed();
         $originalUser = $this->loginAsOtherValidatedUser();
         MuckWebInterfaceNotification::NotifyAccount($originalUser, 'Test');
         $transactionManager = resolve(AccountNotificationManager::class);

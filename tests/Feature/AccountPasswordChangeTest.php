@@ -2,9 +2,6 @@
 
 namespace Tests\Feature;
 
-use Auth;
-use App\Notifications\ResetPassword;
-use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 

@@ -3,8 +3,9 @@
 
 namespace Tests\Feature;
 
-
-use App\Payment\PaymentSubscription;
+use App\Payment\PaymentSubscriptionManager;
+use BillingSubscriptionSeeder;
+use BillingTransactionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
@@ -21,25 +22,28 @@ class AccountCurrencySubscriptionTest extends TestCase
     private $validOwedActiveAndDueSubscription = '00000000-0000-0000-0000-000000000005';
     private $validOwedActiveAndFailedSubscription = '00000000-0000-0000-0000-000000000006';
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed()->seed(BillingTransactionSeeder::class)->seed(BillingSubscriptionSeeder::class);
+    }
+
     public function testValidSubscriptionIsRetrievedOkay()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class)->seed(\BillingSubscriptionSeeder::class);
-        $subscriptionManager = $this->app->make('App\Payment\PaymentSubscriptionManager');
+        $subscriptionManager = $this->app->make(PaymentSubscriptionManager::class);
         $subscription = $subscriptionManager->getSubscription($this->validOwnedNewSubscription);
         $this->assertnotnull($subscription);
     }
 
     public function testInvalidSubscriptionRetrievesNull()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class)->seed(\BillingSubscriptionSeeder::class);
-        $subscriptionManager = $this->app->make('App\Payment\PaymentSubscriptionManager');
+        $subscriptionManager = $this->app->make(PaymentSubscriptionManager::class);
         $subscription = $subscriptionManager->getSubscription('00000000-0000-0000-0000-00000000000A');
         $this->assertNull($subscription);
     }
 
     public function testCannotAcceptAnotherUsersSubscription()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class)->seed(\BillingSubscriptionSeeder::class);
         $this->loginAsValidatedUser();
         $response = $this->json('GET', 'accountcurrency/acceptSubscription', [
             'token' => $this->validUnownedSubscription
@@ -49,7 +53,6 @@ class AccountCurrencySubscriptionTest extends TestCase
 
     public function testClosedSubscriptionCannotBeAccepted()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class)->seed(\BillingSubscriptionSeeder::class);
         $this->loginAsValidatedUser();
         $response = $this->json('GET', 'accountcurrency/acceptSubscription', [
             'token' => $this->validOwnedClosedSubscription
@@ -59,7 +62,6 @@ class AccountCurrencySubscriptionTest extends TestCase
 
     public function testNewSubscriptionCanBeDeclined()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class)->seed(\BillingSubscriptionSeeder::class);
         $this->loginAsValidatedUser();
         $response = $this->followingRedirects()->json('POST', 'accountcurrency/declineSubscription', [
             'token' => $this->validOwnedNewSubscription
@@ -69,7 +71,6 @@ class AccountCurrencySubscriptionTest extends TestCase
 
     public function testNewSubscriptionCanBeAccepted()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class)->seed(\BillingSubscriptionSeeder::class);
         $this->loginAsValidatedUser();
         $response = $this->followingRedirects()->json('GET', 'accountcurrency/acceptSubscription', [
             'token' => $this->validOwnedNewSubscription
@@ -80,7 +81,6 @@ class AccountCurrencySubscriptionTest extends TestCase
 
     public function testActiveSubscriptionCannotBeDeclined()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class)->seed(\BillingSubscriptionSeeder::class);
         $this->loginAsValidatedUser();
         $response = $this->followingRedirects()->json('POST', 'accountcurrency/declineSubscription', [
             'token' => $this->validOwnedActiveSubscription
@@ -90,7 +90,6 @@ class AccountCurrencySubscriptionTest extends TestCase
 
     public function testActiveCardSubscriptionCanBeCancelled()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class)->seed(\BillingSubscriptionSeeder::class);
         $this->loginAsValidatedUser();
         $response = $this->followingRedirects()->json('POST', 'accountcurrency/cancelSubscription', [
             'id' => $this->validOwnedActiveSubscription
@@ -100,7 +99,6 @@ class AccountCurrencySubscriptionTest extends TestCase
 
     public function testUnownedActiveCardSubscriptionCannotBeCancelled()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class)->seed(\BillingSubscriptionSeeder::class);
         $this->loginAsValidatedUser();
         $response = $this->followingRedirects()->json('POST', 'accountcurrency/cancelSubscription', [
             'id' => $this->validUnownedSubscription
@@ -111,27 +109,24 @@ class AccountCurrencySubscriptionTest extends TestCase
 
     public function testUserGetsOwnSubscriptionsInList()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class)->seed(\BillingSubscriptionSeeder::class);
         $user = $this->loginAsValidatedUser();
-        $subscriptionManager = $this->app->make('App\Payment\PaymentSubscriptionManager');
+        $subscriptionManager = $this->app->make(PaymentSubscriptionManager::class);
         $subscriptions = $subscriptionManager->getSubscriptionsFor($user->getAid());
         $this->assertArrayHasKey($this->validOwnedActiveSubscription, $subscriptions);
         $this->assertArrayHasKey($this->validOwnedNewSubscription, $subscriptions);
         $this->assertArrayHasKey($this->validOwnedClosedSubscription, $subscriptions);
     }
 
-    public function testUserDoesNotGetUnowedSubscriptionsInList()
+    public function testUserDoesNotGetUnownedSubscriptionsInList()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class)->seed(\BillingSubscriptionSeeder::class);
         $user = $this->loginAsValidatedUser();
-        $subscriptionManager = $this->app->make('App\Payment\PaymentSubscriptionManager');
+        $subscriptionManager = $this->app->make(PaymentSubscriptionManager::class);
         $subscriptions = $subscriptionManager->getSubscriptionsFor($user->getAid());
         $this->assertArrayNotHasKey($this->validUnownedSubscription, $subscriptions);
     }
 
     public function testUserCanViewOwnedSubscription()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class)->seed(\BillingSubscriptionSeeder::class);
         $this->loginAsValidatedUser();
         $response = $this->followingRedirects()->json('GET', route('accountcurrency.subscription', [
             'id' => $this->validOwnedActiveSubscription
@@ -141,7 +136,6 @@ class AccountCurrencySubscriptionTest extends TestCase
 
     public function testUserCannotViewUnownedSubscription()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class)->seed(\BillingSubscriptionSeeder::class);
         $this->loginAsValidatedUser();
         $response = $this->followingRedirects()->json('GET', route('accountcurrency.subscription', [
             'id' => $this->validUnownedSubscription
@@ -151,9 +145,8 @@ class AccountCurrencySubscriptionTest extends TestCase
 
     public function testUpdatedVendorProfileIdUpdatesAndPersists()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class)->seed(\BillingSubscriptionSeeder::class);
         $this->loginAsValidatedUser();
-        $subscriptionManager = $this->app->make('App\Payment\PaymentSubscriptionManager');
+        $subscriptionManager = $this->app->make(PaymentSubscriptionManager::class);
         $subscription = $subscriptionManager->getSubscription($this->validOwnedActiveSubscription);
         $subscriptionManager->updateVendorProfileId($subscription, 'NEWTEST');
         $this->assertTrue($subscription->vendorProfileId == 'NEWTEST', 'VendorProfileId not updated.');
@@ -164,10 +157,9 @@ class AccountCurrencySubscriptionTest extends TestCase
 
     public function testActiveAndDueSubscriptionIsProcessed()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class)->seed(\BillingSubscriptionSeeder::class);
         $this->artisan('payment:processsubscriptions')
             ->assertExitCode(0);
-        $subscriptionManager = $this->app->make('App\Payment\PaymentSubscriptionManager');
+        $subscriptionManager = $this->app->make(PaymentSubscriptionManager::class);
         $subscription = $subscriptionManager->getSubscription($this->validOwedActiveAndDueSubscription);
         $this->assertTrue($subscription->lastChargeAt
             && $subscription->lastChargeAt->diffInMinutes(Carbon::now()) < 5,
@@ -176,11 +168,10 @@ class AccountCurrencySubscriptionTest extends TestCase
 
     public function testActiveSubscriptionWithARecentlyFailedTransactionDoesNotRun()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class)->seed(\BillingSubscriptionSeeder::class);
         Config::set('app.process_automated_payments', true);
         $this->artisan('payment:processsubscriptions')
             ->assertExitCode(0);
-        $subscriptionManager = $this->app->make('App\Payment\PaymentSubscriptionManager');
+        $subscriptionManager = $this->app->make(PaymentSubscriptionManager::class);
         $subscription = $subscriptionManager->getSubscription($this->validOwedActiveAndFailedSubscription);
         $this->assertNull($subscription->lastChargeAt,
             "Subscription's last charge should be null but is: {$subscription->lastChargeAt}");
@@ -191,11 +182,10 @@ class AccountCurrencySubscriptionTest extends TestCase
      */
     public function testActiveAndDueSubscriptionIsNotProcessedIfDisabled()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class)->seed(\BillingSubscriptionSeeder::class);
         Config::set('app.process_automated_payments', false);
         $this->artisan('payment:processsubscriptions')
             ->assertExitCode(0);
-        $subscriptionManager = $this->app->make('App\Payment\PaymentSubscriptionManager');
+        $subscriptionManager = $this->app->make(PaymentSubscriptionManager::class);
         $subscription = $subscriptionManager->getSubscription($this->validOwedActiveAndDueSubscription);
         $this->assertTrue($subscription->lastChargeAt
             && $subscription->lastChargeAt->diffInMinutes(Carbon::now()) > 5,

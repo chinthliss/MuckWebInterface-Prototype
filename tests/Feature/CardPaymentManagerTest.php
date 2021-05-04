@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Payment\CardPaymentManager;
+use BillingTransactionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
@@ -20,11 +21,11 @@ class CardPaymentManagerTest extends TestCase
     {
         parent::setUp();
         $this->cardPaymentManager = $this->app->make(CardPaymentManager::class);
+        $this->seed()->seed(BillingTransactionSeeder::class);
     }
 
     public function testCanGetCustomerIdForUser()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
         $user = $this->loginAsValidatedUser();
         $customerId = $this->cardPaymentManager->getCustomerIdFor($user);
         $this->assertNotNull($customerId);
@@ -32,7 +33,6 @@ class CardPaymentManagerTest extends TestCase
 
     public function testUserCannotAddInvalidCard()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
         $user = $this->loginAsValidatedUser();
         $startingCardCount = count($this->cardPaymentManager->getCardsFor($user));
         $response = $this->json('POST', route('payment.cardmanagement.add', [
@@ -45,7 +45,6 @@ class CardPaymentManagerTest extends TestCase
 
     public function testUserCanAddValidCard()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
         $user = $this->loginAsValidatedUser();
         $monthAhead = Carbon::now()->addMonth();
         $response = $this->json('POST', route('payment.cardmanagement.add'), [
@@ -62,7 +61,6 @@ class CardPaymentManagerTest extends TestCase
      */
     public function testUserCanDeleteCard()
     {
-        $this->seed()->seed(\BillingTransactionSeeder::class);
         $user = $this->loginAsValidatedUser();
         $monthAhead = Carbon::now()->addMonth();
         $this->json('POST', route('payment.cardmanagement.delete'), [

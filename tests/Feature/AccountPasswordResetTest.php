@@ -2,22 +2,23 @@
 
 namespace Tests\Feature;
 
-use Auth;
-use App\Helpers\MuckInterop;
 use App\Notifications\ResetPassword;
-use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class AccountPasswordResetTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed();
+    }
+
     public function testCheckSeedIsOkay()
     {
-        $this->seed();
         $this->assertDatabaseHas('accounts', [
             'email' => 'test@test.com'
         ]);
@@ -28,7 +29,6 @@ class AccountPasswordResetTest extends TestCase
      */
     public function testForgottenPasswordRequestWorks()
     {
-        $this->seed();
         $response = $this->json('POST', route('auth.account.passwordforgotten', [
             'email' => 'test@test.com'
         ]));
@@ -41,7 +41,6 @@ class AccountPasswordResetTest extends TestCase
      */
     public function testInvalidEmailWorks()
     {
-        $this->seed();
         $response = $this->json('POST', route('auth.account.passwordforgotten', [
             'email' => 'invalidemail@test.com'
         ]));
@@ -80,7 +79,6 @@ class AccountPasswordResetTest extends TestCase
      */
     public function testResetPasswordEmailSentAfterForgottenPasswordRequest()
     {
-        $this->seed();
         Notification::fake();
         Notification::assertNothingSent();
         $this->json('POST', route('auth.account.passwordforgotten', [
@@ -96,7 +94,6 @@ class AccountPasswordResetTest extends TestCase
      */
     public function testResetPasswordEmailHasLink()
     {
-        $this->seed();
         Notification::fake();
         $this->json('POST', route('auth.account.passwordforgotten', [
             'email' => 'test@test.com'
@@ -115,7 +112,6 @@ class AccountPasswordResetTest extends TestCase
      */
     public function testResetLinkProvidesAccessToPasswordReset()
     {
-        $this->seed();
         Notification::fake();
         $this->json('POST', route('auth.account.passwordforgotten', [
             'email' => 'test@test.com'
@@ -134,7 +130,6 @@ class AccountPasswordResetTest extends TestCase
      */
     public function testResetPasswordWorks()
     {
-        $this->seed();
         Notification::fake();
         $this->json('POST', route('auth.account.passwordforgotten', [
             'email' => 'test@test.com'

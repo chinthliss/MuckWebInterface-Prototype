@@ -14,15 +14,14 @@ class PatreonTest extends TestCase
 {
     use refreshDatabase;
 
-    /**
-     * Tests the basically functionality for patreon.
-     *
-     * @return void
-     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed()->seed(PatreonSeeder::class);
+    }
+
     public function testLoadingFromDatabaseWorks()
     {
-        $this->seed();
-        $this->seed(PatreonSeeder::class);
         $patreonManager = resolve(PatreonManager::class);
         $pledges = $patreonManager->getPatrons();
         $this->assertNotEmpty($pledges);
@@ -30,8 +29,6 @@ class PatreonTest extends TestCase
 
     public function testLoadingLegacyClaimsFromDatabaseWorks()
     {
-        $this->seed();
-        $this->seed(PatreonSeeder::class);
         $patreonManager = resolve(PatreonManager::class);
         $claims = $patreonManager->getLegacyclaims();
         $this->assertNotEmpty($claims);
@@ -39,8 +36,6 @@ class PatreonTest extends TestCase
 
     public function testPreviousContributionsCalculatedCorrectly()
     {
-        $this->seed();
-        $this->seed(PatreonSeeder::class);
         $patreonManager = resolve(PatreonManager::class);
         $patron = $patreonManager->getPatron(1);
         $previousAmountCents = $patron->memberships[1]->rewardedCents;
@@ -51,8 +46,6 @@ class PatreonTest extends TestCase
     public function testLegacyClaimsDoNotSendNotification()
     {
         Notification::fake();
-        $this->seed();
-        $this->seed(PatreonSeeder::class);
         $this->artisan('patreon:convertlegacy')
             ->assertExitCode(0);
         Notification::assertNothingSent();
@@ -60,9 +53,6 @@ class PatreonTest extends TestCase
 
     public function testLegacyClaimsTotalCorrectly()
     {
-        $this->seed();
-        $this->seed(PatreonSeeder::class);
-
         $patreonManager = resolve(PatreonManager::class);
         $patron = $patreonManager->getPatron(1);
         $this->assertEquals(150, $patron->memberships[1]->rewardedCents);
@@ -77,8 +67,6 @@ class PatreonTest extends TestCase
 
     public function testRewardsProcessCorrectly()
     {
-        $this->seed();
-        $this->seed(PatreonSeeder::class);
         Config::set('app.process_automated_payments', true);
 
         $patreonManager = resolve(PatreonManager::class);
@@ -98,8 +86,6 @@ class PatreonTest extends TestCase
      */
     public function testRewardsDoNotProcessWhenDisabled()
     {
-        $this->seed();
-        $this->seed(PatreonSeeder::class);
         Config::set('app.process_automated_payments', false);
 
         $this->artisan('patreon:processrewards')

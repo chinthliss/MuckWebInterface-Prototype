@@ -8,17 +8,6 @@ use Tests\TestCase;
 
 class CardTest extends TestCase
 {
-
-    /* Not required now the card functions are on the card class
-    protected $manager;
-
-    public function setUp(): void
-    {
-        parent::setUp();
-        $this->manager = $this->app->make('App\Payment\CardPaymentManager');
-    }
-    */
-
     public function testCheckLuhnChecksumIsValid()
     {
         $validValues = [
