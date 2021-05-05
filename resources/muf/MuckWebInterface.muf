@@ -26,7 +26,7 @@ $ifdef is_dev
    $def allowCrossDomain 1
 $endif
 
-$def parseFloatOrInt dup "." instring if strtof else atoi then
+$def parseFloatOrInt dup string? if dup "." instring if strtof else atoi then then
 $include $lib/account
 $include $lib/kta/proto
 $include $lib/kta/json
@@ -183,19 +183,18 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 (Expects {account, accountCurrency} returns amount rewarded)
 : handleRequest_fulfillPatreonSupport[ arr:webcall -- ]
     webcall @ "account" array_getitem ?dup if acct_any2aid else pop response400 exit then var! account
-    webcall @ "accountCurrency" array_getitem atoi dup 0 <= if pop pop response400 exit then
+    webcall @ "accountCurrency" array_getitem atoi dup 0 <= if pop response400 exit then var! accountCurrency
    
     account @ acct_getalts foreach nip
       "Loyal Patreon" "Thanks for supporting development through patreon!" addbadge
     repeat
     
-    -1 * (Rewards are just negative spending.)
-    account @ acct_aid2email (makoadjust wants such for stack order)
-    makoadjust var! accountCurrencyAmount
+    account @ accountCurrency @ -1 * "Patreon contributions." makospend 
+    if accountCurrency @ else 0 then var! accountCurrencyRewarded
     
-    depth popn (Other code claims Makoadjust sometimes leaves a 1 on the stack)
+    depth popn (Other code claims Makoadjust sometimes leaves a 1 on the stack, duplicating here just in case)
     startAcceptedResponse
-    accountCurrencyAmount @ intostr
+    accountCurrencyRewarded @ intostr
     descr swap descrnotify
 ; selfcall handleRequest_fulfillPatreonSupport
 
@@ -292,3 +291,6 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 .
 c
 q
+!! Testing from tinker on server:
+!! App::make(App\Muck\MuckConnection::class)->fulfillAccountCurrencyPurchase(3989,1,2,null)
+!! App::make(App\Muck\MuckConnection::class)->fulfillPatreonSupport(3989,1)
