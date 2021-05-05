@@ -137,34 +137,6 @@ class HttpMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function rewardAccountCurrency(int $accountId, int $accountCurrency, string $reason): bool
-    {
-        if ($accountCurrency < 0) throw new Error("Negative value used for rewarding account currency. Use the spend function if this was intentional.");
-        $response = $this->requestFromMuck('rewardAccountCurrency', [
-            'account' => $accountId,
-            'accountCurrency' => $accountCurrency,
-            'reason' => $reason
-        ]);
-        return $response == 1;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function spendAccountCurrency(int $accountId, int $accountCurrency, string $reason): bool
-    {
-        if ($accountCurrency < 0) throw new Error("Negative value used for spending account currency. Use the reward function if this was intentional.");
-        $response = $this->requestFromMuck('spendAccountCurrency', [
-            'account' => $accountId,
-            'accountCurrency' => $accountCurrency,
-            'reason' => $reason
-        ]);
-        return $response == 1;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function fulfillAccountCurrencyPurchase(int $accountId, float $usdAmount,
                                                    int $accountCurrency, ?string $subscriptionId): int
     {
@@ -173,6 +145,18 @@ class HttpMuckConnection implements MuckConnection
             'usdAmount' => $usdAmount,
             'accountCurrency' => $accountCurrency,
             'subscriptionId' => $subscriptionId
+        ]);
+        return (int)$response;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function fulfillPatreonSupport(int $accountId, int $accountCurrency): int
+    {
+        $response = $this->requestFromMuck('fulfillAccountCurrencyPurchase', [
+            'account' => $accountId,
+            'accountCurrency' => $accountCurrency
         ]);
         return (int)$response;
     }

@@ -70,22 +70,11 @@ interface MuckConnection
     public function fulfillAccountCurrencyPurchase(int $accountId, float $usdAmount, int $accountCurrency, ?string $subscriptionId): int;
 
     /**
-     * Spends account currency
      * @param int $accountId
      * @param int $accountCurrency
-     * @param string $reason
-     * @return bool success?
+     * @return mixed
      */
-    public function spendAccountCurrency(int $accountId, int $accountCurrency, string $reason): bool;
-
-    /**
-     * Rewards account currency
-     * @param int $accountId
-     * @param int $accountCurrency
-     * @param string $reason
-     * @return bool success?
-     */
-    public function rewardAccountCurrency(int $accountId, int $accountCurrency, string $reason): bool;
+    public function fulfillPatreonSupport(int $accountId, int $accountCurrency);
 
     /**
      * @param int $accountId

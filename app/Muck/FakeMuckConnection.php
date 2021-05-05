@@ -106,32 +106,6 @@ class FakeMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function rewardAccountCurrency(int $accountId, int $accountCurrency, string $reason): bool
-    {
-        self::fakeMuckCall('rewardAccountCurrency', [
-            'accountId' => $accountId,
-            'accountCurrency' => $accountCurrency,
-            'reason' => $reason
-        ]);
-        return true;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function spendAccountCurrency(int $accountId, int $accountCurrency, string $reason): bool
-    {
-        self::fakeMuckCall('spendAccountCurrency', [
-            'accountId' => $accountId,
-            'accountCurrency' => $accountCurrency,
-            'reason' => $reason
-        ]);
-        return true;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function fulfillAccountCurrencyPurchase(int $accountId, float $usdAmount,
                                                    int $accountCurrency, ?string $subscriptionId): int
     {
@@ -140,6 +114,18 @@ class FakeMuckConnection implements MuckConnection
             'usdAmount' => $usdAmount,
             'accountCurrency' => $accountCurrency,
             'subscriptionId' => $subscriptionId
+        ]);
+        return $accountCurrency;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function fulfillPatreonSupport(int $accountId, int $accountCurrency): int
+    {
+        self::fakeMuckCall('fulfillPatreonSupport', [
+            'accountId' => $accountId,
+            'accountCurrency' => $accountCurrency
         ]);
         return $accountCurrency;
     }

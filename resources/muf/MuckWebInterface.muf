@@ -164,33 +164,6 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     descr swap descrnotify
 ; selfcall handleRequest_fulfillAccountCurrencyPurchase
 
-(Expects {account, accountCurrency, reason} returns whether it sueceeded)
-: handleRequest_spendAccountCurrency[ arr:webcall -- ]
-    webcall @ "account" array_getitem ?dup if acct_any2aid else pop response400 exit then
-    webcall @ "accountCurrency" array_getitem atoi
-    dup 0 < if pop pop response400 exit then
-    webcall @ "reason" array_getitem 
-    makospend var! result
-    startAcceptedResponse
-    result @ intostr
-    descr swap descrnotify
-; selfcall handleRequest_spendAccountCurrency
-
-(Expects {account, accountCurrency, reason} returns whether it sueceeded)
-: handleRequest_rewardAccountCurrency[ arr:webcall -- ]
-    (This function is separate from spendAccountCurrency only to allow a chance to avoid unintentional negative bounds mishaps)
-    webcall @ "account" array_getitem ?dup if acct_any2aid else pop response400 exit then
-    webcall @ "accountCurrency" array_getitem atoi
-    dup 0 < if pop pop response400 exit then
-    -1 * (Rewards are just negative spending.)
-    webcall @ "reason" array_getitem 
-    makospend var! result
-    startAcceptedResponse
-    result @ intostr
-    descr swap descrnotify
-; selfcall handleRequest_rewardAccountCurrency
-
-
 (Expects {account, usdAmount, accountCurrency, itemCode}, returns currency rewarded as part of such)
 : handleRequest_rewardItem[ arr:webcall -- ]
     webcall @ "account" array_getitem ?dup if acct_any2aid else pop response400 exit then var! account
@@ -206,6 +179,25 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     accountCurrencyAmount @ intostr 
     descr swap descrnotify
 ; selfcall handleRequest_rewardItem
+
+(Expects {account, accountCurrency} returns amount rewarded)
+: handleRequest_fulfillPatreonSupport[ arr:webcall -- ]
+    webcall @ "account" array_getitem ?dup if acct_any2aid else pop response400 exit then var! account
+    webcall @ "accountCurrency" array_getitem atoi dup 0 <= if pop pop response400 exit then
+   
+    account @ acct_getalts foreach nip
+      "Loyal Patreon" "Thanks for supporting development through patreon!" addbadge
+    repeat
+    
+    -1 * (Rewards are just negative spending.)
+    account @ acct_aid2email (makoadjust wants such for stack order)
+    makoadjust var! accountCurrencyAmount
+    
+    depth popn (Other code claims Makoadjust sometimes leaves a 1 on the stack)
+    startAcceptedResponse
+    accountCurrencyAmount @ intostr
+    descr swap descrnotify
+; selfcall handleRequest_fulfillPatreonSupport
 
 (Takes no arguments, returns stretchgoals as an array of [progress:int, goals:[amount:description]].)
 : handleRequest_stretchGoals[ arr:webcall -- ]
@@ -260,7 +252,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
             prog "handleRequest_" rot strcat
             over over cancall? if parsedBody @ rot rot call 
             else pop pop response404 exit
-            then
+            then        
         else 
             response400 exit
         then

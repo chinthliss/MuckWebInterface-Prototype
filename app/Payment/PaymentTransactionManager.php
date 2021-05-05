@@ -392,10 +392,10 @@ class PaymentTransactionManager
                 );
             } else {
                 //Patreon route - we use reward instead since the support wasn't direct to the MUCK
-                if ($this->muck->rewardAccountCurrency(
+                if ($this->muck->fulfillPatreonSupport(
                     $transaction->accountId,
-                    $transaction->accountCurrencyQuoted,
-                    'Patreon Reward')) $transaction->accountCurrencyRewarded = $transaction->accountCurrencyQuoted;
+                    $transaction->accountCurrencyQuoted))
+                    $transaction->accountCurrencyRewarded = $transaction->accountCurrencyQuoted;
             }
         }
 
