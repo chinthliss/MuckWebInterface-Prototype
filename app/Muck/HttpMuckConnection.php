@@ -154,7 +154,7 @@ class HttpMuckConnection implements MuckConnection
      */
     public function fulfillPatreonSupport(int $accountId, int $accountCurrency): int
     {
-        $response = $this->requestFromMuck('fulfillAccountCurrencyPurchase', [
+        $response = $this->requestFromMuck('fulfillPatreonSupport', [
             'account' => $accountId,
             'accountCurrency' => $accountCurrency
         ]);
