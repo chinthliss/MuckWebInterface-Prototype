@@ -7,7 +7,7 @@
 * ~~Log on as character with username/password~~
 * (Started) Actual styling/theming
 * (Started) Responsive layout
-* Notices (Account-based notices)
+* ~~Notices (Account-based notices)~~
   * Browser notifications (Opt-in rather than forced)
 * ~~Re-add webNoAvatars option and provide access to on account page~~
 * ~~Re-add webUseFullWidth option and provide access to on account page~~
@@ -31,7 +31,7 @@
 * ~~Save claims in new format~~
 * ~~Automatic claiming~~
 * ~~Status browser~~
-* Badges need to be rewarded
+* ~~Badges need to be rewarded~~
 
 ## Multiplayer pages
 
