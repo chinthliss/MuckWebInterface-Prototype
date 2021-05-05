@@ -12,11 +12,18 @@ const mix = require('laravel-mix');
  */
 
 mix
-    .disableNotifications()
     .js('resources/js/app.js', 'public/js')
     .sass('resources/sass/app.scss', 'public/css')
-    //.extract(['vue', 'bootstrap', 'jquery', 'axios', 'lodash', 'popper.js', 'process', 'setimmediate', 'timers-browserify'])
     .extract() // This now extracts all external dependencies
-    .browserSync({proxy:'local-homestead.com', open:false})
     .sourceMaps(false)
 ;
+
+if (mix.inProduction()) {
+    mix
+        .version() // Version files to add cache busting in live
+        .disableNotifications()
+}
+else {
+    mix
+        .browserSync({proxy:'local-homestead.com', open:false});
+}
