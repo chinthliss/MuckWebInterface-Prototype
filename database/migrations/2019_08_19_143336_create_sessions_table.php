@@ -20,7 +20,6 @@ class CreateSessionsTable extends Migration
             $table->text('payload');
             $table->integer('last_activity');
             $table->unsignedBigInteger('aid')->nullable()->unsigned();
-            $table->unsignedBigInteger('player_dbref')->nullable();
             // $table->timestamps(); // Session already has last_activity
         });
     }

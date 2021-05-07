@@ -35,7 +35,7 @@ class DatabaseForMuckSessionHandler extends DatabaseSessionHandler
     }
 
     /**
-     * Saves additional values that are only in the database so the muck can read them
+     * Saves any additional values that are only in the database so the muck can read them
      *
      * @param  array  $payload
      * @return $this
@@ -45,7 +45,8 @@ class DatabaseForMuckSessionHandler extends DatabaseSessionHandler
         $user = auth()->user();
         if ($user) {
             $payload['aid'] = $user->getAid();
-            if (method_exists($user, 'getCharacterDbref') && $user->getCharacterDbref()) $payload['player_dbref'] = $user->getCharacterDbref();
+            // No longer saving active character on session since it can be polluted across multiple tabs
+            // if (method_exists($user, 'getCharacterDbref') && $user->getCharacterDbref()) $payload['player_dbref'] = $user->getCharacterDbref();
         }
         return $this;
     }
