@@ -22,8 +22,11 @@ if (mix.inProduction()) {
     mix
         .version() // Version files to add cache busting in live
         .disableNotifications()
+    ;
 }
 else {
     mix
-        .browserSync({proxy:'local-homestead.com', open:false});
+        .browserSync({proxy:'local-homestead.com', open:false})
+        .disableSuccessNotifications()
+    ;
 }
