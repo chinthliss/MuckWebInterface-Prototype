@@ -171,10 +171,26 @@ class User implements Authenticatable, MustVerifyEmail
         $this->rememberToken = $value;
     }
 
-    public function getCharacterDbref()
+    #region Characters
+
+    /**
+     * @return MuckCharacter|null
+     */
+    public function getCharacter()
+    {
+        return $this->character;
+    }
+
+    public function getCharacterDbref(): ?int
     {
         if (!$this->character) return null;
         return $this->character->getDbref();
+    }
+
+    public function getCharacterName(): ?string
+    {
+        if (!$this->character) return null;
+        return $this->character->getName();
     }
 
     public function SetCharacter(MuckCharacter $character)
@@ -182,18 +198,12 @@ class User implements Authenticatable, MustVerifyEmail
         $this->character = $character;
     }
 
-
-    public function getCharacterName()
-    {
-        if (!$this->character) return null;
-        return $this->character->getName();
-    }
-
     public function characters()
     {
         if (!$this->characters) $this->characters = $this->getProvider()->getCharacters($this);
         return $this->characters;
     }
+    #endregion Characters
 
     /**
      * Determine if the user has verified their email address.
@@ -275,14 +285,6 @@ class User implements Authenticatable, MustVerifyEmail
     {
         $this->emailVerified = $this->getProvider()->updateEmail($this, $email);
         $this->email = $email;
-    }
-
-    /**
-     * @return MuckCharacter|null
-     */
-    public function getCharacter()
-    {
-        return $this->character;
     }
 
     /**

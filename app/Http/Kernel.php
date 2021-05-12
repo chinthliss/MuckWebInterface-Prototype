@@ -2,8 +2,6 @@
 
 namespace App\Http;
 
-use App\Http\Middleware\TermsOfServiceAgreed;
-use App\Http\Middleware\HasRole;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
@@ -37,6 +35,7 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\SetActiveCharacter::class,
         ],
 
         'api' => [
@@ -62,8 +61,8 @@ class Kernel extends HttpKernel
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'tos.agreed' => TermsOfServiceAgreed::class,
-        'role' => HasRole::class
+        'tos.agreed' => \App\Http\Middleware\TermsOfServiceAgreed::class,
+        'role' => \App\Http\Middleware\HasRole::class,
     ];
 
     /**

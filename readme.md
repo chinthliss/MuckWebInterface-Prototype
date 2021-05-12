@@ -62,3 +62,12 @@ php artisan up
 * Logs are located in `/storage/logs/`
 * Terms-of-service located in `/public/terms-of-service.txt`
 
+## Active character
+* Works on top of account validation, which authenticates the account beforehand.
+* A request is made to the muck to validate a character exists and belongs to the present account. It also checks the character hasn't been locked in some way.
+* Pages served have a 'character-dbref' meta property to say which character they're for.
+* Axios Requests have an X-Character-Dbref header to 'sign' them to the correct character.
+* A 'character-dbref' is also set on the cookie to pass a value between page navigation. It's vulnerable to cross-tab pollution but deemed acceptable.    
+  
+
+  

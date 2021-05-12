@@ -63,6 +63,18 @@ class FakeMuckConnection implements MuckConnection
         return false;
     }
 
+    public function retrieveAndVerifyCharacterOnAccount(User $user, int $dbref): ?MuckCharacter
+    {
+        self::fakeMuckCall('verifyAccountHasCharacter', [
+            'account' => $user->getAid(),
+            'dbref' => $dbref
+        ]);
+        if ($dbref == '1234' and $user->getAid() === 1)
+            return MuckCharacter::fromMuckResponse('1234,TestCharacter,100,,wizard');
+        if ($dbref == '2345' and $user->getAid() === 1)
+            return MuckCharacter::fromMuckResponse('2345,TestCharacter2,100,,');
+        return null;
+    }
     //endregion
 
 

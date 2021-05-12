@@ -50,6 +50,15 @@ interface MuckConnection
      */
     public function validateCredentials(MuckCharacter $character, array $credentials): bool;
 
+    /**
+     * Gets a character, checking it's valid and belongs to the given account
+     * Returns null if it doesn't belong to the given account or isn't valid
+     * @param User $user
+     * @param int $dbref
+     * @return MuckCharacter|null
+     */
+    public function retrieveAndVerifyCharacterOnAccount(User $user, int $dbref): ?MuckCharacter;
+
     //endregion Auth
 
     /**

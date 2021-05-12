@@ -5,7 +5,7 @@
             <div v-for="character in characters" class="row">
                 <div class="col-lg-auto"><character-card :character="character" mode="tag"></character-card></div>
                 <div class="col">
-                    <button class="btn btn-primary">Make Active Character</button>
+                    <button class="btn btn-primary" @click="setActiveCharacter(character.dbref)">Make Active Character</button>
                 </div>
             </div>
         </div>
@@ -25,6 +25,14 @@
             }
         },
         methods: {
+            setActiveCharacter : (dbref) => {
+                let promise = axios.post('/account/setactivecharacter', {dbref:dbref});
+                return promise
+                    .then(response => {
+                        window.location.reload();
+                    });
+
+            }
         }
     }
 </script>

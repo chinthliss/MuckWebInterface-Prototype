@@ -30,6 +30,11 @@ class AppServiceProvider extends ServiceProvider
             return $user && $user->hasRole('admin');
         });
 
+        Blade::if('Character', function() {
+            $user = auth()->user();
+            return $user && $user->getCharacter();
+        });
+
         // Add the capability of blade views to pick up on fullwidth preference
         Blade::if('PrefersFullWidth', function() {
             $user = auth()->user();

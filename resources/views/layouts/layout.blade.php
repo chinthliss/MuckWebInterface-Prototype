@@ -9,8 +9,13 @@
 
     <!-- Account if logged in -->
     @auth
-    <meta name="account-id" content="{{ Auth::user()->getAid() }}"
+    <meta name="account-id" content="{{ Auth::user()->getAid() }}">
     @endauth
+
+    <!-- Character if set -->
+    @Character
+    <meta name="character-dbref" content="{{ Auth::user()->getCharacterDbref() }}">
+    @endCharacter
 
     <!-- Title -->
     @hasSection('title')
@@ -76,17 +81,19 @@
 
                 <!-- Right Side Of Navbar -->
                 <ul class="navbar-nav ml-auto">
-                    <!-- Authentication Links -->
+                    <!-- Core Links -->
                     @guest
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('login') }}">Login</a>
                         </li>
                     @else
+                        @Character
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('auth.account') }}">
+                            <a class="nav-link" href="{{ route('home') }}">
                                 {{ Auth::user()->getCharacterName() }}
                             </a>
                         </li>
+                        @endCharacter
                         @if (Route::has('auth.account'))
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('auth.account') }}">Account</a>

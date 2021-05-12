@@ -137,6 +137,23 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     else response400 then
 ; selfcall handleRequest_validateCredentials
 
+(Expects 'dbref' and 'account', returns a playerToString response if the dbref is a valid player on that account, otherwise returns empty response)
+: handleRequest_verifyAccountHasCharacter[ arr:webcall -- ]
+    webcall @ "account" array_getitem ?dup if acct_any2aid else response400 exit then var! account
+    webcall @ "dbref" array_getitem ?dup if atoi dbref else response400 exit then var! character
+    startAcceptedResponse
+    character @ player? if
+        character @ acct_any2aid
+        account @ = if
+            (Check character isn't banned)
+            character @ "@banned" getpropstr not if
+                character @ playerToString
+                descr swap descrnotify
+            then
+        then
+    then
+; selfcall handleRequest_verifyAccountHasCharacter
+
 ( -------------------------------------------------- )
 ( Payment related )
 ( -------------------------------------------------- )

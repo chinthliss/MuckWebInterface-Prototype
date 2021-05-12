@@ -57,8 +57,10 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
     Route::get('home', [HomeController::class, 'show'])
         ->name('home');
 
-
+    //Account
     Route::get('account', [AccountController::class, 'show'])->name('auth.account');
+    Route::post('account/setactivecharacter', [CharacterController::class, 'setActiveCharacter'])
+        ->name('multiplayer.character.set');
     //Password change
     Route::get('account/changepassword', [AccountPasswordController::class, 'showChange'])
         ->name('auth.account.passwordchange');
