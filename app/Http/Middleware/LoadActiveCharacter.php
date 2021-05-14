@@ -6,10 +6,10 @@ use App\Muck\MuckConnection;
 use Closure;
 
 /**
- * Class SetActiveCharacter
- * Verifies and sets the active character. Does not gate on such, merely keeps the setting going.
+ * Class LoadActiveCharacter
+ * Verifies and sets the active character. Does not gate on such.
  */
-class SetActiveCharacter
+class LoadActiveCharacter
 {
     /**
      * @var MuckConnection
@@ -22,12 +22,8 @@ class SetActiveCharacter
     }
 
     /**
-     * During request  - If a character dbref is specified, verifies and sets active character on the User object
-     *                   Takes it from the header or cookie with the former getting precedence.
-     * During response - If an active character is set on User, adds it to the cookie
-     *
-     * TODO: Separate SetActiveCharacter out so that it can be used at the api level later,
-     *   as otherwise setting the cookie causes issues.
+     * If a character dbref is specified, verifies and sets active character on the User object
+     * Takes it from the header or cookie with the former getting precedence.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure  $next
@@ -49,15 +45,6 @@ class SetActiveCharacter
                 if ($character) $user->setCharacter($character);
             }
         }
-        $response = $next($request);
-
-        //Re-fetch user just in case they weren't logged in beforehand and logged in directly as a character
-        $user = $request->user('account');
-        if ($user && $characterDbref = $user->getCharacterDbref()) {
-            return $response->withCookie(cookie()->forever('character-dbref', $characterDbref));
-        }
-        else {
-            return $response;
-        }
+        return $next($request);
     }
 }

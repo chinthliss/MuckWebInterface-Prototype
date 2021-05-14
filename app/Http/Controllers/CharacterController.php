@@ -9,9 +9,14 @@ class CharacterController extends Controller
 {
     public function show(MuckConnection $muck, string $characterName)
     {
-        return view('character')->with([
+        return view('multiplayer.character')->with([
             'character' => $characterName
         ]);
+    }
+
+    public function showCharacterSelect()
+    {
+        return view('multiplayer.character-select');
     }
 
     public function setActiveCharacter(Request $request, MuckConnection $muck)
