@@ -12,24 +12,22 @@ use App\Http\Controllers\Auth\AccountEmailController;
 use App\Http\Controllers\AccountNotificationsController;
 use App\Http\Controllers\Auth\AccountPasswordController;
 use App\Http\Controllers\Auth\TermsOfServiceController;
-use App\Http\Controllers\CharacterController;
-use App\Http\Controllers\HomeController;
+use App\Http\Controllers\MultiplayerController;
 use App\Http\Controllers\Payment\AccountCurrencyController;
 use App\Http\Controllers\Payment\CardManagementController;
 use App\Http\Controllers\Payment\PatreonController;
 use App\Http\Controllers\Payment\PayPalController;
-use App\Http\Controllers\WelcomeController;
+use App\Http\Controllers\HomeController;
 
 //Only available when NOT logged in
 Route::group(['middleware' => ['web', 'guest']], function() {
-    Route::get('/', [WelcomeController::class, 'show'])
-        ->name('welcome');
     Route::get('login', [AccountController::class, 'showLoginForm'])
         ->name('login');
     Route::post('account/login', [AccountController::class, 'loginAccount'])
         ->name('auth.account.login')->middleware('throttle:8,1');
     Route::post('account/create', [AccountController::class, 'createAccount'])
         ->name('auth.account.create');
+
     //Password forgot / reset
     Route::get('account/passwordforgotten', [AccountPasswordController::class, 'showForgotten'])
         ->name('auth.account.passwordforgotten');
@@ -54,24 +52,29 @@ Route::group(['middleware' => ['web', 'auth:account']], function() {
 
 //Requires account, verification and terms of service acceptance
 Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']], function() {
-    Route::get('home', [HomeController::class, 'show'])
-        ->name('home');
+
+    Route::get('multiplayer', [MultiplayerController::class, 'showCharacterDashboard'])
+        ->name('multiplayer.home');
 
     //Account
     Route::get('account', [AccountController::class, 'show'])->name('auth.account');
-    Route::post('account/setactivecharacter', [CharacterController::class, 'setActiveCharacter'])
+    Route::post('account/setactivecharacter', [MultiplayerController::class, 'setActiveCharacter'])
         ->name('multiplayer.character.set');
+
     //Password change
     Route::get('account/changepassword', [AccountPasswordController::class, 'showChange'])
         ->name('auth.account.passwordchange');
     Route::post('account/changepassword', [AccountPasswordController::class, 'changePassword']);
+
     //Email change
     Route::get('account/changeemail', [AccountEmailController::class, 'showChangeEmail'])
         ->name('auth.account.emailchange');
     Route::post('account/useexistingemail', [AccountEmailController::class, 'useExistingEmail']);
     Route::post('account/changeemail', [AccountEmailController::class, 'changeEmail']);
+
     //Preference change
     Route::post('account/updatePreference', [AccountController::class, 'updatePreference']);
+
     //Card Management
     Route::get('account/cardmanagement', [CardManagementController::class, 'show'])
         ->name('payment.cardmanagement');
@@ -80,6 +83,7 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
     Route::delete('account/cardmanagement', [CardManagementController::class, 'deleteCard'])
         ->name('payment.cardmanagement.delete');
     Route::patch('account/cardmanagement', [CardManagementController::class, 'updateDefaultCard']);
+
     //Notifications
     Route::get('account/notifications', [AccountNotificationsController::class, 'show'])
         ->name('account.notifications');
@@ -87,7 +91,6 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
         ->name('account.notifications.api');  //TODO: Replace with api call
     Route::delete('account/notifications/api/{id}', [AccountNotificationsController::class, 'deleteNotification']); //TODO: Replace with api call
     Route::delete('account/notifications/api', [AccountNotificationsController::class, 'deleteAllNotifications']); //TODO: Replace with api call
-
 
     //Account Currency
     Route::get('accountcurrency', [AccountCurrencyController::class, 'show'])
@@ -118,6 +121,9 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
     Route::get('accountcurrency/paypal_subscription_cancel', [PayPalController::class, 'paypalSubscriptionCancel'])
         ->name('accountcurrency.paypal.subscription.cancel');
 
+    //Multiplayer core
+    Route::get('multiplayer/selectCharacter', [MultiplayerController::class, 'showCharacterSelect'])
+        ->name('multiplayer.character.select');
 });
 
 //Website admin routes
@@ -152,8 +158,12 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
 //----------------------------------------
 //Always available
 
+Route::get('/', [HomeController::class, 'show'])
+    ->name('home');
+
 //Character Profiles
-Route::get('p/{characterName}', [CharacterController::class, 'show'])->name('multiplayer.character');
+Route::get('c/{characterName}', [MultiplayerController::class, 'showCharacter'])
+    ->name('multiplayer.character.view');
 
 //Terms of service - always viewable, does challenge if logged in.
 Route::get('account/termsofservice', [TermsOfServiceController::class, 'view'])

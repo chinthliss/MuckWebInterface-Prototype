@@ -96,13 +96,13 @@ class AccountLoginTest extends TestCase
         $this->loginAsValidatedUser();
         $this->assertAuthenticated();
         $response = $this->get('/login');
-        $response->assertRedirect('/home');
+        $response->assertRedirect(route('home'));
     }
 
-    public function testCannotAccessHomeWhenNotLoggedIn()
+    public function testCannotAccessMultiplayerWhenNotLoggedIn()
     {
-        $response = $this->get('/home');
-        $response->assertRedirect('/login');
+        $response = $this->get('/multiplayer');
+        $response->assertRedirect(route('login'));
     }
 
     /**

@@ -2,16 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Muck\MuckConnection;
-use App\Muck\MuckCharacter;
+use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
-    public function show(MuckConnection $muck)
+    public function show()
     {
-        //dd($muck->getCharacters()->toArray());
-        return view('home')->with([
-            'characters' => $muck->getCharacters()->map(function (MuckCharacter $item) { return $item->toArray(); })
-        ]);
+        return view('home');
     }
 }

@@ -193,12 +193,12 @@ class User implements Authenticatable, MustVerifyEmail
         return $this->character->getName();
     }
 
-    public function SetCharacter(MuckCharacter $character)
+    public function setCharacter(MuckCharacter $character)
     {
         $this->character = $character;
     }
 
-    public function characters()
+    public function getCharacters()
     {
         if (!$this->characters) $this->characters = $this->getProvider()->getCharacters($this);
         return $this->characters;
@@ -304,7 +304,7 @@ class User implements Authenticatable, MustVerifyEmail
     public function toAdminArray(): array
     {
         $characters = [];
-        foreach ($this->characters() as $character) {
+        foreach ($this->getCharacters() as $character) {
             array_push($characters, $character->toArray());
         }
         return [

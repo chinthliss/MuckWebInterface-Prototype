@@ -43,7 +43,7 @@
     @auth
         <h4 class="mt-2">Singleplayer</h4>
         <div>???</div>
-        <h4 class="mt-2">Multiplayer</h4>
+        <h4 class="mt-2"><a href="{{ route('multiplayer.home') }}">Multiplayer</a></h4>
         <div><a href="{{ route('accountcurrency') }}">Buy Account Currency</a></div>
     @endauth
 

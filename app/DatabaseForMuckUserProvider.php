@@ -55,8 +55,8 @@ class DatabaseForMuckUserProvider implements UserProvider
         $user = User::fromDatabaseResponse($accountQuery);
         //See if a character is saved by the session - this may be overridden later by the present page
         $characterDbref = session('lastCharacterDbref');
-        if ($characterDbref && $user->characters()->has($characterDbref)) {
-            $user->setCharacter($user->characters()[$characterDbref]);
+        if ($characterDbref && $user->getCharacters()->has($characterDbref)) {
+            $user->setCharacter($user->getCharacters()[$characterDbref]);
         }
         Log::debug('UserProvider RetrieveById result for ' . $identifier . ', result = ' . $user->getAid());
         return $user;

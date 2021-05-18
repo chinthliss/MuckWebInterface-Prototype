@@ -33,7 +33,7 @@ class TermsOfServiceController extends Controller
     {
         $user = auth()->user();
         $user->storeTermsOfServiceAgreement($request['_hash']);
-        return redirect()->intended('/home');
+        return redirect()->intended(route('home'));
     }
 
 

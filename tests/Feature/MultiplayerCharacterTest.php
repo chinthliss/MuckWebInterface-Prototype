@@ -17,7 +17,7 @@ class MultiplayerCharacterTest extends TestCase
 
     public function testNotInitiallySet()
     {
-        $response = $this->get(route('home'));
+        $response = $this->get(route('multiplayer.home'));
         $response->assertDontSee('<meta name="character-dbref"');
         //$response->assertSessionMissing('character-dbref');
         $response->assertCookieMissing('character-dbref');
@@ -32,7 +32,7 @@ class MultiplayerCharacterTest extends TestCase
         $response->assertCookie('character-dbref', 1234);
 
         //On the next call, the character should have loaded again and the header should be set
-        $response = $this->get(route('home'));
+        $response = $this->get(route('multiplayer.home'));
         $user = auth()->user();
         $this->assertNotNull($user->getCharacter(), "Character wasn't set on User");
         $response->assertCookie('character-dbref');
