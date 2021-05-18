@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Muck\MuckConnection;
 use Closure;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Class LoadActiveCharacter
@@ -41,6 +42,7 @@ class LoadActiveCharacter
 
             $characterDbref = intval($characterDbref);
             if ($characterDbref) {
+                Log::debug("MultiplayerCharacter requested dbref: {$characterDbref}");
                 $character = $this->muck->retrieveAndVerifyCharacterOnAccount($user, $characterDbref);
                 if ($character) $user->setCharacter($character);
             }
