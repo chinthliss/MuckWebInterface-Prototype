@@ -7,7 +7,7 @@
 @section('breadcrumbs')
     {{ Breadcrumbs::render([
         [ 'route' => 'home', 'label' => 'Home' ],
-        [ 'label' => 'Multiplayer' ],
+        [ 'route' => 'multiplayer.home', 'label' => 'Multiplayer' ],
         [ 'label' => 'View Character' ]
     ]) }}
 @endsection

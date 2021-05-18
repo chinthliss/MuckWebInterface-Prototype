@@ -7,7 +7,7 @@
 @section('breadcrumbs')
     {{ Breadcrumbs::render([
         [ 'route' => 'home', 'label' => 'Home' ],
-        [ 'label' => 'Multiplayer' ],
+        [ 'route' => 'multiplayer.home', 'label' => 'Multiplayer' ],
         [ 'route' => 'accountcurrency', 'label' => 'Account Currency' ],
         [ 'route' => 'accountcurrency.transactions', 'label' => 'Account Currency Transactions' ]
     ]) }}
