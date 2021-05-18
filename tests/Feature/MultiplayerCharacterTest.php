@@ -62,4 +62,18 @@ class MultiplayerCharacterTest extends TestCase
         $response->assertCookie('character-dbref');
     }
 
+    public function testPageThatRequiresCharacterRedirectsToSelection()
+    {
+        $this->loginAsValidatedUser();
+        $request = $this->get(route('multiplayer.avatar'));
+        $request->assertRedirect(route('multiplayer.character.select'));
+    }
+
+    public function testPageThatRequiresCharacterWorksWithCharacter()
+    {
+        $this->loginAsValidatedUser();
+        $this->post(route('multiplayer.character.set'), ['dbref' => 1234]);
+        $request = $this->get(route('multiplayer.avatar'));
+        $request->assertOk();
+    }
 }

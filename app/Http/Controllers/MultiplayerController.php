@@ -62,4 +62,9 @@ class MultiplayerController extends Controller
         $request->session()->flash('message-success', 'Attempt to change character failed');
         return 'failure';
     }
+
+    public function showAvatarEditor(Request $request)
+    {
+        return view('multiplayer.avatar');
+    }
 }

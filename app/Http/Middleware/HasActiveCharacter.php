@@ -14,12 +14,12 @@ class HasActiveCharacter
      * @param string $role
      * @return mixed
      */
-    public function handle($request, Closure $next, string $role)
+    public function handle($request, Closure $next)
     {
         $user = $request->user();
         if (!$user || !$user->getCharacter()) {
             if (!$request->expectsJson()) {
-                return redirect('multiplayer.character.select');
+                return redirect(route('multiplayer.character.select'));
             }
             abort(400, "Active character hasn't been set correctly.");
 

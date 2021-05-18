@@ -53,9 +53,6 @@ Route::group(['middleware' => ['web', 'auth:account']], function() {
 //Requires account, verification and terms of service acceptance
 Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']], function() {
 
-    Route::get('multiplayer', [MultiplayerController::class, 'showCharacterDashboard'])
-        ->name('multiplayer.home');
-
     //Account
     Route::get('account', [AccountController::class, 'show'])->name('auth.account');
     Route::post('account/setactivecharacter', [MultiplayerController::class, 'setActiveCharacter'])
@@ -121,9 +118,18 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
     Route::get('accountcurrency/paypal_subscription_cancel', [PayPalController::class, 'paypalSubscriptionCancel'])
         ->name('accountcurrency.paypal.subscription.cancel');
 
-    //Multiplayer core
+    //Multiplayer core - these don't require an active character
+    Route::get('multiplayer', [MultiplayerController::class, 'showCharacterDashboard'])
+        ->name('multiplayer.home');
+
     Route::get('multiplayer/selectCharacter', [MultiplayerController::class, 'showCharacterSelect'])
         ->name('multiplayer.character.select');
+});
+
+// Multiplayer content - Requires an active character, along with account, verification and terms of service acceptance
+Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'character']], function() {
+    Route::get('multiplayer/avatar', [MultiplayerController::class, 'showAvatarEditor'])
+        ->name('multiplayer.avatar');
 });
 
 //Website admin routes
