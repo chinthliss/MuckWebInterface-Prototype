@@ -57,10 +57,18 @@ class MultiplayerController extends Controller
         if ($character) {
             // This is sufficient, middleware will set the cookie in the response
             $user->setCharacter($character);
-            return 'success';
+            return response()->json([
+                'status' => 'success',
+                'redirectUrl' => redirect()->intended(route('multiplayer.home'))->getTargetUrl(),
+                'message' => 'Login successful. Please refresh page.'
+            ]);
         }
         $request->session()->flash('message-success', 'Attempt to change character failed');
-        return 'failure';
+        return response()->json([
+            'status' => 'failure',
+            'message' => 'Character change failed.'
+        ]);
+
     }
 
     public function showAvatarEditor(Request $request)

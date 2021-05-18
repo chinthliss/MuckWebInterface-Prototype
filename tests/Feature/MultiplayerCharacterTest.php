@@ -62,11 +62,14 @@ class MultiplayerCharacterTest extends TestCase
         $response->assertCookie('character-dbref');
     }
 
-    public function testPageThatRequiresCharacterRedirectsToSelection()
+    public function testPageThatRequiresCharacterRedirectsToSelectionAndThenReturns()
     {
         $this->loginAsValidatedUser();
         $request = $this->get(route('multiplayer.avatar'));
         $request->assertRedirect(route('multiplayer.character.select'));
+        $response = $this->post(route('multiplayer.character.set'), ['dbref' => 1234]);
+        // Check redirectUrl is to the originally wanted page
+        $response->assertJsonFragment(['redirectUrl' => route('multiplayer.avatar')]);
     }
 
     public function testPageThatRequiresCharacterWorksWithCharacter()
@@ -76,4 +79,5 @@ class MultiplayerCharacterTest extends TestCase
         $request = $this->get(route('multiplayer.avatar'));
         $request->assertOk();
     }
+
 }

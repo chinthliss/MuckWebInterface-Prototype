@@ -19,6 +19,7 @@ class HasActiveCharacter
         $user = $request->user();
         if (!$user || !$user->getCharacter()) {
             if (!$request->expectsJson()) {
+                redirect()->setIntendedUrl($request->getRequestUri());
                 return redirect(route('multiplayer.character.select'));
             }
             abort(400, "Active character hasn't been set correctly.");
