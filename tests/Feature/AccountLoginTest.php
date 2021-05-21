@@ -71,7 +71,7 @@ class AccountLoginTest extends TestCase
         $response->assertSuccessful();
         $this->assertAuthenticated();
         $this->assertNotNull($this->getPresentUser()->getCharacter(), "Character should be set after logging in with such.");
-        $this->get('/home'); //Make sure it stays set
+        $this->get(route('multiplayer.home')); //Make sure it stays set
         $this->assertNotNull($this->getPresentUser()->getCharacter(), "Character didn't remain set.");
     }
 
@@ -101,7 +101,7 @@ class AccountLoginTest extends TestCase
 
     public function testCannotAccessMultiplayerWhenNotLoggedIn()
     {
-        $response = $this->get('/multiplayer');
+        $response = $this->get(route('multiplayer.home'));
         $response->assertRedirect(route('login'));
     }
 

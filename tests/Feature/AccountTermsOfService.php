@@ -50,7 +50,7 @@ class AccountTermsOfService extends TestCase
     {
         $this->seed();
         $user = $this->loginAsValidatedUser();
-        $request = Request::create('/home', 'GET');
+        $request = Request::create(route('multiplayer.home'), 'GET');
         $request->setUserResolver(function () use ($user) {
             return $user;
         });
@@ -68,7 +68,7 @@ class AccountTermsOfService extends TestCase
     {
         $this->seed();
         $user = Auth::loginUsingId('4');
-        $request = Request::create('/home', 'GET');
+        $request = Request::create(route('multiplayer.home'), 'GET');
         $request->setUserResolver(function () use ($user) {
             return $user;
         });
@@ -86,7 +86,7 @@ class AccountTermsOfService extends TestCase
     {
         $this->seed();
         $user = Auth::loginUsingId('4');
-        $response = $this->get('/home');
+        $response = $this->get(route('multiplayer.home'));
         $response->assertRedirect();
         $termsOfService = $this->app->make('App\TermsOfService');
         $hash = $termsOfService::getTermsOfServiceHash();

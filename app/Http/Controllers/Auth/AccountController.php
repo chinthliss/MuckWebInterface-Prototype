@@ -64,7 +64,7 @@ class AccountController extends Controller
             $request->session()->flash('message-success', 'You have logged in! (And this is a test message.)');
             $response = array(
                 'status' => 'success',
-                'redirectUrl' => redirect()->intended('/home')->getTargetUrl(),
+                'redirectUrl' => redirect()->intended(route('multiplayer.home'))->getTargetUrl(),
                 'message' => 'Login successful. Please refresh page.'
             );
             return response()->json($response);
@@ -101,7 +101,7 @@ class AccountController extends Controller
 
         $response = array(
             'status' => 'success',
-            'redirectUrl' => redirect()->intended('/home')->getTargetUrl(),
+            'redirectUrl' => redirect()->intended(route('multiplayer.home'))->getTargetUrl(),
             'message' => 'Account created successfully. Please refresh page.'
         );
         return response()->json($response);

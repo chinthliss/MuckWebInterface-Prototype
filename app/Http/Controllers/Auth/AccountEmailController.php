@@ -17,12 +17,14 @@ class AccountEmailController extends Controller
         return auth()->guard('account');
     }
 
+
     /**
      * Where to redirect users after verification.
-     *
-     * @var string
      */
-    protected $redirectTo = '/home';
+    protected function redirectTo()
+    {
+        return route('multiplayer.home');
+    }
 
     /**
      * For changing to an entirely new email
