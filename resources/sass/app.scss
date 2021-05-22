@@ -17,25 +17,48 @@ h1, h2, h3, h4, h5, h6 {
     color: $headerColor
 }
 
-//Default main view
-#leftpane {
-    width:250px;
-    position: absolute;
+#site_navigation_top {
+    min-height:3rem;
+    background-color: $backgroundColor;
 }
 
-#mainpane {
-    margin-left: 250px;
+#site_navigation_top .nav-link {
+    padding-right: .5em;
+    padding-left: .5em;
 }
 
-//Overrides on smaller screen sizes
-@include media-breakpoint-down(md) {
-    #leftpane {
-        width:100%;
-        display: none;
-        position: inherit;
-    }
+#site_navigation_breadcrumbs {
 
-    #mainpane {
-        margin-left: 0;
+}
+#site_navigation_left.site_navigation_force_show {
+    display: block;
+}
+#site_navigation_left {
+    display: none;
+}
+
+@include media-breakpoint-up(md) {
+    #site_navigation_left {
+        display: block;
     }
+    #site_navigation_right {
+        order:3;
+    }
+    #site_content {
+        order:2;
+    }
+}
+
+#site_navigation_breadcrumbs {
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 2px 5px 0 rgb(0 0 0 / 16%), 0 2px 10px 0 rgb(0 0 0 / 12%)
+}
+
+#site_navigation_breadcrumbs .breadcrumb {
+    padding-top:0.25em;
+    padding-bottom:0.25em;
+    margin-bottom:0;
+    border-radius:0;
+    background-color: darken($backgroundColor, 5%);
 }

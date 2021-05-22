@@ -33,137 +33,125 @@
     <link href="{{ mix('css/app.css') }}" rel="stylesheet">
 </head>
 <body>
-<!-- Sidebar/Left pane -->
-<nav id="leftpane" class="navbar-dark min-vh-100 p-2 shadow-sm">
-    <a class="navbar-brand" href="{{ url('/') }}">
-        {{ config('app.name', 'MuckWebInterface') }}
-    </a>
-    <div><span class="navbar-text">Some text!</span></div>
-
-    @auth
-        <h4 class="mt-2">Singleplayer</h4>
-        <div>???</div>
-        <h4 class="mt-2"><a href="{{ route('multiplayer.home') }}">Multiplayer</a></h4>
-        <div><a href="{{ route('accountcurrency') }}">Buy Account Currency</a></div>
-    @endauth
-
-    @Admin
-    <h4 class="mt-2">Admin</h4>
-    <div><a href="{{ route('admin.home') }}">Admin Dashboard</a></div>
-    <div><a href="{{ route('admin.logs') }}">Site Log Viewer</a></div>
-    <div><a href="{{ route('admin.patrons') }}">Patreon Supporter Browser</a></div>
-    <div><a href="{{ route('admin.subscriptions') }}">Payment Subscriptions</a></div>
-    <div><a href="{{ route('admin.transactions') }}">Payment Transactions</a></div>
-    @endAdmin
-</nav>
-<!-- Main/Right pane -->
-<div id="mainpane">
-    <!-- Topbar -->
-    <nav class="navbar navbar-dark navbar-expand-md">
-        <div class="container">
-            <a class="navbar-brand" href="{{ url('/') }}">
-                (Brand)
-            </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse"
-                    data-target="#navbarSupportedContent"
-                    aria-controls="navbarSupportedContent" aria-expanded="false"
-                    aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <!-- Left Side Of Navbar -->
-                <ul class="navbar-nav mr-auto">
+<!-- Top header -->
+<header id="site_navigation_top" class="navbar flex-column flex-md-row">
+    <a class="navbar-brand mr-0 mr-md-2" href="{{ url('/') }}" aria-label="Site Logo">(LOGO) Prototype Site</a>
+    <div class="navbar-nav-scroll">
+        <ul class="navbar-nav flex-row">
+            @guest
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('login') }}">Login</a>
+                </li>
+            @else
+                @Character
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('home') }}">
+                        {{ Auth::user()->getCharacterName() }}
+                    </a>
+                </li>
+                @endCharacter
+                @if (Route::has('auth.account'))
                     <li class="nav-item">
-                        <div class="nav-link">Left Option</div>
+                        <a class="nav-link" href="{{ route('auth.account') }}">Account</a>
                     </li>
-                </ul>
+                @endif
+                @if (Route::has('account.notifications'))
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('account.notifications') }}">Notifications</a>
+                    </li>
+                @endif
+                @if (Route::has('logout'))
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('logout') }}"
+                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                            Logout
+                        </a>
 
-                <!-- Right Side Of Navbar -->
-                <ul class="navbar-nav ml-auto">
-                    <!-- Core Links -->
-                    @guest
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('login') }}">Login</a>
-                        </li>
-                    @else
-                        @Character
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('home') }}">
-                                {{ Auth::user()->getCharacterName() }}
-                            </a>
-                        </li>
-                        @endCharacter
-                        @if (Route::has('auth.account'))
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('auth.account') }}">Account</a>
-                            </li>
-                        @endif
-                        @if (Route::has('account.notifications'))
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('account.notifications') }}">Notifications</a>
-                            </li>
-                        @endif
-                        @if (Route::has('logout'))
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('logout') }}"
-                                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                    Logout
-                                </a>
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST"
+                              style="display: none;">
+                            @csrf
+                        </form>
+                    </li>
+                @endif
+            @endguest
+        </ul>
+    </div>
+</header>
+<!-- Breadcrumbs -->
+<nav id="site_navigation_breadcrumbs" aria-label="Navigation Breadcrumbs">
+    @yield('breadcrumbs')
+</nav>
+<!-- Button to open Navigation if on mobile -->
+<div class="container-fluid">
+    <button id="site_navigation_button" type="button" class="d-md-none btn btn-primary my-2">
+        <i class="fas fa-bars"></i>
+        Navigation
+    </button>
+</div>
+<div class="container-fluid">
+    <div class="row flex-xl-nowrap">
+        <!-- Left side bar -->
+        <div id="site_navigation_left" class="col-12 col-md-3 col-xl-2">
+            <div><span class="navbar-text">Some text!</span></div>
 
-                                <form id="logout-form" action="{{ route('logout') }}" method="POST"
-                                      style="display: none;">
-                                    @csrf
-                                </form>
-                            </li>
-                        @endif
-                    @endguest
-                </ul>
+            @auth
+                <h4 class="mt-2">Singleplayer</h4>
+                <div>???</div>
+                <h4 class="mt-2"><a href="{{ route('multiplayer.home') }}">Multiplayer</a></h4>
+                <div><a href="{{ route('multiplayer.avatar') }}">Avatar</a></div>
+                <div><a href="{{ route('accountcurrency') }}">Buy Account Currency</a></div>
+            @endauth
+
+            @Admin
+            <h4 class="mt-2">Admin</h4>
+            <div class="list-group list-group-flush">
+                <a class="list-group-item list-group-item-action list-group-item-dark" href="{{ route('admin.home') }}">Admin Dashboard</a>
+                <a class="list-group-item list-group-item-action list-group-item-dark" href="{{ route('admin.logs') }}">Site Log Viewer</a>
+                <a class="list-group-item list-group-item-action list-group-item-dark" href="{{ route('admin.patrons') }}">Patreon Supporter Browser</a>
+                <a class="list-group-item list-group-item-action list-group-item-dark" href="{{ route('admin.subscriptions') }}">Payment Subscriptions</a>
+                <a class="list-group-item list-group-item-action list-group-item-dark" href="{{ route('admin.transactions') }}">Payment Transactions</a>
             </div>
+            @endAdmin
         </div>
-    </nav>
-    @PrefersFullWidth
-    <div class="container-fluid">
-    @else
-    <div class="container">
-    @endPrefersFullWidth
-        <div class="row">
-            <div class="col">
-                <div id="contentwrapper">
+        <nav id="site_navigation_right" class="col-12 col-md-3 col-xl-2">
+            <div>Right Navigation Area</div>
+            <div>Intended for a page's individual navigation</div>
+            <div>Can also host widgets (e.g. surveys)</div>
+        </nav>
+        <div id="site_content" class="col-12 col-md-6 col-xl-8">
+        <!-- Javascript check -->
+            <noscript>
+                <div class="p-3 mb-2 bg-danger text-light rounded">This page requires javascript enabled in order to work.</div>
+            </noscript>
 
-                    <!-- Breadcrumbs -->
-                    @yield('breadcrumbs')
+            <!-- Site Notice -->
+            @SiteNotice
+            <div class="p-3 mb-2 bg-warning text-dark rounded">@SiteNoticeContent</div>
+            @endSiteNotice
 
-                    <!-- Javascript check -->
-                    <noscript>
-                        <div class="p-3 mb-2 bg-danger text-light rounded">This page requires javascript enabled in order to work.</div>
-                    </noscript>
-
-                    <!-- Site Notice -->
-                    @SiteNotice
-                    <div class="p-3 mb-2 bg-warning text-dark rounded">@SiteNoticeContent</div>
-                    @endSiteNotice
-
-                    <!-- Flashed Messages -->
-                    @if ($message = Session::get('message-success'))
-                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                            <strong>{{ $message }}</strong>
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                    @endif
-
-                    <!-- Content -->
-                    <main id="app">
-                        @yield('content')
-                    </main>
+            <!-- Flashed Messages -->
+            @if ($message = Session::get('message-success'))
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <strong>{{ $message }}</strong>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
-            </div>
+            @endif
+
+        <!-- Content -->
+            <main id="app">
+                @yield('content')
+            </main>
         </div>
     </div>
 </div>
 <script type="application/javascript">
+    //Code for the navigation toggle when mobile
+    $('#site_navigation_button').click(() => {
+        $('#site_navigation_left').toggleClass('site_navigation_force_show');
+    });
+
     //Attach Vue components - needs to be run after the page exists and DOM populated
     const app = new Vue({
         el: '#app',

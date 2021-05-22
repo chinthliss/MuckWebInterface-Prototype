@@ -22,9 +22,6 @@ class Breadcrumbs
                 $innerContent = $item['label'];
             array_push($listItems, '<li class="breadcrumb-item active" aria-current="page">' . $innerContent . '</li>');
         }
-        return new HtmlString(
-        '<nav aria-label="breadcrumb">
-                <ol class="breadcrumb bg-dark">' . join('', $listItems) . '</ol>
-            </nav>');
+        return new HtmlString('<ol class="breadcrumb">' . join('', $listItems) . '</ol>');
     }
 }
