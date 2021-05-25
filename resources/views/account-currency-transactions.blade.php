@@ -8,8 +8,8 @@
     {{ Breadcrumbs::render([
         [ 'route' => 'home', 'label' => 'Home' ],
         [ 'route' => 'multiplayer.home', 'label' => 'Multiplayer' ],
-        [ 'route' => 'accountcurrency', 'label' => 'Account Currency' ],
-        [ 'route' => 'accountcurrency.transactions', 'label' => 'Account Currency Transactions' ]
+        [ 'route' => 'accountcurrency', 'label' => Lex::get('accountcurrency') ],
+        [ 'route' => 'accountcurrency.transactions', 'label' => Lex::get('accountcurrency') . ' Transactions' ]
     ]) }}
 @endsection
 

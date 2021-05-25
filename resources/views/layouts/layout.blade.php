@@ -35,7 +35,7 @@
 <body>
 <!-- Top header -->
 <header id="site_navigation_top" class="navbar flex-column flex-md-row">
-    <a class="navbar-brand mr-0 mr-md-2" href="{{ url('/') }}" aria-label="Site Logo">(LOGO) Prototype Site</a>
+    <a class="navbar-brand mr-0 mr-md-2" href="{{ url('/') }}" aria-label="Site Logo">(LOGO) {{ Lex::get('app_name') }}</a>
     <div class="navbar-nav-scroll">
         <ul class="navbar-nav flex-row">
             @guest
@@ -99,7 +99,7 @@
                 <div>???</div>
                 <h4 class="mt-2"><a href="{{ route('multiplayer.home') }}">Multiplayer</a></h4>
                 <div><a href="{{ route('multiplayer.avatar') }}">Avatar</a></div>
-                <div><a href="{{ route('accountcurrency') }}">Buy Account Currency</a></div>
+                <div><a href="{{ route('accountcurrency') }}">Buy {{ Lex::get('accountcurrency') }} </a></div>
             @endauth
 
             @Admin
@@ -153,6 +153,12 @@
     $('#site_navigation_button').click(() => {
         $('#site_navigation_left').toggleClass('site_navigation_force_show');
     });
+
+    //Lexicon for the game
+    const lex_config = @json(Lex::toArray());
+    const lex = (word) => {
+        return lex_config[word] || word;
+    };
 
     //Attach Vue components - needs to be run after the page exists and DOM populated
     const app = new Vue({
