@@ -95,22 +95,20 @@
             <div class="navbar-text">Some text!</div>
 
             @auth
-                <h4 class="mt-2">Singleplayer</h4>
+                <h4 class="nav-link mt-2 pl-0">Singleplayer</h4>
                 <div>???</div>
-                <h4 class="mt-2"><a href="{{ route('multiplayer.home') }}">Multiplayer</a></h4>
-                <div><a href="{{ route('multiplayer.avatar') }}">Avatar</a></div>
-                <div><a href="{{ route('accountcurrency') }}">Buy {{ Lex::get('accountcurrency') }} </a></div>
+                <h4 class="nav-link mt-2 pl-0"><a href="{{ route('multiplayer.home') }}">Multiplayer</a></h4>
+                <a class="nav-link" href="{{ route('multiplayer.avatar') }}">Avatar</a>
+                <a class="nav-link" href="{{ route('accountcurrency') }}">Buy {{ Lex::get('accountcurrency') }}</a>
             @endauth
 
             @Admin
             <h4 class="mt-2">Admin</h4>
-            <div class="list-group list-group-flush">
-                <a class="list-group-item list-group-item-action list-group-item-dark" href="{{ route('admin.home') }}">Admin Dashboard</a>
-                <a class="list-group-item list-group-item-action list-group-item-dark" href="{{ route('admin.logs') }}">Site Log Viewer</a>
-                <a class="list-group-item list-group-item-action list-group-item-dark" href="{{ route('admin.patrons') }}">Patreon Supporter Browser</a>
-                <a class="list-group-item list-group-item-action list-group-item-dark" href="{{ route('admin.subscriptions') }}">Payment Subscriptions</a>
-                <a class="list-group-item list-group-item-action list-group-item-dark" href="{{ route('admin.transactions') }}">Payment Transactions</a>
-            </div>
+            <a class="nav-link" href="{{ route('admin.home') }}">Admin Dashboard</a>
+            <a class="nav-link" href="{{ route('admin.logs') }}">Site Log Viewer</a>
+            <a class="nav-link" href="{{ route('admin.patrons') }}">Patreon Supporter Browser</a>
+            <a class="nav-link" href="{{ route('admin.subscriptions') }}">Payment Subscriptions</a>
+            <a class="nav-link" href="{{ route('admin.transactions') }}">Payment Transactions</a>
             @endAdmin
         </nav>
         <nav id="site_navigation_right" class="col-12 col-md-3 col-xl-2">
