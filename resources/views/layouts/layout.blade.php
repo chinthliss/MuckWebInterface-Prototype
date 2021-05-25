@@ -91,8 +91,8 @@
 <div class="container-fluid">
     <div class="row flex-xl-nowrap">
         <!-- Left side bar -->
-        <div id="site_navigation_left" class="col-12 col-md-3 col-xl-2">
-            <div><span class="navbar-text">Some text!</span></div>
+        <nav id="site_navigation_left" class="col-12 col-md-3 col-xl-2">
+            <div class="navbar-text">Some text!</div>
 
             @auth
                 <h4 class="mt-2">Singleplayer</h4>
@@ -112,11 +112,13 @@
                 <a class="list-group-item list-group-item-action list-group-item-dark" href="{{ route('admin.transactions') }}">Payment Transactions</a>
             </div>
             @endAdmin
-        </div>
+        </nav>
         <nav id="site_navigation_right" class="col-12 col-md-3 col-xl-2">
-            <div>Right Navigation Area</div>
-            <div>Intended for a page's individual navigation</div>
-            <div>Can also host widgets (e.g. surveys)</div>
+            <div class="navbar-text">Secondary Navigation Area</div>
+            <div class="navbar-text">Located on the right on desktop</div>
+            <div class="navbar-text">Moves to middle on mobile and precedes page.</div>
+            <div class="navbar-text">Intended for a page's individual navigation</div>
+            <div class="navbar-text">Can also host widgets (e.g. surveys)</div>
         </nav>
         <div id="site_content" class="col-12 col-md-6 col-xl-8">
         <!-- Javascript check -->
@@ -140,7 +142,7 @@
             @endif
 
         <!-- Content -->
-            <main id="app">
+            <main id="app" class="mb-2">
                 @yield('content')
             </main>
         </div>

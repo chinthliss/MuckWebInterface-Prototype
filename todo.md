@@ -6,7 +6,7 @@
 * ~~Terms of Service agreement~~
 * ~~Log on as character with username/password~~
 * (Started) Actual styling/theming
-* (Started) Responsive layout
+* ~~Responsive layout~~
 * ~~Notices (Account-based notices)~~
   * Browser notifications (Opt-in rather than forced)
 * ~~Re-add webNoAvatars option and provide access to on account page~~
@@ -57,3 +57,4 @@
 * drop billing_sessions
 * drop patreon_claims
 * Rewrite muck notifications to account notifications
+* Remove fullwidth preference setting and code
