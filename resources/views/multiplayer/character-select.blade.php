@@ -15,5 +15,6 @@
 @section('content')
     <character-select
         :characters="{{ json_encode($characters) }}"
+        character-management-url = "{{ $characterManagementUrl }}"
     ></character-select>
 @endsection

@@ -41,7 +41,8 @@ class MultiplayerController extends Controller
         }
 
         return view('multiplayer.character-select')->with([
-            "characters" => $characters
+            "characters" => $characters,
+            "characterManagementUrl" => route('multiplayer.home')
         ]);
     }
 

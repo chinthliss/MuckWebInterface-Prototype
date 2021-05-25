@@ -14,7 +14,7 @@
             <div class="text-center">
                 <p>Alternatively you can manage your characters, including creating a new one, from the character
                     dashboard.</p>
-                <a class="btn btn-primary" href="/multiplayer/home">Character Dashboard</a>
+                <a class="btn btn-primary" :href="characterManagementUrl">Character Dashboard</a>
             </div>
         </div>
     </div>
@@ -24,7 +24,8 @@
 export default {
     name: "character-select",
     props: {
-        characters: {type: Array, required: true}
+        characters: {type: Array, required: true},
+        characterManagementUrl: {type: String, required: true}
     },
     data: function () {
         return {}
