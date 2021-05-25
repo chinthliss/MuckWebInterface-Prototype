@@ -32,6 +32,8 @@ class LoadActiveCharacter
      */
     public function handle($request, Closure $next)
     {
+        $clearCookie = false;
+
         $user = $request->user('account');
         if ($user) {
             // Header is the definitive place to have the character specified
@@ -42,11 +44,22 @@ class LoadActiveCharacter
 
             $characterDbref = intval($characterDbref);
             if ($characterDbref) {
-                Log::debug("MultiplayerCharacter requested dbref: {$characterDbref}");
                 $character = $this->muck->retrieveAndVerifyCharacterOnAccount($user, $characterDbref);
-                if ($character) $user->setCharacter($character);
+                if ($character) {
+                    Log::debug("MultiplayerCharacter requested {$characterDbref} - accepted.");
+                    $user->setCharacter($character);
+                }
+                else {
+                    Log::debug("MultiplayerCharacter requested {$characterDbref} - rejected, clearing cookie.");
+                    $clearCookie = true;
+                }
             }
         }
-        return $next($request);
+        $response = $next($request);
+
+        if ($clearCookie)
+            return $response->withCookie(cookie()->forget('character-dbref'));
+        else
+            return $response;
     }
 }
