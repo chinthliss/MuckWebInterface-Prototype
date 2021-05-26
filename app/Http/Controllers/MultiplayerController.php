@@ -5,28 +5,33 @@ namespace App\Http\Controllers;
 use App\Muck\MuckConnection;
 use Illuminate\Http\Request;
 
-//Holds the core pages for multiplayer
+//For core multiplayer functionality only
 class MultiplayerController extends Controller
 {
+
+    public function showMultiplayerDashboard()
+    {
+        $user = auth()->user();
+
+        $charactersToProcess = $user->getCharacters();
+        if (count($charactersToProcess) === 0) //Redirect to create a character if we have no characters
+            return redirect(route('multiplayer.character.select'));
+
+        $characters = [];
+        foreach ($charactersToProcess as $character) {
+            array_push($characters, $character->toArray());
+        }
+
+        return view('multiplayer.home')->with([
+            "characters" => $characters,
+            "characterSelectUrl" => route('multiplayer.character.select')
+        ]);
+    }
 
     public function showCharacter(MuckConnection $muck, string $characterName)
     {
         return view('multiplayer.character')->with([
             'characters' => $characterName
-        ]);
-    }
-
-    public function showCharacterDashboard()
-    {
-        $user = auth()->user();
-
-        $characters = [];
-        foreach ($user->getCharacters() as $character) {
-            array_push($characters, $character->toArray());
-        }
-
-        return view('multiplayer.home')->with([
-            "characters" => $characters
         ]);
     }
 
@@ -39,10 +44,8 @@ class MultiplayerController extends Controller
         foreach ($user->getCharacters() as $character) {
             array_push($characters, $character->toArray());
         }
-
         return view('multiplayer.character-select')->with([
-            "characters" => $characters,
-            "characterManagementUrl" => route('multiplayer.home')
+            "characters" => $characters
         ]);
     }
 

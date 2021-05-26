@@ -1,7 +1,10 @@
 <template>
     <div class="card">
-        <h4 class="card-header">Dashboard</h4>
+        <h4 class="card-header">Multiplayer Dashboard</h4>
         <div class="card-body">
+            <div class="text-center">You can create a new character from the
+                <a class="btn btn-primary" :href="characterSelectUrl">Character Selection</a> page.
+            </div>
             <div v-for="character in characters" class="row">
                 <div class="col-lg-auto"><character-card :character="character" mode="tag"></character-card></div>
                 <div class="col">
@@ -17,9 +20,12 @@
 <script>
     import CharacterCard from "./CharacterCard";
     export default {
-        name: "character-dashboard",
+        name: "multiplayer-dashboard",
         components: {CharacterCard},
-        props: ['characters'],
+        props: {
+            characters: {type: Array, required: true},
+            characterSelectUrl: {type: String, required: true}
+        },
         data: function () {
             return {
             }

@@ -1,7 +1,7 @@
 @extends('layouts.layout')
 
 @section('title')
-    Change Active Character
+    Character Select
 @endsection
 
 @section('breadcrumbs')
@@ -15,6 +15,6 @@
 @section('content')
     <character-select
         :characters="{{ json_encode($characters) }}"
-        character-management-url = "{{ $characterManagementUrl }}"
+
     ></character-select>
 @endsection

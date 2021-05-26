@@ -98,6 +98,7 @@
                 <h4 class="nav-link mt-2 pl-0">Singleplayer</h4>
                 <div>???</div>
                 <h4 class="nav-link mt-2 pl-0"><a href="{{ route('multiplayer.home') }}">Multiplayer</a></h4>
+                <a class="nav-link" href="{{ route('multiplayer.character.select') }}">Character Select</a>
                 <a class="nav-link" href="{{ route('multiplayer.avatar') }}">Avatar</a>
                 <a class="nav-link" href="{{ route('accountcurrency') }}">Buy {{ Lex::get('accountcurrency') }}</a>
             @endauth

@@ -119,7 +119,7 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
         ->name('accountcurrency.paypal.subscription.cancel');
 
     //Multiplayer core - these don't require an active character
-    Route::get('multiplayer', [MultiplayerController::class, 'showCharacterDashboard'])
+    Route::get('multiplayer', [MultiplayerController::class, 'showMultiplayerDashboard'])
         ->name('multiplayer.home');
 
     Route::get('multiplayer/selectCharacter', [MultiplayerController::class, 'showCharacterSelect'])

@@ -1,17 +1,19 @@
 @extends('layouts.layout')
 
 @section('title')
-    Character Dashboard
+    Multiplayer Dashboard
 @endsection
 
 @section('breadcrumbs')
     {{ Breadcrumbs::render([
-        [ 'route' => 'home', 'label' => 'Home' ]
+        [ 'route' => 'home', 'label' => 'Home' ],
+        [ 'label' => 'Multiplayer' ]
     ]) }}
 @endsection
 
 @section('content')
-    <character-dashboard
+    <multiplayer-dashboard
         :characters="{{ json_encode($characters) }}"
-    ></character-dashboard>
+        character-select-url="{{$characterSelectUrl}}"
+    ></multiplayer-dashboard>
 @endsection
