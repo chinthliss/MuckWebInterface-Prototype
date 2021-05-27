@@ -15,6 +15,8 @@
 @section('content')
     <character-select
         :characters="{{ json_encode($characters) }}"
+        :character-slot-count="{{ $characterSlotCount }}"
+        :character-slot-cost="{{ $characterSlotCost }}"
 
     ></character-select>
 @endsection

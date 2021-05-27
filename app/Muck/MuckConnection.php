@@ -24,6 +24,12 @@ interface MuckConnection
     public function getCharacters(): ?Collection;
 
     /**
+     * Gets parameters required for character select/create
+     * @return array [characterSlotCount, characterSlotCost]
+     */
+    public function getCharacterSlotState(): array;
+
+    /**
      * Returns the latest connect or disconnect from any character on the account
      * @param int $aid
      * @return Carbon|null

@@ -109,6 +109,18 @@ class FakeMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
+    public function getCharacterSlotState(): array
+    {
+        self::fakeMuckCall('getCharacterSlotState');
+            return [
+                "characterSlotCount" => 3,
+                "characterSlotCost" => 50
+            ];
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function usdToAccountCurrency(float $usdAmount): ?int
     {
         self::fakeMuckCall('usdToAccountCurrency', ['usdAmount' => $usdAmount]);

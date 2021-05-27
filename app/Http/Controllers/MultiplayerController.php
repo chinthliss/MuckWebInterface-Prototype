@@ -36,7 +36,7 @@ class MultiplayerController extends Controller
     }
 
     //Character select is a simple gate screen to pick a character.
-    public function showCharacterSelect()
+    public function showCharacterSelect(MuckConnection $muck)
     {
         $user = auth()->user();
 
@@ -44,8 +44,13 @@ class MultiplayerController extends Controller
         foreach ($user->getCharacters() as $character) {
             array_push($characters, $character->toArray());
         }
+
+        $characterSlotState = $muck->getCharacterSlotState();
+
         return view('multiplayer.character-select')->with([
-            "characters" => $characters
+            "characters" => $characters,
+            "characterSlotCount" => $characterSlotState['characterSlotCount'],
+            "characterSlotCost" => $characterSlotState['characterSlotCost']
         ]);
     }
 

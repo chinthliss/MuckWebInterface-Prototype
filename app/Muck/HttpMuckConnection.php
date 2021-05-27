@@ -88,6 +88,19 @@ class HttpMuckConnection implements MuckConnection
         return $this->getCharactersOf($user);
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function getCharacterSlotState() : array
+    {
+        $response = $this->requestFromMuck('retrieveByCredentials');
+        $response = explode(',', $response);
+        return [
+            "characterSlotCount" => $response[0],
+            "characterSlotCost" => $response[1]
+        ];
+    }
+
     //region Auth Requests
 
     /**

@@ -83,6 +83,17 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     else response400 then
 ; selfcall handleRequest_getCharacters
 
+(Expects 'aid' set, returns characterSlotCount,characterSlotCost )
+: handleRequest_getCharacterSlotState[ arr:webcall -- ]
+    webcall @ "aid" array_getitem ?dup if
+        startAcceptedResponse
+        acct_any2aid var! account
+        account @ acct_characterSlots intostr "," strcat
+        account @ acct_characterSlotCost intostr strcat
+        descr swap descrnotify
+    else response400 then
+; selfcall handleRequest_getCharacterSlotState
+
 (Expects 'aid' set, returns lastConnected or 0 for never connected)
 : handleRequest_getLastConnect[ arr:webcall -- ]
     webcall @ "aid" array_getitem ?dup if

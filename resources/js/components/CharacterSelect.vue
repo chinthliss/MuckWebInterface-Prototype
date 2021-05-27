@@ -10,6 +10,8 @@
                     </div>
                 </div>
             </div>
+            <div>Character Slots:  {{ characterSlotCount }}</div>
+            <div>Buy Character Slot: {{ characterSlotCost }} Mako</div>
         </div>
     </div>
 </template>
@@ -18,7 +20,9 @@
 export default {
     name: "character-select",
     props: {
-        characters: {type: Array, required: true}
+        characters: {type: Array, required: true},
+        characterSlotCount: {type: Number, required: true},
+        characterSlotCost: {type: Number, required: true}
     },
     data: function () {
         return {}
