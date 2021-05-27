@@ -16,17 +16,20 @@ mix
     .sass('resources/sass/app.scss', 'public/css')
     .extract() // This now extracts all external dependencies
     .sourceMaps(false)
+    .disableNotifications()
+    //This is to allow Vue Components to access sass variables
+    .webpackConfig({
+    resolve: {
+        alias: {
+            '@': path.resolve('resources/sass')
+        }
+    }
+})
 ;
 
 if (mix.inProduction()) {
-    mix
-        .version() // Version files to add cache busting in live
-        .disableNotifications()
-    ;
+    mix.version(); // Version files to add cache busting in live
 }
 else {
-    mix
-        .browserSync({proxy:'local-homestead.com', open:false})
-        .disableSuccessNotifications()
-    ;
+    mix.browserSync({proxy:'local-homestead.com', open:false});
 }
