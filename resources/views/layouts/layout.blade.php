@@ -159,10 +159,19 @@
         return lex_config[word] || word;
     };
 
+    Vue.mixin({
+        methods: {
+            lex: (word) => {
+                return lex(word);
+            }
+        }
+    });
+
     //Attach Vue components - needs to be run after the page exists and DOM populated
     const app = new Vue({
         el: '#app',
     });
+
 </script>
 @yield('script')
 </body>

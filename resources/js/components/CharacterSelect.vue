@@ -11,7 +11,7 @@
                 </div>
             </div>
             <div>Character Slots:  {{ characterSlotCount }}</div>
-            <div>Buy Character Slot: {{ characterSlotCost }} Mako</div>
+            <div>Buy Character Slot: {{ characterSlotCost }} {{ lex('accountcurrency') }}</div>
         </div>
     </div>
 </template>
