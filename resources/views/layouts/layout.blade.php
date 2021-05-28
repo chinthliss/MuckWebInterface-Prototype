@@ -112,6 +112,7 @@
             <a class="nav-link" href="{{ route('admin.transactions') }}">Payment Transactions</a>
             @endAdmin
         </nav>
+        <!-- Right side bar -->
         <nav id="site_navigation_right" class="col-12 col-md-3 col-xl-2">
             <div class="navbar-text">Secondary Navigation Area</div>
             <div class="navbar-text">Located on the right on desktop</div>
@@ -119,8 +120,9 @@
             <div class="navbar-text">Intended for a page's individual navigation</div>
             <div class="navbar-text">Can also host widgets (e.g. surveys)</div>
         </nav>
+        <!-- Middle, main div that holds content -->
         <div id="site_content" class="col-12 col-md-6 col-xl-8">
-        <!-- Javascript check -->
+            <!-- Javascript check -->
             <noscript>
                 <div class="p-3 mb-2 bg-danger text-light rounded">This page requires javascript enabled in order to work.</div>
             </noscript>

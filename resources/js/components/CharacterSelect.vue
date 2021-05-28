@@ -2,16 +2,25 @@
     <div class="card">
         <h4 class="card-header">Select Character</h4>
         <div class="card-body">
-            <div class="mb-2">
-                <div v-for="character in characters" class="row">
-                    <div class="col-lg-auto">
-                        <character-card :character="character" mode="tag"
-                                        @click="setActiveCharacter(character.dbref)"></character-card>
+            <div class="mb-2 row text-center">
+                <div class="col">
+                    <character-card v-for="character in characters" v-bind:key="character.dbref" :character="character"
+                                    mode="tag" class="mr-2 mb-2 align-top"
+                                    @click="setActiveCharacter(character.dbref)"></character-card>
+                    <div v-for="i in emptyCharacterSlots" v-bind:key="i"
+                         class="card empty-character-card border-primary mr-2 mb-2 align-top">
+                        <div class="card-body">
+                            <a class="btn btn-primary flex" href="#"><i class="fas fa-plus fa-pull-left"></i>New character</a>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div>Character Slots:  {{ characterSlotCount }}</div>
-            <div>Buy Character Slot: {{ characterSlotCost }} {{ lex('accountcurrency') }}</div>
+            <div class="row text-center">
+                <div class="col">
+                    <a class="btn btn-primary" href="#"><i class="fas fa-plus fa-pull-left"></i>Buy Character Slot
+                        {{ characterSlotCost }} {{ lex('accountcurrency') }}</a>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -26,6 +35,13 @@ export default {
     },
     data: function () {
         return {}
+    },
+    computed: {
+        emptyCharacterSlots: function () {
+            if (this.characterSlotCount > this.characters.length)
+                return this.characterSlotCount - this.characters.length
+            else return 0;
+        }
     },
     methods: {
         setActiveCharacter: (dbref) => {
@@ -42,5 +58,10 @@ export default {
 </script>
 
 <style scoped>
-
+.empty-character-card {
+    display: inline-block;
+    border-style: dashed;
+    width: 240px;
+    height: 100px;
+}
 </style>
