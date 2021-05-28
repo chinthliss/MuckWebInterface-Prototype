@@ -72,3 +72,17 @@ h1, h2, h3, h4, h5, h6 {
     border-radius:0;
     background-color: darken($backgroundColor, 5%);
 }
+
+.btn-icon-left {
+    padding-top: 0.375em;
+    padding-bottom: 0.375em;
+    float:left;
+    margin-right: 0.375em;
+}
+
+.btn-icon-right {
+    padding-top: 0.375em;
+    padding-bottom: 0.375em;
+    float:right;
+    margin-left: 0.375em;
+}

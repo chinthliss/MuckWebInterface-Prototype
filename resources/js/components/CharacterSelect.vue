@@ -9,15 +9,15 @@
                                     @click="setActiveCharacter(character.dbref)"></character-card>
                     <div v-for="i in emptyCharacterSlots" v-bind:key="i"
                          class="card empty-character-card border-primary mr-2 mb-2 align-top">
-                        <div class="card-body">
-                            <a class="btn btn-primary flex" href="#"><i class="fas fa-plus fa-pull-left"></i>New character</a>
+                        <div class="card-body h-100">
+                            <a class="btn btn-primary" href="#"><span class="d-flow"><i class="fas fa-plus btn-icon-left"></i>New character</span></a>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="row text-center">
                 <div class="col">
-                    <a class="btn btn-primary" href="#"><i class="fas fa-plus fa-pull-left"></i>Buy Character Slot
+                    <a class="btn btn-primary" href="#"><i class="fas fa-cocktail btn-icon-left"></i>Buy Character Slot
                         {{ characterSlotCost }} {{ lex('accountcurrency') }}</a>
                 </div>
             </div>

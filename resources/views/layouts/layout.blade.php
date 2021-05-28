@@ -84,7 +84,7 @@
 <!-- Button to open Navigation if on mobile -->
 <div class="container-fluid">
     <button id="site_navigation_button" type="button" class="d-md-none btn btn-primary my-2">
-        <i class="fas fa-bars"></i>
+        <i class="fas fa-bars btn-icon-left"></i>
         Navigation
     </button>
 </div>

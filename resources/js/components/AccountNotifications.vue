@@ -12,7 +12,7 @@
             </div>
             <div v-else class="d-flex justify-content-center mb-2">
                 <button class="btn btn-warning" @click="deleteAllNotifications">
-                    <i class="fas fa-trash"></i>Delete all notifications
+                    <i class="fas fa-trash btn-icon-left"></i>Delete all notifications
                 </button>
             </div>
             <!-- Account or game notifications -->
@@ -26,7 +26,7 @@
                         <i class="fas"
                            :class="data.item.read_at ? ['text-muted', 'fa-envelope'] : ['text-primary', 'fa-envelope-open']"></i>
                         <button class="btn btn-secondary" :data-id="data.item.id" @click="deleteNotification"><i
-                            class="fas fa-trash"></i>Delete
+                            class="fas fa-trash btn-icon-left"></i>Delete
                         </button>
                     </template>
 
@@ -49,7 +49,7 @@
                         <i class="fas"
                            :class="data.item.read_at ? ['text-muted', 'fa-envelope'] : ['text-primary', 'fa-envelope-open']"></i>
                         <button class="btn btn-secondary" :data-id="data.item.id" @click="deleteNotification"><i
-                            class="fas fa-trash"></i>Delete
+                            class="fas fa-trash btn-icon-left"></i>Delete
                         </button>
                     </template>
 
