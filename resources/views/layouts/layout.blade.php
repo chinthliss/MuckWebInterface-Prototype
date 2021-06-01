@@ -143,7 +143,7 @@
             @endif
 
         <!-- Content -->
-            <main id="app" class="mt-2 py-1">
+            <main id="app" class="my-2 py-1">
                 @yield('content')
             </main>
         </div>
