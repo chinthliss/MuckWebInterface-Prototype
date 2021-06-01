@@ -15,13 +15,15 @@ $primary: #b8ec79;
 $secondary: #878d7f;
 $headerColor: #b8ec79;
 $backgroundColor: #2a451c;
+$content-bg: #1e1e1e;
 
 // Bootstrap overrides
-$body-bg: #000;
+$body-bg: #0f0f0f;
 $body-color: #ccc;
 
 $modal-content-bg: #000;
 $modal-content-border-color: $primary;
 
-$card-bg: #111;
-$card-cap-bg: #222;
+$card-bg: darken($backgroundColor, 5%);
+$card-cap-bg: $backgroundColor;
+$card-cap-color: $primary;

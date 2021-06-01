@@ -89,7 +89,7 @@
     </button>
 </div>
 <div class="container-fluid">
-    <div class="row flex-xl-nowrap">
+    <div id="site_lower_container" class="row flex-xl-nowrap">
         <!-- Left side bar -->
         <nav id="site_navigation_left" class="col-12 col-md-3 col-xl-2">
             <div class="navbar-text">Some text!</div>
@@ -143,7 +143,7 @@
             @endif
 
         <!-- Content -->
-            <main id="app" class="mb-2">
+            <main id="app" class="mt-2 py-1">
                 @yield('content')
             </main>
         </div>
