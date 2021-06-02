@@ -1,60 +1,58 @@
 <template>
-    <div class="card">
-        <h4 class="card-header">Notifications</h4>
-        <div class="card-body">
-            <div v-if="loadingContent" class="text-center my-2">
-                <b-spinner class="align-middle primary" variant="primary"></b-spinner>
-                <strong>Loading...</strong>
-            </div>
+    <div class="container">
+        <h4>Notifications</h4>
+        <div v-if="loadingContent" class="text-center my-2">
+            <b-spinner class="align-middle primary" variant="primary"></b-spinner>
+            <strong>Loading...</strong>
+        </div>
 
-            <div v-if="noNotifications">
-                You have no notifications. <i class="fas fa-thumbs-up"></i>
-            </div>
-            <div v-else class="d-flex justify-content-center mb-2">
-                <button class="btn btn-warning" @click="deleteAllNotifications">
-                    <i class="fas fa-trash btn-icon-left"></i>Delete all notifications
-                </button>
-            </div>
-            <!-- Account or game notifications -->
-            <div v-if="contentData.user && contentData.user.length">
-                <b-table dark striped hover small
-                         :items="contentData.user"
-                         :fields="contentFields"
-                         :busy="loadingContent"
-                >
-                    <template #cell(controls)="data">
-                        <i class="fas"
-                           :class="data.item.read_at ? ['text-muted', 'fa-envelope'] : ['text-primary', 'fa-envelope-open']"></i>
-                        <button class="btn btn-secondary" :data-id="data.item.id" @click="deleteNotification"><i
-                            class="fas fa-trash btn-icon-left"></i>Delete
-                        </button>
-                    </template>
-
-                </b-table>
-            </div>
-
-            <!-- Character notifications -->
-            <div
-                v-if="contentData.character && contentData.character.length"
-                v-for="(notifications, character) in contentData.character"
-                v-bind:data="notifications"
-                v-bind:key="character"
+        <div v-if="noNotifications">
+            You have no notifications. <i class="fas fa-thumbs-up"></i>
+        </div>
+        <div v-else class="d-flex justify-content-center mb-2">
+            <button class="btn btn-warning" @click="deleteAllNotifications">
+                <i class="fas fa-trash btn-icon-left"></i>Delete all notifications
+            </button>
+        </div>
+        <!-- Account or game notifications -->
+        <div v-if="contentData.user && contentData.user.length">
+            <b-table dark striped hover small
+                     :items="contentData.user"
+                     :fields="contentFields"
+                     :busy="loadingContent"
             >
-                <h4>{{ character }}</h4>
-                <b-table dark striped hover small
-                         :items="notifications"
-                         :fields="contentFields"
-                >
-                    <template #cell(controls)="data">
-                        <i class="fas"
-                           :class="data.item.read_at ? ['text-muted', 'fa-envelope'] : ['text-primary', 'fa-envelope-open']"></i>
-                        <button class="btn btn-secondary" :data-id="data.item.id" @click="deleteNotification"><i
-                            class="fas fa-trash btn-icon-left"></i>Delete
-                        </button>
-                    </template>
+                <template #cell(controls)="data">
+                    <i class="fas"
+                       :class="data.item.read_at ? ['text-muted', 'fa-envelope'] : ['text-primary', 'fa-envelope-open']"></i>
+                    <button class="btn btn-secondary" :data-id="data.item.id" @click="deleteNotification"><i
+                        class="fas fa-trash btn-icon-left"></i>Delete
+                    </button>
+                </template>
 
-                </b-table>
-            </div>
+            </b-table>
+        </div>
+
+        <!-- Character notifications -->
+        <div
+            v-if="contentData.character && contentData.character.length"
+            v-for="(notifications, character) in contentData.character"
+            v-bind:data="notifications"
+            v-bind:key="character"
+        >
+            <h4>{{ character }}</h4>
+            <b-table dark striped hover small
+                     :items="notifications"
+                     :fields="contentFields"
+            >
+                <template #cell(controls)="data">
+                    <i class="fas"
+                       :class="data.item.read_at ? ['text-muted', 'fa-envelope'] : ['text-primary', 'fa-envelope-open']"></i>
+                    <button class="btn btn-secondary" :data-id="data.item.id" @click="deleteNotification"><i
+                        class="fas fa-trash btn-icon-left"></i>Delete
+                    </button>
+                </template>
+
+            </b-table>
         </div>
     </div>
 </template>
@@ -138,7 +136,7 @@ export default {
         }
     },
     computed: {
-        noNotifications: function() {
+        noNotifications: function () {
             if (this.loadingContent) return false;
             if (!this.contentData || this.contentData.length === 0) return true;
             if (this.contentData.user.length === 0 && this.contentData.character.length === 0) return true;

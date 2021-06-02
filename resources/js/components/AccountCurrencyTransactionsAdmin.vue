@@ -1,52 +1,49 @@
 <template>
-    <div class="card">
-        <h4 class="card-header">View Transactions</h4>
+    <div class="container">
+        <h4>View Transactions</h4>
 
-        <div class="card-body">
-
-            <div class="row">
-                <div class="col-md">
-                    <b-form-group label="Type" label-cols="auto" v-slot="{ ariaDescribedby }">
-                        <b-form-radio-group v-model="transactionsFilter.type" name="type" buttons
-                                            :aria-describedby="ariaDescribedby">
-                            <b-form-radio value="any">Any</b-form-radio>
-                            <b-form-radio value="card">Card</b-form-radio>
-                            <b-form-radio value="paypal">Paypal</b-form-radio>
-                            <b-form-radio value="patreon">Patreon</b-form-radio>
-                        </b-form-radio-group>
-                    </b-form-group>
-                </div>
-                <div class="col-md">
-                    <b-input-group prepend="Filter">
-                        <b-form-input v-model="transactionsFilter.text"></b-form-input>
-                    </b-input-group>
-                </div>
+        <div class="row">
+            <div class="col-md">
+                <b-form-group label="Type" label-cols="auto" v-slot="{ ariaDescribedby }">
+                    <b-form-radio-group v-model="transactionsFilter.type" name="type" buttons
+                                        :aria-describedby="ariaDescribedby">
+                        <b-form-radio value="any">Any</b-form-radio>
+                        <b-form-radio value="card">Card</b-form-radio>
+                        <b-form-radio value="paypal">Paypal</b-form-radio>
+                        <b-form-radio value="patreon">Patreon</b-form-radio>
+                    </b-form-radio-group>
+                </b-form-group>
             </div>
-
-            <b-table dark striped hover small
-                     :items="transactionsData"
-                     :fields="transactionsFields"
-                     :busy="loadingTransactions"
-                     :filter="transactionsFilter"
-                     :filter-function="filterTransactions"
-            >
-                <template #table-busy>
-                    <div class="text-center my-2">
-                        <b-spinner class="align-middle" variant="primary"></b-spinner>
-                        <strong>Loading...</strong>
-                    </div>
-                </template>
-
-                <template #cell(id)="data">
-                    <a target="_blank" :href="data.item.url">{{ data.value }}</a>
-                </template>
-
-                <template #cell(subscription_id)="data">
-                    <a v-if="data.item.subscription_id" target="_blank"
-                       :href="data.item.subscription_url">{{ data.item.subscription_id }}</a>
-                </template>
-            </b-table>
+            <div class="col-md">
+                <b-input-group prepend="Filter">
+                    <b-form-input v-model="transactionsFilter.text"></b-form-input>
+                </b-input-group>
+            </div>
         </div>
+
+        <b-table dark striped hover small
+                 :items="transactionsData"
+                 :fields="transactionsFields"
+                 :busy="loadingTransactions"
+                 :filter="transactionsFilter"
+                 :filter-function="filterTransactions"
+        >
+            <template #table-busy>
+                <div class="text-center my-2">
+                    <b-spinner class="align-middle" variant="primary"></b-spinner>
+                    <strong>Loading...</strong>
+                </div>
+            </template>
+
+            <template #cell(id)="data">
+                <a target="_blank" :href="data.item.url">{{ data.value }}</a>
+            </template>
+
+            <template #cell(subscription_id)="data">
+                <a v-if="data.item.subscription_id" target="_blank"
+                   :href="data.item.subscription_url">{{ data.item.subscription_id }}</a>
+            </template>
+        </b-table>
     </div>
 </template>
 

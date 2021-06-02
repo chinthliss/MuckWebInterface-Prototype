@@ -1,46 +1,42 @@
 <template>
-    <div class="card">
-        <h4 class="card-header">View Subscriptions</h4>
-
-        <div class="card-body">
-
-            <div class="row">
-                <div class="col-md">
-                    <b-form-group label="Type" label-cols="auto" v-slot="{ ariaDescribedby }">
-                        <b-form-radio-group v-model="subscriptionsFilter.type" name="type" buttons
-                                            :aria-describedby="ariaDescribedby">
-                            <b-form-radio value="any">Any</b-form-radio>
-                            <b-form-radio value="card">Card</b-form-radio>
-                            <b-form-radio value="paypal">Paypal</b-form-radio>
-                        </b-form-radio-group>
-                    </b-form-group>
-                </div>
-                <div class="col-md">
-                    <b-input-group prepend="Filter">
-                        <b-form-input v-model="subscriptionsFilter.text"></b-form-input>
-                    </b-input-group>
-                </div>
+    <div class="container">
+        <h4>View Subscriptions</h4>
+        <div class="row">
+            <div class="col-md">
+                <b-form-group label="Type" label-cols="auto" v-slot="{ ariaDescribedby }">
+                    <b-form-radio-group v-model="subscriptionsFilter.type" name="type" buttons
+                                        :aria-describedby="ariaDescribedby">
+                        <b-form-radio value="any">Any</b-form-radio>
+                        <b-form-radio value="card">Card</b-form-radio>
+                        <b-form-radio value="paypal">Paypal</b-form-radio>
+                    </b-form-radio-group>
+                </b-form-group>
             </div>
-
-            <b-table dark striped hover small
-                     :items="subscriptionsData"
-                     :fields="subscriptionsFields"
-                     :busy="loadingSubscriptions"
-                     :filter="subscriptionsFilter"
-                     :filter-function="filterSubscriptions"
-            >
-                <template #table-busy>
-                    <div class="text-center my-2">
-                        <b-spinner class="align-middle" variant="primary"></b-spinner>
-                        <strong>Loading...</strong>
-                    </div>
-                </template>
-
-                <template #cell(id)="data">
-                    <a target="_blank" :href="data.item.url">{{ data.value }}</a>
-                </template>
-            </b-table>
+            <div class="col-md">
+                <b-input-group prepend="Filter">
+                    <b-form-input v-model="subscriptionsFilter.text"></b-form-input>
+                </b-input-group>
+            </div>
         </div>
+
+        <b-table dark striped hover small
+                 :items="subscriptionsData"
+                 :fields="subscriptionsFields"
+                 :busy="loadingSubscriptions"
+                 :filter="subscriptionsFilter"
+                 :filter-function="filterSubscriptions"
+        >
+            <template #table-busy>
+                <div class="text-center my-2">
+                    <b-spinner class="align-middle" variant="primary"></b-spinner>
+                    <strong>Loading...</strong>
+                </div>
+            </template>
+
+            <template #cell(id)="data">
+                <a target="_blank" :href="data.item.url">{{ data.value }}</a>
+            </template>
+        </b-table>
     </div>
 </template>
 
@@ -129,7 +125,7 @@ export default {
                 });
 
         },
-        filterSubscriptions: function(row, filter) {
+        filterSubscriptions: function (row, filter) {
             if (filter.type === 'paypal' && row.type !== 'Paypal') return false;
             if (filter.type === 'card' && row.type !== 'Card') return false;
             if (filter.text !== '') {

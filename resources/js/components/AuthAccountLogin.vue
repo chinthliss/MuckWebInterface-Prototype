@@ -1,7 +1,6 @@
 <template>
-    <div class="card">
-        <h4 class="card-header">Login</h4>
-        <div class="card-body">
+    <div class="container">
+        <h4 class="text-center">Login</h4>
             <div class="form-group row">
                 <label class="col-md-4 col-form-label text-md-right" for="email">Email Address</label>
 
@@ -61,7 +60,6 @@
             </div>
 
         </div>
-    </div>
 </template>
 
 <script>

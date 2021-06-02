@@ -1,40 +1,29 @@
-<style scoped>
-.log-table {
-    font-size:90%;
-}
-.log-line {
-    word-break: break-word;
-}
-</style>
-
 <template>
-    <div class="card">
-        <h4 class="card-header">Site Logs</h4>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-2 border border-secondary rounded" id="date-selector">
-                    <div v-for="date in dates"><a href="#" @click="loadDate(date, $event)">{{ date }}</a></div>
-                </div>
-                <div class="col-md-10">
-                    <table v-if="log" class="table log-table">
-                        <thead>
-                        <tr>
-                            <th scope="col">Time</th>
-                            <th scope="col">Level</th>
-                            <th scope="col">Log</th>
-                        </tr>
-                        </thead>
-                        <tr v-for="entry in log">
-                            <td>{{ entry.time }}</td>
-                            <td :class="classForLevel(entry.level)">{{ entry.level }}</td>
-                            <td>
-                                <div v-for="line in entry.lines" class="log-line">{{ line }}</div>
-                            </td>
-                        </tr>
-                    </table>
-                    <div v-else>
-                        Select a date to view log entries.
-                    </div>
+    <div class="container">
+        <h4>Site Logs</h4>
+        <div class="row">
+            <div class="col-md-2 border border-secondary rounded" id="date-selector">
+                <div v-for="date in dates"><a href="#" @click="loadDate(date, $event)">{{ date }}</a></div>
+            </div>
+            <div class="col-md-10">
+                <table v-if="log" class="table log-table">
+                    <thead>
+                    <tr>
+                        <th scope="col">Time</th>
+                        <th scope="col">Level</th>
+                        <th scope="col">Log</th>
+                    </tr>
+                    </thead>
+                    <tr v-for="entry in log">
+                        <td>{{ entry.time }}</td>
+                        <td :class="classForLevel(entry.level)">{{ entry.level }}</td>
+                        <td>
+                            <div v-for="line in entry.lines" class="log-line">{{ line }}</div>
+                        </td>
+                    </tr>
+                </table>
+                <div v-else>
+                    Select a date to view log entries.
                 </div>
             </div>
         </div>
@@ -83,7 +72,7 @@ export default {
                     .split('\n');
             }
         },
-        classForLevel: function(level) {
+        classForLevel: function (level) {
             if (['EMERGENCY', 'CRITICAL', 'ALERT', 'ERROR'].indexOf(level) !== -1) return 'text-danger';
             if (level === 'WARNING') return 'text-warning';
             return null;
@@ -92,3 +81,12 @@ export default {
 }
 </script>
 
+<style scoped>
+.log-table {
+    font-size: 90%;
+}
+
+.log-line {
+    word-break: break-word;
+}
+</style>

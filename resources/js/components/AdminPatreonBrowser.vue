@@ -1,50 +1,42 @@
-<style scoped>
->>> .limit-column-width {
-    max-width: 100px;
-}
-</style>
-
 <template>
-    <div class="card">
-        <h4 class="card-header">Patreon Supporter Browser</h4>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md">
-                    <b-form-group label="Has Account?" label-cols="auto" v-slot="{ ariaDescribedby }">
-                        <b-form-radio-group v-model="filter.filterOnAccount" name="has-account" buttons
-                                            :aria-describedby="ariaDescribedby">
-                            <b-form-radio value="both">Both</b-form-radio>
-                            <b-form-radio value="yes">Yes</b-form-radio>
-                            <b-form-radio value="no">No</b-form-radio>
-                        </b-form-radio-group>
-                    </b-form-group>
-                </div>
-                <div class="col-md">
-                    <b-input-group prepend="Filter">
-                        <b-form-input v-model="filter.filterString"></b-form-input>
-                    </b-input-group>
-                </div>
+    <div class="container">
+        <h4>Patreon Supporter Browser</h4>
+        <div class="row">
+            <div class="col-md">
+                <b-form-group label="Has Account?" label-cols="auto" v-slot="{ ariaDescribedby }">
+                    <b-form-radio-group v-model="filter.filterOnAccount" name="has-account" buttons
+                                        :aria-describedby="ariaDescribedby">
+                        <b-form-radio value="both">Both</b-form-radio>
+                        <b-form-radio value="yes">Yes</b-form-radio>
+                        <b-form-radio value="no">No</b-form-radio>
+                    </b-form-radio-group>
+                </b-form-group>
             </div>
-
-            <b-table dark striped hover small
-                     :items="patronData"
-                     :fields="fields"
-                     :busy="loadingPatrons"
-                     :filter="filter"
-                     :filter-function="filterPatrons"
-            >
-                <template #table-busy>
-                    <div class="text-center my-2">
-                        <b-spinner class="align-middle" variant="primary"></b-spinner>
-                        <strong>Loading...</strong>
-                    </div>
-                </template>
-
-                <template #cell(accountId)="data">
-                    <a target="_blank" :href="data.item.account_url">{{ data.value }}</a>
-                </template>
-            </b-table>
+            <div class="col-md">
+                <b-input-group prepend="Filter">
+                    <b-form-input v-model="filter.filterString"></b-form-input>
+                </b-input-group>
+            </div>
         </div>
+
+        <b-table dark striped hover small
+                 :items="patronData"
+                 :fields="fields"
+                 :busy="loadingPatrons"
+                 :filter="filter"
+                 :filter-function="filterPatrons"
+        >
+            <template #table-busy>
+                <div class="text-center my-2">
+                    <b-spinner class="align-middle" variant="primary"></b-spinner>
+                    <strong>Loading...</strong>
+                </div>
+            </template>
+
+            <template #cell(accountId)="data">
+                <a target="_blank" :href="data.item.account_url">{{ data.value }}</a>
+            </template>
+        </b-table>
     </div>
 </template>
 
@@ -142,3 +134,8 @@ export default {
 }
 </script>
 
+<style scoped>
+>>> .limit-column-width {
+    max-width: 100px;
+}
+</style>

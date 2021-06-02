@@ -1,16 +1,14 @@
 <template>
-    <div class="card">
-        <h4 class="card-header">Stretch Goals</h4>
-        <div class="card-body">
-            As the monthly contributions hit certain values, new things will be added to the game for all to enjoy.
-            <div class="goal-next" v-if="progressToNext">{{ progressToNext }} dollars to the next goal!</div>
-            <div class="goal-container">
-                <div class="goal" v-bind:class="[ amount <= progress ? 'text-primary' : 'text-secondary' ]"
-                     v-for="(goal,amount) in goals">
-                    <i class="goal-lock fas" v-bind:class="[ amount < progress ? 'fa-lock-open' : 'fa-lock' ]"></i>
-                    <span class="goal-amount">${{ amount }}</span>
-                    <span class="goal-description">{{ goal }}</span>
-                </div>
+    <div class="container">
+        <h4>Stretch Goals</h4>
+        As the monthly contributions hit certain values, new things will be added to the game for all to enjoy.
+        <div class="goal-next" v-if="progressToNext">{{ progressToNext }} dollars to the next goal!</div>
+        <div class="goal-container">
+            <div class="goal" v-bind:class="[ amount <= progress ? 'text-primary' : 'text-secondary' ]"
+                 v-for="(goal,amount) in goals">
+                <i class="goal-lock fas" v-bind:class="[ amount < progress ? 'fa-lock-open' : 'fa-lock' ]"></i>
+                <span class="goal-amount">${{ amount }}</span>
+                <span class="goal-description">{{ goal }}</span>
             </div>
         </div>
     </div>
@@ -25,7 +23,7 @@ export default {
     },
     methods: {},
     computed: {
-        progressToNext: function() {
+        progressToNext: function () {
             let next = null;
             for (let amount of Object.keys(this.goals)) {
                 amount = parseInt(amount);
@@ -39,7 +37,7 @@ export default {
 
 <style scoped>
 .goal i {
-    width:18px;
+    width: 18px;
 }
 
 .goal-amount {

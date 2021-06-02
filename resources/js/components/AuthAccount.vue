@@ -1,102 +1,100 @@
 <template>
-    <div class="card">
-        <h4 class="card-header">Account</h4>
-        <div class="card-body">
-            <dl>
-                <div class="row">
-                    <dt class="col-sm-2">Created</dt>
-                    <dd class="col-sm-10">{{ accountCreated }}</dd>
-                </div>
-                <div class="row">
-                    <dt class="col-sm-2">Subscription</dt>
-                    <dd class="col-sm-10">{{ overallSubscriptionStatus() }}</dd>
-                </div>
-            </dl>
-
-            <!-- Subscriptions -->
-            <div v-if="subscriptions.length > 0">
-                <h5 class="mt-2">Subscription</h5>
-                <table class="table table-hover">
-                    <thead>
-                    <tr>
-                        <th scope="col">Type</th>
-                        <th scope="col">Amount (USD)</th>
-                        <th scope="col">Interval (days)</th>
-                        <th scope="col">Next (approx)</th>
-                        <th scope="col">Status</th>
-                        <th scope="col"></th>
-                        <th scope="col"></th>
-                    </tr>
-                    </thead>
-                    <tr v-for="subscription in subscriptions">
-                        <td class="align-middle">{{ subscription.type }}</td>
-                        <td class="align-middle">${{ subscription.amount_usd }}</td>
-                        <td class="align-middle">{{ subscription.recurring_interval }}</td>
-                        <td class="align-middle">{{ outputCarbonString(subscription.next_charge_at) }}</td>
-                        <td class="align-middle">{{ friendlySubscriptionStatus(subscription.status) }}</td>
-                        <td class="align-middle"><a :href="subscription.url">
-                            <i class="fas fa-search"></i>
-                        </a></td>
-                        <td class="align-middle">
-                            <button class="btn btn-secondary" v-if="subscription.status === 'active'"
-                                    @click="cancelSubscription(subscription.id)">Cancel
-                            </button>
-                        </td>
-                    </tr>
-                </table>
-                <p>Payments made via subscriptions also show on the Account Transactions page.</p>
+    <div class="container">
+        <h4>Account</h4>
+        <dl>
+            <div class="row">
+                <dt class="col-sm-2">Created</dt>
+                <dd class="col-sm-10">{{ accountCreated }}</dd>
             </div>
+            <div class="row">
+                <dt class="col-sm-2">Subscription</dt>
+                <dd class="col-sm-10">{{ overallSubscriptionStatus() }}</dd>
+            </div>
+        </dl>
 
-            <!-- Emails -->
-            <div>
-                <h5 class="mt-2">Emails</h5>
-                <table class="table table-hover">
-                    <thead>
-                    <tr>
-                        <th scope="col">Email</th>
-                        <th scope="col" class="text-center">Primary?</th>
-                        <th scope="col">Registered</th>
-                        <th scope="col">Verified</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr v-for="(details, email) in emails">
-                        <td class="align-middle">{{ email }}</td>
-                        <td class="text-center align-middle">
-                            <span v-if="email === primaryEmail" class="text-muted">Primary</span>
-                            <button v-else class="btn btn-secondary" @click="verifyUseEmail(email)">Make Primary
-                            </button>
-                        </td>
-                        <td class="align-middle">{{ details.created_at }}</td>
-                        <td class="align-middle">{{ details.verified_at }}</td>
-                    </tr>
-                    </tbody>
-                </table>
-                <div class="row">
-                    <div class="col">
-                        <div class="btn-toolbar" role="group" aria-label="Account Controls">
-                            <a class="btn btn-secondary mt-1 ml-1" href="/account/changepassword">Change Password</a>
-                            <a class="btn btn-secondary mt-1 ml-1" href="/account/changeemail">Change to new Email</a>
-                            <a class="btn btn-secondary mt-1 ml-1" href="/account/cardmanagement">Card Management</a>
-                            <a class="btn btn-secondary mt-1 ml-1" href="/accountcurrency/history">Account Transactions</a>
-                        </div>
+        <!-- Subscriptions -->
+        <div v-if="subscriptions.length > 0">
+            <h5 class="mt-2">Subscription</h5>
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">Type</th>
+                    <th scope="col">Amount (USD)</th>
+                    <th scope="col">Interval (days)</th>
+                    <th scope="col">Next (approx)</th>
+                    <th scope="col">Status</th>
+                    <th scope="col"></th>
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+                <tr v-for="subscription in subscriptions">
+                    <td class="align-middle">{{ subscription.type }}</td>
+                    <td class="align-middle">${{ subscription.amount_usd }}</td>
+                    <td class="align-middle">{{ subscription.recurring_interval }}</td>
+                    <td class="align-middle">{{ outputCarbonString(subscription.next_charge_at) }}</td>
+                    <td class="align-middle">{{ friendlySubscriptionStatus(subscription.status) }}</td>
+                    <td class="align-middle"><a :href="subscription.url">
+                        <i class="fas fa-search"></i>
+                    </a></td>
+                    <td class="align-middle">
+                        <button class="btn btn-secondary" v-if="subscription.status === 'active'"
+                                @click="cancelSubscription(subscription.id)">Cancel
+                        </button>
+                    </td>
+                </tr>
+            </table>
+            <p>Payments made via subscriptions also show on the Account Transactions page.</p>
+        </div>
+
+        <!-- Emails -->
+        <div>
+            <h5 class="mt-2">Emails</h5>
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">Email</th>
+                    <th scope="col" class="text-center">Primary?</th>
+                    <th scope="col">Registered</th>
+                    <th scope="col">Verified</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="(details, email) in emails">
+                    <td class="align-middle">{{ email }}</td>
+                    <td class="text-center align-middle">
+                        <span v-if="email === primaryEmail" class="text-muted">Primary</span>
+                        <button v-else class="btn btn-secondary" @click="verifyUseEmail(email)">Make Primary
+                        </button>
+                    </td>
+                    <td class="align-middle">{{ details.created_at }}</td>
+                    <td class="align-middle">{{ details.verified_at }}</td>
+                </tr>
+                </tbody>
+            </table>
+            <div class="row">
+                <div class="col">
+                    <div class="btn-toolbar" role="group" aria-label="Account Controls">
+                        <a class="btn btn-secondary mt-1 ml-1" href="/account/changepassword">Change Password</a>
+                        <a class="btn btn-secondary mt-1 ml-1" href="/account/changeemail">Change to new Email</a>
+                        <a class="btn btn-secondary mt-1 ml-1" href="/account/cardmanagement">Card Management</a>
+                        <a class="btn btn-secondary mt-1 ml-1" href="/accountcurrency/history">Account Transactions</a>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Session settings -->
-            <div>
-                <h5 class="mt-2">Preferences</h5>
-                <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="hideAvatars"
-                           v-model="hideAvatars" @change="hideAvatarsChanged">
-                    <label class="form-check-label" for="hideAvatars">Hide Avatars</label>
-                </div>
-                <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="useFullWidth"
-                           v-model="useFullWidth" @change="useFullWidthChanged">
-                    <label class="form-check-label" for="useFullWidth">Use Full Screen Width for all pages</label>
-                </div>
+        <!-- Session settings -->
+        <div>
+            <h5 class="mt-2">Preferences</h5>
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="hideAvatars"
+                       v-model="hideAvatars" @change="hideAvatarsChanged">
+                <label class="form-check-label" for="hideAvatars">Hide Avatars</label>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="useFullWidth"
+                       v-model="useFullWidth" @change="useFullWidthChanged">
+                <label class="form-check-label" for="useFullWidth">Use Full Screen Width for all pages</label>
             </div>
         </div>
 
@@ -134,7 +132,6 @@
                         :content="message_dialog_content"
                         :header="message_dialog_header"
         ></dialog-message>
-
     </div>
 </template>
 
