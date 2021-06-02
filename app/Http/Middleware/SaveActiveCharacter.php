@@ -2,8 +2,8 @@
 
 namespace App\Http\Middleware;
 
-use App\Muck\MuckConnection;
 use Closure;
+use Illuminate\Http\Request;
 
 /**
  * Class SaveActiveCharacter
@@ -13,19 +13,19 @@ class SaveActiveCharacter
 {
 
     /**
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
+     * @param Request $request
+     * @param Closure $next
      * @return mixed
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next)
     {
         $response = $next($request);
 
         $user = $request->user('account');
-        if ($user && $characterDbref = $user->getCharacterDbref()) {
+        // Some responses, eg binary ones, don't have a withCookie
+        if ($user && ($characterDbref = $user->getCharacterDbref()) && method_exists($response, 'withCookie')) {
             return $response->withCookie(cookie()->forever('character-dbref', $characterDbref));
-        }
-        else {
+        } else {
             return $response;
         }
     }

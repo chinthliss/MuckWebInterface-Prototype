@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Muck\MuckConnection;
 use Closure;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -26,11 +27,11 @@ class LoadActiveCharacter
      * If a character dbref is specified, verifies and sets active character on the User object
      * Takes it from the header or cookie with the former getting precedence.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
+     * @param  Request  $request
+     * @param  Closure  $next
      * @return mixed
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next)
     {
         $clearCookie = false;
 
@@ -46,18 +47,18 @@ class LoadActiveCharacter
             if ($characterDbref) {
                 $character = $this->muck->retrieveAndVerifyCharacterOnAccount($user, $characterDbref);
                 if ($character) {
-                    Log::debug("MultiplayerCharacter requested {$characterDbref} - accepted.");
+                    Log::debug("MultiplayerCharacter requested $characterDbref - accepted.");
                     $user->setCharacter($character);
                 }
                 else {
-                    Log::debug("MultiplayerCharacter requested {$characterDbref} - rejected, clearing cookie.");
+                    Log::debug("MultiplayerCharacter requested $characterDbref - rejected, clearing cookie.");
                     $clearCookie = true;
                 }
             }
         }
         $response = $next($request);
 
-        if ($clearCookie)
+        if ($clearCookie && method_exists($response, 'withCookie'))
             return $response->withCookie(cookie()->forget('character-dbref'));
         else
             return $response;
