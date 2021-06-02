@@ -97,19 +97,7 @@ class FakeMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function getCharacters(): ?Collection
-    {
-        self::fakeMuckCall('getCharacters');
-        /** @var User $user */
-        $user = auth()->user();
-        if (!$user || !$user->getAid()) return null;
-        return $this->getCharactersOf($user);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getCharacterSlotState(): array
+    public function getCharacterSlotState(User $user): array
     {
         self::fakeMuckCall('getCharacterSlotState');
             return [

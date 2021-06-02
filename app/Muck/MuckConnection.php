@@ -18,16 +18,11 @@ interface MuckConnection
     public function getCharactersOf(User $user): ?Collection;
 
     /**
-     * Get characters of present authenticated user
-     * @return null|Collection in the form [characterDbref:[MuckCharacter]]
-     */
-    public function getCharacters(): ?Collection;
-
-    /**
      * Gets parameters required for character select/create
+     * @param User $user
      * @return array [characterSlotCount, characterSlotCost]
      */
-    public function getCharacterSlotState(): array;
+    public function getCharacterSlotState(User $user): array;
 
     /**
      * Returns the latest connect or disconnect from any character on the account

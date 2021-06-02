@@ -80,20 +80,9 @@ class HttpMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function getCharacters(): ?Collection
+    public function getCharacterSlotState(User $user) : array
     {
-        /** @var User $user */
-        $user = auth()->user();
-        if (!$user || !$user->getAid()) return null;
-        return $this->getCharactersOf($user);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getCharacterSlotState() : array
-    {
-        $response = $this->requestFromMuck('getCharacterSlotState');
+        $response = $this->requestFromMuck('getCharacterSlotState', ['aid' => $user->getAid()]);
         $response = explode(',', $response);
         return [
             "characterSlotCount" => $response[0],
