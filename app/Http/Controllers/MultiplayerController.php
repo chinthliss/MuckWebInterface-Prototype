@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Muck\MuckConnection;
+use App\User;
 use Illuminate\Http\Request;
 
 //For core multiplayer functionality only
@@ -11,6 +12,7 @@ class MultiplayerController extends Controller
 
     public function showMultiplayerDashboard()
     {
+        /** @var User $user */
         $user = auth()->user();
 
         $charactersToProcess = $user->getCharacters();
@@ -38,6 +40,7 @@ class MultiplayerController extends Controller
     //Character select is a simple gate screen to pick a character.
     public function showCharacterSelect(MuckConnection $muck)
     {
+        /** @var User $user */
         $user = auth()->user();
 
         $characters = [];
@@ -45,7 +48,7 @@ class MultiplayerController extends Controller
             array_push($characters, $character->toArray());
         }
 
-        $characterSlotState = $muck->getCharacterSlotState();
+        $characterSlotState = $muck->getCharacterSlotState($user);
 
         return view('multiplayer.character-select')->with([
             "characters" => $characters,
@@ -56,6 +59,7 @@ class MultiplayerController extends Controller
 
     public function setActiveCharacter(Request $request, MuckConnection $muck)
     {
+        /** @var User $user */
         $user = $request->user('account');
         if (!$user) abort(401);
 
@@ -80,7 +84,7 @@ class MultiplayerController extends Controller
 
     }
 
-    public function showAvatarEditor(Request $request)
+    public function showAvatarEditor()
     {
         return view('multiplayer.avatar');
     }
