@@ -93,7 +93,7 @@ class HttpMuckConnection implements MuckConnection
      */
     public function getCharacterSlotState() : array
     {
-        $response = $this->requestFromMuck('retrieveByCredentials');
+        $response = $this->requestFromMuck('getCharacterSlotState');
         $response = explode(',', $response);
         return [
             "characterSlotCount" => $response[0],
