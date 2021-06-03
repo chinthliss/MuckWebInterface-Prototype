@@ -312,7 +312,8 @@ class User implements Authenticatable, MustVerifyEmail
             'created' => $this->createdAt,
             'characters' => $characters,
             'notes' => $this->getProvider()->getAccountNotes($this),
-            'lastConnected' => $this->getLastConnect()
+            'lastConnected' => $this->getLastConnect(),
+            'emails' => $this->getEmails()
         ];
     }
     #endregion Admin functionality

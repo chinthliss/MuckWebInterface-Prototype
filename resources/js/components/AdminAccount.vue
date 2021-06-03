@@ -24,6 +24,23 @@
                 </dd>
             </div>
             <div class="row">
+                <dt class="col-sm-2">Emails</dt>
+                <dd class="col-sm-10">
+                    <table class="table table-striped">
+                        <tr>
+                            <th scope="col">Email</th>
+                            <th scope="col">Registered</th>
+                            <th scope="col">Verified</th>
+                        </tr>
+                        <tr v-for="(details, email) in account.emails">
+                            <td>{{ email }}</td>
+                            <td>{{ outputCarbonString(details.created_at) }}</td>
+                            <td>{{ outputCarbonString(details.verified_at) }}</td>
+                        </tr>
+                    </table>
+                </dd>
+            </div>
+            <div class="row">
                 <dt class="col-sm-2">Notes</dt>
                 <dd class="col-sm-10">
                     <div v-if="!account.notes.length">None</div>
