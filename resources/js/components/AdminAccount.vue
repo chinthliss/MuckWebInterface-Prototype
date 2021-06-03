@@ -18,9 +18,9 @@
                 <dt class="col-sm-2">Characters ({{ muckName }})</dt>
                 <dd class="col-sm-10">
                     <div v-if="!account.characters.length">None</div>
-                    <div v-for="character in account.characters">
-                        <character-card :character="character" mode="tag"></character-card>
-                    </div>
+                    <character-card v-for="character in account.characters" v-bind:key="character.dbref"
+                                    :character="character" class="mr-2">
+                    </character-card>
                 </dd>
             </div>
             <div class="row">
@@ -31,11 +31,13 @@
                             <th scope="col">Email</th>
                             <th scope="col">Registered</th>
                             <th scope="col">Verified</th>
+                            <th scope="col">Primary?</th>
                         </tr>
                         <tr v-for="(details, email) in account.emails">
                             <td>{{ email }}</td>
                             <td>{{ outputCarbonString(details.created_at) }}</td>
                             <td>{{ outputCarbonString(details.verified_at) }}</td>
+                            <td>{{ email == account.primary_email }}</td>
                         </tr>
                     </table>
                 </dd>
