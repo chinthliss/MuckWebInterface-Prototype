@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Admin\LogManager;
+use App\DatabaseForMuckUserProvider;
+use App\Muck\MuckConnection;
 use App\User;
+use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
@@ -27,6 +30,50 @@ class AdminController extends Controller
             'account' => $user->toAdminArray(),
             'muckName' => config('muck.muck_name')
         ]);
+    }
+
+    public function showAccountFinder()
+    {
+        return view('admin.accounts')->with([
+            'apiUrl' => route('admin.accounts.api')
+        ]);
+    }
+
+    public function findAccounts(Request $request, DatabaseForMuckUserProvider $userProvider)
+    {
+        $searchAccountId = $request->input('account');
+        $searchCharacterName = $request->input('character');
+        $searchEmail = $request->input('email');
+        if ( !$searchAccountId && !$searchCharacterName && !$searchEmail)
+            abort(400);
+        $results = [];
+
+        if ($searchAccountId) {
+            $user = $userProvider->retrieveById($searchAccountId);
+            if ($user) $results[$user->getAid()] = $user;
+        }
+
+        if ($searchEmail) {
+            $searchResults = $userProvider->searchByEmail($searchEmail);
+            if (count($results))
+                $results = array_intersect_key($results, $searchResults);
+            else
+                $results = $searchResults;
+        }
+
+        if ($searchCharacterName) {
+            $searchResults = $userProvider->searchByCharacterName($searchCharacterName);
+            if (count($results))
+                $results = array_intersect_key($results, $searchResults);
+            else
+                $results = $searchResults;
+        }
+
+        $parsedResults = [];
+        foreach ($results as $user) {
+            array_push($parsedResults, $user->toAdminArray());
+        }
+        return $parsedResults;
     }
 
     public function getLogForDate(string $date)

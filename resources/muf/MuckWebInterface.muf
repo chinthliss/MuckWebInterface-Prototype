@@ -105,8 +105,22 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
             swap PROP_lastDisconnect getprop
             math.max math.max
         repeat
+        intostr descr swap descrnotify
     else response400 then
 ; selfcall handleRequest_getLastConnect
+
+: handleRequest_findAccountsByCharacterName[ arr:webcall -- ]
+    webcall @ "name" array_getitem ?dup if
+        "*" swap "*" strcat strcat var! target
+        startAcceptedResponse
+        { }list
+        #-1 target @ "P" find_array foreach nip
+            acct_any2aid ?dup if intostr swap array_appenditem then
+        repeat
+        1 array_nunion "," array_join
+        descr swap descrnotify
+    else response400 then
+; selfcall handleRequest_findAccountsByCharacterName
 
 ( -------------------------------------------------- )
 ( Handlers - Auth )

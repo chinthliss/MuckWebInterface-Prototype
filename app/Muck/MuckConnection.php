@@ -102,4 +102,10 @@ interface MuckConnection
      * @return array
      */
     public function stretchGoals(): array;
+
+    /**
+     * @param string $name
+     * @return int[]
+     */
+    public function findAccountsByCharacterName(string $name): array;
 }

@@ -137,6 +137,10 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
     Route::get('admin', [AdminController::class, 'show'])
         ->name('admin.home');
 
+    Route::get('admin/accounts', [AdminController::class, 'showAccountFinder'])
+        ->name('admin.accounts');
+    Route::get('admin/accounts/api', [AdminController::class, 'findAccounts'])
+        ->name('admin.accounts.api');
     Route::get('admin/account/{accountId}', [AdminController::class, 'showAccount'])
         ->name('admin.account');
 

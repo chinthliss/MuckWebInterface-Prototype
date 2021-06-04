@@ -1,14 +1,15 @@
 @extends('layouts.layout')
 
 @section('title')
-    Account View (Admin)
+    Account {{ $account['id'] }} (Admin)
 @endsection
 
 @section('breadcrumbs')
     {{ Breadcrumbs::render([
         [ 'route' => 'home', 'label' => 'Home' ],
         [ 'route' => 'admin.home', 'label' => 'Admin' ],
-        [ 'label' => 'View Account' ],
+        [ 'route' => 'admin.accounts', 'label' => 'Accounts' ],
+        [ 'label' => 'Account ' . $account['id'] ],
     ]) }}
 @endsection
 

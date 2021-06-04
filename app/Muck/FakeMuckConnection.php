@@ -161,6 +161,7 @@ class FakeMuckConnection implements MuckConnection
      */
     public function stretchGoals(): array
     {
+        self::fakeMuckCall('stretchGoals');
         return [
             'progress' => 100,
             'goals' => [ // Keys can't be int in JSON, so also need to be strings here
@@ -176,6 +177,17 @@ class FakeMuckConnection implements MuckConnection
      */
     public function getLastConnect(int $aid): ?Carbon
     {
+        self::fakeMuckCall('getLastConnect', ['aid' => $aid]);
         return Carbon::now();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findAccountsByCharacterName(string $name): array
+    {
+        self::fakeMuckCall('findAccountsByCharacterName', ['name' => $name]);
+        if ($name == 'test') return ['TestCharacter' => 1];
+        return [];
     }
 }

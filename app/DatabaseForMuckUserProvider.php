@@ -125,6 +125,39 @@ class DatabaseForMuckUserProvider implements UserProvider
         return null;
     }
 
+    /**
+     * @param string $email
+     * @return User[]
+     */
+    public function searchByEmail(string $email): array
+    {
+        $result = [];
+
+        $rows = $this->getRetrievalQuery()
+            ->where('account_emails.email', 'like', '%' . $email . '%')
+            ->get();
+
+        foreach ($rows as $row) {
+            $user = User::fromDatabaseResponse($row);
+            $result[$user->getAid()] = $user;
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param string $name
+     * @return User[]
+     */
+    public function searchByCharacterName(string $name): array
+    {
+        $result = [];
+        $accountIds = $this->muckConnection->findAccountsByCharacterName($name);
+        foreach ($accountIds as $aid) {
+            $result[$aid] = $this->retrieveById($aid);
+        }
+        return $result;
+    }
     #endregion Retrieval
 
     /**

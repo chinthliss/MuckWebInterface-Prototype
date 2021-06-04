@@ -204,4 +204,10 @@ class HttpMuckConnection implements MuckConnection
         return null;
     }
 
+    public function findAccountsByCharacterName(string $name): array
+    {
+        $response = $this->requestFromMuck('findAccountsByCharacterName', ['name' => $name]);
+        return $response ? explode(',', $response) : [];
+    }
+
 }
