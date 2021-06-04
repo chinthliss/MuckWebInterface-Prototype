@@ -106,6 +106,7 @@
             @Admin
             <h4 class="mt-2">Admin</h4>
             <a class="nav-link" href="{{ route('admin.home') }}">Admin Dashboard</a>
+            <a class="nav-link" href="{{ route('admin.accounts') }}">Account Browser</a>
             <a class="nav-link" href="{{ route('admin.logs') }}">Site Log Viewer</a>
             <a class="nav-link" href="{{ route('admin.patrons') }}">Patreon Supporter Browser</a>
             <a class="nav-link" href="{{ route('admin.subscriptions') }}">Payment Subscriptions</a>
