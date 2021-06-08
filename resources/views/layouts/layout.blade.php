@@ -104,17 +104,16 @@
                 <a class="nav-link" href="{{ route('multiplayer.character.select') }}">Character Select</a>
                 <a class="nav-link" href="{{ route('multiplayer.avatar') }}">Avatar</a>
                 <a class="nav-link" href="{{ route('accountcurrency') }}">Buy {{ Lex::get('accountcurrency') }}</a>
-            @endauth
 
-            @Admin
-            <h4 class="mt-2">Admin</h4>
-            <a class="nav-link" href="{{ route('admin.home') }}">Admin Dashboard</a>
-            <a class="nav-link" href="{{ route('admin.accounts') }}">Account Browser</a>
-            <a class="nav-link" href="{{ route('admin.logs') }}">Site Log Viewer</a>
-            <a class="nav-link" href="{{ route('admin.patrons') }}">Patreon Supporter Browser</a>
-            <a class="nav-link" href="{{ route('admin.subscriptions') }}">Payment Subscriptions</a>
-            <a class="nav-link" href="{{ route('admin.transactions') }}">Payment Transactions</a>
-            @endAdmin
+                @Admin
+                <h4 class="nav-link mt-2 pl-0"><a href="{{ route('admin.home') }}">Admin</a></h4>
+                <a class="nav-link" href="{{ route('admin.accounts') }}">Account Browser</a>
+                <a class="nav-link" href="{{ route('admin.logs') }}">Site Log Viewer</a>
+                <a class="nav-link" href="{{ route('admin.patrons') }}">Patreon Supporter Browser</a>
+                <a class="nav-link" href="{{ route('admin.subscriptions') }}">Payment Subscriptions</a>
+                <a class="nav-link" href="{{ route('admin.transactions') }}">Payment Transactions</a>
+                @endAdmin
+            @endauth
         </nav>
         <!-- Right side bar -->
         <nav id="site_navigation_right" class="col-12 col-md-3 col-xl-2">

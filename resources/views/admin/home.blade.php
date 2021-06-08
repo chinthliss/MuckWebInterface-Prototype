@@ -13,4 +13,6 @@
 
 @section('content')
     Admin Dashboard
+    <br/>
+    TBC. This will have more purpose as additional items are produced.
 @endsection
