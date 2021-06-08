@@ -57,7 +57,10 @@
                 @endif
                 @if (Route::has('account.notifications'))
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('account.notifications') }}">Notifications</a>
+                        <a class="nav-link" href="{{ route('account.notifications') }}">
+                            Notifications
+                            @AccountNotificationCount
+                        </a>
                     </li>
                 @endif
                 @if (Route::has('logout'))

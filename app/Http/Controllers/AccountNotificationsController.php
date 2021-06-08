@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\AccountNotificationManager;
+use App\AccountNotificationManager;
 use App\User;
 
 class AccountNotificationsController extends Controller

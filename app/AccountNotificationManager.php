@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\Http;
+namespace App;
 
 
 use App\Muck\MuckConnection;
@@ -32,15 +32,15 @@ class AccountNotificationManager
         $characters = $muck->getCharactersOf($user);
         $query = $this->storageTable()
             ->where('aid', '=', $user->getAid())
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->where('game_code', '=', config('muck.muck_code'))
                     ->orWhereNull('game_code');
             });
         $rows = $query->get()->toArray();
         $query->update(['read_at' => Carbon::now()]);
-        $result = ['user' => [], 'character' =>[]];
-        foreach($rows as $row) {
-            if (!$row->game_code || !$row->character_dbref )
+        $result = ['user' => [], 'character' => []];
+        foreach ($rows as $row) {
+            if (!$row->game_code || !$row->character_dbref)
                 array_push($result['user'], $row);
             else {
                 $character = $characters->has($row->character_dbref) ? $characters[$row->character_dbref] : null;
@@ -64,6 +64,13 @@ class AccountNotificationManager
 
     public function deleteAllNotifications($accountId)
     {
-        $this->storageTable()->where('aid','=',$accountId)->delete();
+        $this->storageTable()->where('aid', '=', $accountId)->delete();
+    }
+
+    public function getNotificationCountFor(User $user)
+    {
+        return $this->storageTable()
+            ->where('aid', '=', $user->getAid())
+            ->count();
     }
 }

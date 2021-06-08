@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Http\AccountNotificationManager;
+use App\AccountNotificationManager;
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
 

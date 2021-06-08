@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Http\AccountNotificationManager;
+use App\AccountNotificationManager;
 use App\Muck\MuckCharacter;
 use App\Notifications\MuckWebInterfaceNotification;
 use Tests\TestCase;
@@ -57,6 +57,18 @@ class AccountNotificationTest extends TestCase
         $notifications = $transactionManager->getNotificationsFor($user);
         $this->assertArrayHasKey('user', $notifications);
         $this->assertCount(1, $notifications['user']);
+    }
+
+    /**
+     * @depends testUserGetsNotifications
+     */
+    public function testUserGetsNotificationCount()
+    {
+        $user = $this->loginAsValidatedUser();
+        MuckWebInterfaceNotification::NotifyAccount($user, 'Test');
+        $transactionManager = resolve(AccountNotificationManager::class);
+        $count = $transactionManager->getNotificationCountFor($user);
+        $this->assertEquals($count, 1);
     }
 
     /**
