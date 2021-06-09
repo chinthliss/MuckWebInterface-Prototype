@@ -97,3 +97,25 @@ main {
     float: right;
     margin-left: 0.375em;
 }
+
+.btn-second-line {
+    display: block;
+    font-size: 0.9rem;
+}
+
+.btn-with-img-icon {
+    position: relative;
+    padding-left: 60px !important;
+    min-height: 52px;
+}
+
+.btn-icon-accountcurrency {
+    background: url('/image/accountcurrency.png') #111 2px 50% no-repeat;
+    border-radius: $btn-border-radius;
+    min-width: 48px;
+    min-height: 48px;
+    position:absolute;
+    left: 2px;
+    top: 2px;
+    bottom: 2px;
+}

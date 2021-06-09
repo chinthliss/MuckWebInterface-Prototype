@@ -17,8 +17,11 @@
         </div>
         <div class="row text-center">
             <div class="col">
-                <a class="btn btn-primary" href="#"><i class="fas fa-cocktail btn-icon-left"></i>Buy Character Slot
-                    {{ characterSlotCost }} {{ lex('accountcurrency') }}</a>
+                <a class="btn btn-primary btn-with-img-icon" href="#">
+                    <span class="btn-icon-accountcurrency btn-icon-left"></span>
+                    Buy Character Slot
+                    <span class="btn-second-line">{{ characterSlotCost }} {{ lex('accountcurrency') }}</span>
+                </a>
             </div>
         </div>
     </div>
@@ -62,5 +65,9 @@ export default {
     border-style: dashed;
     width: 240px;
     height: 100px;
+}
+
+.empty-character-card .btn {
+    margin-top: 8px;
 }
 </style>
