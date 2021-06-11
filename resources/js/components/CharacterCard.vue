@@ -1,7 +1,9 @@
 <template>
     <div class="card character-card" :class="'mode-' + mode" @click="clicked">
         <div class="card-body">
-            <div class="avatar"></div>
+            <div class="avatar">
+                <i class="fas fa-user-alt fa-5x"></i>
+            </div>
             <div class="name">{{ character.name }}</div>
             <div class="level">{{ character.level }}</div>
             <div v-if="character.wizard" class="staff">Staff</div>
@@ -33,6 +35,16 @@ export default {
 <style scoped lang="scss">
 @import '@/_variables.scss';
 // Shared in all modes
+.avatar {
+    position: relative;
+}
+.avatar i {
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:0;
+    vertical-align: text-bottom;
+}
 .character-card {
     cursor: pointer;
     border: 1px solid $primary;
@@ -78,7 +90,7 @@ export default {
         text-shadow: 2px 2px black;
         font-weight: bold;
         font-size: large;
-        font-family: Impact, Haettenschweiler, "Franklin Gothic Bold", Charcoal, "Helvetica Inserat", "Bitstream Vera Sans Bold", "Arial Black", sans serif;
+        font-family: system-ui, "Segoe UI", sans-serif;
     }
 
     .level {
