@@ -31,6 +31,7 @@ $include $lib/account
 $include $lib/kta/proto
 $include $lib/kta/json
 $include $lib/kta/misc
+$include $lib/kta/strings
 $include $lib/rp
 $include $lib/accountpurchases
 
@@ -93,6 +94,33 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         descr swap descrnotify
     else response400 then
 ; selfcall handleRequest_getCharacterSlotState
+
+: handleRequest_buyCharacterSlot[ arr:webcall -- ]
+    webcall @ "aid" array_getitem ?dup if
+        startAcceptedResponse
+        acct_any2aid var! account
+        account @ acct_characterSlotCost var! cost
+
+        cost @ account @ "mako" getAccountStat toint > if
+            "ERROR,Insufficient " "mako" lex capital strcat " to purchase a new character slot." strcat
+            descr swap descrnotify exit
+        then
+        
+        account @ cost @ "Character Slot Purchase" makospend not if 
+            "ERROR: Failed to deduct " cost @ intostr strcat " mako for purchase of character slot on account " strcat account @ intostr strcat logStatus 
+            "ERROR,Something went wrong with the purchase." strcat
+            descr swap descrnotify exit
+        then
+        
+        account @ "Character Slots" getaccountstat toint 1 + account @ "Character Slots" rot setaccountstat
+        cost @ -1 * "Spent" "Character Slot" makolog
+        
+        "OK,"
+        account @ acct_characterSlots intostr strcat "," strcat
+        account @ acct_characterSlotCost intostr strcat
+        descr swap descrnotify
+    else response400 then
+; selfcall handleRequest_buyCharacterSlot
 
 (Expects 'aid' set, returns lastConnected or 0 for never connected)
 : handleRequest_getLastConnect[ arr:webcall -- ]

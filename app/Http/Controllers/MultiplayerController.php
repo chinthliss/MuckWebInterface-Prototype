@@ -37,11 +37,14 @@ class MultiplayerController extends Controller
         ]);
     }
 
-    //Character select is a simple gate screen to pick a character.
+    #region Character Selection / Creation
+
     public function showCharacterSelect(MuckConnection $muck)
     {
         /** @var User $user */
         $user = auth()->user();
+
+        if (!$user) abort(401);
 
         $characters = [];
         foreach ($user->getCharacters() as $character) {
@@ -56,6 +59,18 @@ class MultiplayerController extends Controller
             "characterSlotCost" => $characterSlotState['characterSlotCost']
         ]);
     }
+
+    public function buyCharacterSlot(MuckConnection $muck)
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        if (!$user) abort(401);
+
+        return $muck->buyCharacterSlot($user);
+    }
+
+    #endregion Character Selection / Creation
 
     public function setActiveCharacter(Request $request, MuckConnection $muck)
     {
@@ -83,6 +98,7 @@ class MultiplayerController extends Controller
         ]);
 
     }
+
 
     public function showAvatarEditor()
     {

@@ -90,6 +90,28 @@ class HttpMuckConnection implements MuckConnection
         ];
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function buyCharacterSlot(User $user): array
+    {
+        $response = $this->requestFromMuck('buyCharacterSlot', ['aid' => $user->getAid()]);
+        $response = explode(',', $response);
+
+        // On error we get ['ERROR',message]
+        if ($response[0] == 'ERROR') {
+            return [
+                "error" => $response[1]
+            ];
+        }
+
+        // On success we get ['OK',characterSlotCount,characterSlotCost]
+        return [
+            "characterSlotCount" => $response[1],
+            "characterSlotCost" => $response[2]
+        ];
+    }
+
     //region Auth Requests
 
     /**

@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        <h4>Select Character</h4>
+        <h4 class="text-center">Character Selection</h4>
         <div class="mb-2 text-center row">
             <div class="col">
                 <character-card v-for="character in characters" v-bind:key="character.dbref" :character="character"
@@ -17,26 +17,52 @@
         </div>
         <div class="row text-center">
             <div class="col">
-                <a class="btn btn-primary btn-with-img-icon" href="#">
+                <a class="btn btn-primary btn-with-img-icon" href="#" @click="buyCharacterSlot">
                     <span class="btn-icon-accountcurrency btn-icon-left"></span>
                     Buy Character Slot
                     <span class="btn-second-line">{{ characterSlotCost }} {{ lex('accountcurrency') }}</span>
                 </a>
             </div>
         </div>
+
+        <dialog-approve-transaction id="DialogBuyCharacterSlot"
+                                    :transaction="transaction"
+                                    @transaction-accepted="buyCharacterSlotAccepted"
+        ></dialog-approve-transaction>
+
+        <dialog-message id="DialogMessage"
+                        :content="messageDialogContent"
+                        :header="messageDialogHeader"
+        ></dialog-message>
     </div>
 </template>
 
 <script>
+import DialogApproveTransaction from "./DialogApproveTransaction";
+import DialogMessage from "./DialogMessage";
+import CharacterCard from "./CharacterCard";
+
 export default {
     name: "character-select",
+    components: {DialogApproveTransaction, DialogMessage, CharacterCard},
     props: {
         characters: {type: Array, required: true},
-        characterSlotCount: {type: Number, required: true},
-        characterSlotCost: {type: Number, required: true}
+        initialCharacterSlotCount: {type: Number, required: true},
+        initialCharacterSlotCost: {type: Number, required: true},
+        buyCharacterSlotUrl: {type: String, required: true}
     },
     data: function () {
-        return {}
+        return {
+            characterSlotCount: 0,
+            characterSlotCost: 0,
+            transaction: {},
+            messageDialogHeader: "",
+            messageDialogContent: ""
+        }
+    },
+    mounted: function () {
+        this.characterSlotCost = this.initialCharacterSlotCost;
+        this.characterSlotCount = this.initialCharacterSlotCount;
     },
     computed: {
         emptyCharacterSlots: function () {
@@ -53,7 +79,31 @@ export default {
                     if (response.data.redirectUrl) location.replace(response.data.redirectUrl);
                     else location.reload();
                 });
-
+        },
+        buyCharacterSlot: function () {
+            this.transaction = {
+                price: this.characterSlotCost + ' ' + lex('accountcurrency'),
+                purchase: "New Character Slot"
+            };
+            $('#DialogBuyCharacterSlot').modal();
+        },
+        buyCharacterSlotAccepted: function () {
+            return axios.post(this.buyCharacterSlotUrl)
+                .then(response => {
+                    if (response.data.error) {
+                        this.messageDialogHeader = "An error occurred..";
+                        this.messageDialogContent = response.data.error;
+                        $('#DialogMessage').modal();
+                    } else {
+                        this.characterSlotCost = response.data.characterSlotCost;
+                        this.characterSlotCount = response.data.characterSlotCount;
+                    }
+                })
+                .catch(error => {
+                    this.messageDialogHeader = "An error occurred..";
+                    this.messageDialogContent = "Something went wrong with the request to the muck.";
+                    $('#DialogMessage').modal();
+                });
         }
     }
 }

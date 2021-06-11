@@ -100,10 +100,22 @@ class FakeMuckConnection implements MuckConnection
     public function getCharacterSlotState(User $user): array
     {
         self::fakeMuckCall('getCharacterSlotState');
-            return [
-                "characterSlotCount" => 3,
-                "characterSlotCost" => 50
-            ];
+        return [
+            "characterSlotCount" => 3,
+            "characterSlotCost" => 50
+        ];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function buyCharacterSlot(User $user): array
+    {
+        self::fakeMuckCall('buyCharacterSlot');
+        return [
+            "characterSlotCount" => 4,
+            "characterSlotCost" => 60
+        ];
     }
 
     /**

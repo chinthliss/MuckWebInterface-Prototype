@@ -15,8 +15,8 @@
 @section('content')
     <character-select
         :characters="{{ json_encode($characters) }}"
-        :character-slot-count="{{ $characterSlotCount }}"
-        :character-slot-cost="{{ $characterSlotCost }}"
-
+        buy-character-slot-url="{{ route('multiplayer.character.buySlot') }}"
+        :initial-character-slot-count="{{ $characterSlotCount }}"
+        :initial-character-slot-cost="{{ $characterSlotCost }}"
     ></character-select>
 @endsection

@@ -25,6 +25,14 @@ interface MuckConnection
     public function getCharacterSlotState(User $user): array;
 
     /**
+     * Attempts to buy a character slot.
+     * Returns [error] on failure, otherwise [characterSlotCount, characterSlotCost]
+     * @param User $user
+     * @return array
+     */
+    public function buyCharacterSlot(User $user): array;
+
+    /**
      * Returns the latest connect or disconnect from any character on the account
      * @param int $aid
      * @return Carbon|null

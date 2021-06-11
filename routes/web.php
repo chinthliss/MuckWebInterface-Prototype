@@ -124,6 +124,9 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
 
     Route::get('multiplayer/selectCharacter', [MultiplayerController::class, 'showCharacterSelect'])
         ->name('multiplayer.character.select');
+    Route::post('multiplayer/buyCharacterslot', [MultiplayerController::class, 'buyCharacterSlot'])
+        ->name('multiplayer.character.buySlot');
+
 });
 
 // Multiplayer content - Requires an active character, along with account, verification and terms of service acceptance
