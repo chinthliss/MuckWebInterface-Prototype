@@ -37,6 +37,7 @@ export default {
 // Shared in all modes
 .avatar {
     position: relative;
+    text-align: center;
 }
 .avatar i {
     position:absolute;
