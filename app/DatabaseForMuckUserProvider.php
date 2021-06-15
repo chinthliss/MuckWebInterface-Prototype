@@ -158,6 +158,27 @@ class DatabaseForMuckUserProvider implements UserProvider
         }
         return $result;
     }
+
+    /**
+     * @param Carbon $date
+     * @return User[]
+     */
+    public function searchByCreationDate(Carbon $date): array
+    {
+        $result = [];
+
+        $rows = $this->getRetrievalQuery()
+            ->whereDate('accounts.created_at',  $date->toDateString())
+            ->get();
+
+        foreach ($rows as $row) {
+            $user = User::fromDatabaseResponse($row);
+            $result[$user->getAid()] = $user;
+        }
+
+        return $result;
+    }
+
     #endregion Retrieval
 
     /**

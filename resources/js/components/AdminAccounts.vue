@@ -15,6 +15,10 @@
             <input type="text" class="form-control mb-2 mr-sm-2" id="searchEmail" placeholder="Email"
                    v-model="searchEmail">
 
+            <label class="sr-only" for="searchCreationDate">Created On</label>
+            <input type="date" class="form-control mb-2 mr-sm-2" id="searchCreationDate" placeholder="Created On"
+                   v-model="searchCreationDate">
+
             <button class="btn btn-primary mb-2" @click="searchAccounts">
                 <i class="fas fa-search btn-icon-left"></i>Search
             </button>
@@ -47,6 +51,7 @@ export default {
             searchAccountId: "",
             searchCharacterName: "",
             searchEmail: "",
+            searchCreationDate: "",
             tableContent: [],
             tableLoading: false,
             tableFields: [
@@ -62,6 +67,11 @@ export default {
                     key:'characters',
                     label: 'Characters',
                     formatter: 'characterList'
+                },
+                {
+                    key:'lastConnected',
+                    label: 'Last Connect',
+                    formatter: 'outputCarbonString'
                 }
             ]
         }
@@ -73,6 +83,7 @@ export default {
             if (this.searchAccountId) searchCriteria.account = this.searchAccountId;
             if (this.searchCharacterName) searchCriteria.character = this.searchCharacterName;
             if (this.searchEmail) searchCriteria.email = this.searchEmail;
+            if (this.searchCreationDate) searchCriteria.creationDate = this.searchCreationDate;
 
             this.tableLoading = true;
             this.tableContent = [];
@@ -95,6 +106,10 @@ export default {
                 names.push(character.name)
             }
             return names.join(', ');
+        },
+        outputCarbonString: function (carbonString) {
+            if (!carbonString) return '--';
+            return new Date(carbonString).toLocaleString();
         }
     }
 }

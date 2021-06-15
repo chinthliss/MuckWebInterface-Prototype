@@ -7,6 +7,7 @@ use App\DatabaseForMuckUserProvider;
 use App\Muck\MuckConnection;
 use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class AdminController extends Controller
 {
@@ -44,7 +45,9 @@ class AdminController extends Controller
         $searchAccountId = $request->input('account');
         $searchCharacterName = $request->input('character');
         $searchEmail = $request->input('email');
-        if ( !$searchAccountId && !$searchCharacterName && !$searchEmail)
+        $searchCreationDate = $request->input('creationDate');
+
+        if ( !$searchAccountId && !$searchCharacterName && !$searchEmail && !$searchCreationDate)
             abort(400);
         $results = [];
 
@@ -63,6 +66,15 @@ class AdminController extends Controller
 
         if ($searchCharacterName) {
             $searchResults = $userProvider->searchByCharacterName($searchCharacterName);
+            if (count($results))
+                $results = array_intersect_key($results, $searchResults);
+            else
+                $results = $searchResults;
+        }
+
+        if ($searchCreationDate) {
+            $searchCreationDate = new Carbon($searchCreationDate);
+            $searchResults = $userProvider->searchByCreationDate($searchCreationDate);
             if (count($results))
                 $results = array_intersect_key($results, $searchResults);
             else
