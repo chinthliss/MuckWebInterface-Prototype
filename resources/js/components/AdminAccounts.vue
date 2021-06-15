@@ -3,21 +3,30 @@
         <h4>View Accounts</h4>
         <div class="form-inline">
 
-            <label class="sr-only" for="searchAccountId">Account ID</label>
-            <input type="number" class="form-control mb-2 mr-sm-2" id="searchAccountId" placeholder="Account ID"
-                   v-model="searchAccountId">
+            <div class="form-group mb-2 mr-sm-2">
+                <label class="mr-2" for="searchAccountId">Account ID</label>
+                <input type="number" class="form-control" id="searchAccountId" placeholder="Account ID"
+                       v-model="searchAccountId">
+            </div>
 
-            <label class="sr-only" for="searchCharacterName">Character</label>
-            <input type="text" class="form-control mb-2 mr-sm-2" id="searchCharacterName" placeholder="Character Name"
-                   v-model="searchCharacterName">
+            <div class="form-group mb-2 mr-sm-2">
+                <label class="mr-2" for="searchCharacterName">Character</label>
+                <input type="text" class="form-control" id="searchCharacterName"
+                       placeholder="Character Name"
+                       v-model="searchCharacterName">
+            </div>
 
-            <label class="sr-only" for="searchEmail">Email</label>
-            <input type="text" class="form-control mb-2 mr-sm-2" id="searchEmail" placeholder="Email"
-                   v-model="searchEmail">
+            <div class="form-group mb-2 mr-sm-2">
+                <label class="mr-2" for="searchEmail">Email</label>
+                <input type="text" class="form-control" id="searchEmail" placeholder="Email"
+                       v-model="searchEmail">
+            </div>
 
-            <label class="sr-only" for="searchCreationDate">Created On</label>
-            <input type="date" class="form-control mb-2 mr-sm-2" id="searchCreationDate" placeholder="Created On"
-                   v-model="searchCreationDate">
+            <div class="form-group mb-2 mr-sm-2">
+                <label class="mr-2" for="searchCreationDate">Created On</label>
+                <input type="date" class="form-control" id="searchCreationDate" placeholder="Created On"
+                       v-model="searchCreationDate">
+            </div>
 
             <button class="btn btn-primary mb-2" @click="searchAccounts">
                 <i class="fas fa-search btn-icon-left"></i>Search
@@ -60,16 +69,16 @@ export default {
                     label: 'ID'
                 },
                 {
-                    key:'primary_email',
+                    key: 'primary_email',
                     label: 'Primary Email'
                 },
                 {
-                    key:'characters',
+                    key: 'characters',
                     label: 'Characters',
                     formatter: 'characterList'
                 },
                 {
-                    key:'lastConnected',
+                    key: 'lastConnected',
                     label: 'Last Connect',
                     formatter: 'outputCarbonString'
                 }
@@ -97,10 +106,10 @@ export default {
                 })
                 .finally(() => this.tableLoading = false);
         },
-        tableRowClicked: function(row) {
+        tableRowClicked: function (row) {
             window.open(row.url, '_blank');
         },
-        characterList: function(characters) {
+        characterList: function (characters) {
             let names = [];
             for (const character of characters) {
                 names.push(character.name)
@@ -119,4 +128,11 @@ export default {
 >>> tr {
     cursor: pointer;
 }
+
+.form-inline .form-group label {
+    min-width: 160px;
+    display: inline-block;
+    text-align: right;
+}
+
 </style>
