@@ -86,10 +86,12 @@ class MuckWebInterfaceNotification extends Notification
      * Utility to send a message that will be visible on any character on this game
      * @param User $user
      * @param string $message
+     * @param int $gameCode Optional, defaults to this game.
      */
-    public static function notifyUser(User $user, string $message)
+    public static function notifyUser(User $user, string $message, int $gameCode = null)
     {
-        $user->notify(new MuckWebInterfaceNotification($message, config('muck.muck_code')));
+        if (!$gameCode) $gameCode = config('muck.muck_code');
+        $user->notify(new MuckWebInterfaceNotification($message, $gameCode));
     }
 
     /**

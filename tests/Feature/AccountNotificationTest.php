@@ -87,6 +87,18 @@ class AccountNotificationTest extends TestCase
     /**
      * @depends testUserGetsNotifications
      */
+    public function testUserDoesNotGetGameSpecificNotificationsFromAnotherGame()
+    {
+        $user = $this->loginAsValidatedUser();
+        MuckWebInterfaceNotification::NotifyUser($user, 'Test', 50);
+        $transactionManager = resolve(AccountNotificationManager::class);
+        $notifications = $transactionManager->getNotificationsFor($user);
+        $this->assertCount(0, $notifications['user']);
+    }
+
+    /**
+     * @depends testUserGetsNotifications
+     */
     public function testUserCanDeleteOwnNotifications()
     {
         $user = $this->loginAsValidatedUser();

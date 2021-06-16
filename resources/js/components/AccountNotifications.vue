@@ -34,7 +34,7 @@
 
         <!-- Character notifications -->
         <div
-            v-if="contentData.character && contentData.character.length"
+            v-if="contentData.character"
             v-for="(notifications, character) in contentData.character"
             v-bind:data="notifications"
             v-bind:key="character"
