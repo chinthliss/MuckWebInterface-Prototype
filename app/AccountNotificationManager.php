@@ -28,8 +28,7 @@ class AccountNotificationManager
      */
     public function getNotificationsFor(User $user)
     {
-        $muck = resolve(MuckConnection::class);
-        $characters = $muck->getCharactersOf($user);
+        $characters = $user->getCharacters();
         $query = $this->storageTable()
             ->where('aid', '=', $user->getAid())
             ->where(function ($query) {
