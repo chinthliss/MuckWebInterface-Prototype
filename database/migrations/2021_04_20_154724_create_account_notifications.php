@@ -16,7 +16,7 @@ class CreateAccountNotifications extends Migration
         Schema::create('account_notifications', function (Blueprint $table) {
             $table->bigIncrements('id')->unsigned();
             $table->bigInteger('aid')->unsigned()->index();
-            $table->string('game_code', 5)->nullable()
+            $table->tinyInteger('game_code')->nullable()
                 ->comment('If null, assumed to be account-wide.');
             $table->bigInteger('character_dbref')->nullable()
                 ->comment('If null, assumed to be either game-wide or account-wide depending on game_code.');
