@@ -63,10 +63,27 @@ class AccountNotificationManager
         $this->storageTable()->delete($id);
     }
 
-    public function deleteAllNotifications($accountId)
+    public function deleteAllNotificationsForAccount($accountId)
     {
-        $this->storageTable()->where('aid', '=', $accountId)->delete();
+        $this->storageTable()
+            ->where('aid', '=', $accountId)
+            ->whereNull('character_dbref')
+            ->where(function ($query) {
+                $query->whereNull('game_code')
+                    ->orWhere('game_code', '=', config('muck.muck_code'));
+            })
+            ->delete();
     }
+
+    public function deleteAllNotificationsForCharacterDbref($accountId, $dbref)
+    {
+        $this->storageTable()
+            ->where('aid', '=', $accountId)
+            ->where('game_code', '=', config('muck.muck_code'))
+            ->where('character_dbref', '=', $dbref)
+            ->delete();
+    }
+
 
     public function getNotificationCountFor(User $user): int
     {

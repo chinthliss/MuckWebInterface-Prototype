@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        <h4>Notifications</h4>
+        <h3>Notifications</h3>
         <div v-if="loadingContent" class="text-center my-2">
             <b-spinner class="align-middle primary" variant="primary"></b-spinner>
             <strong>Loading...</strong>
@@ -9,13 +9,15 @@
         <div v-if="noNotifications">
             You have no notifications. <i class="fas fa-thumbs-up"></i>
         </div>
-        <div v-else class="d-flex justify-content-center mb-2">
-            <button class="btn btn-warning" @click="deleteAllNotifications">
-                <i class="fas fa-trash btn-icon-left"></i>Delete all notifications
-            </button>
-        </div>
         <!-- Account or game notifications -->
         <div v-if="contentData.user && contentData.user.length">
+            <div class="clearfix mb-2 d-flex align-items-center">
+                <h4 class="mr-auto">Account Notifications</h4>
+                <button class="btn btn-warning" @click="deleteAllAccountNotifications">
+                    <i class="fas fa-trash btn-icon-left"></i>Delete all account notifications
+                </button>
+            </div>
+
             <b-table dark striped hover small
                      :items="contentData.user"
                      :fields="contentFields"
@@ -39,7 +41,13 @@
             v-bind:data="notifications"
             v-bind:key="character"
         >
-            <h4>{{ character }}</h4>
+            <div class="clearfix mb-2 d-flex align-items-center">
+                <h4 class="mr-auto">{{ character }}</h4>
+                <button class="btn btn-warning" @click="deleteAllNotificationsFor(character)">
+                    <i class="fas fa-trash btn-icon-left"></i>Delete all notifications for {{ character }}
+                </button>
+            </div>
+
             <b-table dark striped hover small
                      :items="notifications"
                      :fields="contentFields"
@@ -125,13 +133,31 @@ export default {
                     console.log("Failed to delete: ", error);
                 });
         },
-        deleteAllNotifications: function () {
-            let promise = axios.delete(this.apiUrl);
+        deleteAllAccountNotifications: function () {
+            let promise = axios.delete(this.apiUrl, {
+                data: {
+                    'scope': 'account'
+                }
+            });
             return promise
                 .then(response => {
-                    this.contentData = [];
+                    this.contentData.user = [];
                 }).catch(error => {
-                    console.log("Failed to delete all: ", error);
+                    console.log("Failed to delete account notifications: ", error);
+                });
+        },
+        deleteAllNotificationsFor: function (character) {
+            let promise = axios.delete(this.apiUrl, {
+                data: {
+                    'scope': 'character',
+                    'dbref': this.contentData.character[character][0].character_dbref
+                }
+            });
+            return promise
+                .then(response => {
+                    Vue.delete(this.contentData.character, character);
+                }).catch(error => {
+                    console.log("Failed to delete notifications for character " + character + ": ", error);
                 });
         }
     },
