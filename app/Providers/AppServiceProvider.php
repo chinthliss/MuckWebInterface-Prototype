@@ -53,26 +53,9 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // Add the ability to have a customizable header on each page
-        Blade::if('SiteNotice', function(){
+        Blade::if('SiteNoticeExists', function(){
             $filePath = public_path('site-notice.txt');
             return file_exists($filePath);
-        });
-
-        Blade::directive('SiteNoticeContent', function() {
-            $filePath = public_path('site-notice.txt');
-            if (!file_exists($filePath)) return "";
-            return implode('<br/>', file($filePath, FILE_IGNORE_NEW_LINES));
-        });
-
-        /**
-         * Produces a badge with a count of outstanding notifications or returns a blank string
-         */
-        Blade::directive('AccountNotificationCount', function() {
-            /** @var User $user */
-            $user = auth()->user();
-            if (!$user) return '';
-            $count = resolve('App\AccountNotificationManager')->getNotificationCountFor($user);
-            return $count ? '<span class="badge badge-light">' . $count . '</span>' : '';
         });
     }
 }

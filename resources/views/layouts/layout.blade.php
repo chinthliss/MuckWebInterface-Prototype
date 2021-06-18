@@ -59,7 +59,14 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('account.notifications') }}">
                             Notifications
-                            @AccountNotificationCount
+                            <?php
+                            /** @var App\User $user */
+                            $user = auth()->user();
+                            if ($user) {
+                                $count = resolve('App\AccountNotificationManager')->getNotificationCountFor($user);
+                                if ($count) echo('<span class="badge badge-light">' . $count . '</span>');
+                            }
+                            ?>
                         </a>
                     </li>
                 @endif
@@ -131,9 +138,14 @@
             </noscript>
 
             <!-- Site Notice -->
-            @SiteNotice
-            <div class="p-3 mb-2 bg-warning text-dark rounded">@SiteNoticeContent</div>
-            @endSiteNotice
+            @SiteNoticeExists
+            <div class="p-3 mb-2 bg-warning text-dark rounded">
+            <?php
+                $filePath = public_path('site-notice.txt');
+                echo(implode('<br/>', file($filePath, FILE_IGNORE_NEW_LINES)));
+            ?>
+            </div>
+            @endSiteNoticeExists
 
             <!-- Flashed Messages -->
             @if ($message = Session::get('message-success'))
