@@ -20,9 +20,10 @@
     RewriteRule ^ index.php [L]
 </IfModule>
 
-<Limit GET POST PUT OPTIONS>
+# Allow methods we use
+<Limit GET POST PUT PATCH DELETE OPTIONS>
     Require all granted
-</Limit>
-<LimitExcept GET POST PUT OPTIONS>
+</Limit> # And deny anything else
+<LimitExcept GET POST PUT PATCH DELETE OPTIONS>
     Require all denied
 </LimitExcept>
