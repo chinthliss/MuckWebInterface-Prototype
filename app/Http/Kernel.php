@@ -66,7 +66,7 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'tos.agreed' => \App\Http\Middleware\TermsOfServiceAgreed::class,
         'role' => \App\Http\Middleware\HasRole::class,
-        'character' => \App\Http\Middleware\HasActiveCharacter::class,
+        'character' => \App\Http\Middleware\HasApprovedCharacterSet::class,
     ];
 
     /**

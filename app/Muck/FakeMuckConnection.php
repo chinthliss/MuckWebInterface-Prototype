@@ -73,6 +73,8 @@ class FakeMuckConnection implements MuckConnection
             return MuckCharacter::fromMuckResponse('1234,TestCharacter,100,,wizard');
         if ($dbref == '2345' and $user->getAid() === 1)
             return MuckCharacter::fromMuckResponse('2345,TestCharacter2,100,,');
+        if ($dbref == '3456' and $user->getAid() === 1)
+            return MuckCharacter::fromMuckResponse('3456,TestCharacter3,0,,unapproved');
         return null;
     }
     //endregion
@@ -88,7 +90,8 @@ class FakeMuckConnection implements MuckConnection
         if ($user->getAid() === 1) {
             $result = [
                 1234 => MuckCharacter::fromMuckResponse('1234,TestCharacter,100,,wizard'),
-                2345 => MuckCharacter::fromMuckResponse('2345,TestCharacter2,14,,')
+                2345 => MuckCharacter::fromMuckResponse('2345,TestCharacter2,14,,'),
+                3456 => MuckCharacter::fromMuckResponse('3456,TestCharacter3,0,,unapproved')
             ];
         }
         return collect($result);

@@ -118,7 +118,7 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
     Route::get('accountcurrency/paypal_subscription_cancel', [PayPalController::class, 'paypalSubscriptionCancel'])
         ->name('accountcurrency.paypal.subscription.cancel');
 
-    //Multiplayer core - these don't require an active character
+    //Multiplayer core - these don't require an active approved character
     Route::get('multiplayer', [MultiplayerController::class, 'showMultiplayerDashboard'])
         ->name('multiplayer.home');
 
@@ -126,6 +126,12 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
         ->name('multiplayer.character.select');
     Route::post('multiplayer/buyCharacterslot', [MultiplayerController::class, 'buyCharacterSlot'])
         ->name('multiplayer.character.buySlot');
+
+    Route::get('multiplayer/newCharacter', [MultiplayerController::class, 'showCharacterCreation'])
+        ->name('multiplayer.character.creation');
+    Route::get('multiplayer/characterGeneration', [MultiplayerController::class, 'showCharacterGeneration'])
+        ->name('multiplayer.character.generation');
+
 
 });
 

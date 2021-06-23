@@ -61,6 +61,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     "" strcat "," strcat
     { }list
     player @ mlevel 3 > if "wizard" swap array_appenditem then
+    player @ "approved" 
     ":" array_join strcat
 ;
 
@@ -190,7 +191,9 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     else response400 then
 ; selfcall handleRequest_validateCredentials
 
-(Expects 'dbref' and 'account', returns a playerToString response if the dbref is a valid player on that account, otherwise returns empty response)
+(Expects 'dbref' and 'account', returns: )
+(  Blank string if the character can't be found or doesn't belong to that account. )
+(  A playerToString response if the dbref is a valid player on that account. )
 : handleRequest_verifyAccountHasCharacter[ arr:webcall -- ]
     webcall @ "account" array_getitem ?dup if acct_any2aid else response400 exit then var! account
     webcall @ "dbref" array_getitem ?dup if atoi dbref else response400 exit then var! character
@@ -199,10 +202,10 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         character @ acct_any2aid
         account @ = if
             (Check character isn't banned)
-            character @ "@banned" getpropstr not if
-                character @ playerToString
-                descr swap descrnotify
-            then
+            (TBC: To be replaced with an appropriate prop later)
+            character @ "@banned" getpropstr if exit then
+            character @ playerToString
+            descr swap descrnotify
         then
     then
 ; selfcall handleRequest_verifyAccountHasCharacter

@@ -37,7 +37,7 @@ class MultiplayerController extends Controller
         ]);
     }
 
-    #region Character Selection / Creation
+    #region Character Selection
 
     public function showCharacterSelect(MuckConnection $muck)
     {
@@ -70,7 +70,21 @@ class MultiplayerController extends Controller
         return $muck->buyCharacterSlot($user);
     }
 
-    #endregion Character Selection / Creation
+    #endregion Character Selection
+
+    #region Character Creation
+
+    public function showCharacterCreation()
+    {
+        return 'TBC';
+    }
+
+    public function showCharacterGeneration()
+    {
+        return 'TBC';
+    }
+
+    #endregion Character Creation
 
     public function setActiveCharacter(Request $request, MuckConnection $muck)
     {

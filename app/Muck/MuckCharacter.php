@@ -22,6 +22,11 @@ class MuckCharacter extends MuckDbref
     private $wizard = false;
 
     /**
+     * @var bool
+     */
+    private $approved = true;
+
+    /**
      * @var int|null
      */
     private $level;
@@ -31,6 +36,7 @@ class MuckCharacter extends MuckDbref
         parent::__construct($dbref);
         $this->name = $name;
         $this->level = $level;
+        if (in_array('unapproved', $flags)) $this->approved = false;
         if (in_array('wizard', $flags)) $this->wizard = true;
     }
 
@@ -44,12 +50,18 @@ class MuckCharacter extends MuckDbref
         return $this->name;
     }
 
+    public function isApproved(): bool
+    {
+        return $this->approved;
+    }
+
     public function toArray(): array
     {
         return [
             'dbref' => $this->dbref,
             'name' => $this->name,
             'level' => $this->level,
+            'approved' => $this->approved,
             'wizard' => $this->wizard
         ];
     }

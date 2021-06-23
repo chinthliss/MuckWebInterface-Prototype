@@ -5,8 +5,9 @@
                 <i class="fas fa-user-alt fa-5x"></i>
             </div>
             <div class="name">{{ character.name }}</div>
-            <div class="level">{{ character.level }}</div>
-            <div v-if="character.wizard" class="staff">Staff</div>
+            <div v-if="!character.wizard" class="level">{{ character.level }}</div>
+            <div v-if="character.wizard" class="flag staff">Staff</div>
+            <div v-if="!character.approved" class="flag unapproved">Unapproved</div>
         </div>
     </div>
 </template>
@@ -84,7 +85,7 @@ export default {
         z-index: 2;
         right: 2px;
         top: 2px;
-        width: 124px;
+        width: 128px;
         height: 40px;
         color: white;
         text-align: right;
@@ -106,17 +107,24 @@ export default {
         text-align: center;
     }
 
-    .staff {
+    .flag {
         position: absolute;
         z-index: 2;
         width: 98px;
         height: 22px;
-        color: black;
         text-align: center;
         top: 36px;
         left: 8px;
-        background: $primary;
         transform: translateX(-50%) rotate(-90deg);
+    }
+
+    .staff {
+        color: black;
+        background: $primary;
+    }
+
+    .unapproved {
+        color: $primary;
     }
 }
 

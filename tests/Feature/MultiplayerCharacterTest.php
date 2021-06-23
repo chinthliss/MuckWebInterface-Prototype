@@ -80,4 +80,12 @@ class MultiplayerCharacterTest extends TestCase
         $request->assertOk();
     }
 
+    public function testUnapprovedCharacterIsRedirectedToCharacterGeneration()
+    {
+        $this->loginAsValidatedUser();
+        $this->post(route('multiplayer.character.set'), ['dbref' => 3456]);
+        $request = $this->get(route('multiplayer.avatar'));
+        $request->assertRedirect(route('multiplayer.character.generation'));
+    }
+
 }
