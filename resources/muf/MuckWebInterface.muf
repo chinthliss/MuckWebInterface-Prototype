@@ -61,7 +61,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     "" strcat "," strcat
     { }list
     player @ mlevel 3 > if "wizard" swap array_appenditem then
-    player @ "approved" 
+    player @ "approved?" getstatint not if "unapproved" swap array_appenditem then
     ":" array_join strcat
 ;
 
