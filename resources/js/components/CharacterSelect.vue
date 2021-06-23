@@ -16,6 +16,11 @@
             </div>
         </div>
         <div class="row text-center">
+            <div class="col alert alert-danger" v-if="moreCharacterSlotsRequired">
+                You are over your character limit by {{ moreCharacterSlotsRequired }}. This may cause characters to become unavailable.
+            </div>
+        </div>
+        <div class="row text-center">
             <div class="col">
                 <a class="btn btn-primary btn-with-img-icon" href="#" @click="buyCharacterSlot">
                     <span class="btn-icon-accountcurrency btn-icon-left"></span>
@@ -68,6 +73,11 @@ export default {
         emptyCharacterSlots: function () {
             if (this.characterSlotCount > this.characters.length)
                 return this.characterSlotCount - this.characters.length
+            else return 0;
+        },
+        moreCharacterSlotsRequired: function () {
+            if (this.characterSlotCount < this.characters.length)
+                return this.characters.length - this.characterSlotCount;
             else return 0;
         }
     },

@@ -104,7 +104,7 @@ class FakeMuckConnection implements MuckConnection
     {
         self::fakeMuckCall('getCharacterSlotState');
         return [
-            "characterSlotCount" => 3,
+            "characterSlotCount" => 2,
             "characterSlotCost" => 50
         ];
     }
