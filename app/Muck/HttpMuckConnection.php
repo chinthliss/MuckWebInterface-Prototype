@@ -137,7 +137,7 @@ class HttpMuckConnection implements MuckConnection
         $response = $this->requestFromMuck('createCharacterForAccount', ['name' => $name, 'aid' => $user->getAid()]);
         $response = explode('|', $response);
         if ($response[0] != 'OK') {
-            throw new Exception($response[1]);
+            throw new Exception(array_key_exists(1, $response) ? $response[1] : 'Connection error with game');
         }
         return [
             "character" => new MuckCharacter($response[1], $name),

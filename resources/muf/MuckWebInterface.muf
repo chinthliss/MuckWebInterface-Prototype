@@ -126,9 +126,12 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 
 (Expects 'name' set, returns a blank string if okay or a string containing an issue)
 : handleRequest_findProblemsWithCharacterName[ arr:webcall -- ]
-    webcall @ "name" array_getitem ?dup if
+    webcall @ "name" array_getitem ?dup if var! newName
         startAcceptedResponse
-        findProblemsWithCharacterName
+        newName @ "*" swap strcat match player? if
+            descr "That name is already taken." descrnotify exit
+        then
+        newName @ findProblemsWithCharacterName
         descr swap descrnotify
     else response400 then
 ; selfcall handleRequest_findProblemsWithCharacterName
@@ -142,25 +145,38 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     else response400 then
 ; selfcall handleRequest_findProblemsWithCharacterPassword
 
-(Expects 'name' and 'aid' set, returns the new character's password)
-: handleRequest_createcharacterForAccount[ arr:webcall -- ]
-    webcall @ "account" array_getitem ?dup if acct_any2aid else response400 exit then var! account
+(Expects 'name' and 'aid' set, returns OK|<Dbref>|<InitialPassword> if successful or ERROR|<error> if there was an issue. )
+: handleRequest_createCharacterForAccount[ arr:webcall -- ]
+    webcall @ "aid" array_getitem ?dup if acct_any2aid else response400 exit then var! account
     webcall @ "name" array_getitem ?dup if capital else response400 exit then var! newName
+    startAcceptedResponse
+    
+    (Ensure the account can definitely have the character at this point)
+    account @ acct_CharacterSlots account @ acct_getalts array_count > not if
+        descr "ERROR|No free character slots for a new character." descrnotify exit
+    then
+    
     (Create a random password)
     "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" var! validCharacters
     ""
     0 7 1 for pop
         validCharacters @ random over strlen % strcut nip 1 strcut pop strcat
     repeat var! newPassword
-    newName @ newPassword @ newplayer var! newPlayer
+
+    try
+        newName @ newPassword @ newplayer var! newPlayer
+    catch
+        descr "ERROR|Something went wrong with creating the character. If this persists, please notify staff." descrnotify exit
+    endcatch
+    
     (Initial properties)
     newPlayer @ "player account" account @ intostr setstat
     newPlayer @ "Resources" 10 setstat
     newPlayer @ "@/initial_password" newPassword @ setprop
     
-    account @ "Your character '" newName @ strcat "' has been created and their initial password has been set to: " strcat newPassword @ strcat sendPlayerNotification
-    newPlayer @ intostr descr swap descrnotify
-; selfcall handleRequest_createcharacterForAccount
+    "OK|" newPlayer @ intostr strcat "|" strcat newPassword @ strcat
+    descr swap descrnotify
+; selfcall handleRequest_createCharacterForAccount
 
 (Expects 'aid' set, returns lastConnected or 0 for never connected)
 : handleRequest_getLastConnect[ arr:webcall -- ]
@@ -361,8 +377,11 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
                 encodeJson strcat logStatus
             $endif 
             prog "handleRequest_" rot strcat
-            over over cancall? if parsedBody @ rot rot call 
-            else pop pop response404 exit
+            over over cancall? if 
+                parsedBody @ rot rot call
+            else
+                "[MWI Gateway] [WARN] Can't call " over strcat ", either function is missing or not callable." strcat logStatus
+                pop pop response404 exit
             then        
         else 
             response400 exit
