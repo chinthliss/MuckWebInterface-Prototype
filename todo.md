@@ -36,13 +36,16 @@
 ## Multiplayer pages
 
 ### Character Based starting pages
-* Change Active Character
-* Avatars (Loading)
-* Character Order
+* ~~Change Active Character~~
+    * ~~Buy character slot~~
+    * Character Order
 * Character Creation
-    * Referral during such
+    * Referral during such (looks like this is account)
+    * ~~Initial Creation (Name approval)~~
+    * Initial setup
 * Character Dashboard
 * Character Profile 
+* Avatars (Loading) (Done with placeholder for now)
 * Avatars (Editing)
  
 ### Telnet Replacement
@@ -50,7 +53,9 @@
 * Maybe move all websocket functionality into such
 * This goal neds to be reworked due to upcoming muck WS integration
 
-### Onto individual pages..
+### Stuff to revisit
+* Account passwords don't need to have MUCK text limitations
+* When someone is over their character slot limit, characters got locked out. Could highlight/show on web.
 
 ### Stuff to do once system goes live
 * Remove tos-hash-viewed from account_properties
