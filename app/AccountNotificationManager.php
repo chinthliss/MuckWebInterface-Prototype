@@ -33,7 +33,8 @@ class AccountNotificationManager
             ->where(function ($query) {
                 $query->whereNull('game_code')
                     ->orWhere('game_code', '=', config('muck.muck_code'));
-            });
+            })
+            ->orderByDesc('created_at');
         $rows = $query->get()->toArray();
         $query->update(['read_at' => Carbon::now()]);
         $result = ['user' => [], 'character' => []];
