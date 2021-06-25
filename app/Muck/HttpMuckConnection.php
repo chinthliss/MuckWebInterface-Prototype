@@ -112,6 +112,27 @@ class HttpMuckConnection implements MuckConnection
         ];
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function findProblemsWithCharacterName(string $name): string
+    {
+        return $this->requestFromMuck('findIssueWithCharacterName', ['name' => $name]);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findProblemsWithCharacterPassword(string $password): string
+    {
+        return $this->requestFromMuck('findIssueWithCharacterPassword', ['password' => $password]);
+    }
+
+    public function createCharacterForUser(string $name, User $user): int
+    {
+        return $this->requestFromMuck('createCharacter', ['name' => $name, 'aid' => $user->getAid()]);
+    }
+
     //region Auth Requests
 
     /**

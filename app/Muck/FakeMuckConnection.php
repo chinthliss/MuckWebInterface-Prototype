@@ -75,6 +75,8 @@ class FakeMuckConnection implements MuckConnection
             return MuckCharacter::fromMuckResponse('2345,TestCharacter2,100,,');
         if ($dbref == '3456' and $user->getAid() === 1)
             return MuckCharacter::fromMuckResponse('3456,TestCharacter3,0,,unapproved');
+        if ($dbref == '4567' and $user->getAid() === 6)
+            return MuckCharacter::fromMuckResponse('4567,TestCharacterA1,0,,unapproved');
         return null;
     }
     //endregion
@@ -92,6 +94,11 @@ class FakeMuckConnection implements MuckConnection
                 1234 => MuckCharacter::fromMuckResponse('1234,TestCharacter,100,,wizard'),
                 2345 => MuckCharacter::fromMuckResponse('2345,TestCharacter2,14,,'),
                 3456 => MuckCharacter::fromMuckResponse('3456,TestCharacter3,0,,unapproved')
+            ];
+        }
+        if ($user->getAid() === 6) {
+            $result = [
+                4657 => MuckCharacter::fromMuckResponse('4567,TestCharacterA1,0,,unapproved')
             ];
         }
         return collect($result);
@@ -119,6 +126,36 @@ class FakeMuckConnection implements MuckConnection
             "characterSlotCount" => 4,
             "characterSlotCost" => 60
         ];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findProblemsWithCharacterName(string $name): string
+    {
+        self::fakeMuckCall('getAnyIssuesWithCharacterName', ['name' => $name]);
+        if (strtolower($name) == 'test') return 'That name is a test.';
+        if (str_contains($name, ' ')) return 'That name contains a space.';
+        return '';
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function findProblemsWithCharacterPassword(string $password): string
+    {
+        self::fakeMuckCall('getAnyIssuesWithCharacterPassword', ['password' => $password]);
+        if (strtolower($password) == 'test') return 'That password is a test.';
+        return '';
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function createCharacterForUser(string $name, User $user): int
+    {
+        self::fakeMuckCall('createCharacter', ['name' => $name, 'aid' => $user->getAid()]);
+        return 4657;
     }
 
     /**

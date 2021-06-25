@@ -34,6 +34,7 @@ $include $lib/kta/misc
 $include $lib/kta/strings
 $include $lib/rp
 $include $lib/accountpurchases
+$include $lib/notifications
 
 $def response400 descr "HTTP/1.1 400 Bad Request\r\n" descrnotify descr "\r\n" descrnotify
 $def response401 descr "HTTP/1.1 401 Unauthorized\r\n" descrnotify descr "\r\n" descrnotify
@@ -122,6 +123,44 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         descr swap descrnotify
     else response400 then
 ; selfcall handleRequest_buyCharacterSlot
+
+(Expects 'name' set, returns a blank string if okay or a string containing an issue)
+: handleRequest_findProblemsWithCharacterName[ arr:webcall -- ]
+    webcall @ "name" array_getitem ?dup if
+        startAcceptedResponse
+        findProblemsWithCharacterName
+        descr swap descrnotify
+    else response400 then
+; selfcall handleRequest_findProblemsWithCharacterName
+
+(Expects 'password' set, returns a blank string if okay or a string containing an issue)
+: handleRequest_findProblemsWithCharacterPassword[ arr:webcall -- ]
+    webcall @ "password" array_getitem ?dup if
+        startAcceptedResponse
+        findProblemsWithCharacterPassword
+        descr swap descrnotify
+    else response400 then
+; selfcall handleRequest_findProblemsWithCharacterPassword
+
+(Expects 'name' and 'aid' set, returns the new character's password)
+: handleRequest_createcharacterForAccount[ arr:webcall -- ]
+    webcall @ "account" array_getitem ?dup if acct_any2aid else response400 exit then var! account
+    webcall @ "name" array_getitem ?dup if capital else response400 exit then var! newName
+    (Create a random password)
+    "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" var! validCharacters
+    ""
+    0 7 1 for pop
+        validCharacters @ random over strlen % strcut nip 1 strcut pop strcat
+    repeat var! newPassword
+    newName @ newPassword @ newplayer var! newPlayer
+    (Initial properties)
+    newPlayer @ "player account" account @ intostr setstat
+    newPlayer @ "Resources" 10 setstat
+    newPlayer @ "@/initial_password" newPassword @ setprop
+    
+    account @ "Your character '" newName @ strcat "' has been created and their initial password has been set to: " strcat newPassword @ strcat sendPlayerNotification
+    newPlayer @ intostr descr swap descrnotify
+; selfcall handleRequest_createcharacterForAccount
 
 (Expects 'aid' set, returns lastConnected or 0 for never connected)
 : handleRequest_getLastConnect[ arr:webcall -- ]

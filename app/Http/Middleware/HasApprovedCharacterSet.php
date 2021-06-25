@@ -35,7 +35,7 @@ class HasApprovedCharacterSet
             if (!$request->expectsJson()) {
                 session()->flash('message-success', 'You need complete character generation to continue.');
                 redirect()->setIntendedUrl($request->getRequestUri());
-                return redirect(route('multiplayer.character.generation'));
+                return redirect(route('multiplayer.character.generate'));
             }
             abort(400, "Active character hasn't gone through character generation.");
         }

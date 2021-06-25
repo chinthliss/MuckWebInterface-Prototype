@@ -33,6 +33,27 @@ interface MuckConnection
     public function buyCharacterSlot(User $user): array;
 
     /**
+     * Gets a list of any problems with the specified name being used on the MUCK or an empty list if okay
+     * @param string $name
+     * @return string
+     */
+    public function findProblemsWithCharacterName(string $name): string;
+
+    /**
+     * Gets a list of any problems with the specified password being used on the MUCK or an empty list if okay
+     * @param string $password
+     * @return string
+     */
+    public function findProblemsWithCharacterPassword(string $password): string;
+
+    /**
+     * Creates the given character and returns the dbref
+     * @param string $name
+     * @return int
+     */
+    public function createCharacterForUser(string $name, User $user): int;
+
+    /**
      * Returns the latest connect or disconnect from any character on the account
      * @param int $aid
      * @return Carbon|null

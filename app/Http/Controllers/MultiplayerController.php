@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Muck\MuckCharacter;
 use App\Muck\MuckConnection;
-use App\User;
+use App\User as User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 //For core multiplayer functionality only
 class MultiplayerController extends Controller
@@ -76,7 +78,26 @@ class MultiplayerController extends Controller
 
     public function showCharacterCreation()
     {
-        return 'TBC';
+        return view('multiplayer.character-create');
+    }
+
+    public function createCharacter(Request $request, MuckConnection $muck)
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        $request->validate([
+            'characterName' => 'required'
+        ]);
+        $desiredName = $request->input('characterName');
+        $issue = $muck->findProblemsWithCharacterName($desiredName);
+        if ($issue) throw ValidationException::withMessages(['characterName' => $issue]);
+
+        $dbref = $muck->createCharacterForUser($desiredName, $user);
+        $character = new MuckCharacter($dbref, $desiredName, 0);
+        $user->setCharacter($character);
+
+        return redirect()->route('multiplayer.character.generate');
     }
 
     public function showCharacterGeneration()
