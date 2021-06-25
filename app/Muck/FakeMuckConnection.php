@@ -161,6 +161,11 @@ class FakeMuckConnection implements MuckConnection
         ];
     }
 
+    public function getCharacterInitialSetupConfiguration(User $user): array
+    {
+        return [];
+    }
+
     /**
      * @inheritDoc
      */

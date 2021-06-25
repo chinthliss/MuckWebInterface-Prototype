@@ -110,7 +110,7 @@ class MultiplayerController extends Controller
 
     public function showCharacterGeneration()
     {
-        return 'TBC';
+        return view('multiplayer.character-initial-setup');
     }
 
     #endregion Character Creation

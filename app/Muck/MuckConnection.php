@@ -18,6 +18,15 @@ interface MuckConnection
     public function getCharactersOf(User $user): ?Collection;
 
     /**
+     * Returns the latest connect or disconnect from any character on the account
+     * @param int $aid
+     * @return Carbon|null
+     */
+    public function getLastConnect(int $aid): ?Carbon;
+
+    #region Character Creation / Generation
+
+    /**
      * Gets parameters required for character select/create
      * @param User $user
      * @return array [characterSlotCount, characterSlotCost]
@@ -54,13 +63,15 @@ interface MuckConnection
     public function createCharacterForUser(string $name, User $user): array;
 
     /**
-     * Returns the latest connect or disconnect from any character on the account
-     * @param int $aid
-     * @return Carbon|null
+     * Returns the configuration for character generation.
+     * @param User $user
+     * @return array
      */
-    public function getLastConnect(int $aid): ?Carbon;
+    public function getCharacterInitialSetupConfiguration(User $user): array;
 
-    //region Auth
+    #endregion Character Creation / Generation
+
+    #region Auth
     //These functions mimic the equivalent Laravel database calls
 
     /**
@@ -89,7 +100,7 @@ interface MuckConnection
      */
     public function retrieveAndVerifyCharacterOnAccount(User $user, int $dbref): ?MuckCharacter;
 
-    //endregion Auth
+    #endregion Auth
 
     /**
      * Requests a conversion quote from the muck. Returns null if amount isn't acceptable

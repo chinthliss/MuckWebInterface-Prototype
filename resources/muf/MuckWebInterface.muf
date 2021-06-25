@@ -35,6 +35,7 @@ $include $lib/kta/strings
 $include $lib/rp
 $include $lib/accountpurchases
 $include $lib/notifications
+$include $lib/chargen
 
 $def response400 descr "HTTP/1.1 400 Bad Request\r\n" descrnotify descr "\r\n" descrnotify
 $def response401 descr "HTTP/1.1 401 Unauthorized\r\n" descrnotify descr "\r\n" descrnotify
@@ -156,12 +157,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         descr "ERROR|No free character slots for a new character." descrnotify exit
     then
     
-    (Create a random password)
-    "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" var! validCharacters
-    ""
-    0 7 1 for pop
-        validCharacters @ random over strlen % strcut nip 1 strcut pop strcat
-    repeat var! newPassword
+    randomPassword var! newPassword
 
     0 try
         newName @ newPassword @ newplayer var! newCharacter
@@ -177,6 +173,37 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     "OK|" newCharacter @ intostr strcat "|" strcat newPassword @ strcat
     descr swap descrnotify
 ; selfcall handleRequest_createCharacterForAccount
+
+(Presently doesn't expect anything but as of writing the web passeses 'aid' just in case. Returns {factions, perks, flaws} with each being a dictionary of relevant objects)
+(Faction: {description} )
+(Perk: {description, excludes} )
+(Flaw: {description, excludes} )
+: handleRequest_getCharacterInitialSetupConfiguration[ arr:webcall -- ]
+    var workingDir
+    var present
+    { }dict (Result)
+    
+    (Factions)
+    { }dict
+    rpSys "/faction/" array_get_propdirs foreach nip var! present
+        "/faction/" present @ strcat "/" strcat workingDir !
+        rpSys workingDir @ "no chargen" strcat getpropstr "Y" instring if continue then
+        { }dict
+        rpSys workingdir @ "desc" strcat getpropstr swap "description" array_setitem
+        swap present @ array_setitem
+    repeat
+    swap "factions" array_setitem
+    
+    (Perks)
+    { }dict
+    swap "perks" array_setitem
+    
+    (Flaws)
+    { }dict
+    swap "flaws" array_setitem
+    
+    descr swap encodeJson descrnotify
+; public handleRequest_getCharacterInitialSetupConfiguration
 
 (Expects 'aid' set, returns lastConnected or 0 for never connected)
 : handleRequest_getLastConnect[ arr:webcall -- ]

@@ -78,6 +78,8 @@ class HttpMuckConnection implements MuckConnection
         return collect($characters);
     }
 
+    #region Character Creation / Generation
+
     /**
      * @inheritDoc
      */
@@ -145,7 +147,15 @@ class HttpMuckConnection implements MuckConnection
         ];
     }
 
-    //region Auth Requests
+    public function getCharacterInitialSetupConfiguration(User $user): array
+    {
+        $response = $this->requestFromMuck('getCharacterInitialSetupConfiguration', ['aid' => $user->getAid()]);
+        return json_decode($response, true);
+    }
+
+    #endregion Character Creation / Generation
+
+    #region Auth Requests
 
     /**
      * @inheritDoc
@@ -183,7 +193,7 @@ class HttpMuckConnection implements MuckConnection
         return $response ? MuckCharacter::fromMuckResponse($response) : null;
     }
 
-    // endregion Auth Requests
+    #endregion Auth Requests
 
     /**
      * @inheritDoc
