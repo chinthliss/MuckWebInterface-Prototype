@@ -163,18 +163,18 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         validCharacters @ random over strlen % strcut nip 1 strcut pop strcat
     repeat var! newPassword
 
-    try
-        newName @ newPassword @ newplayer var! newPlayer
+    0 try
+        newName @ newPassword @ newplayer var! newCharacter
     catch
         descr "ERROR|Something went wrong with creating the character. If this persists, please notify staff." descrnotify exit
     endcatch
     
     (Initial properties)
-    newPlayer @ "player account" account @ intostr setstat
-    newPlayer @ "Resources" 10 setstat
-    newPlayer @ "@/initial_password" newPassword @ setprop
+    newCharacter @ "player account" account @ intostr setstat
+    newCharacter @ "Resources" 10 setstat
+    newCharacter @ "@/initial_password" newPassword @ setprop
     
-    "OK|" newPlayer @ intostr strcat "|" strcat newPassword @ strcat
+    "OK|" newCharacter @ intostr strcat "|" strcat newPassword @ strcat
     descr swap descrnotify
 ; selfcall handleRequest_createCharacterForAccount
 
