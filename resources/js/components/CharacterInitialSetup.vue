@@ -67,7 +67,8 @@ export default {
     name: "character-initial-setup",
     props: {
         errors: {required: false},
-        old: {type: Object, required: false}
+        old: {type: Object, required: false},
+        config: {type: Object, required: true}
     },
     data: function () {
         return {

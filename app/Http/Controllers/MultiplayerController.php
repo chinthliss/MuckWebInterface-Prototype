@@ -108,9 +108,14 @@ class MultiplayerController extends Controller
         return redirect()->route('multiplayer.character.generate');
     }
 
-    public function showCharacterGeneration()
+    public function showCharacterGeneration(MuckConnection $muck)
     {
-        return view('multiplayer.character-initial-setup');
+        /** @var User $user */
+        $user = auth()->user();
+        $config  = $muck->getCharacterInitialSetupConfiguration($user);
+        return view('multiplayer.character-initial-setup')->with([
+            'config' => $config
+        ]);
     }
 
     #endregion Character Creation

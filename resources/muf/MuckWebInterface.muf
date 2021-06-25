@@ -179,6 +179,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 (Perk: {description, excludes} )
 (Flaw: {description, excludes} )
 : handleRequest_getCharacterInitialSetupConfiguration[ arr:webcall -- ]
+    startAcceptedResponse
     var workingDir
     var present
     { }dict (Result)
@@ -189,18 +190,34 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         "/faction/" present @ strcat "/" strcat workingDir !
         rpSys workingDir @ "no chargen" strcat getpropstr "Y" instring if continue then
         { }dict
-        rpSys workingdir @ "desc" strcat getpropstr swap "description" array_setitem
+        rpSys workingdir @ "desc" strcat getpropstr 1 parse_ansi swap "description" array_setitem
         swap present @ array_setitem
     repeat
     swap "factions" array_setitem
     
     (Perks)
     { }dict
-    swap "perks" array_setitem
+    rpSys "/merit/" array_get_propdirs foreach nip var! present
+        "/merit/" present @ strcat "/" strcat workingDir !
+        rpSys workingDir @ "chargen" strcat getpropstr "Y" instring not if continue then
+        { }dict
+        rpSys workingdir @ "desc" strcat getpropstr 1 parse_ansi swap "description" array_setitem
+        rpSys workingdir @ "exclude" strcat getpropstr ?dup if ":" explode_array else { }list then swap "excludes" array_setitem        
+        swap present @ array_setitem
+    repeat
+    swap "merits" array_setitem
     
     (Flaws)
     { }dict
+    rpSys "/flaw/" array_get_propdirs foreach nip var! present
+        "/flaw/" present @ strcat "/" strcat workingDir !
+        { }dict
+        rpSys workingdir @ "desc" strcat getpropstr 1 parse_ansi swap "description" array_setitem
+        rpSys workingdir @ "exclude" strcat getpropstr ?dup if ":" explode_array else { }list then swap "excludes" array_setitem        
+        swap present @ array_setitem
+    repeat
     swap "flaws" array_setitem
+
     
     descr swap encodeJson descrnotify
 ; public handleRequest_getCharacterInitialSetupConfiguration
@@ -452,3 +469,4 @@ q
 !! Testing from tinker on server:
 !! App::make(App\Muck\MuckConnection::class)->fulfillAccountCurrencyPurchase(3989,1,2,null)
 !! App::make(App\Muck\MuckConnection::class)->fulfillPatreonSupport(3989,1)
+!! App::make(App\Muck\MuckConnection::class)->getCharacterInitialSetupConfiguration(User::find(3989))

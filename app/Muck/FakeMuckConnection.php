@@ -163,7 +163,44 @@ class FakeMuckConnection implements MuckConnection
 
     public function getCharacterInitialSetupConfiguration(User $user): array
     {
-        return [];
+        return [
+            "factions" => [
+                "FakeFaction1" => [
+                    "description" => "The first fake faction for testing."
+                ],
+                "FakeFaction2" => [
+                    "description" => "The second fake faction for testing."
+                ]
+            ],
+            "flaws" => [
+                "FakeFlaw1" => [
+                    "description" => "The first fake flaw for testing.",
+                    "excludes" => []
+                ],
+                "FakeFlaw2" => [
+                    "description" => "The second fake flaw for testing.",
+                    "excludes" => ["FakeFlaw3"]
+                ],
+                "FakeFlaw3" => [
+                    "description" => "The third fake flaw for testing.",
+                    "excludes" => ["FakeFlaw2"]
+                ]
+            ],
+            "perks" => [
+                "FakePerk1" => [
+                    "description" => "The first fake perk for testing.",
+                    "excludes" => []
+                ],
+                "FakePerk2" => [
+                    "description" => "The second fake perk for testing.",
+                    "excludes" => ["FakePerk3"]
+                ],
+                "FakePerk3" => [
+                    "description" => "The third fake perk for testing.",
+                    "excludes" => ["FakePerk2"]
+                ]
+            ]
+        ];
     }
 
     /**
