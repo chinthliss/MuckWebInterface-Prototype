@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Muck\MuckCharacter;
 use App\Muck\MuckConnection;
+use App\Notifications\MuckWebInterfaceNotification;
 use App\User as User;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
@@ -93,9 +94,16 @@ class MultiplayerController extends Controller
         $issue = $muck->findProblemsWithCharacterName($desiredName);
         if ($issue) throw ValidationException::withMessages(['characterName' => $issue]);
 
-        $dbref = $muck->createCharacterForUser($desiredName, $user);
-        $character = new MuckCharacter($dbref, $desiredName, 0);
-        $user->setCharacter($character);
+        try {
+            $result = $muck->createCharacterForUser($desiredName, $user);
+        }
+        catch (Exception $e) {
+            throw ValidationException::withMessages(['characterName' => $e->getMessage()]);
+        }
+        $user->setCharacter($result['character']);
+
+        MuckWebInterfaceNotification::notifyUser($user,
+            "Your new character '$desiredName' has been created with an initial password of: {$result['initialPassword']}");
 
         return redirect()->route('multiplayer.character.generate');
     }

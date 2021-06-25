@@ -47,11 +47,11 @@ interface MuckConnection
     public function findProblemsWithCharacterPassword(string $password): string;
 
     /**
-     * Creates the given character and returns the dbref
+     * Creates the given character and returns it
      * @param string $name
-     * @return int
+     * @return array Consists of character and initialPassword
      */
-    public function createCharacterForUser(string $name, User $user): int;
+    public function createCharacterForUser(string $name, User $user): array;
 
     /**
      * Returns the latest connect or disconnect from any character on the account

@@ -4,6 +4,7 @@
 namespace App\Muck;
 
 use App\User;
+use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Client;
 use Error;
@@ -128,9 +129,20 @@ class HttpMuckConnection implements MuckConnection
         return $this->requestFromMuck('findProblemsWithCharacterPassword', ['password' => $password]);
     }
 
-    public function createCharacterForUser(string $name, User $user): int
+    /**
+     * @inheritDoc
+     */
+    public function createCharacterForUser(string $name, User $user): array
     {
-        return $this->requestFromMuck('createCharacter', ['name' => $name, 'aid' => $user->getAid()]);
+        $response = $this->requestFromMuck('createCharacterForAccount', ['name' => $name, 'aid' => $user->getAid()]);
+        $response = explode('|', $response);
+        if ($response[0] != 'OK') {
+            throw new Exception($response[1]);
+        }
+        return [
+            "character" => new MuckCharacter($response[1], $name),
+            "initialPassword" => $response[2]
+        ];
     }
 
     //region Auth Requests

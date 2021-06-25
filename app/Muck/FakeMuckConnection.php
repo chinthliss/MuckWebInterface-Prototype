@@ -152,10 +152,13 @@ class FakeMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function createCharacterForUser(string $name, User $user): int
+    public function createCharacterForUser(string $name, User $user): array
     {
         self::fakeMuckCall('createCharacter', ['name' => $name, 'aid' => $user->getAid()]);
-        return 4657;
+        return [
+            "character" => new MuckCharacter(4657, 'FakeCharacter'),
+            "initialPassword" => 'test'
+        ];
     }
 
     /**
