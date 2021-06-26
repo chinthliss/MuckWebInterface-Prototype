@@ -48,7 +48,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         "HTTP/1.1 200 OK"
         "Server: " version strcat "" strcat
         "Connection: Close"
-        "Content-Type: application/x-www-form-urlencoded"
+        "Content-Type: application/x-www-form-urlencoded; charset=windows-1252"
         allowCrossDomain if "Access-Control-Allow-Origin: *" then
     }list "\r\n" array_join
     descr swap descrnotify 
@@ -205,7 +205,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         rpSys workingdir @ "exclude" strcat getpropstr ?dup if ":" explode_array else { }list then swap "excludes" array_setitem        
         swap present @ array_setitem
     repeat
-    swap "merits" array_setitem
+    swap "perks" array_setitem
     
     (Flaws)
     { }dict

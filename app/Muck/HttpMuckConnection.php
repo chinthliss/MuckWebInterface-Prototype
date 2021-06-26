@@ -41,7 +41,7 @@ class HttpMuckConnection implements MuckConnection
      */
     protected function requestFromMuck(string $request, array $data = []): string
     {
-        Log::debug('requestFromMuck calling ' . $request . ' with: ' . json_encode($data));
+        Log::debug('requestFromMuck:' . $request . ', request: ' . json_encode($data));
         $data['mwi_request'] = $request;
         $data['mwi_timestamp'] = Carbon::now()->timestamp; //This is to ensure that repeated requests don't match
         $signature = sha1(http_build_query($data) . $this->salt);
@@ -58,7 +58,8 @@ class HttpMuckConnection implements MuckConnection
         //getBody() returns a stream, so need to ensure we complete and parse such:
         //The result will also have a trailing \r\n
         $parsedResult = rtrim($result->getBody()->getContents());
-        Log::debug('requestFromMuck called ' . $request . ', response: ' . json_encode($parsedResult));
+        $logOutput = str_replace($parsedResult, chr(27), '[ANSI-ESCAPE-CHAR]');
+        Log::debug('requestFromMuck:' . $request . ', response: ' . json_encode($logOutput));
         return $parsedResult;
     }
 
