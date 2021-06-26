@@ -58,7 +58,7 @@ class HttpMuckConnection implements MuckConnection
         //getBody() returns a stream, so need to ensure we complete and parse such:
         //The result will also have a trailing \r\n
         $parsedResult = rtrim($result->getBody()->getContents());
-        $logOutput = str_replace($parsedResult, chr(27), '[ANSI-ESCAPE-CHAR]');
+        $logOutput = str_replace(chr(27), '[ANSI-ESCAPE-CHAR]', $parsedResult);
         Log::debug('requestFromMuck:' . $request . ', response: ' . json_encode($logOutput));
         return $parsedResult;
     }
