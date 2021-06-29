@@ -1,5 +1,6 @@
 ## Core website
- Pages with no or minimal muck communication
+ Pages with no or minimal muck communication  
+ ! Need to look at log_hosts !
 
 ### Accounts
 * ~~JavaScript check~~
