@@ -37,9 +37,12 @@ class AnsiParse extends Command
     public function handle()
     {
         $unparsedString = $this->argument('string');
-        $this->info('String before: ' . $unparsedString);
+        $this->comment('String before:');
+        $this->info($unparsedString);
 
         $parsedString = Ansi::unparsedToHtml($unparsedString);
-        $this->info('String  after: ' . $parsedString);
+        $this->comment('String after:');
+        $this->info($parsedString);
+
     }
 }

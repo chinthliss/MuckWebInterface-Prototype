@@ -76,25 +76,15 @@ class Ansi
 
         // Initially breaking the string into fragments of [content, foreground, background]
         $fragments = [];
-        $remaining = $string;
+        $lastFragment = null;
         $inTag = false;
 
-        while ($remaining) {
-            $nextIndex = strpos($remaining, '^');
-            if ($nextIndex === false) {
-                $nextFragment = $remaining;
-                $remaining = "";
-            } else {
-                $nextFragment = substr($remaining, 0, $nextIndex);
-                $remaining = substr($remaining, $nextIndex + 1);
+        foreach (explode('^', $string) as $nextFragment) {
+            // Special case - If we're in a tag and it's empty, treat it as an escaped character
+            if ($inTag && $nextFragment === '') {
+                $inTag = false;
+                $nextFragment = '^';
             }
-
-            echo "Index = $nextIndex\n";
-            echo "  Next      = " . $nextFragment . "\n";
-            echo "  Remaining = " . $remaining . "\n";
-            echo "  inTag     = $inTag\n";
-
-
             if ($inTag) {
                 // Need to match a code and update present styling
                 $nextTag = self::matchAnsiCode($nextFragment);
@@ -111,28 +101,28 @@ class Ansi
                                 array_push($other, $nextTag[2]);
                         }
                     }
-                } else {
-                    //Any non-match is treated as a reset
+                } else { //Any non-match is treated as a reset
                     $foreground = null;
                     $background = null;
                     $other = [];
                 }
                 $inTag = false;
             } else {
-                // If the next character is also a ^ we need to take it as an escaped one and skip.
-                // This is only available whilst we're not parsing a tag.
-                if ($remaining && $remaining[0] === '^') {
-                    $nextFragment = $nextFragment . '^';
-                    $remaining = substr($remaining, 1);
-                } else { // Otherwise we're parsing a tag next
-                    $inTag = true;
-                }
-
-                // Either way, save the present string fragment
                 if ($nextFragment) { // Often blank if two styles were used side by side
-                    array_push($fragments, [$nextFragment, $foreground, $background, $other]);
-                }
+                    // Maybe combine with the previous fragment if they're identical in style
+                    if (
+                        $lastFragment
+                        && $lastFragment[1] === $foreground
+                        && $lastFragment[2] === $background
+                        && $lastFragment[3] == $other
+                    )
+                        $lastFragment[0] .= $nextFragment;
+                    else
+                        $fragments[] = [$nextFragment, $foreground, $background, $other];
 
+                    $lastFragment = &$fragments[count($fragments) - 1];
+                }
+                if ($nextFragment !== '^') $inTag = true;
             }
         }
         return $fragments;
