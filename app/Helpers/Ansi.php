@@ -147,11 +147,13 @@ class Ansi
     /**
      * Converts a string containing strings like ^yellow^ into HTML spans that use potential CSS classes instead.
      * Built to emulate the muck, so looks for strings between ^'s. Doubling up escapes such.
-     * @param string $string String from the muck
+     * @param string $string String from the muck.
+     * @param bool $escapeInputHtml Whether to escape HTML in the string being parsed, defaults to true.
      * @return string HTML string represented as spans
      */
-    public static function unparsedToHtml(string $string): string
+    public static function unparsedToHtml(string $string, bool $escapeInputHtml = true): string
     {
+        if ($escapeInputHtml) $string = htmlspecialchars($string);
         $fragments = self::NeonAnsiToFragments($string);
         return self::stringFragmentsToHtml($fragments);
     }
