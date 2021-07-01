@@ -40,13 +40,13 @@
             <p>This is the faction that helped you get settled in this world. Whichever one you select will define how others see you, by assuming you follow that faction's ideals and broad outlook. It will also directly control where you start in the game.</p>
             <div class="form-group btn-group-toggle" data-toggle="buttons">
                 <table>
-                    <tr v-for="(faction, name) in config.factions">
-                        <td class="btn-group-toggle">
-                            <label class="btn btn-secondary">
+                    <tr v-for="(item, name) in config.factions">
+                        <td class="btn-group-toggle pr-2 align-text-top">
+                            <label class="btn btn-secondary w-100">
                                 <input type="radio" name="faction" :value="name" autocomplete="off">{{ name }}
                             </label>
                         </td>
-                        <td>{{ faction.description }}</td>
+                        <td>{{ item.description }}</td>
                     </tr>
                 </table>
             </div>
@@ -56,14 +56,14 @@
             <p>There are many more perks available - be sure to visit the perk page after character generation to spend the points you start with.</p>
             <div class="form-group btn-group-toggle" data-toggle="buttons">
                 <table>
-                    <tr v-for="(faction, name) in config.perks">
-                        <td class="btn-group-toggle">
-                            <label class="btn btn-secondary">
-                                <input type="checkbox" name="faction" :value="name" autocomplete="off">{{ name }}
+                    <tr v-for="(item, name) in config.perks">
+                        <td class="btn-group-toggle pr-2 align-text-top">
+                            <label class="btn btn-secondary w-100">
+                                <input type="checkbox" name="perks" :value="name" autocomplete="off">{{ name }}
                             </label>
                         </td>
-                        <td>{{ faction.description }}
-                            <div class="text-muted" v-if="faction.excludes.length">Excludes: {{ arrayToList(faction.excludes) }} </div>
+                        <td>{{ item.description }}
+                            <div class="text-muted" v-if="item.excludes.length">Excludes: {{ arrayToList(item.excludes) }} </div>
                         </td>
                     </tr>
                 </table>
@@ -71,8 +71,19 @@
 
             <h3>Flaws</h3>
             <p>You may take as many, or as few, flaws as you want.</p>
-            <div class="form-group">
-                <div>[Full width list]</div>
+            <div class="form-group btn-group-toggle" data-toggle="buttons">
+                <table>
+                    <tr v-for="(item, name) in config.flaws">
+                        <td class="btn-group-toggle pr-2 align-text-top">
+                            <label class="btn btn-secondary w-100">
+                                <input type="checkbox" name="flaws" :value="name" autocomplete="off">{{ name }}
+                            </label>
+                        </td>
+                        <td>{{ item.description }}
+                            <div class="text-muted" v-if="item.excludes.length">Excludes: {{ arrayToList(item.excludes) }} </div>
+                        </td>
+                    </tr>
+                </table>
             </div>
 
             <div class="text-center">
