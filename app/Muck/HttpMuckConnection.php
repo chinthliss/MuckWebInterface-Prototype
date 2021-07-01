@@ -152,7 +152,7 @@ class HttpMuckConnection implements MuckConnection
     {
         $response = $this->requestFromMuck('getCharacterInitialSetupConfiguration', ['aid' => $user->getAid()]);
         $config = json_decode($response, true);
-        foreach (['faction', 'perk', 'flaw'] as $section) {
+        foreach (['factions', 'perks', 'flaws'] as $section) {
             foreach ($config[$section] as &$item) {
                 if (array_key_exists('description', $item))
                     $item['description'] = Ansi::unparsedToHtml($item['description']);

@@ -190,7 +190,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         "/faction/" present @ strcat "/" strcat workingDir !
         rpSys workingDir @ "no chargen" strcat getpropstr "Y" instring if continue then
         { }dict
-        rpSys workingdir @ "desc" strcat getpropstr 1 parse_ansi swap "description" array_setitem
+        rpSys workingdir @ "desc" strcat getpropstr swap "description" array_setitem
         swap present @ array_setitem
     repeat
     swap "factions" array_setitem
@@ -201,7 +201,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         "/merit/" present @ strcat "/" strcat workingDir !
         rpSys workingDir @ "chargen" strcat getpropstr "Y" instring not if continue then
         { }dict
-        rpSys workingdir @ "desc" strcat getpropstr 1 parse_ansi swap "description" array_setitem
+        rpSys workingdir @ "desc" strcat getpropstr swap "description" array_setitem
         rpSys workingdir @ "exclude" strcat getpropstr ?dup if ":" explode_array else { }list then swap "excludes" array_setitem        
         swap present @ array_setitem
     repeat
@@ -212,7 +212,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     rpSys "/flaw/" array_get_propdirs foreach nip var! present
         "/flaw/" present @ strcat "/" strcat workingDir !
         { }dict
-        rpSys workingdir @ "desc" strcat getpropstr 1 parse_ansi swap "description" array_setitem
+        rpSys workingdir @ "desc" strcat getpropstr swap "description" array_setitem
         rpSys workingdir @ "exclude" strcat getpropstr ?dup if ":" explode_array else { }list then swap "excludes" array_setitem        
         swap present @ array_setitem
     repeat
