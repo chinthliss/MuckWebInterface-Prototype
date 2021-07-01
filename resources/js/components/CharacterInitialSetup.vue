@@ -38,15 +38,35 @@
 
             <h3>Faction</h3>
             <p>This is the faction that helped you get settled in this world. Whichever one you select will define how others see you, by assuming you follow that faction's ideals and broad outlook. It will also directly control where you start in the game.</p>
-            <div class="form-group">
-                <div>[Full width list]</div>
+            <div class="form-group btn-group-toggle" data-toggle="buttons">
+                <table>
+                    <tr v-for="(faction, name) in config.factions">
+                        <td class="btn-group-toggle">
+                            <label class="btn btn-secondary">
+                                <input type="radio" name="faction" :value="name" autocomplete="off">{{ name }}
+                            </label>
+                        </td>
+                        <td>{{ faction.description }}</td>
+                    </tr>
+                </table>
             </div>
 
             <h3>Starting Perks</h3>
             <p>The perks you chose here are especially important because they effect your preferences on how you respond to nanite changes.</p>
             <p>There are many more perks available - be sure to visit the perk page after character generation to spend the points you start with.</p>
-            <div class="form-group">
-                <div>[Full width list]</div>
+            <div class="form-group btn-group-toggle" data-toggle="buttons">
+                <table>
+                    <tr v-for="(faction, name) in config.perks">
+                        <td class="btn-group-toggle">
+                            <label class="btn btn-secondary">
+                                <input type="checkbox" name="faction" :value="name" autocomplete="off">{{ name }}
+                            </label>
+                        </td>
+                        <td>{{ faction.description }}
+                            <div class="text-muted" v-if="faction.excludes.length">Excludes: {{ arrayToList(faction.excludes) }} </div>
+                        </td>
+                    </tr>
+                </table>
             </div>
 
             <h3>Flaws</h3>
@@ -70,11 +90,15 @@ export default {
         old: {type: Object, required: false},
         config: {type: Object, required: true}
     },
+    methods: {
+        arrayToList: function(arrayToParse) {
+            return arrayToParse.join(', ');
+        }
+    },
     data: function () {
         return {
             csrf: document.querySelector('meta[name="csrf-token"]').content
         }
-
     }
 }
 </script>

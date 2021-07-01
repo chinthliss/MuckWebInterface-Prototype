@@ -3,6 +3,7 @@
 
 namespace App\Muck;
 
+use App\Helpers\Ansi;
 use App\User;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
@@ -83,7 +84,7 @@ class HttpMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function getCharacterSlotState(User $user) : array
+    public function getCharacterSlotState(User $user): array
     {
         $response = $this->requestFromMuck('getCharacterSlotState', ['aid' => $user->getAid()]);
         $response = explode(',', $response);
@@ -150,7 +151,14 @@ class HttpMuckConnection implements MuckConnection
     public function getCharacterInitialSetupConfiguration(User $user): array
     {
         $response = $this->requestFromMuck('getCharacterInitialSetupConfiguration', ['aid' => $user->getAid()]);
-        return json_decode($response, true);
+        $config = json_decode($response, true);
+        foreach (['faction', 'perk', 'flaw'] as $section) {
+            foreach ($config[$section] as &$item) {
+                if (array_key_exists('description', $item))
+                    $item['description'] = Ansi::unparsedToHtml($item['description']);
+            }
+        }
+        return $config;
     }
 
     #endregion Character Creation / Generation
