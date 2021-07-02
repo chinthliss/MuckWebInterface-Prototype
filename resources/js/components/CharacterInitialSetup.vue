@@ -11,11 +11,13 @@
                 <div class="col-12 col-md-6">
                     <div class="form-group">
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="gender" value="male" id="gender_male">
+                            <input class="form-check-input" type="radio" name="gender"
+                                   value="male" id="gender_male">
                             <label class="form-check-label" for="gender_male">Male</label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="gender" value="female" id="gender_female">
+                            <input class="form-check-input" type="radio" name="gender"
+                                   value="female" id="gender_female">
                             <label class="form-check-label" for="gender_female">Female</label>
                         </div>
                     </div>
@@ -40,13 +42,16 @@
             <p>This is the faction that helped you get settled in this world. Whichever one you select will define how others see you, by assuming you follow that faction's ideals and broad outlook. It will also directly control where you start in the game.</p>
             <div class="form-group btn-group-toggle" data-toggle="buttons">
                 <table>
-                    <tr v-for="(item, name) in config.factions">
-                        <td class="btn-group-toggle pr-2 align-text-top">
-                            <label class="btn btn-secondary w-100">
-                                <input type="radio" name="faction" :value="name" autocomplete="off">{{ name }}
+                    <tr v-for="(item, name) in config.factions" class="align-top">
+                        <td class="btn-group-toggle pr-2 pb-2">
+                            <label class="btn btn-outline-primary w-100">
+                                <input type="radio" name="faction" :value="name" autocomplete="off">
+                                {{ name }}
                             </label>
                         </td>
-                        <td>{{ item.description }}</td>
+                        <td class="pb-2">
+                            <div v-html="item.description"></div>
+                        </td>
                     </tr>
                 </table>
             </div>
@@ -56,14 +61,16 @@
             <p>There are many more perks available - be sure to visit the perk page after character generation to spend the points you start with.</p>
             <div class="form-group btn-group-toggle" data-toggle="buttons">
                 <table>
-                    <tr v-for="(item, name) in config.perks">
-                        <td class="btn-group-toggle pr-2 align-text-top">
-                            <label class="btn btn-secondary w-100">
-                                <input type="checkbox" name="perks" :value="name" autocomplete="off">{{ name }}
+                    <tr v-for="(item, name) in config.perks" class="align-top">
+                        <td class="btn-group-toggle pr-2 pb-2">
+                            <label class="btn btn-outline-primary w-100" :disabled="item.disabled">
+                                <input type="checkbox" name="perks" :value="name"
+                                       autocomplete="off" @change="updateExclusions('perks')">{{ name }}
                             </label>
                         </td>
-                        <td>{{ item.description }}
-                            <div class="text-muted" v-if="item.excludes.length">Excludes: {{ arrayToList(item.excludes) }} </div>
+                        <td class="pb-2">
+                            <div v-html="item.description"></div>
+                            <div v-if="item.excludes.length">Excludes: {{ arrayToList(item.excludes) }}</div>
                         </td>
                     </tr>
                 </table>
@@ -73,14 +80,16 @@
             <p>You may take as many, or as few, flaws as you want.</p>
             <div class="form-group btn-group-toggle" data-toggle="buttons">
                 <table>
-                    <tr v-for="(item, name) in config.flaws">
-                        <td class="btn-group-toggle pr-2 align-text-top">
-                            <label class="btn btn-secondary w-100">
-                                <input type="checkbox" name="flaws" :value="name" autocomplete="off">{{ name }}
+                    <tr v-for="(item, name) in config.flaws" class="align-top">
+                        <td class="btn-group-toggle pr-2 pb-2">
+                            <label class="btn btn-outline-primary w-100" :disabled="item.disabled">
+                                <input type="checkbox" name="flaws" :value="name"
+                                       autocomplete="off" @change="updateExclusions('flaws')">{{ name }}
                             </label>
                         </td>
-                        <td>{{ item.description }}
-                            <div class="text-muted" v-if="item.excludes.length">Excludes: {{ arrayToList(item.excludes) }} </div>
+                        <td class="pb-2">
+                            <div v-html="item.description"></div>
+                            <div v-if="item.excludes.length">Excludes: {{ arrayToList(item.excludes) }}</div>
                         </td>
                     </tr>
                 </table>
@@ -102,8 +111,34 @@ export default {
         config: {type: Object, required: true}
     },
     methods: {
-        arrayToList: function(arrayToParse) {
+        arrayToList: function (arrayToParse) {
             return arrayToParse.join(', ');
+        },
+        updateExclusions: function (type) {
+            // Pass 1 - get active exclusions
+            let excluded = [];
+            const config = this.config;
+            $(`input[name='${type}']:checked`).each(function() {
+                const itemName = $(this).val();
+                if (config[type] && config[type][itemName]) {
+                    excluded = excluded.concat(config[type][itemName].excludes);
+                }
+            });
+            // Pass 2 - enable/disable as required
+            $(`input[name='${type}']`).each(function() {
+                const itemName = $(this).val(), jqThis = $(this);
+                if (excluded.includes(itemName)) {
+                    jqThis.prop('disabled', true);
+                    jqThis.parent().addClass('disabled');
+                    // Also ensure we're not set, just in case
+                    jqThis.prop('checked', false);
+                    jqThis.parent().removeClass('active');
+                } else {
+                    jqThis.prop('disabled', false);
+                    jqThis.parent().removeClass('disabled');
+                }
+            });
+
         }
     },
     data: function () {

@@ -169,7 +169,7 @@ class FakeMuckConnection implements MuckConnection
                     "description" => "The first fake faction for testing."
                 ],
                 "FakeFaction2" => [
-                    "description" => "The second fake faction for testing."
+                    "description" => "The second fake faction for testing.<br/>This one has a line break in it."
                 ],
                 "Longer named faction 3" => [
                     "description" => "The third faction with some differences so it's actually possible to check scaling. Along with some extra text to effectively act as a second line."
