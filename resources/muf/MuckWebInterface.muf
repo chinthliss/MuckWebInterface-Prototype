@@ -199,8 +199,9 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     { }dict
     rpSys "/merit/" array_get_propdirs foreach nip var! present
         "/merit/" present @ strcat "/" strcat workingDir !
-        rpSys workingDir @ "chargen" strcat getpropstr "Y" instring not if continue then
+        rpSys workingDir @ "chargen" strcat getpropstr ?dup not if continue then
         { }dict
+        "category" array_setitem
         rpSys workingdir @ "desc" strcat getpropstr swap "description" array_setitem
         rpSys workingdir @ "exclude" strcat getpropstr ?dup if ":" explode_array else { }list then swap "excludes" array_setitem        
         swap present @ array_setitem

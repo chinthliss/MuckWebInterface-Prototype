@@ -196,18 +196,27 @@ class FakeMuckConnection implements MuckConnection
             "perks" => [
                 "FakePerk1" => [
                     "description" => "The first fake perk for testing.",
+                    "category" => 'appearance',
                     "excludes" => []
                 ],
                 "FakePerk2" => [
                     "description" => "The second fake perk for testing.",
+                    "category" => 'appearance',
                     "excludes" => ["FakePerk3"]
                 ],
                 "FakePerk3" => [
                     "description" => "The third fake perk for testing.",
+                    "category" => 'appearance',
                     "excludes" => ["FakePerk2"]
                 ],
                 "Fake Perk with Lorem Ipsum" => [
                     "description" => "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec faucibus porta dui, vel porta leo consectetur vel. Sed a nisl ligula. Donec sed nisi et magna commodo euismod id et dolor. Aliquam sed sapien quis est semper tempus. Curabitur nec lacus sit amet massa sodales accumsan ut eget urna. Vivamus justo felis, convallis et sapien id, dapibus aliquam mauris. Cras sit amet nulla eu odio ultrices congue sed non ipsum. Phasellus ut lacinia arcu, quis volutpat justo. Proin aliquet, dui et euismod cursus, ligula metus fringilla orci, nec mattis sem nunc a dui. Phasellus a velit quis nisi auctor pharetra. Integer lacus libero, consequat congue egestas vel, finibus id leo. Duis velit nulla, scelerisque id justo in, dignissim mollis dui. ",
+                    "category" => 'appearance',
+                    "excludes" => ["FakePerk2"]
+                ],
+                "Fake Perk in a different category" => [
+                    "description" => "As noted",
+                    "category" => 'history',
                     "excludes" => ["FakePerk2"]
                 ]
             ]

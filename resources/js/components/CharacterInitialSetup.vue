@@ -57,23 +57,28 @@
             </div>
 
             <h3>Starting Perks</h3>
-            <p>The perks you chose here are especially important because they effect your preferences on how you respond to nanite changes.</p>
-            <p>There are many more perks available - be sure to visit the perk page after character generation to spend the points you start with.</p>
+            <p>These are only a fraction of the perks available and to streamline character generation their costs are hidden.</p>
+            <p>They can be purchased at any time, so be sure to visit the perk page later to spend the rest of your points or to get more information.</p>
             <div class="form-group btn-group-toggle" data-toggle="buttons">
-                <table>
-                    <tr v-for="(item, name) in config.perks" class="align-top">
-                        <td class="btn-group-toggle pr-2 pb-2">
-                            <label class="btn btn-outline-primary w-100" :disabled="item.disabled">
-                                <input type="checkbox" name="perks" :value="name"
-                                       autocomplete="off" @change="updateExclusions('perks')">{{ name }}
-                            </label>
-                        </td>
-                        <td class="pb-2">
-                            <div v-html="item.description"></div>
-                            <div v-if="item.excludes.length">Excludes: {{ arrayToList(item.excludes) }}</div>
-                        </td>
-                    </tr>
-                </table>
+                <div v-for="category in perkCategories">
+                    <h4>• {{ category.label }}</h4>
+                    <p>{{ category.description }}</p>
+                    <table>
+                        <tr v-for="(item, name) in config.perks"
+                            v-if="category.category === item.category" class="align-top">
+                            <td class="btn-group-toggle pr-2 pb-2">
+                                <label class="btn btn-outline-primary w-100" :disabled="item.disabled">
+                                    <input type="checkbox" name="perks" :value="name"
+                                           autocomplete="off" @change="updateExclusions('perks')">{{ name }}
+                                </label>
+                            </td>
+                            <td class="pb-2">
+                                <div v-html="item.description"></div>
+                                <div v-if="item.excludes.length">Excludes: {{ arrayToList(item.excludes) }}</div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
             </div>
 
             <h3>Flaws</h3>
@@ -143,7 +148,30 @@ export default {
     },
     data: function () {
         return {
-            csrf: document.querySelector('meta[name="csrf-token"]').content
+            csrf: document.querySelector('meta[name="csrf-token"]').content,
+            perkCategories: [ // This is a list to allow order to be controlled easily
+                {
+                    category: "infection",
+                    label: 'Infection Resistance',
+                    description: "These perks control the overall rate of how quickly or how slowly transformation will effect you."
+                },
+                {
+                    category: "gender",
+                    label: 'Gender Perks',
+                    description: "There are many more preference related perks but these are the critical ones controlling your gender preferences."
+
+                },
+                {
+                    category: "appearance",
+                    label: 'Appearance',
+                    description: 'Following on from gender perks, these perks control how you appear to others.'
+                },
+                {
+                    category: "history",
+                    label: 'Historic',
+                    description: 'Finally, these perks effect how you start in this world.'
+                }
+            ]
         }
     }
 }
