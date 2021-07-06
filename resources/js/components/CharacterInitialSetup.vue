@@ -74,7 +74,7 @@
                             </td>
                             <td class="pb-2">
                                 <div v-html="item.description"></div>
-                                <div v-if="item.excludes.length">Excludes: {{ arrayToList(item.excludes) }}</div>
+                                <div class="small" v-if="item.excludes.length">Excludes: {{ arrayToList(item.excludes) }}</div>
                             </td>
                         </tr>
                     </table>
@@ -94,7 +94,7 @@
                         </td>
                         <td class="pb-2">
                             <div v-html="item.description"></div>
-                            <div v-if="item.excludes.length">Excludes: {{ arrayToList(item.excludes) }}</div>
+                            <div class="small" v-if="item.excludes.length">Excludes: {{ arrayToList(item.excludes) }}</div>
                         </td>
                     </tr>
                 </table>
