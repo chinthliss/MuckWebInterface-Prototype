@@ -161,6 +161,16 @@ class FakeMuckConnection implements MuckConnection
         ];
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function finalizeCharacter(array $characterData): array
+    {
+        if ($characterData['flaws'] && in_array('Unselectable Flaw', $characterData['flaws']))
+            return ['success' => false, 'messages' => ['The unselectable flaw was selected.', 'Second line test.']];
+        return ['success' => true];
+    }
+
     public function getCharacterInitialSetupConfiguration(User $user): array
     {
         return [
@@ -191,6 +201,10 @@ class FakeMuckConnection implements MuckConnection
                 "FakeFlaw3" => [
                     "description" => "The third fake flaw for testing.",
                     "excludes" => ["FakeFlaw2"]
+                ],
+                "Unselectable Flaw" => [
+                    "description" => "Picking this should cause validation to fail.",
+                    "excludes" => []
                 ]
             ],
             "perks" => [

@@ -118,6 +118,38 @@ class MultiplayerController extends Controller
         ]);
     }
 
+    public function finalizeCharacter(Request $request, MuckConnection $muck)
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        $request->validate([
+            'gender' => 'required',
+            'birthday' => 'required',
+            'faction' => 'required'
+        ], [
+            'gender.required' => 'You need to select a starting gender.',
+            'birthday.required' => 'You need to select a birthday.',
+            'faction.required' => 'You need to select a faction.'
+        ]);
+
+        // Since the muck needs to do a final check on perks/flaws we're leaving validation of such to it
+        $characterRequest = [
+            'dbref' => $user->getCharacterDbref(),
+            'gender' => $request->input('gender'),
+            'birthday' => $request->input('birthday'),
+            'faction' => $request->input('faction'),
+            'perks' => $request->input('perks') ?? [],
+            'flaws' => $request->input('flaws') ?? []
+        ];
+        $response = $muck->finalizeCharacter($characterRequest);
+
+        if (!$response['success']) {
+            throw ValidationException::withMessages(['other' => $response['messages']]);
+        }
+
+        return redirect()->route('multiplayer.gettingstarted');
+    }
     #endregion Character Creation
 
     public function setActiveCharacter(Request $request, MuckConnection $muck)
@@ -147,9 +179,13 @@ class MultiplayerController extends Controller
 
     }
 
-
     public function showAvatarEditor()
     {
         return view('multiplayer.avatar');
+    }
+
+    public function showGettingStarted()
+    {
+        return view('multiplayer.getting-started');
     }
 }

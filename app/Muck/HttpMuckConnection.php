@@ -148,6 +148,16 @@ class HttpMuckConnection implements MuckConnection
         ];
     }
 
+    // @inheritDoc
+    public function finalizeCharacter(array $characterData): array
+    {
+        $response = $this->requestFromMuck('finalizeNewCharacter', $characterData);
+
+        if ($response === 'OK') return ['success' => true, 'messages' => []];
+
+        return ['success' => false, 'messages' => explode(chr(13) . chr(10), $response)];
+    }
+
     public function getCharacterInitialSetupConfiguration(User $user): array
     {
         $response = $this->requestFromMuck('getCharacterInitialSetupConfiguration', ['aid' => $user->getAid()]);

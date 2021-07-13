@@ -132,8 +132,8 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
     Route::post('multiplayer/createCharacter', [MultiplayerController::class, 'createCharacter']);
     Route::get('multiplayer/characterGeneration', [MultiplayerController::class, 'showCharacterGeneration'])
         ->name('multiplayer.character.generate');
-
-
+    Route::post('multiplayer/characterGeneration', [MultiplayerController::class, 'finalizeCharacter'])
+        ->name('multiplayer.character.finalize');
 });
 
 // Multiplayer content - Requires an active character, along with account, verification and terms of service acceptance
@@ -184,6 +184,10 @@ Route::get('/', [HomeController::class, 'show'])
 //Character Profiles
 Route::get('c/{characterName}', [MultiplayerController::class, 'showCharacter'])
     ->name('multiplayer.character.view');
+
+//Multiplayer getting started - always available since it gives instructions on creating an account.
+Route::get('multiplayer/gettingstarted', [MultiplayerController::class, 'showGettingStarted'])
+    ->name('multiplayer.gettingstarted');
 
 //Terms of service - always viewable, does challenge if logged in.
 Route::get('account/termsofservice', [TermsOfServiceController::class, 'view'])

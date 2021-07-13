@@ -63,6 +63,13 @@ interface MuckConnection
     public function createCharacterForUser(string $name, User $user): array;
 
     /**
+     * Returns {success, messages} with success being a boolean and messages being an array of strings
+     * @param array $characterData
+     * @return MuckCharacter|null
+     */
+    public function finalizeCharacter(array $characterData): array;
+
+    /**
      * Returns the configuration for character generation.
      * @param User $user
      * @return array

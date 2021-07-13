@@ -2,11 +2,13 @@
     <div class="container">
         <h2 class="text-center">Character Generation</h2>
         <form action="" method="POST">
+            <input type="hidden" name="_token" :value="csrf">
 
             <h3>Gender</h3>
             <div class="row">
                 <div class="col-12 col-md-6">
-                    <p>This is your starting gender and may change rapidly. See some of the perks below if you wish to prevent or reduce the chance of this.</p>
+                    <p>This is your starting gender and may change rapidly. See some of the perks below if you wish to
+                        prevent or reduce the chance of this.</p>
                 </div>
                 <div class="col-12 col-md-6">
                     <div class="form-group">
@@ -20,6 +22,9 @@
                                    value="female" id="gender_female">
                             <label class="form-check-label" for="gender_female">Female</label>
                         </div>
+                        <div class="text-danger" role="alert">
+                            <p v-for="error in errors.gender">{{ error }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -28,18 +33,24 @@
             <div class="row">
                 <div class="col-12 col-md-6">
                     <p>Your birthday can be anytime between 1940 and present day.</p>
-                    <p>Regardless of what date you were born, due to nanites accelerating development the minimum age of a character is 18.</p>
+                    <p>Regardless of what date you were born, due to nanites accelerating development the minimum age of
+                        a character is 18.</p>
                 </div>
                 <div class="col-12 col-md-6">
                     <div class="form-group">
                         <label class="sr-only" for="birthday">Birthday</label>
-                        <input type="date" id="birthday">
+                        <input type="date" id="birthday" name="birthday">
+                        <div class="text-danger" role="alert">
+                            <p v-for="error in errors.birthday">{{ error }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <h3>Faction</h3>
-            <p>This is the faction that helped you get settled in this world. Whichever one you select will define how others see you, by assuming you follow that faction's ideals and broad outlook. It will also directly control where you start in the game.</p>
+            <p>This is the faction that helped you get settled in this world. Whichever one you select will define how
+                others see you, by assuming you follow that faction's ideals and broad outlook. It will also directly
+                control where you start in the game.</p>
             <div class="form-group btn-group-toggle" data-toggle="buttons">
                 <table>
                     <tr v-for="(item, name) in config.factions" class="align-top">
@@ -54,11 +65,16 @@
                         </td>
                     </tr>
                 </table>
+                <div class="text-danger" role="alert">
+                    <p v-for="error in errors.faction">{{ error }}</p>
+                </div>
             </div>
 
             <h3>Starting Perks</h3>
-            <p>These are only a fraction of the perks available and to streamline character generation their costs are hidden.</p>
-            <p>They can be purchased at any time, so be sure to visit the perk page later to spend the rest of your points or to get more information.</p>
+            <p>These are only a fraction of the perks available and to streamline character generation their costs are
+                hidden.</p>
+            <p>They can be purchased at any time, so be sure to visit the perk page later to spend the rest of your
+                points or to get more information.</p>
             <div class="form-group btn-group-toggle" data-toggle="buttons">
                 <div v-for="category in perkCategories">
                     <h4>• {{ category.label }}</h4>
@@ -68,13 +84,16 @@
                             v-if="category.category === item.category" class="align-top">
                             <td class="btn-group-toggle pr-2 pb-2">
                                 <label class="btn btn-outline-primary w-100" :disabled="item.disabled">
-                                    <input type="checkbox" name="perks" :value="name"
+                                    <input type="checkbox" name="perks[]" :value="name"
                                            autocomplete="off" @change="updateExclusions('perks')">{{ name }}
                                 </label>
                             </td>
                             <td class="pb-2">
                                 <div v-html="item.description"></div>
-                                <div class="small" v-if="item.excludes.length">Excludes: {{ arrayToList(item.excludes) }}</div>
+                                <div class="small" v-if="item.excludes.length">Excludes: {{
+                                        arrayToList(item.excludes)
+                                    }}
+                                </div>
                             </td>
                         </tr>
                     </table>
@@ -88,16 +107,26 @@
                     <tr v-for="(item, name) in config.flaws" class="align-top">
                         <td class="btn-group-toggle pr-2 pb-2">
                             <label class="btn btn-outline-primary w-100" :disabled="item.disabled">
-                                <input type="checkbox" name="flaws" :value="name"
+                                <input type="checkbox" name="flaws[]" :value="name"
                                        autocomplete="off" @change="updateExclusions('flaws')">{{ name }}
                             </label>
                         </td>
                         <td class="pb-2">
                             <div v-html="item.description"></div>
-                            <div class="small" v-if="item.excludes.length">Excludes: {{ arrayToList(item.excludes) }}</div>
+                            <div class="small" v-if="item.excludes.length">Excludes: {{
+                                    arrayToList(item.excludes)
+                                }}
+                            </div>
                         </td>
                     </tr>
                 </table>
+                <div class="text-danger" role="alert">
+                    <p v-for="error in errors.flaws">{{ error }}</p>
+                </div>
+            </div>
+
+            <div class="text-danger" role="alert">
+                <p v-for="error in errors.other">{{ error }}</p>
             </div>
 
             <div class="text-center">
@@ -123,14 +152,15 @@ export default {
             // Pass 1 - get active exclusions
             let excluded = [];
             const config = this.config;
-            $(`input[name='${type}']:checked`).each(function() {
+            $(`input[name="${type}[]"]:checked`).each(function () {
                 const itemName = $(this).val();
                 if (config[type] && config[type][itemName]) {
                     excluded = excluded.concat(config[type][itemName].excludes);
                 }
             });
+            console.log("Excluded:", excluded);
             // Pass 2 - enable/disable as required
-            $(`input[name='${type}']`).each(function() {
+            $(`input[name="${type}[]"]`).each(function () {
                 const itemName = $(this).val(), jqThis = $(this);
                 if (excluded.includes(itemName)) {
                     jqThis.prop('disabled', true);
@@ -144,6 +174,22 @@ export default {
                 }
             });
 
+        }
+    },
+    mounted: function () {
+        //Restore any previous values
+        if (this.old.gender) $(`input[name=gender][value="${this.old.gender}"]`).prop('checked', true);
+        if (this.old.birthday) $('input[name=birthday]').val(this.old.birthday);
+        if (this.old.faction) $(`input[name=faction][value="${this.old.faction}"]`).click();
+        if (this.old.perks) {
+            Object.values(this.old.perks).forEach(item => {
+                $(`input[name="perks[]"][value="${item}"]`).click();
+            });
+        }
+        if (this.old.flaws) {
+            Object.values(this.old.flaws).forEach(item => {
+                $(`input[name="flaws[]"][value="${item}"]`).click();
+            });
         }
     },
     data: function () {
