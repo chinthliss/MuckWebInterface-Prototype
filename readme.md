@@ -29,9 +29,9 @@ Then from within the opened shell:
 ```  
 cd code  
 php artisan migrate --seed
-php config:clear
-php route:clear
-php cache:clear
+php artisan config:clear
+php artisan route:clear
+php artisan cache:clear
 ```
 Then use one of the following scripts:  
 Single compile - `npm run dev`  

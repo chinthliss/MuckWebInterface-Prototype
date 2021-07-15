@@ -51,5 +51,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         config.hostmanager.aliases = settings['sites'].map { |site| site['map'] }
     end
 
-    config.vm.box_version = '~> 9.6.0' # 9.7 onwards uses PHP 8
+    # Previously we didn't want PHP 8 or above. Leaving here in case we ever need version constraints again.
+    # config.vm.box_version = '~> 9.6.0'
 end
