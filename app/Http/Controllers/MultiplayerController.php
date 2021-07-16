@@ -114,10 +114,14 @@ class MultiplayerController extends Controller
         return redirect()->route('multiplayer.character.generate');
     }
 
-    public function showCharacterGeneration(MuckConnection $muck): View
+    public function showCharacterGeneration(MuckConnection $muck): View | RedirectResponse
     {
         /** @var User $user */
         $user = auth()->user();
+
+        //Because this page is available without an approved character, we need to manually check for an active character
+        if (!$user->getCharacter()) return redirect(route('multiplayer.character.select'));
+
         $config  = $muck->getCharacterInitialSetupConfiguration($user);
         return view('multiplayer.character-initial-setup')->with([
             'config' => $config
@@ -154,10 +158,7 @@ class MultiplayerController extends Controller
         $response = $muck->finalizeCharacter($characterRequest);
 
         if (!$response['success']) {
-            $messages = $response['messages'];
-            // If the program crashed, make sure we at least show something
-            if (!$messages) $messages = ['Something went wrong.'];
-            throw ValidationException::withMessages(['other' => $messages]);
+            throw ValidationException::withMessages(['other' => $response['messages']]);
         }
 
         return redirect()->route('multiplayer.gettingstarted');

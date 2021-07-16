@@ -155,7 +155,8 @@ class HttpMuckConnection implements MuckConnection
 
         if ($response === 'OK') return ['success' => true, 'messages' => []];
 
-        return ['success' => false, 'messages' => explode(chr(13) . chr(10), $response)];
+        $messages = $response ? explode(chr(13) . chr(10), $response) : ['A server issue occurred'];
+        return ['success' => false, 'messages' => $messages];
     }
 
     public function getCharacterInitialSetupConfiguration(User $user): array
