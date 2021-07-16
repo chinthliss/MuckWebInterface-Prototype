@@ -154,7 +154,10 @@ class MultiplayerController extends Controller
         $response = $muck->finalizeCharacter($characterRequest);
 
         if (!$response['success']) {
-            throw ValidationException::withMessages(['other' => $response['messages']]);
+            $messages = $response['messages'];
+            // If the program crashed, make sure we at least show something
+            if (!$messages) $messages = ['Something went wrong.'];
+            throw ValidationException::withMessages(['other' => $messages]);
         }
 
         return redirect()->route('multiplayer.gettingstarted');
