@@ -32,14 +32,14 @@
             <h3>Birthday</h3>
             <div class="row">
                 <div class="col-12 col-md-6">
-                    <p>Your birthday can be anytime between 1940 and present day.</p>
+                    <p>Your birthday can be between 1940 and present day.</p>
                     <p>Regardless of what date you were born, due to nanites accelerating development the minimum age of
                         a character is 18.</p>
                 </div>
                 <div class="col-12 col-md-6">
                     <div class="form-group">
                         <label class="sr-only" for="birthday">Birthday</label>
-                        <input type="date" id="birthday" name="birthday">
+                        <input type="date" id="birthday" name="birthday" placeholder="YYYY-MM-DD">
                         <div class="text-danger" role="alert">
                             <p v-for="error in errors.birthday">{{ error }}</p>
                         </div>
