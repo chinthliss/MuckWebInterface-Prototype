@@ -151,7 +151,7 @@ class HttpMuckConnection implements MuckConnection
     // @inheritDoc
     public function finalizeCharacter(array $characterData): array
     {
-        $response = $this->requestFromMuck('finalizeNewCharacter', $characterData);
+        $response = $this->requestFromMuck('finalizeNewCharacter', ['characterData' => json_encode($characterData)]);
 
         if ($response === 'OK') return ['success' => true, 'messages' => []];
 
