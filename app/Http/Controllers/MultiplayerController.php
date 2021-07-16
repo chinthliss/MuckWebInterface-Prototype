@@ -6,14 +6,17 @@ use App\Muck\MuckConnection;
 use App\Notifications\MuckWebInterfaceNotification;
 use App\User as User;
 use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
 
 //For core multiplayer functionality only
 class MultiplayerController extends Controller
 {
 
-    public function showMultiplayerDashboard()
+    public function showMultiplayerDashboard() : View | RedirectResponse
     {
         /** @var User $user */
         $user = auth()->user();
@@ -33,7 +36,7 @@ class MultiplayerController extends Controller
         ]);
     }
 
-    public function showCharacter(MuckConnection $muck, string $characterName)
+    public function showCharacter(MuckConnection $muck, string $characterName) : View
     {
         return view('multiplayer.character')->with([
             'characters' => $characterName
@@ -42,7 +45,7 @@ class MultiplayerController extends Controller
 
     #region Character Selection
 
-    public function showCharacterSelect(MuckConnection $muck)
+    public function showCharacterSelect(MuckConnection $muck) : View
     {
         /** @var User $user */
         $user = auth()->user();
@@ -63,26 +66,29 @@ class MultiplayerController extends Controller
         ]);
     }
 
-    public function buyCharacterSlot(MuckConnection $muck)
+    public function buyCharacterSlot(MuckConnection $muck) : JsonResponse
     {
         /** @var User $user */
         $user = auth()->user();
 
         if (!$user) abort(401);
 
-        return $muck->buyCharacterSlot($user);
+        return response()->json($muck->buyCharacterSlot($user));
     }
 
     #endregion Character Selection
 
     #region Character Creation
 
-    public function showCharacterCreation()
+    public function showCharacterCreation() : View
     {
         return view('multiplayer.character-create');
     }
 
-    public function createCharacter(Request $request, MuckConnection $muck)
+    /**
+     * @throws ValidationException
+     */
+    public function createCharacter(Request $request, MuckConnection $muck) : RedirectResponse
     {
         /** @var User $user */
         $user = auth()->user();
@@ -108,7 +114,7 @@ class MultiplayerController extends Controller
         return redirect()->route('multiplayer.character.generate');
     }
 
-    public function showCharacterGeneration(MuckConnection $muck)
+    public function showCharacterGeneration(MuckConnection $muck): View
     {
         /** @var User $user */
         $user = auth()->user();
@@ -118,7 +124,10 @@ class MultiplayerController extends Controller
         ]);
     }
 
-    public function finalizeCharacter(Request $request, MuckConnection $muck)
+    /**
+     * @throws ValidationException
+     */
+    public function finalizeCharacter(Request $request, MuckConnection $muck): RedirectResponse
     {
         /** @var User $user */
         $user = auth()->user();
@@ -152,7 +161,7 @@ class MultiplayerController extends Controller
     }
     #endregion Character Creation
 
-    public function setActiveCharacter(Request $request, MuckConnection $muck)
+    public function setActiveCharacter(Request $request, MuckConnection $muck): JsonResponse
     {
         /** @var User $user */
         $user = $request->user('account');
@@ -179,12 +188,12 @@ class MultiplayerController extends Controller
 
     }
 
-    public function showAvatarEditor()
+    public function showAvatarEditor() : View
     {
         return view('multiplayer.avatar');
     }
 
-    public function showGettingStarted()
+    public function showGettingStarted() : View
     {
         return view('multiplayer.getting-started');
     }
