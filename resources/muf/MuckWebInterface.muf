@@ -169,10 +169,31 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     newCharacter @ "player account" account @ intostr setstat
     newCharacter @ "Resources" 10 setstat
     newCharacter @ "@/initial_password" newPassword @ setprop
+    newCharacter @ "@/created_by" prog setprop
     
     "OK|" newCharacter @ intostr strcat "|" strcat newPassword @ strcat
     descr swap descrnotify
 ; selfcall handleRequest_createCharacterForAccount
+
+(Expects an array containing dbref,gender, birthday, faction, perks and flaws. )
+(Returns 'OK' or line separated errors.)
+: handleRequest_finalizeNewCharacter[ arr:webcall -- ]
+    webcall @ "characterData" array_getitem ?dup if
+        decodeJson
+    else
+        response400 exit
+    then
+    
+    startAcceptedResponse
+
+    approveAndApplyNewCharacterConfiguration
+    
+    ?dup if
+        foreach nip descr swap descrnotify repeat exit
+    then
+   
+    "OK" descr swap descrnotify
+; selfcall handleRequest_finalizeNewCharacter
 
 (Presently doesn't expect anything but as of writing the web passeses 'aid' just in case. Returns {factions, perks, flaws} with each being a dictionary of relevant objects)
 (Faction: {description} )
