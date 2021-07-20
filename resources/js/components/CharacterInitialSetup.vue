@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <h2 class="text-center">Character Generation</h2>
-        <form action="" method="POST">
+        <form action="" method="POST" @submit="hideDuringSubmit">
             <input type="hidden" name="_token" :value="csrf">
 
             <h3>Gender</h3>
@@ -130,7 +130,8 @@
             </div>
 
             <div class="text-center">
-                <button type="submit" class="btn btn-primary">Submit Character</button>
+                <button type="submit" class="btn btn-primary" v-if="!submitting">Submit Character</button>
+                <div v-if="submitting">Submitting..</div>
             </div>
         </form>
     </div>
@@ -173,7 +174,9 @@ export default {
                     jqThis.parent().removeClass('disabled');
                 }
             });
-
+        },
+        hideDuringSubmit: function() {
+            this.submitting = true;
         }
     },
     mounted: function () {
@@ -195,6 +198,7 @@ export default {
     data: function () {
         return {
             csrf: document.querySelector('meta[name="csrf-token"]').content,
+            submitting: false,
             perkCategories: [ // This is a list to allow order to be controlled easily
                 {
                     category: "infection",
@@ -205,7 +209,6 @@ export default {
                     category: "gender",
                     label: 'Gender Perks',
                     description: "There are many more preference related perks but these are the critical ones controlling your gender preferences."
-
                 },
                 {
                     category: "appearance",
