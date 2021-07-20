@@ -157,7 +157,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         descr "ERROR|No free character slots for a new character." descrnotify exit
     then
     
-    randomPassword var! newPassword
+    8 randomPassword var! newPassword
 
     0 try
         newName @ newPassword @ newplayer var! newCharacter
