@@ -12,6 +12,8 @@
   * Browser notifications (Opt-in rather than forced)
 * ~~Re-add webNoAvatars option and provide access to on account page~~
 * ~~Re-add webUseFullWidth option and provide access to on account page~~
+* GettingStarted (Done but need to revisit links)
+* Reset Character Password (Linked via GettingStarted)
 * Implement Socialite for Facebook/Google login?
 
 ### AccountCurrency (Formally ECommerce)

@@ -13,11 +13,23 @@
 @endsection
 
 @section('content')
-    TBC Pending
-    Checkboxes of required things like:
-    Make an account
-    Make a character / Set active character
-    Character must be approved
+    <multiplayer-getting-started
+        :account="{{ $hasAccount ? 'true' : 'false' }}"
+        account-url="{{ route('multiplayer.home') }}"
 
+        :character="{{ $hasAnyCharacter ? 'true' : 'false' }}"
+        character-url="{{ route('multiplayer.character.create') }}"
 
+        :character-active="{{ $hasActiveCharacter ? 'true' : 'false' }}"
+        character-active-url="{{ route('multiplayer.character.select') }}"
+
+        :character-approved="{{ $hasApprovedCharacter ? 'true' : 'false' }}"
+        character-approved-url="{{ route('multiplayer.character.finalize') }}"
+
+        direct-connect-url="TBC"
+        reset-character-password-url="{{ route('auth.account') }}"
+
+        :page-recommendations="{{ json_encode($pageRecommendations) }}"
+    >
+    </multiplayer-getting-started>
 @endsection
