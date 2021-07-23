@@ -53,7 +53,7 @@
                 <h4>Via a 3rd party client</h4>
                 <p>Please see the list of popular <a href="https://wiki.flexiblesurvival.com/w/MU*_Clients">Clients</a> and what they run on.</p>
                 <p>Configure your client to connect to <b>flexiblesurvival.com</b> on port <b>2002</b>, which is the encrypted port.</p>
-                <p>If your client can't connect on that page, then try one of the following: 2000, 2222, 22222, 20202, and 23.</p>
+                <p>If your client can't connect on that port, then try one of the following: 2000, 2222, 22222, 20202, and 23.</p>
                 <p>You'll need your character's name and password to connect. This is separate from your account password; if you've forgotten it you can use the <a :href="resetCharacterPasswordUrl">Reset Character Password</a> page to reset it.</p>
             </div>
         </div>
