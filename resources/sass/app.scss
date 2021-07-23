@@ -119,3 +119,11 @@ main {
     top: 2px;
     bottom: 2px;
 }
+
+// Additional Bootstrap utilities
+
+.border-lg-right {
+    @include media-breakpoint-up(lg) {
+        border-right:1px solid $primary;
+    }
+}
