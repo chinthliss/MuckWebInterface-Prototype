@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Services\HostLogManager;
+use App\HostLogManager;
 use App\Muck\MuckConnection;
 use App\Muck\FakeMuckConnection;
 use App\Muck\HttpMuckConnection;

@@ -1,12 +1,10 @@
 <?php
 
 
-namespace App\Services;
+namespace App;
 
 use App\User as User;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Schema;
 

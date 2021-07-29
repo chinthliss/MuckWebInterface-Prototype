@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Services\HostLogManager;
+use App\HostLogManager;
 use App\User as User;
 use Closure;
 use Illuminate\Http\Request;
