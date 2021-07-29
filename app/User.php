@@ -9,44 +9,46 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
+use JetBrains\PhpStorm\ArrayShape;
 
 /**
  * Class User
- * This represents a logged in user, so contains present account and present player if set
+ * This represents a logged-in user, so contains present account and present player if set
  */
 class User implements Authenticatable, MustVerifyEmail
 {
     use Notifiable;
 
-    /**
-     * @var int|null
-     */
-    protected $aid = null;
+    protected int $aid;
 
-    protected $email = null; // Primary email
-    protected $emails = null;
-    protected $password = null;
-    protected $passwordType = null;
-    protected $rememberToken = null;
+    protected ?string $email = null; // Primary Email
 
-    /**
-     * @var MuckCharacter|null
-     */
-    protected $character = null;
+    /** @var array<string, array>|null  */
+    protected ?array $emails = null;
+
+    protected ?string $password = null;
+    protected ?string $passwordType = null;
+    protected ?string $rememberToken = null;
+
+    protected ?MuckCharacter $character = null; // Active Character
 
     // These are public since they're not stored past the request
-    public $createdAt = null;
-    public $updatedAt = null;
-    public $emailVerified = false;
+    public ?Carbon $createdAt = null;
+    public ?Carbon $updatedAt = null;
+    public bool $emailVerified = false; // Only for primary email. Temporary.
 
     /**
      * Characters of this user.
-     * @var Collection(MuckCharacter)
+     * @var Collection<MuckCharacter>|null
      */
-    private $characters = null;
+    private ?Collection $characters = null;
 
+    public function __construct(int $accountId)
+    {
+        $this->aid = $accountId;
+    }
 
-    public static function fromDatabaseResponse(\stdClass $query)
+    public static function fromDatabaseResponse(\stdClass $query): User
     {
         if (
             !property_exists($query, 'aid') ||
@@ -55,8 +57,7 @@ class User implements Authenticatable, MustVerifyEmail
         ) {
             throw new \InvalidArgumentException('Database response must at least contain aid, password and email');
         }
-        $user = new self();
-        $user->aid = intval($query->aid);
+        $user = new self(intval($query->aid));
         $user->email = $query->email;
         $user->password = $query->password;
         if (property_exists($query, 'password_type')) $user->passwordType = $query->password_type;
@@ -70,9 +71,10 @@ class User implements Authenticatable, MustVerifyEmail
      * Get expected user provider
      * @return DatabaseForMuckUserProvider
      */
-    public static function getProvider()
+    public static function getProvider(): DatabaseForMuckUserProvider
     {
-        return auth()->guard('account')->getProvider();
+        $guard = auth()->guard('account');
+        return $guard->getProvider();
     }
 
     /**
@@ -88,11 +90,11 @@ class User implements Authenticatable, MustVerifyEmail
     /**
      * Utility function to lookup user by email.
      * If true is passed to $allowAlternative will return any match, otherwise will only return primary emails.
-     * @param $email
-     * @param false $allowAlternative
+     * @param string $email
+     * @param bool $allowAlternative
      * @return User|null
      */
-    public static function findByEmail($email, $allowAlternative = false): ?User
+    public static function findByEmail(string $email, bool $allowAlternative = false): ?User
     {
         if ($allowAlternative)
             return self::getProvider()->retrieveByAnyEmail($email);
@@ -105,7 +107,7 @@ class User implements Authenticatable, MustVerifyEmail
      *
      * @return string
      */
-    public function getAuthIdentifierName()
+    public function getAuthIdentifierName(): string
     {
         return 'AccountId';
     }
@@ -113,14 +115,14 @@ class User implements Authenticatable, MustVerifyEmail
     /**
      * Get the unique identifier for the user.
      *
-     * @return mixed
+     * @return int | null
      */
-    public function getAuthIdentifier()
+    public function getAuthIdentifier(): ?int
     {
         return $this->aid;
     }
 
-    public function getAid()
+    public function getAid(): ?int
     {
         return $this->aid;
     }
@@ -130,12 +132,12 @@ class User implements Authenticatable, MustVerifyEmail
      *
      * @return string
      */
-    public function getAuthPassword()
+    public function getAuthPassword(): string
     {
         return $this->password;
     }
 
-    public function getPasswordType()
+    public function getPasswordType(): string
     {
         return $this->passwordType;
     }
@@ -145,7 +147,7 @@ class User implements Authenticatable, MustVerifyEmail
      *
      * @return string
      */
-    public function getRememberTokenName()
+    public function getRememberTokenName(): string
     {
         return 'remember_token';
     }
@@ -153,9 +155,9 @@ class User implements Authenticatable, MustVerifyEmail
     /**
      * Get the token value for the "remember me" session.
      *
-     * @return string
+     * @return string|null
      */
-    public function getRememberToken()
+    public function getRememberToken(): ?string
     {
         return $this->rememberToken;
     }
@@ -176,7 +178,7 @@ class User implements Authenticatable, MustVerifyEmail
     /**
      * @return MuckCharacter|null
      */
-    public function getCharacter()
+    public function getCharacter(): ?MuckCharacter
     {
         return $this->character;
     }
@@ -198,7 +200,10 @@ class User implements Authenticatable, MustVerifyEmail
         $this->character = $character;
     }
 
-    public function getCharacters()
+    /**
+     * @return Collection<MuckCharacter>|null
+     */
+    public function getCharacters(): ?Collection
     {
         if (!$this->characters) $this->characters = $this->getProvider()->getCharacters($this);
         return $this->characters;
@@ -210,7 +215,7 @@ class User implements Authenticatable, MustVerifyEmail
      *
      * @return bool
      */
-    public function hasVerifiedEmail()
+    public function hasVerifiedEmail(): bool
     {
         return $this->emailVerified;
     }
@@ -221,7 +226,7 @@ class User implements Authenticatable, MustVerifyEmail
      *
      * @return bool
      */
-    public function markEmailAsVerified()
+    public function markEmailAsVerified(): bool
     {
         $this->getProvider()->markEmailAsVerified($this, $this->email);
         $this->emailVerified = true;
@@ -244,7 +249,7 @@ class User implements Authenticatable, MustVerifyEmail
      *
      * @return string
      */
-    public function getEmailForVerification()
+    public function getEmailForVerification(): string
     {
         return $this->email;
     }
@@ -252,7 +257,7 @@ class User implements Authenticatable, MustVerifyEmail
     /**
      * @return array Array [email:[created_at, verified_at, primary]]
      */
-    public function getEmails() : array
+    public function getEmails(): array
     {
         if (is_null($this->emails)) {
             $emails = $this->getProvider()->getEmails($this);
@@ -262,7 +267,7 @@ class User implements Authenticatable, MustVerifyEmail
     }
 
     //Used by notifiable
-    public function getKey()
+    public function getKey(): ?int
     {
         return $this->aid;
     }
@@ -271,7 +276,7 @@ class User implements Authenticatable, MustVerifyEmail
     {
         $password = MuckInterop::createSHA1SALTPassword($password);
         $this->password = $password;
-        $this->password_type = 'SHA1SALT';
+        $this->passwordType = 'SHA1SALT';
         $this->getProvider()->updatePassword($this, $password, 'SHA1SALT');
         //$this->updateLastUpdated(); //Done automatically with update
     }
@@ -296,6 +301,16 @@ class User implements Authenticatable, MustVerifyEmail
         return $this->getProvider()->getAccountNotes($this);
     }
 
+    #[ArrayShape([
+        'id' => "int|null",
+        'created' => "\Carbon\Carbon|null",
+        'characters' => "array",
+        'notes' => "\App\Admin\AccountNote[]",
+        'lastConnected' => "\Carbon\Carbon|null",
+        'emails' => "array",
+        'primary_email' => "null|string",
+        'url' => "string"
+    ])]
     public function toAdminArray(): array
     {
         $characters = [];
@@ -317,10 +332,10 @@ class User implements Authenticatable, MustVerifyEmail
 
     #region Late Loading Properties
     // These are loaded late because they're not required for api calls.
-    protected $latePropertiesLoaded = false;
-    protected $agreedToTermsOfService = false;
-    protected $prefersNoAvatars = false;
-    protected $prefersFullWidth = false;
+    protected bool $latePropertiesLoaded = false;
+    protected bool $agreedToTermsOfService = false;
+    protected bool $prefersNoAvatars = false;
+    protected bool $prefersFullWidth = false;
 
     public function ensureLatePropertiesAreLoaded()
     {
@@ -330,7 +345,7 @@ class User implements Authenticatable, MustVerifyEmail
         }
     }
 
-    public function getAgreedToTermsOfService()
+    public function getAgreedToTermsOfService(): bool
     {
         $this->ensureLatePropertiesAreLoaded();
         return $this->agreedToTermsOfService;
@@ -341,7 +356,7 @@ class User implements Authenticatable, MustVerifyEmail
         $this->agreedToTermsOfService = $value;
     }
 
-    public function getPrefersNoAvatars()
+    public function getPrefersNoAvatars(): bool
     {
         $this->ensureLatePropertiesAreLoaded();
         return $this->prefersNoAvatars;
@@ -353,7 +368,7 @@ class User implements Authenticatable, MustVerifyEmail
         if ($this->latePropertiesLoaded) $this->getProvider()->updatePrefersNoAvatars($this, $value);
     }
 
-    public function getPrefersFullWidth()
+    public function getPrefersFullWidth(): bool
     {
         $this->ensureLatePropertiesAreLoaded();
         return $this->prefersFullWidth;
@@ -379,7 +394,7 @@ class User implements Authenticatable, MustVerifyEmail
     #endregion Account Properties
 
     #region Roles
-    protected $roles = null;
+    protected ?array $roles = null;
 
     public function setRoles(array $roles)
     {
@@ -390,7 +405,7 @@ class User implements Authenticatable, MustVerifyEmail
     {
         if ($this->roles == null) $this->getProvider()->loadRolesFor($this);
 
-        //Admin role has all other roles
+        //Admin role has every role
         return in_array($role, $this->roles) || in_array('admin', $this->roles);
     }
     #endregion Roles
