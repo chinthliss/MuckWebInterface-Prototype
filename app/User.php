@@ -250,20 +250,15 @@ class User implements Authenticatable, MustVerifyEmail
     }
 
     /**
-     * @return \Illuminate\Support\Collection
+     * @return array Array [email:[created_at, verified_at, primary]]
      */
-    public function getEmails()
+    public function getEmails() : array
     {
-        if (!is_null($this->emails)) {
-            return $this->emails;
-        } else {
-            $rawEmails = $this->getProvider()->getEmails($this);
-            return $this->emails = $rawEmails->mapWithKeys(function ($item, $key) {
-                $email = $item->email;
-                unset($item->email);
-                return [$email => $item];
-            });
+        if (is_null($this->emails)) {
+            $emails = $this->getProvider()->getEmails($this);
+            $this->emails = $emails;
         }
+        return $this->emails;
     }
 
     //Used by notifiable

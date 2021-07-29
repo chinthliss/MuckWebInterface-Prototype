@@ -14,8 +14,7 @@
 @section('content')
     <auth-account
         account-created="{{ $user->createdAt ?? 'Prior to this being recorded' }}"
-        primary-email="{{ $user->getEmailForVerification() }}"
-        :emails="{{ $user->getEmails() }}"
+        :emails="{{ json_encode($user->getEmails()) }}"
         :errors="{{ $errors }}"
         :subscriptions="{{ json_encode($subscriptions) }}"
         subscription-active = "{{ $subscriptionActive }}"

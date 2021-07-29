@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\User as User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\ValidationException;
@@ -53,13 +54,14 @@ class AccountEmailController extends Controller
     public function useExistingEmail(Request $request)
     {
         $request->validate(['email'=>'required']);
+        /** @var User $user */
         $user = auth()->user();
         $emails = $user->getEmails();
-        if (!$emails->has($request['email'])) {
+        if (!array_key_exists($request['email'], $emails)) {
             throw ValidationException::withMessages(['email'=>["Email isn't associated with this account."]]);
         }
         $user->setEmail($request['email']);
-        if (!$emails[$request['email']]->verified_at) {
+        if (!$emails[$request['email']]['verified_at']) {
             $user->sendEmailVerificationNotification();
         }
         return redirect()->route('auth.account');
@@ -81,11 +83,7 @@ class AccountEmailController extends Controller
         if (!auth()->guard()->getProvider()->validateCredentials($user, ['password'=>$request['password']])) {
             throw ValidationException::withMessages(['password'=>["Password provided doesn't match existing password"]]);
         }
-        $found = false;
-        foreach ($user->getEmails() as $email) {
-            if ($email == $request['email']) $found = true;
-        }
-        if (!$found) {
+        if (!array_key_exists($request['email'], $user->getEmails())) {
             throw ValidationException::withMessages(['email'=>["Email not found."]]);
         }
         $user->setEmail($request['email']);

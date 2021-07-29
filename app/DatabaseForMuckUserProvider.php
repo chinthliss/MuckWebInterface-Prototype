@@ -369,15 +369,44 @@ class DatabaseForMuckUserProvider implements UserProvider
     /**
      * Get all emails to do with a user in the form
      * @param User $user
-     * @return Collection
+     * @return array in [ email: [ created_at, verified_at, primary ] ]
      */
-    public function getEmails(User $user): Collection
+    public function getEmails(User $user): array
     {
-        return DB::table('account_emails')->select([
+        Log::debug("UserProvider getEmails attempt for {$user->getAid()}");
+        $emails = [];
+
+        $rows = DB::table('account_emails')->select([
             'email', 'created_at', 'verified_at'
         ])->where([
             'aid' => $user->getAid()
         ])->get();
+        foreach ($rows as $row) {
+            $emails[$row->email] = [
+                'created_at' => $row->created_at,
+                'verified_at' => $row->verified_at,
+                'primary' => false
+            ];
+        }
+
+        $primary = DB::table('accounts')
+            ->select([
+                'email', 'created_at'
+            ])
+            ->where('aid', '=', $user->getAid())
+            ->first();
+
+        //Historical system didn't always put primary email into the emails table
+        if (!array_key_exists($primary->email, $emails))
+            $emails[$primary->email] = [
+                'created_at' => $primary->created_at,
+                'verified_at' => null
+            ];
+        $emails[$primary->email]['primary'] = true;
+
+        Log::debug("UserProvider getEmails result for {$user->getAid()}: " . json_encode($emails));
+        return $emails;
+
     }
 
     #endregion Email

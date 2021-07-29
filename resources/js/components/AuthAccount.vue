@@ -62,7 +62,7 @@
                 <tr v-for="(details, email) in emails">
                     <td class="align-middle">{{ email }}</td>
                     <td class="text-center align-middle">
-                        <span v-if="email === primaryEmail" class="text-muted">Primary</span>
+                        <span v-if="details.primary" class="text-muted">Primary</span>
                         <button v-else class="btn btn-secondary" @click="verifyUseEmail(email)">Make Primary
                         </button>
                     </td>
