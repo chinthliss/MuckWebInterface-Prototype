@@ -1,6 +1,6 @@
 ## Core website
  Pages with no or minimal muck communication  
- ! Need to look at log_hosts !
+ ! Need to redo authentication pages that don't use Vue (E.g. verificationSent) as the styling is out of date. !
 
 ### Accounts
 * ~~JavaScript check~~
