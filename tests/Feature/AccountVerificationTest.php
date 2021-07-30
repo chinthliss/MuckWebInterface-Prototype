@@ -98,7 +98,7 @@ class AccountVerificationTest extends TestCase
         $user = $this->getPresentUser();
         Notification::assertSentTo($user,VerifyEmail::class, function(VerifyEmail $notification, $channels) use ($user) {
             $mail = $notification->toMail($user)->toArray();
-            $response = $this->json('GET', $mail['actionUrl']);
+            $response = $this->get( $mail['actionUrl']);
             $response->assertRedirect();
             $this->assertTrue($user->hasVerifiedEmail());
             $this->assertEquals($user->getEmailForVerification(), 'testnew@test.com');
@@ -132,7 +132,7 @@ class AccountVerificationTest extends TestCase
         $this->get('/account/resendverifyemail');
         Notification::assertSentTo($user,VerifyEmail::class, function(VerifyEmail $notification, $channels) use ($user) {
             $mail = $notification->toMail($user)->toArray();
-            $response = $this->json('GET', $mail['actionUrl']);
+            $response = $this->get($mail['actionUrl']);
             $response->assertRedirect();
             $this->assertDatabaseHas('account_emails', [
                 'email' => 'testbrokenunverified@test.com'

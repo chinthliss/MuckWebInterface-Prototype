@@ -90,7 +90,7 @@ class AccountEmailChangeTest extends TestCase
         ]);
         Notification::assertSentTo($user, VerifyEmail::class, function (VerifyEmail $notification, $channels) use ($user) {
             $mail = $notification->toMail($user)->toArray();
-            $response = $this->json('GET', $mail['actionUrl']);
+            $response = $this->get($mail['actionUrl']);
             $response->assertRedirect();
             return true;
         });
@@ -110,7 +110,7 @@ class AccountEmailChangeTest extends TestCase
         ]);
         Notification::assertSentTo($user, VerifyEmail::class, function (VerifyEmail $notification, $channels) use ($user, $newEmail) {
             $mail = $notification->toMail($user)->toArray();
-            $response = $this->json('GET', $mail['actionUrl']);
+            $response = $this->get( $mail['actionUrl']);
             $response->assertRedirect();
             $this->assertTrue($user->hasVerifiedEmail());
             $this->assertEquals($user->getEmailForVerification(), $newEmail, "Email didn't change.");
@@ -147,7 +147,7 @@ class AccountEmailChangeTest extends TestCase
         $this->assertEquals($user->getEmailForVerification(), $newEmail, "Email wasn't changed.");
         Notification::assertSentTo($user, VerifyEmail::class, function (VerifyEmail $notification, $channels) use ($user, $newEmail) {
             $mail = $notification->toMail($user)->toArray();
-            $response = $this->json('GET', $mail['actionUrl']);
+            $response = $this->get( $mail['actionUrl']);
             $response->assertRedirect();
             $this->assertTrue($user->hasVerifiedEmail());
             return true;

@@ -13,7 +13,8 @@
         "authorizenet/authorizenet": "^2.0",
         "fideloper/proxy": "^4.0",
         "guzzlehttp/guzzle": "~6.0",
-        "laravel/framework": "^6.0",
+        "laravel/framework": "^7.0",
+        "laravel/ui": "^2.0",
         "laravel/tinker": "^2.0",
         "patreon/patreon": "^1.0",
         "paypal/paypal-checkout-sdk": "1.0.1"
@@ -22,11 +23,11 @@
         "barryvdh/laravel-debugbar": "^3.2",
         "barryvdh/laravel-ide-helper": "^2.6",
         "beyondcode/laravel-dump-server": "^1.0",
-        "facade/ignition": "^1.16",
-        "fzaninotto/faker": "^1.4",
-        "laravel/homestead": "^10.0",
+        "facade/ignition": "^2.0",
+        "fakerphp/faker": "^1.9.1",
+        "laravel/homestead": "^11.0",
         "mockery/mockery": "^1.0",
-        "nunomaduro/collision": "^3.0",
+        "nunomaduro/collision": "^4.1",
         "phpunit/phpunit": "^9"
     },
     "config": {

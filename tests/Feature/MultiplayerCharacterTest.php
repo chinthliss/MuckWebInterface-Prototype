@@ -36,7 +36,7 @@ class MultiplayerCharacterTest extends TestCase
         $user = auth()->user();
         $this->assertNotNull($user->getCharacter(), "Character wasn't set on User");
         $response->assertCookie('character-dbref');
-        $response->assertSee('<meta name="character-dbref" content="1234">');
+        $response->assertSee('<meta name="character-dbref" content="1234">', false);
     }
 
     /**
