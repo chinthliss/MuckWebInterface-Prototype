@@ -10,13 +10,13 @@
     "require": {
         "php": "^8.0",
         "ext-json": "*",
-        "authorizenet/authorizenet": "^2.0",
-        "fideloper/proxy": "^4.0",
-        "guzzlehttp/guzzle": "~6.0",
-        "laravel/framework": "^7.0",
+        "fideloper/proxy": "^4.4",
+        "guzzlehttp/guzzle": "~7.2",
+        "laravel/framework": "^7.29",
+        "laravel/tinker": "^2.5",
         "laravel/ui": "^2.0",
-        "laravel/tinker": "^2.0",
         "patreon/patreon": "^1.0",
+        "authorizenet/authorizenet": "^2.0",
         "paypal/paypal-checkout-sdk": "1.0.1"
     },
     "require-dev": {
