@@ -1,6 +1,6 @@
-!!@program muckwebinterface.muf
+!!@program muckwebinterface-gateway.muf
 !!q
-!!@reg muckwebinterface.muf=www/mwi
+!!@reg muckwebinterface-gateway.muf=www/mwi
 !!@set $www/mwi=W4
 !!@set $www/mwi=L
 !!@set $www/mwi=_type:noheader
@@ -453,6 +453,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
             response400 exit
         then
     else
+        "[MWI Gateway] [WARN] Rejected a call because it didn't authenticate correctly. Possibly check configuration. Call was: " webCall @ encodeJson strcat logStatus
         response401 exit
     then
 ;
