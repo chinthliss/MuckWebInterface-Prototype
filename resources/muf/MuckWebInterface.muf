@@ -465,7 +465,9 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
             response503
         else
             event_wait pop
-            dup arraydump
+            $ifdef is_dev
+                dup arraydump
+            $endif
             queryRouter 
         then
         exit

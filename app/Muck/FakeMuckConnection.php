@@ -98,7 +98,7 @@ class FakeMuckConnection implements MuckConnection
         }
         if ($user->getAid() === 6) {
             $result = [
-                4657 => MuckCharacter::fromMuckResponse('4567,TestCharacterA1,0,,unapproved')
+                4567 => MuckCharacter::fromMuckResponse('4567,TestCharacterA1,0,,unapproved')
             ];
         }
         return collect($result);
