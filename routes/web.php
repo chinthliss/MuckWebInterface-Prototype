@@ -134,6 +134,10 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
         ->name('multiplayer.character.generate');
     Route::post('multiplayer/characterGeneration', [MultiplayerController::class, 'finalizeCharacter'])
         ->name('multiplayer.character.finalize');
+
+    Route::get('multiplayer/changeCharacterPassword', [MultiplayerController::class, 'showChangeCharacterPassword'])
+        ->name('multiplayer.character.changepassword');
+    Route::post('multiplayer/changeCharacterPassword', [MultiplayerController::class, 'changeCharacterPassword']);
 });
 
 // Multiplayer content - Requires an active character, along with account, verification and terms of service acceptance
@@ -192,8 +196,7 @@ Route::get('multiplayer/gettingstarted', [MultiplayerController::class, 'showGet
 //Terms of service - always viewable, does challenge if logged in.
 Route::get('account/termsofservice', [TermsOfServiceController::class, 'view'])
     ->name('auth.account.termsofservice');
-Route::post('account/termsofservice', [TermsOfServiceController::class, 'accept'])
-    ->name('auth.account.termsofservice');
+Route::post('account/termsofservice', [TermsOfServiceController::class, 'accept']);
 
 //Paypal Notifications - this route is exempt from CSRF token. Controlled in the middleware.
 Route::post('accountcurrency/paypal_webhook', [PayPalController::class, 'paypalWebhook']);
