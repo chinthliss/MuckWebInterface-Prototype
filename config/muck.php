@@ -18,12 +18,12 @@ return [
     | Muck Code
     |--------------------------------------------------------------------------
     |
-    | 5 character string used for storage and places where a shorter code is better
-    |
+    | Integer representing the muck, used in various tables.
+    | Should match get_game_id in intermuck
     |
     */
 
-    'muck_code' => env('MUCK_CODE', 'UNSET'),
+    'muck_code' => env('MUCK_CODE', -1),
 
     /*
     |--------------------------------------------------------------------------

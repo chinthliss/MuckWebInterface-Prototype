@@ -22,7 +22,7 @@ class MuckWebInterfaceNotification extends Notification
     private $message;
 
     /**
-     * @var string|null
+     * @var int|null
      */
     private $gameCode;
 
@@ -36,7 +36,7 @@ class MuckWebInterfaceNotification extends Notification
      *
      * @return void
      */
-    public function __construct(string $message, string $gameCode = null, MuckCharacter $characterDbref = null)
+    public function __construct(string $message, int $gameCode = null, MuckCharacter $characterDbref = null)
     {
         $this->gameCode = $gameCode;
         $this->characterDbref = $characterDbref;
