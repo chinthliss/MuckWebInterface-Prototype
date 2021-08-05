@@ -26,8 +26,8 @@
         :character-approved="{{ $hasApprovedCharacter ? 'true' : 'false' }}"
         character-approved-url="{{ route('multiplayer.character.finalize') }}"
 
-        direct-connect-url="TBC"
-        reset-character-password-url="{{ route('auth.account') }}"
+        direct-connect-url="{{ route('multiplayer.connect') }}"
+        reset-character-password-url="{{ route('multiplayer.character.changepassword') }}"
 
         :page-recommendations="{{ json_encode($pageRecommendations) }}"
     >

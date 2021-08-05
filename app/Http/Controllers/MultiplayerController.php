@@ -198,6 +198,12 @@ class MultiplayerController extends Controller
         return view('multiplayer.avatar');
     }
 
+    public function showConnect() : View
+    {
+        return view('multiplayer.connect');
+    }
+
+
     public function showChangeCharacterPassword(Request $request): View
     {
         /** @var User $user */

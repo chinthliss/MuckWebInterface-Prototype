@@ -144,6 +144,8 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
 Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'character']], function() {
     Route::get('multiplayer/avatar', [MultiplayerController::class, 'showAvatarEditor'])
         ->name('multiplayer.avatar');
+    Route::get('multiplayer/connect', [MultiplayerController::class, 'showConnect'])
+        ->name('multiplayer.connect');
 });
 
 //Website admin routes
