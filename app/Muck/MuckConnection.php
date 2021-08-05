@@ -155,4 +155,12 @@ interface MuckConnection
      * @return int[]
      */
     public function findAccountsByCharacterName(string $name): array;
+
+    /**
+     * @param User $user
+     * @param MuckCharacter $character
+     * @param string $password
+     * @return bool
+     */
+    public function changeCharacterPassword(User $user, MuckCharacter $character, string $password): bool;
 }

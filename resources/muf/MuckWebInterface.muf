@@ -272,6 +272,35 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     else response400 then
 ; selfcall handleRequest_findAccountsByCharacterName
 
+(Expects an array containing aid,dbref,password )
+(Returns 'OK' if successful)
+: handleRequest_changeCharacterPassword[ arr:webcall -- ]
+    #-1 var! character
+    webcall @ "dbref" array_getitem ?dup if
+        atoi dbref character !
+    then
+    character @ player? not if response400 exit then
+    
+    0 var! aid
+    webcall @ "aid" array_getitem ?dup if
+        acct_any2aid aid !
+    then
+    aid @ ok? not if response400 exit then
+    
+    webcall @ "password" array_getitem ?dup not if response400 exit then
+    var! password
+    
+    (Does account own character?)
+    character @ acct_any2aid aid @ = not if response401 exit then
+    
+    startAcceptedResponse
+    "[MWI Gateway] Changed password of " character @ unparseobj strcat " due to request by account " strcat aid @ intostr strcat logStatus
+    character @ password @ newpassword
+   
+    "OK" descr swap descrnotify
+; selfcall handleRequest_changeCharacterPassword
+
+
 ( -------------------------------------------------- )
 ( Handlers - Auth )
 ( -------------------------------------------------- )

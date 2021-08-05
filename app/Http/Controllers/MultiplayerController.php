@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Muck\MuckCharacter;
 use App\Muck\MuckConnection;
 use App\Notifications\MuckWebInterfaceNotification;
 use App\User as User;
@@ -195,6 +196,61 @@ class MultiplayerController extends Controller
     public function showAvatarEditor() : View
     {
         return view('multiplayer.avatar');
+    }
+
+    public function showChangeCharacterPassword(Request $request): View
+    {
+        /** @var User $user */
+        $user = $request->user('account');
+        $characters = [];
+        foreach ($user->getCharacters() as $character) {
+            array_push($characters, $character->toArray());
+        }
+        return view('multiplayer.character-change-password')->with([
+            'characters' => $characters
+        ]);
+    }
+
+    /**
+     * @param Request $request
+     * @param MuckConnection $muck
+     * @return RedirectResponse
+     * @throws ValidationException
+     */
+    public function changeCharacterPassword(Request $request, MuckConnection $muck)
+    {
+        $request->validate([
+            'accountpassword' => 'required',
+            'password' => 'required',
+            'character' => 'required'
+        ], [
+            'accountpassword.required' => 'You need to enter your Account Password.',
+            'password.required' => 'You need to enter a new password to use.',
+            'character.required' => 'You need to select a character.'
+        ]);
+
+        /** @var User $user */
+        $user = auth()->user('account');
+        if (!auth()->guard('account')->getProvider()->validateCredentials($user, ['password'=>$request['accountpassword']])) {
+            throw ValidationException::withMessages(['accountpassword'=>["The provided password was incorrect."]]);
+        }
+
+        $characters = $user->getCharacters();
+        /** @var MuckCharacter $character */
+        $character = $characters->has($request['character']) ? $characters[$request['character']] : null;
+        if (!$character) {
+            throw ValidationException::withMessages(['character'=>["The provided character was incorrect."]]);
+        }
+
+        $passwordIssues = $muck->findProblemsWithCharacterPassword($request['password']);
+        if ($passwordIssues) throw ValidationException::withMessages(['password' => $passwordIssues]);
+
+        $result = $muck->changeCharacterPassword($user, $character, $request['password']);
+        if ($result) {
+            $request->session()->flash('message-success', "The password for {$character->getName()} was changed as requested. You can now use this password to logon via a telnet client.");
+            return redirect(route('multiplayer.character.select'));
+        }
+        else throw ValidationException::withMessages(['character'=>["Something went wrong, if this continues please notify staff."]]);
     }
 
     public function showGettingStarted() : View

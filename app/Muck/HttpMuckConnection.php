@@ -294,4 +294,18 @@ class HttpMuckConnection implements MuckConnection
         return $response ? explode(',', $response) : [];
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function changeCharacterPassword(User $user, MuckCharacter $character, string $password): bool
+    {
+        $response = $this->requestFromMuck('changeCharacterPassword', [
+            'aid' => $user->getAid(),
+            'dbref' => $character->getDbref(),
+            'password' => $password
+        ]);
+        return ($response === 'OK');
+    }
+
+
 }

@@ -321,4 +321,17 @@ class FakeMuckConnection implements MuckConnection
         if ($name == 'test') return ['TestCharacter' => 1];
         return [];
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function changeCharacterPassword(User $user, MuckCharacter $character, string $password): bool
+    {
+        self::fakeMuckCall('changeCharacterPassword', [
+            'aid' => $user->getAid(),
+            'dbref' => $character->getDbref(),
+            'password' => $password
+        ]);
+        return true;
+    }
 }
