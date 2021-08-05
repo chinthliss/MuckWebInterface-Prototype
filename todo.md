@@ -11,8 +11,6 @@
   * Browser notifications (Opt-in rather than forced)
 * ~~Re-add webNoAvatars option and provide access to on account page~~
 * ~~Re-add webUseFullWidth option and provide access to on account page~~
-* GettingStarted (Done but need to revisit links)
-* Reset Character Password (Linked via GettingStarted)
 * Implement Socialite for Facebook/Google login?
 
 ### AccountCurrency (Formally ECommerce)
@@ -36,24 +34,25 @@
 * ~~Badges need to be rewarded~~
 
 ## Multiplayer pages
+* ~~Getting Started~~
+* * ~~Reset Character Password~~
+* Connect
 
 ### Character Based starting pages
 * ~~Change Active Character~~
     * ~~Buy character slot~~
     * Character Order
-* Character Creation
+* ~~Character Creation~~
     * Referral during such (looks like this is account)
     * ~~Initial Creation (Name approval)~~
-    * Initial setup
+    * ~~Initial setup~~
 * Character Dashboard
 * Character Profile 
 * Avatars (Loading) (Done with placeholder for now)
 * Avatars (Editing)
  
 ### Telnet Replacement
-* Write server-based websocket process to allow telnet control
-* Maybe move all websocket functionality into such
-* This goal neds to be reworked due to upcoming muck WS integration
+* Write client to use new websocket server on muck.
 
 ### Stuff to revisit
 * Account passwords don't need to have MUCK text limitations
@@ -64,4 +63,4 @@
 * drop billing_sessions
 * drop patreon_claims
 * Rewrite muck notifications to account notifications
-* Remove fullwidth preference setting and code
+* Remove fullwidth preference setting, code and preference on Accounts page
