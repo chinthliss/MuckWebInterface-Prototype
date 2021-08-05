@@ -285,7 +285,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     webcall @ "aid" array_getitem ?dup if
         acct_any2aid aid !
     then
-    aid @ ok? not if response400 exit then
+    aid @ not if response400 exit then
     
     webcall @ "password" array_getitem ?dup not if response400 exit then
     var! password
