@@ -111,6 +111,18 @@ class DatabaseSeeder extends Seeder
             'roles' => 'other_role'
         ]);
 
+        DB::table('account_emails')->insert([
+            'aid' => 5,
+            'email' => 'secondvalid@test.com',
+            'verified_at' => Carbon::now()
+        ]);
+
+        DB::table('account_properties')->insert([
+            'aid' => 5,
+            'propname' => 'tos-hash-viewed',
+            'proptype' => 'STRING',
+            'propdata' => TermsOfService::getTermsOfServiceHash()
+        ]);
 
         //Account 6 - Admin account
         DB::table('accounts')->insert([
