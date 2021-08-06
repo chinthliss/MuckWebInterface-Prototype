@@ -1,14 +1,13 @@
 @extends('layouts.layout')
 
 @section('title')
-    Connect
+    Singleplayer
 @endsection
 
 @section('breadcrumbs')
     {{ Breadcrumbs::render([
         [ 'route' => 'home', 'label' => 'Home' ],
-        [ 'route' => 'multiplayer.home', 'label' => 'Multiplayer' ],
-        [ 'label' => 'Connect' ]
+        [ 'label' => 'Singleplayer' ]
     ]) }}
 @endsection
 

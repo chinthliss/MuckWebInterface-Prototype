@@ -13,6 +13,7 @@ use App\Http\Controllers\AccountNotificationsController;
 use App\Http\Controllers\Auth\AccountPasswordController;
 use App\Http\Controllers\Auth\TermsOfServiceController;
 use App\Http\Controllers\MultiplayerController;
+use App\Http\Controllers\SingleplayerController;
 use App\Http\Controllers\Payment\AccountCurrencyController;
 use App\Http\Controllers\Payment\CardManagementController;
 use App\Http\Controllers\Payment\PatreonController;
@@ -146,6 +147,15 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
         ->name('multiplayer.avatar');
     Route::get('multiplayer/connect', [MultiplayerController::class, 'showConnect'])
         ->name('multiplayer.connect');
+});
+
+// Singleplayer content
+Route::prefix('singleplayer')->group(function() {
+    //No additional middleware required
+    Route::group(['middleware' => ['web']], function () {
+        Route::get('/', [SingleplayerController::class, 'showHome'])
+            ->name('singleplayer.home');
+    });
 });
 
 //Website admin routes

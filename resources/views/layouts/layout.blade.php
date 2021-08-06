@@ -105,8 +105,9 @@
             <div class="navbar-text">Some text!</div>
 
             @auth
-                <h4 class="nav-link mt-2 pl-0">Singleplayer</h4>
+                <h4 class="nav-link mt-2 pl-0"><a href="{{ route('singleplayer.home') }}">Singleplayer</a></h4>
                 <div>???</div>
+
                 <h4 class="nav-link mt-2 pl-0"><a href="{{ route('multiplayer.home') }}">Multiplayer</a></h4>
                 <a class="nav-link" href="{{ route('multiplayer.gettingstarted') }}">Getting Started</a>
                 <a class="nav-link" href="{{ route('multiplayer.character.select') }}">Character Select</a>
@@ -127,10 +128,8 @@
         <!-- Right side bar -->
         <nav id="site_navigation_right" class="col-12 col-md-3 col-xl-2">
             <div class="navbar-text">Secondary Navigation Area</div>
-            <div class="navbar-text">Located on the right on desktop</div>
-            <div class="navbar-text">Moves to middle on mobile and precedes page.</div>
-            <div class="navbar-text">Intended for a page's individual navigation</div>
-            <div class="navbar-text">Can also host widgets (e.g. surveys)</div>
+            <div class="navbar-text">Located on the right on desktop, moves to middle on mobile and precedes page.</div>
+            <div class="navbar-text">Intended for a page's individual navigation but can also host widgets (e.g. surveys)</div>
         </nav>
         <!-- Middle, main div that holds content -->
         <div id="site_content" class="col-12 col-md-6 col-xl-8">
