@@ -7,8 +7,8 @@
                 <div class="text-center">
                     <h1>Welcome</h1>
                     <p>The long term intent is to bring both singleplayer and multiplayer into one site.</p>
-                    <p>At the moment there are instances, for example, where people sign up for multiplayer but just want the singleplayer content.</p>
-                    <p>Please see the <a href="{{ route('roadmap') }}">Site Roadmap</a> for more information of intended content.</p>
+                    <p>For example, at the moment there are instances where people land on the multiplayer site and sign up even though they just want singleplayer content.</p>
+                    <p>Please see the <a href="{{ route('roadmap') }}">Site Roadmap</a> for more information.</p>
                 </div>
             </div>
         </div>
