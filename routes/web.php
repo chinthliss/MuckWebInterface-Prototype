@@ -210,5 +210,8 @@ Route::get('account/termsofservice', [TermsOfServiceController::class, 'view'])
     ->name('auth.account.termsofservice');
 Route::post('account/termsofservice', [TermsOfServiceController::class, 'accept']);
 
+Route::get('/roadmap', [HomeController::class, 'showRoadmap'])
+    ->name('roadmap');
+
 //Paypal Notifications - this route is exempt from CSRF token. Controlled in the middleware.
 Route::post('accountcurrency/paypal_webhook', [PayPalController::class, 'paypalWebhook']);

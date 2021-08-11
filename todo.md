@@ -1,66 +1,13 @@
-## Core website
- Pages with no or minimal muck communication  
+The bulk of this has moved to the roadmap page. This is largely just internal reminders.
 
-### Accounts
-* ~~JavaScript check~~
-* ~~Terms of Service agreement~~
-* ~~Log on as character with username/password~~
-* (Started) Actual styling/theming
-* ~~Responsive layout~~
-* ~~Notices (Account-based notices)~~
-  * Browser notifications (Opt-in rather than forced)
-* ~~Re-add webNoAvatars option and provide access to on account page~~
-* ~~Re-add webUseFullWidth option and provide access to on account page~~
-* Implement Socialite for Facebook/Google login?
-
-### AccountCurrency (Formally ECommerce)
-* ~~Manage Cards~~
-* ~~Single payment - card~~
-* ~~Single payment - paypal~~
-* ~~Subscription - card~~
-* ~~Subscription - paypal~~
-* ~~Card subscription processing (payment)~~
-* ~~Manage Subscriptions - Admin view all~~
-* ~~Manage Subscriptions - View transactions from subscription~~
-* ~~Flag when card has expired and trying to make a payment~~
-* ~~Notification of payment - Email~~
-* ~~Notification of payment - Account notification~~
-
-### Patreon integration
-* ~~Automatically update from Patreon~~ 
-* ~~Save claims in new format~~
-* ~~Automatic claiming~~
-* ~~Status browser~~
-* ~~Badges need to be rewarded~~
-
-## Multiplayer pages
-* ~~Getting Started~~
-* * ~~Reset Character Password~~
-* Connect
-
-### Character Based starting pages
-* ~~Change Active Character~~
-    * ~~Buy character slot~~
-    * Character Order
-* ~~Character Creation~~
-    * Referral during such (looks like this is account)
-    * ~~Initial Creation (Name approval)~~
-    * ~~Initial setup~~
-* Character Dashboard
-* Character Profile 
-* Avatars (Loading) (Done with placeholder for now)
-* Avatars (Editing)
- 
-### Telnet Replacement
-* Write client to use new websocket server on muck.
-
-### Stuff to revisit
+### Revisit
+* Re-add webNoAvatars functionality (Preference already exists on Accounts page)
 * Account passwords don't need to have MUCK text limitations
 * When someone is over their character slot limit, characters got locked out. Could highlight/show on web.
 
-### Stuff to do once system goes live
+### After go live
 * Remove tos-hash-viewed from account_properties
 * drop billing_sessions
 * drop patreon_claims
 * Rewrite muck notifications to account notifications
-* Remove fullwidth preference setting, code and preference on Accounts page
+* Remove fullwidth preference setting, code and preference on Accounts page since new structure makes it redundant
