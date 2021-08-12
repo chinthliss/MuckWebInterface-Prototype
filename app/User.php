@@ -10,6 +10,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use JetBrains\PhpStorm\ArrayShape;
+use phpDocumentor\Reflection\Types\Mixed_;
 
 /**
  * Class User
@@ -390,6 +391,11 @@ class User implements Authenticatable, MustVerifyEmail
     public function getAccountProperty(string $property)
     {
         return self::getProvider()->getAccountProperty($this, $property);
+    }
+
+    public function setAccountProperty(string $property, $value)
+    {
+        self::getProvider()->setAccountProperty($this, $property, $value);
     }
     #endregion Account Properties
 

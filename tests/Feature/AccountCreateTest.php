@@ -175,5 +175,23 @@ class AccountCreateTest extends TestCase
         $this->assertNotNull($user->createdAt);
         $this->assertNotNull($user->updatedAt);
     }
+
+    public function testNewReferredAccountHasReferralSet()
+    {
+        $this->seed();
+
+        //Check initial visit sets referral on the session
+        $request = $this->get('/?refer=1');
+        $request->assertSessionHas('account.referral', 1);
+
+        // Create account and ensures such is saved
+        $this->json('POST', route('auth.account.create', [
+            'email' => 'testnew@test.com',
+            'password' => 'password'
+        ]));
+        $user = auth()->user();
+        $referredBy = $user->getAccountProperty('tutor');
+        $this->assertEquals(1, $referredBy, "Referral account wasn't set.");
+    }
 }
 

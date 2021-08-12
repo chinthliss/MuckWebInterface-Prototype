@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use App\User as User;
 
 /**
  * Class AccountController
@@ -90,6 +91,7 @@ class AccountController extends Controller
             throw ValidationException::withMessages(['password' => $passwordCheck]);
         }
 
+        /** @var User $user */
         $user = $this->guard()->getProvider()->createAccount($request['email'], $request['password']);
 
         event(new Registered($user));
@@ -98,6 +100,11 @@ class AccountController extends Controller
         $this->guard()->login($user, $remember);
 
         event(new Login($this->guard(), $user, $remember));
+
+        // Set referral on new account if one is in the session
+        if ($request->session()->has('account.referral')) {
+            $user->setAccountProperty('tutor', $request->session()->get('account.referral'));
+        }
 
         $response = array(
             'status' => 'success',

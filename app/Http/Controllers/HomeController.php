@@ -2,10 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
+
 class HomeController extends Controller
 {
-    public function show()
+    public function show(Request $request)
     {
+        if ($request->has('refer')) {
+            $request->session()->put('account.referral', $request->input('refer'));
+        }
         return view('home');
     }
 
@@ -56,11 +62,6 @@ class HomeController extends Controller
             [
                 'title' => 'Character Ordering',
                 'description' => 'Allow the order of characters on character select to be modified - this was requested several times in the past.',
-                'progress' => 'Pending'
-            ],
-            [
-                'title' => 'Referrals',
-                'description' => 'Done as part of following a link when originally created an account. Same as existing, needs to be reimplemented.',
                 'progress' => 'Pending'
             ],
             [
