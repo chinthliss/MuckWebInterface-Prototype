@@ -6,8 +6,8 @@
             <div class="col">
                 <div class="text-center">
                     <h1>Welcome</h1>
-                    <p>The long term intent is to bring both singleplayer and multiplayer into one site.</p>
-                    <p>For example, at the moment there are instances where people land on the multiplayer site and sign up even though they just want singleplayer content.</p>
+                    <p>This is a work-in-progress new site. At some point this whole welcome will be replaced.</p>
+                    <p>This new site is also intended to host singleplayer and multiplayer together since, at the moment, there's occasionally confusion with people ending on the multiplayer site and signing up for an account when they just wanted the singleplayer site.</p>
                     <p>Please see the <a href="{{ route('roadmap') }}">Site Roadmap</a> for more information.</p>
                 </div>
             </div>
