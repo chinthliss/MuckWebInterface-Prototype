@@ -134,7 +134,10 @@ class DatabaseForMuckUserProvider implements UserProvider
         $result = [];
 
         $rows = $this->getRetrievalQuery()
-            ->where('account_emails.email', 'like', '%' . $email . '%')
+            ->where(function ($query) use ($email) {
+                $query->where('account_emails.email', 'like', '%' . $email . '%')
+                    ->orWhere('accounts.email', 'like', '%' . $email . '%');
+            })
             ->get();
 
         foreach ($rows as $row) {
@@ -168,7 +171,7 @@ class DatabaseForMuckUserProvider implements UserProvider
         $result = [];
 
         $rows = $this->getRetrievalQuery()
-            ->whereDate('accounts.created_at',  $date->toDateString())
+            ->whereDate('accounts.created_at', $date->toDateString())
             ->get();
 
         foreach ($rows as $row) {
