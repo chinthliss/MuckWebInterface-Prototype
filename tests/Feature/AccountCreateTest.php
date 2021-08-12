@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\User as User;
 
 class AccountCreateTest extends TestCase
 {
@@ -192,6 +193,10 @@ class AccountCreateTest extends TestCase
         $user = auth()->user();
         $referredBy = $user->getAccountProperty('tutor');
         $this->assertEquals(1, $referredBy, "Referral account wasn't set.");
+
+        //Check account's referral count is correct
+        $referrer = User::find(1);
+        $this->assertEquals(1, $referrer->getReferralCount());
     }
 }
 

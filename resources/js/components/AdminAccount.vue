@@ -15,6 +15,10 @@
                 <dd class="col-sm-10">{{ outputCarbonString(account.lastConnected) }}</dd>
             </div>
             <div class="row">
+                <dt class="col-sm-2">Referrals</dt>
+                <dd class="col-sm-10">{{ account.referrals }}</dd>
+            </div>
+            <div class="row">
                 <dt class="col-sm-2">Characters ({{ muckName }})</dt>
                 <dd class="col-sm-10">
                     <div v-if="!account.characters.length">None</div>

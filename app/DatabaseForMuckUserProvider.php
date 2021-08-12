@@ -422,6 +422,14 @@ class DatabaseForMuckUserProvider implements UserProvider
         return $this->muckConnection->getLastConnect($user->getAid());
     }
 
+    public function getReferralCount(User $user): int
+    {
+        $count = DB::table('account_properties')
+            ->where(['propname' => 'tutor', 'propdata' => $user->getAid()])
+            ->count();
+        return $count;
+    }
+
     #region Properties
 
     public function getAccountProperty(User $user, string $property)

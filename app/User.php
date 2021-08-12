@@ -2,7 +2,6 @@
 
 namespace App;
 
-use App\Helpers\MuckInterop;
 use App\Muck\MuckCharacter;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -10,7 +9,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use JetBrains\PhpStorm\ArrayShape;
-use phpDocumentor\Reflection\Types\Mixed_;
+use MuckInterop;
 
 /**
  * Class User
@@ -296,6 +295,11 @@ class User implements Authenticatable, MustVerifyEmail
         return $this->getProvider()->getAccountLastConnect($this);
     }
 
+    public function getReferralCount(): int
+    {
+        return $this->getProvider()->getReferralCount($this);
+    }
+
     #region Admin functionality
     public function getAccountNotes(): array
     {
@@ -307,6 +311,7 @@ class User implements Authenticatable, MustVerifyEmail
         'created' => "\Carbon\Carbon|null",
         'characters' => "array",
         'notes' => "\App\Admin\AccountNote[]",
+        'referrals' => "int",
         'lastConnected' => "\Carbon\Carbon|null",
         'emails' => "array",
         'primary_email' => "null|string",
@@ -322,7 +327,8 @@ class User implements Authenticatable, MustVerifyEmail
             'id' => $this->getAid(),
             'created' => $this->createdAt,
             'characters' => $characters,
-            'notes' => $this->getProvider()->getAccountNotes($this),
+            'notes' => $this->getAccountNotes(),
+            'referrals' => $this->getReferralCount(),
             'lastConnected' => $this->getLastConnect(),
             'emails' => $this->getEmails(),
             'primary_email' => $this->email,
