@@ -10,7 +10,8 @@ class AccountRolesTest extends TestCase
 {
     use RefreshDatabase;
 
-    private $adminId = 6;
+    private $staffId = 6;
+    private $adminId = 7;
 
     protected function setUp(): void
     {
@@ -80,7 +81,14 @@ class AccountRolesTest extends TestCase
     {
         Auth::loginUsingId($this->adminId);
         $response = $this->get('/admin');
-        $response->assertRedirect();
+        $response->assertSuccessful();
+    }
+
+    public function testStaffCanNotAccessAdminPage()
+    {
+        Auth::loginUsingId($this->staffId);
+        $response = $this->get('/accountcurrency/transactions');
+        $response->assertForbidden();
     }
 }
 

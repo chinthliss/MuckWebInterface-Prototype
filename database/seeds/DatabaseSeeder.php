@@ -124,24 +124,58 @@ class DatabaseSeeder extends Seeder
             'propdata' => TermsOfService::getTermsOfServiceHash()
         ]);
 
-        //Account 6 - Admin account
+        //Account 6 - Staff account
         DB::table('accounts')->insert([
             'aid' => 6,
             'uuid' => '66666666',
-            'email' => 'admin@test.com',
+            'email' => 'staff@test.com',
             'password' => '0A095F587AFCB082:EC2F0D2ACB7788E26E0A36C32C6475C589860589', //password
             'password_type' => 'SHA1SALT'
         ]);
 
         DB::table('account_emails')->insert([
             'aid' => 6,
-            'email' => 'admin@test.com',
+            'email' => 'staff@test.com',
             'verified_at' => Carbon::now()
         ]);
 
         DB::table('account_roles')->insert([
             'aid' => 6,
+            'roles' => 'staff'
+        ]);
+
+        DB::table('account_properties')->insert([
+            'aid' => 6,
+            'propname' => 'tos-hash-viewed',
+            'proptype' => 'STRING',
+            'propdata' => TermsOfService::getTermsOfServiceHash()
+        ]);
+
+        //Account 7 - Admin account
+        DB::table('accounts')->insert([
+            'aid' => 7,
+            'uuid' => '7777777',
+            'email' => 'admin@test.com',
+            'password' => '0A095F587AFCB082:EC2F0D2ACB7788E26E0A36C32C6475C589860589', //password
+            'password_type' => 'SHA1SALT'
+        ]);
+
+        DB::table('account_emails')->insert([
+            'aid' => 7,
+            'email' => 'admin@test.com',
+            'verified_at' => Carbon::now()
+        ]);
+
+        DB::table('account_roles')->insert([
+            'aid' => 7,
             'roles' => 'admin'
+        ]);
+
+        DB::table('account_properties')->insert([
+            'aid' => 7,
+            'propname' => 'tos-hash-viewed',
+            'proptype' => 'STRING',
+            'propdata' => TermsOfService::getTermsOfServiceHash()
         ]);
 
         //Remember to do 'composer dump-autoload' before adding to this

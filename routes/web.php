@@ -158,8 +158,8 @@ Route::prefix('singleplayer')->group(function() {
     });
 });
 
-//Website admin routes
-Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'role:admin']], function() {
+//Website staff routes e.g. Game staff functionality
+Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'role:staff']], function() {
     Route::get('admin', [AdminController::class, 'show'])
         ->name('admin.home');
 
@@ -169,11 +169,10 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
         ->name('admin.accounts.api');
     Route::get('admin/account/{accountId}', [AdminController::class, 'showAccount'])
         ->name('admin.account');
+});
 
-    Route::get('admin/logs', [AdminController::class, 'showLogViewer'])
-        ->name('admin.logs');
-    Route::get('admin/logs/{date}', [AdminController::class, 'getLogForDate']);
-
+//Website admin routes e.g. Site admin functionality
+Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'role:admin']], function() {
     Route::get('accountcurrency/subscriptions', [AccountCurrencyController::class, 'adminViewSubscriptions'])
         ->name('admin.subscriptions');
     Route::get('accountcurrency/subscriptions/api', [AccountCurrencyController::class, 'adminGetSubscriptions'])
@@ -188,6 +187,10 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
         ->name('admin.patrons');
     Route::get('admin/patreons/api', [PatreonController::class, 'adminGetPatrons'])
         ->name('admin.patrons.api'); //TODO: Replace with api call
+
+    Route::get('admin/logs', [AdminController::class, 'showLogViewer'])
+        ->name('admin.logs');
+    Route::get('admin/logs/{date}', [AdminController::class, 'getLogForDate']);
 
 });
 
