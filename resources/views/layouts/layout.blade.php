@@ -31,6 +31,9 @@
 
     <!-- Styles -->
     <link href="{{ mix('css/app.css') }}" rel="stylesheet">
+
+    <!-- FavIcons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url('/favicon32.png') }}">
 </head>
 <body>
 <!-- Top header -->
