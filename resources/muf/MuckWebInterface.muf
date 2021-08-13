@@ -293,6 +293,9 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     (Does account own character?)
     character @ acct_any2aid aid @ = not if response401 exit then
     
+    (Not going to allow wizard passwords to be reset by an external interface for now)
+    character @ mlevel 3 > if response401 exit then
+    
     startAcceptedResponse
     "[MWI Gateway] Changed password of " character @ unparseobj strcat " due to request by account " strcat aid @ intostr strcat logStatus
     character @ password @ newpassword
