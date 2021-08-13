@@ -25,7 +25,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        // Add the capability of blade views to tell if user is an Admin
+        // Add the capability of blade views to tell if user is Game Staff
+        Blade::if('Staff', function() {
+            /** @var User $user */
+            $user = auth()->user();
+            return $user && $user->hasRole('staff');
+        });
+
+        // Add the capability of blade views to tell if user is Site Admin
         Blade::if('Admin', function() {
             /** @var User $user */
             $user = auth()->user();

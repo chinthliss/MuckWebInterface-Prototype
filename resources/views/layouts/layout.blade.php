@@ -118,9 +118,13 @@
                 <a class="nav-link" href="{{ route('multiplayer.avatar') }}">Avatar</a>
                 <a class="nav-link" href="{{ route('accountcurrency') }}">Buy {{ Lex::get('accountcurrency') }}</a>
 
-                @Admin
-                <h4 class="nav-link mt-2 pl-0"><a href="{{ route('admin.home') }}">Admin</a></h4>
+                @Staff
+                <h4 class="nav-link mt-2 pl-0"><a href="{{ route('admin.home') }}">Game Staff</a></h4>
                 <a class="nav-link" href="{{ route('admin.accounts') }}">Account Browser</a>
+                @endStaff
+
+                @Admin
+                <h4 class="nav-link mt-2 pl-0"><a href="{{ route('admin.home') }}">Site Admin</a></h4>
                 <a class="nav-link" href="{{ route('admin.logs') }}">Site Log Viewer</a>
                 <a class="nav-link" href="{{ route('admin.patrons') }}">Patreon Supporter Browser</a>
                 <a class="nav-link" href="{{ route('admin.subscriptions') }}">Payment Subscriptions</a>
