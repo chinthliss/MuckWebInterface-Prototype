@@ -22,9 +22,9 @@
         <title>@yield('title') ({{ config('app.name', 'MuckWebInterface') }})</title>
     @else
         <title>{{ config('app.name', 'MuckWebInterface') }}</title>
-@endif
+    @endif
 
-<!-- Scripts -->
+    <!-- Scripts -->
     <script src="{{ mix('js/manifest.js') }}"></script>
     <script src="{{ mix('js/vendor.js') }}"></script>
     <script src="{{ mix('js/app.js') }}"></script>
