@@ -115,10 +115,6 @@ export default {
                 names.push(character.name)
             }
             return names.join(', ');
-        },
-        outputCarbonString: function (carbonString) {
-            if (!carbonString) return '--';
-            return new Date(carbonString).toLocaleString();
         }
     }
 }

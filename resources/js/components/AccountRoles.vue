@@ -47,10 +47,6 @@ export default {
     },
 
     methods: {
-        outputCarbonString: function (carbonString) {
-            if (!carbonString) return '--';
-            return new Date(carbonString).toLocaleString();
-        },
         outputArrayAsList: function (arrayToOutput) {
             if (!Array.isArray(arrayToOutput) || arrayToOutput.length === 0) return '--';
             return arrayToOutput.join(', ');

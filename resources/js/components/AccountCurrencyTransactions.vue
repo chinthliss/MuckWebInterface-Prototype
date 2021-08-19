@@ -40,10 +40,6 @@ export default {
     name: "account-currency-transactions",
     props: ['transactions', 'transaction-view'],
     methods: {
-        outputCarbonString: function (carbonString) {
-            if (!carbonString) return '--';
-            return new Date(carbonString).toLocaleString();
-        }
     }
 }
 </script>

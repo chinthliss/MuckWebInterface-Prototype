@@ -122,10 +122,6 @@ export default {
             if (this.filter.filterOnAccount === 'no' && accountId) show = false;
             return show;
         },
-        outputCarbonString: function (carbonString) {
-            if (!carbonString) return '--';
-            return new Date(carbonString).toLocaleString();
-        }
     },
 
     mounted: function () {

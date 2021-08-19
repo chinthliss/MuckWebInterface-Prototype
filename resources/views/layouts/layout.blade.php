@@ -189,6 +189,10 @@
         methods: {
             lex: (word) => {
                 return lex(word);
+            },
+            outputCarbonString: (carbonString) => {
+                if (!carbonString) return '--';
+                return new Date(carbonString).toLocaleString();
             }
         }
     });

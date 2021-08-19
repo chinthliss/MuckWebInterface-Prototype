@@ -96,10 +96,6 @@ export default {
         this.getContent();
     },
     methods: {
-        outputCarbonString: function (carbonString) {
-            if (!carbonString) return '--';
-            return new Date(carbonString).toLocaleString();
-        },
         getContent: function () {
             this.loadingContent = true;
             let promise = axios.get(this.apiUrl);

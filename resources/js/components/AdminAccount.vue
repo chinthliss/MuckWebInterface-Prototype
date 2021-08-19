@@ -73,10 +73,6 @@ export default {
     },
     computed: {},
     methods: {
-        outputCarbonString: function (carbonString) {
-            if (!carbonString) return '--';
-            return new Date(carbonString).toLocaleString();
-        }
     }
 }
 </script>

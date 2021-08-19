@@ -137,10 +137,6 @@ export default {
 
             return true;
         },
-        outputCarbonString: function (carbonString) {
-            if (!carbonString) return '--';
-            return new Date(carbonString).toLocaleString();
-        },
         outputUsd: function (usd) {
             if (!usd) return '--';
             return '$' + usd;
