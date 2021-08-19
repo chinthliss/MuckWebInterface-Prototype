@@ -188,6 +188,9 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
     Route::get('admin/patreons/api', [PatreonController::class, 'adminGetPatrons'])
         ->name('admin.patrons.api'); //TODO: Replace with api call
 
+    Route::get('admin/roles', [AdminController::class, 'showAccountRoles'])
+        ->name('admin.roles');
+
     Route::get('admin/logs', [AdminController::class, 'showLogViewer'])
         ->name('admin.logs');
     Route::get('admin/logs/{date}', [AdminController::class, 'getLogForDate']);

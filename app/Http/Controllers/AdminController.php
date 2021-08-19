@@ -23,6 +23,11 @@ class AdminController extends Controller
         ]);
     }
 
+    public function getLogForDate(string $date)
+    {
+        return response()->file(LogManager::getLogFilePathForDate($date));
+    }
+
     public function showAccount(int $accountId)
     {
         $user = User::find($accountId);
@@ -88,8 +93,16 @@ class AdminController extends Controller
         return $parsedResults;
     }
 
-    public function getLogForDate(string $date)
+    public function showAccountRoles(DatabaseForMuckUserProvider $userProvider)
     {
-        return response()->file(LogManager::getLogFilePathForDate($date));
+        $roles = $userProvider->getAllRoles();
+        $users = [];
+        foreach ($roles as $role) {
+            $users[] = $role->toAdminArray();
+        }
+        return view('admin.accountroles')->with([
+            'users' => $users
+        ]);
     }
+
 }

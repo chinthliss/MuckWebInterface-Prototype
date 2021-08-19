@@ -121,6 +121,7 @@
                 @Staff
                 <h4 class="nav-link mt-2 pl-0"><a href="{{ route('admin.home') }}">Game Staff</a></h4>
                 <a class="nav-link" href="{{ route('admin.accounts') }}">Account Browser</a>
+                <a class="nav-link" href="{{ route('admin.roles') }}">Account Roles List</a>
                 @endStaff
 
                 @Admin

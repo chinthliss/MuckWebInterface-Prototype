@@ -218,6 +218,19 @@ class DatabaseForMuckUserProvider implements UserProvider
     }
 
     /**
+     * @return User[]
+     */
+    public function getAllRoles() : array
+    {
+        $rows = DB::table('account_roles')->get();
+        $users = [];
+        foreach ($rows as $row) {
+            $users[] = User::find($row->aid);
+        }
+        return $users;
+    }
+
+    /**
      * @param User $user
      * @param string $token
      */

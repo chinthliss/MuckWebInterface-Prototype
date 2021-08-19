@@ -315,6 +315,7 @@ class User implements Authenticatable, MustVerifyEmail
         'lastConnected' => "\Carbon\Carbon|null",
         'emails' => "array",
         'primary_email' => "null|string",
+        'roles' => 'array',
         'url' => "string"
     ])]
     public function toAdminArray(): array
@@ -323,6 +324,9 @@ class User implements Authenticatable, MustVerifyEmail
         foreach ($this->getCharacters() as $character) {
             array_push($characters, $character->toArray());
         }
+
+        $this->loadRolesIfRequired();
+
         return [
             'id' => $this->getAid(),
             'created' => $this->createdAt,
@@ -332,6 +336,7 @@ class User implements Authenticatable, MustVerifyEmail
             'lastConnected' => $this->getLastConnect(),
             'emails' => $this->getEmails(),
             'primary_email' => $this->email,
+            'roles' => $this->roles,
             'url' => route('admin.account', ['accountId' => $this->getAid()])
         ];
     }
@@ -415,10 +420,15 @@ class User implements Authenticatable, MustVerifyEmail
 
     public function hasRole(string $role): bool
     {
-        if ($this->roles == null) $this->getProvider()->loadRolesFor($this);
+        $this->loadRolesIfRequired();
 
         //Admin role has every role
         return in_array($role, $this->roles) || in_array('admin', $this->roles);
+    }
+
+    private function loadRolesIfRequired()
+    {
+        if ($this->roles == null) $this->getProvider()->loadRolesFor($this);
     }
     #endregion Roles
 
