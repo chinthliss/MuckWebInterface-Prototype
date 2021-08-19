@@ -59,7 +59,7 @@ export default {
             if (!Array.isArray(characterArray) || characterArray.length === 0) return '--';
             console.log("Running for", characterArray);
             let characters = characterArray.reduce((list, current) => {
-                list.push(current.name);
+                if (current.wizard) list.push(current.name);
                 return list;
             }, []);
             return this.outputArrayAsList(characters);
