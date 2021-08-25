@@ -14,6 +14,10 @@
                 <dt class="col-sm-2">Last Connected</dt>
                 <dd class="col-sm-10">{{ outputCarbonString(account.lastConnected) }}</dd>
             </div>
+            <div class="row bg-danger" v-if="account.locked">
+                <dt class="col-sm-2">Locked</dt>
+                <dd class="col-sm-10">{{ outputCarbonString(account.locked) }}</dd>
+            </div>
             <div class="row">
                 <dt class="col-sm-2">Referrals</dt>
                 <dd class="col-sm-10">{{ account.referrals }}</dd>

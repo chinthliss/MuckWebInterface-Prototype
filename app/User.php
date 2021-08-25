@@ -35,6 +35,7 @@ class User implements Authenticatable, MustVerifyEmail
     // These are public since they're not stored past the request
     public ?Carbon $createdAt = null;
     public ?Carbon $updatedAt = null;
+    public ?Carbon $lockedAt = null;
     public bool $emailVerified = false; // Only for primary email. Temporary.
 
     /**
@@ -64,6 +65,7 @@ class User implements Authenticatable, MustVerifyEmail
         if (property_exists($query, 'verified_at') && $query->verified_at) $user->emailVerified = true;
         if (property_exists($query, 'created_at') && $query->created_at) $user->createdAt = new Carbon($query->created_at);
         if (property_exists($query, 'updated_at') && $query->updated_at) $user->updatedAt = new Carbon($query->updated_at);
+        if (property_exists($query, 'locked_at') && $query->locked_at) $user->lockedAt = new Carbon($query->locked_at);
         return $user;
     }
 
@@ -316,6 +318,7 @@ class User implements Authenticatable, MustVerifyEmail
         'emails' => "array",
         'primary_email' => "null|string",
         'roles' => 'array',
+        'locked' => '\Carbon\Carbon|null',
         'url' => "string"
     ])]
     public function toAdminArray(): array
@@ -337,6 +340,7 @@ class User implements Authenticatable, MustVerifyEmail
             'emails' => $this->getEmails(),
             'primary_email' => $this->email,
             'roles' => $this->roles,
+            'locked' => $this->lockedAt,
             'url' => route('admin.account', ['accountId' => $this->getAid()])
         ];
     }

@@ -24,6 +24,7 @@ class CreateAccountsTable extends Migration
                 //These are nullable due to existing nulls in production DB
                 $table->timestamp('created_at')->nullable()->useCurrent();
                 $table->timestamp('updated_at')->nullable()->useCurrent();
+                $table->timestamp('locked_at')->nullable();
                 $table->rememberToken()->unique();
             });
         }
@@ -36,6 +37,6 @@ class CreateAccountsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('accounts');
+        throw new Error("Can not reverse this migration. Use 'artisan migrate:fresh --seed' for testing.");
     }
 }
