@@ -13,17 +13,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // $this->call(UsersTableSeeder::class);
 
+        // ****************************************
         //Account 1 - Validated user account that's accepted TOS
+        $validAid = 1;
         DB::table('accounts')->insert([
-            'aid' => 1,
+            'aid' => $validAid,
             'uuid' => '11111111',
             'email' => 'test@test.com',
             'password' => '0A095F587AFCB082:EC2F0D2ACB7788E26E0A36C32C6475C589860589', //password
             'password_type' => 'SHA1SALT'
         ]);
-        $validAid = DB::table('accounts')->where('email', 'test@test.com')->first()->aid;
 
         DB::table('account_emails')->insert([
             'aid' => $validAid,
@@ -49,40 +49,46 @@ class DatabaseSeeder extends Seeder
             'propdata' => TermsOfService::getTermsOfServiceHash()
         ]);
 
+
+        // ****************************************
         // Account 2 - unverified
+        $unverifiedAid = 2;
         DB::table('accounts')->insert([
-            'aid' => 2,
+            'aid' => $unverifiedAid,
             'uuid' => '22222222',
             'email' => 'testunverified@test.com',
             'password' => '0A095F587AFCB082:EC2F0D2ACB7788E26E0A36C32C6475C589860589', //password
             'password_type' => 'SHA1SALT'
         ]);
 
-        $unverifiedAid = DB::table('accounts')->where('email', 'testunverified@test.com')->first()->aid;
-
         DB::table('account_emails')->insert([
             'aid' => $unverifiedAid,
             'email' => 'testunverified@test.com'
         ]);
 
+
+        // ****************************************
         // Account 3 - unverified and account_emails record is missing
+        $unverifiedAndNoEmailRecordAid = 3;
         DB::table('accounts')->insert([
-            'aid' => 3,
+            'aid' => $unverifiedAndNoEmailRecordAid,
             'uuid' => '33333333',
             'email' => 'testbrokenunverified@test.com',
             'password' => '0A095F587AFCB082:EC2F0D2ACB7788E26E0A36C32C6475C589860589', //password
             'password_type' => 'SHA1SALT'
         ]);
 
-        //Acount 4 - verified but hasn't accepted TOS
+
+        // ****************************************
+        // Acount 4 - verified but hasn't accepted TOS
+        $notAgreedToTosAid = 4;
         DB::table('accounts')->insert([
-            'aid' => 4,
+            'aid' => $notAgreedToTosAid,
             'uuid' => '44444444',
             'email' => 'notagreedtotos@test.com',
             'password' => '0A095F587AFCB082:EC2F0D2ACB7788E26E0A36C32C6475C589860589', //password
             'password_type' => 'SHA1SALT'
         ]);
-        $notAgreedToTosAid = DB::table('accounts')->where('email', 'notagreedtotos@test.com')->first()->aid;
 
         DB::table('account_emails')->insert([
             'aid' => $notAgreedToTosAid,
@@ -97,9 +103,12 @@ class DatabaseSeeder extends Seeder
             'propdata' => 'OldHash'
         ]);
 
-        //Account 5 - Second validated user, with the role of other_role
+
+        // ****************************************
+        // Account 5 - Second validated user, with the role of other_role
+        $validWithOtherRoleAid = 5;
         DB::table('accounts')->insert([
-            'aid' => 5,
+            'aid' => $validWithOtherRoleAid,
             'uuid' => '55555555',
             'email' => 'secondvalid@test.com',
             'password' => '0A095F587AFCB082:EC2F0D2ACB7788E26E0A36C32C6475C589860589', //password
@@ -107,26 +116,29 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table('account_roles')->insert([
-            'aid' => 5,
+            'aid' => $validWithOtherRoleAid,
             'roles' => 'other_role'
         ]);
 
         DB::table('account_emails')->insert([
-            'aid' => 5,
+            'aid' => $validWithOtherRoleAid,
             'email' => 'secondvalid@test.com',
             'verified_at' => Carbon::now()
         ]);
 
         DB::table('account_properties')->insert([
-            'aid' => 5,
+            'aid' => $validWithOtherRoleAid,
             'propname' => 'tos-hash-viewed',
             'proptype' => 'STRING',
             'propdata' => TermsOfService::getTermsOfServiceHash()
         ]);
 
-        //Account 6 - Staff account
+
+        // ****************************************
+        // Account 6 - Staff account
+        $staffAccountAid = 6;
         DB::table('accounts')->insert([
-            'aid' => 6,
+            'aid' => $staffAccountAid,
             'uuid' => '66666666',
             'email' => 'staff@test.com',
             'password' => '0A095F587AFCB082:EC2F0D2ACB7788E26E0A36C32C6475C589860589', //password
@@ -134,26 +146,29 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table('account_emails')->insert([
-            'aid' => 6,
+            'aid' => $staffAccountAid,
             'email' => 'staff@test.com',
             'verified_at' => Carbon::now()
         ]);
 
         DB::table('account_roles')->insert([
-            'aid' => 6,
+            'aid' => $staffAccountAid,
             'roles' => 'staff'
         ]);
 
         DB::table('account_properties')->insert([
-            'aid' => 6,
+            'aid' => $staffAccountAid,
             'propname' => 'tos-hash-viewed',
             'proptype' => 'STRING',
             'propdata' => TermsOfService::getTermsOfServiceHash()
         ]);
 
-        //Account 7 - Admin account
+
+        // ****************************************
+        // Account 7 - Admin account
+        $adminAccountAid = 7;
         DB::table('accounts')->insert([
-            'aid' => 7,
+            'aid' => $adminAccountAid,
             'uuid' => '7777777',
             'email' => 'admin@test.com',
             'password' => '0A095F587AFCB082:EC2F0D2ACB7788E26E0A36C32C6475C589860589', //password
@@ -161,22 +176,49 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table('account_emails')->insert([
-            'aid' => 7,
+            'aid' => $adminAccountAid,
             'email' => 'admin@test.com',
             'verified_at' => Carbon::now()
         ]);
 
         DB::table('account_roles')->insert([
-            'aid' => 7,
+            'aid' => $adminAccountAid,
             'roles' => 'admin'
         ]);
 
         DB::table('account_properties')->insert([
-            'aid' => 7,
+            'aid' => $adminAccountAid,
             'propname' => 'tos-hash-viewed',
             'proptype' => 'STRING',
             'propdata' => TermsOfService::getTermsOfServiceHash()
         ]);
+
+
+        // ****************************************
+        // Account 8 - banned Account
+        $bannedAccountAid = 8;
+        DB::table('accounts')->insert([
+            'aid' => $bannedAccountAid,
+            'uuid' => '88888888',
+            'email' => 'banned@test.com',
+            'password' => '0A095F587AFCB082:EC2F0D2ACB7788E26E0A36C32C6475C589860589', //password
+            'password_type' => 'SHA1SALT',
+            'locked_at' => Carbon::now()
+        ]);
+
+        DB::table('account_emails')->insert([
+            'aid' => $bannedAccountAid,
+            'email' => 'banned@test.com',
+            'verified_at' => Carbon::now()
+        ]);
+
+        DB::table('account_properties')->insert([
+            'aid' => $bannedAccountAid,
+            'propname' => 'tos-hash-viewed',
+            'proptype' => 'STRING',
+            'propdata' => TermsOfService::getTermsOfServiceHash()
+        ]);
+
 
         //Remember to do 'composer dump-autoload' before adding to this
         $this->call([
