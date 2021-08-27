@@ -20,7 +20,43 @@ use App\Http\Controllers\Payment\PatreonController;
 use App\Http\Controllers\Payment\PayPalController;
 use App\Http\Controllers\HomeController;
 
-//Only available when NOT logged in
+/*
+|--------------------------------------------------------------------------
+| Pages that are always available
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/', [HomeController::class, 'show'])
+    ->name('home');
+
+//Character Profiles
+Route::get('c/{characterName}', [MultiplayerController::class, 'showCharacter'])
+    ->name('multiplayer.character.view');
+
+//Multiplayer getting started - always available since it gives instructions on creating an account.
+Route::get('multiplayer/gettingstarted', [MultiplayerController::class, 'showGettingStarted'])
+    ->name('multiplayer.gettingstarted');
+
+//Terms of service - always viewable, does challenge if logged in.
+Route::get('account/termsofservice', [TermsOfServiceController::class, 'view'])
+    ->name('auth.account.termsofservice');
+Route::post('account/termsofservice', [TermsOfServiceController::class, 'accept']);
+
+//Paypal Notifications - this route is exempt from CSRF token. Controlled in the middleware.
+Route::post('accountcurrency/paypal_webhook', [PayPalController::class, 'paypalWebhook']);
+
+Route::get('/roadmap', [HomeController::class, 'showRoadmap'])
+    ->name('roadmap');
+
+Route::get('/accountlocked', [AccountController::class, 'lockedAccount'])
+    ->name('auth.account.locked');
+
+/*
+|--------------------------------------------------------------------------
+| Pages that are available when NOT logged in
+|--------------------------------------------------------------------------
+*/
+
 Route::group(['middleware' => ['web', 'guest']], function() {
     Route::get('login', [AccountController::class, 'showLoginForm'])
         ->name('login');
@@ -40,7 +76,11 @@ Route::group(['middleware' => ['web', 'guest']], function() {
         ->middleware('signed', 'throttle:8,1');
 });
 
-//Requires an account but DOESN'T require verification or Terms of Service acceptance
+/*
+|--------------------------------------------------------------------------
+| Pages that require a login but doesn't need verification or the TOS to be agreed to.
+|--------------------------------------------------------------------------
+*/
 Route::group(['middleware' => ['web', 'auth:account']], function() {
     Route::post('logout', [AccountController::class, 'logout'])->name('logout');
     Route::get('account/verifyemail', [AccountEmailController::class, 'show'])
@@ -51,7 +91,11 @@ Route::group(['middleware' => ['web', 'auth:account']], function() {
         ->name('auth.account.resendverifyemail')->middleware('throttle:8,1');
 });
 
-//Requires account, verification and terms of service acceptance
+/*
+|--------------------------------------------------------------------------
+| Core pages that require a verified account and the TOS agreed to
+|--------------------------------------------------------------------------
+*/
 Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']], function() {
 
     //Account
@@ -118,8 +162,15 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
         ->name('accountcurrency.paypal.subscription.return');
     Route::get('accountcurrency/paypal_subscription_cancel', [PayPalController::class, 'paypalSubscriptionCancel'])
         ->name('accountcurrency.paypal.subscription.cancel');
+});
 
-    //Multiplayer core - these don't require an active approved character
+/*
+|--------------------------------------------------------------------------
+| Multiplayer content that doesn't require a character
+|--------------------------------------------------------------------------
+*/
+Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'not.locked']], function() {
+
     Route::get('multiplayer', [MultiplayerController::class, 'showMultiplayerDashboard'])
         ->name('multiplayer.home');
 
@@ -141,15 +192,23 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
     Route::post('multiplayer/changeCharacterPassword', [MultiplayerController::class, 'changeCharacterPassword']);
 });
 
-// Multiplayer content - Requires an active character, along with account, verification and terms of service acceptance
-Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'character']], function() {
+/*
+|--------------------------------------------------------------------------
+| Multiplayer content that requires a character
+|--------------------------------------------------------------------------
+*/
+Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'not.locked', 'character']], function() {
     Route::get('multiplayer/avatar', [MultiplayerController::class, 'showAvatarEditor'])
         ->name('multiplayer.avatar');
     Route::get('multiplayer/connect', [MultiplayerController::class, 'showConnect'])
         ->name('multiplayer.connect');
 });
 
-// Singleplayer content
+/*
+|--------------------------------------------------------------------------
+| Singleplayer content
+|--------------------------------------------------------------------------
+*/
 Route::prefix('singleplayer')->group(function() {
     //No additional middleware required
     Route::group(['middleware' => ['web']], function () {
@@ -158,7 +217,11 @@ Route::prefix('singleplayer')->group(function() {
     });
 });
 
-//Website staff routes e.g. Game staff functionality
+/*
+|--------------------------------------------------------------------------
+| Game Staff pages
+|--------------------------------------------------------------------------
+*/
 Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'role:staff']], function() {
     Route::get('admin', [AdminController::class, 'show'])
         ->name('admin.home');
@@ -171,7 +234,11 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
         ->name('admin.account');
 });
 
-//Website admin routes e.g. Site admin functionality
+/*
+|--------------------------------------------------------------------------
+| Website admin pages
+|--------------------------------------------------------------------------
+*/
 Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'role:admin']], function() {
     Route::get('accountcurrency/subscriptions', [AccountCurrencyController::class, 'adminViewSubscriptions'])
         ->name('admin.subscriptions');
@@ -196,28 +263,3 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
     Route::get('admin/logs/{date}', [AdminController::class, 'getLogForDate']);
 
 });
-
-//----------------------------------------
-//Always available
-
-Route::get('/', [HomeController::class, 'show'])
-    ->name('home');
-
-//Character Profiles
-Route::get('c/{characterName}', [MultiplayerController::class, 'showCharacter'])
-    ->name('multiplayer.character.view');
-
-//Multiplayer getting started - always available since it gives instructions on creating an account.
-Route::get('multiplayer/gettingstarted', [MultiplayerController::class, 'showGettingStarted'])
-    ->name('multiplayer.gettingstarted');
-
-//Terms of service - always viewable, does challenge if logged in.
-Route::get('account/termsofservice', [TermsOfServiceController::class, 'view'])
-    ->name('auth.account.termsofservice');
-Route::post('account/termsofservice', [TermsOfServiceController::class, 'accept']);
-
-Route::get('/roadmap', [HomeController::class, 'showRoadmap'])
-    ->name('roadmap');
-
-//Paypal Notifications - this route is exempt from CSRF token. Controlled in the middleware.
-Route::post('accountcurrency/paypal_webhook', [PayPalController::class, 'paypalWebhook']);

@@ -126,6 +126,15 @@ class AccountController extends Controller
         return redirect()->route('login');
     }
 
+    public function lockedAccount(Request $request)
+    {
+        //Ensure the account is actually locked!
+        /** @var User $user */
+        $user = $this->guard()->user();
+        if (!$user || !$user->lockedAt) return redirect()->route('home');
+        return view('auth.account-locked');
+    }
+
     /**
      * Update and save a preference
      */

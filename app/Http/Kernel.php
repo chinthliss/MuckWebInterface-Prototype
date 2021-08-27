@@ -2,6 +2,7 @@
 
 namespace App\Http;
 
+use App\Http\Middleware\RedirectIfLocked;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
@@ -68,6 +69,7 @@ class Kernel extends HttpKernel
         'tos.agreed' => \App\Http\Middleware\TermsOfServiceAgreed::class,
         'role' => \App\Http\Middleware\HasRole::class,
         'character' => \App\Http\Middleware\HasApprovedCharacterSet::class,
+        'not.locked' => RedirectIfLocked::class
     ];
 
     /**

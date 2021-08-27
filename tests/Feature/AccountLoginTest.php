@@ -179,4 +179,26 @@ class AccountLoginTest extends TestCase
         }
         $response->assertStatus(429);
     }
+
+    public function testUnlockedUserCanReachPage()
+    {
+        $this->loginAsValidatedUser();
+        $request = $this->followingRedirects()->get(route('multiplayer.home'));
+        $request->assertViewIs('multiplayer.home');
+    }
+
+    public function testLockedUserIsRedirectedToLockedPage()
+    {
+        $this->loginAsLockedUser();
+        $request = $this->followingRedirects()->get(route('multiplayer.home'));
+        $request->assertViewIs('auth.account-locked');
+    }
+
+    public function testUnlockedUserDoesNotSeeLockedPage()
+    {
+        $this->loginAsValidatedUser();
+        $request = $this->followingRedirects()->get(route('auth.account.locked'));
+        $request->assertViewIs('home');
+    }
+
 }
