@@ -49,7 +49,9 @@ class DatabaseForMuckUserProvider implements UserProvider
             ->leftJoin('account_emails', 'account_emails.email', '=', 'accounts.email');
     }
 
-    //Used when user is logged in, called with accountId (aid)
+    /**
+     * @inheritDoc
+     */
     public function retrieveById($identifier)
     {
         Log::debug('UserProvider RetrieveById attempt for ' . $identifier);
@@ -59,15 +61,13 @@ class DatabaseForMuckUserProvider implements UserProvider
             ->first();
         if (!$accountQuery) return null;
         $user = User::fromDatabaseResponse($accountQuery);
-        //See if a character is saved by the session - this may be overridden later by the present page
-        $characterDbref = session('lastCharacterDbref');
-        if ($characterDbref && $user->getCharacters()->has($characterDbref)) {
-            $user->setCharacter($user->getCharacters()[$characterDbref]);
-        }
         Log::debug('UserProvider RetrieveById result for ' . $identifier . ', result = ' . $user->getAid());
         return $user;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function retrieveByToken($identifier, $token)
     {
         Log::debug('UserProvider RetrieveByToken attempt for ' . $identifier . ':' . $token);
@@ -81,6 +81,9 @@ class DatabaseForMuckUserProvider implements UserProvider
         } else return null;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function retrieveByCredentials(array $credentials)
     {
         Log::debug('UserProvider RetrieveByCredentials attempt for ' . json_encode($this->redactCredentials($credentials)));
@@ -117,10 +120,11 @@ class DatabaseForMuckUserProvider implements UserProvider
     /**
      * Function to find an account by any email, not just the primary one.
      * @param string $email
-     * @return int|null AccountID
+     * @return User|null User
      */
     public function retrieveByAnyEmail(string $email): ?User
     {
+        Log::debug('UserProvider RetrieveByAnyEmail attempt for ' . $email);
         $accountId = DB::table('account_emails')
             ->where('account_emails.email', '=', $email)
             ->value('aid');
