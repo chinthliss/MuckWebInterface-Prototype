@@ -30,6 +30,12 @@ class DatabaseForMuckUserProvider implements UserProvider
         $this->muckConnection = $muckConnection;
     }
 
+    private function redactCredentials(array $credentials) : array
+    {
+        if (array_key_exists('password', $credentials)) $credentials['password'] = '********';
+        return $credentials;
+    }
+
     #region Retrieval
 
     /**
@@ -77,7 +83,7 @@ class DatabaseForMuckUserProvider implements UserProvider
 
     public function retrieveByCredentials(array $credentials)
     {
-        Log::debug('UserProvider RetrieveByCredentials attempt for ' . json_encode($credentials));
+        Log::debug('UserProvider RetrieveByCredentials attempt for ' . json_encode($this->redactCredentials($credentials)));
         //If it's an email address we can try the database
         if (array_key_exists('email', $credentials) && strpos($credentials['email'], '@')) {
             $accountQuery = $this->getRetrievalQuery()
@@ -252,7 +258,7 @@ class DatabaseForMuckUserProvider implements UserProvider
     public function validateCredentials($user, array $credentials): bool
     {
         // return Hash::check($credentials['password'], $user->getAuthPassword());
-        Log::debug('UserProvider ValidateCredentials for ' . $user->getAid() . ' with ' . json_encode($credentials));
+        Log::debug('UserProvider ValidateCredentials for ' . $user->getAid() . ' with ' . json_encode($this->redactCredentials($credentials)));
         //Try the database retrieved details first
         if (method_exists($user, 'getPasswordType')
             && $user->getPasswordType() == 'SHA1SALT'

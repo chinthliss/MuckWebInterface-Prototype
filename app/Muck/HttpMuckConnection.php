@@ -34,6 +34,12 @@ class HttpMuckConnection implements MuckConnection
         $this->uri = $config['uri'];
     }
 
+    private function redactForLog(array $credentials) : array
+    {
+        if (array_key_exists('password', $credentials)) $credentials['password'] = '********';
+        return $credentials;
+    }
+
     /**
      * @param string $request
      * @param array $data
@@ -42,7 +48,7 @@ class HttpMuckConnection implements MuckConnection
      */
     protected function requestFromMuck(string $request, array $data = []): string
     {
-        Log::debug('requestFromMuck:' . $request . ', request: ' . json_encode($data));
+        Log::debug('requestFromMuck:' . $request . ', request: ' . json_encode($this->redactForLog($data)));
         $data['mwi_request'] = $request;
         $data['mwi_timestamp'] = Carbon::now()->timestamp; //This is to ensure that repeated requests don't match
         $signature = sha1(http_build_query($data) . $this->salt);
