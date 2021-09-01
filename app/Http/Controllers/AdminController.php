@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Admin\LogManager;
 use App\DatabaseForMuckUserProvider;
-use App\Muck\MuckConnection;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;

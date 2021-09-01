@@ -3,9 +3,6 @@
 
 namespace App\Admin;
 
-
-use phpDocumentor\Reflection\File;
-
 class LogManager
 {
     /**
@@ -22,7 +19,7 @@ class LogManager
         return $dates;
     }
 
-    public static function getLogFilePathForDate(string $date)
+    public static function getLogFilePathForDate(string $date): string
     {
         return storage_path('logs/') . 'laravel-' . $date . '.log';
     }

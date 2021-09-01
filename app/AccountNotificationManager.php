@@ -54,7 +54,7 @@ class AccountNotificationManager
         return $result;
     }
 
-    public function getNotification(int $id)
+    public function getNotification(int $id) : object
     {
         return $this->storageTable()->where('id', '=', $id)->first();
     }
