@@ -49,6 +49,8 @@ class LoadActiveCharacter
                 if ($character) {
                     Log::debug("MultiplayerCharacter requested $characterDbref - accepted.");
                     $user->setCharacter($character);
+                    // For the future? Add a context to all related log calls
+                    // Log::withContext(['character' => $character->getName()];
                 }
                 else {
                     Log::debug("MultiplayerCharacter requested $characterDbref - rejected, clearing cookie.");
