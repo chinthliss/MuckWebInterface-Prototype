@@ -48,7 +48,7 @@
             @else
                 @Character
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ route('home') }}">
+                    <a class="nav-link" href="{{ route('multiplayer.character.select') }}">
                         {{ Auth::user()->getCharacterName() }}
                     </a>
                 </li>
