@@ -17,7 +17,7 @@ class CreateMuckObjectsTable extends Migration
             $table->id('id');
             $table->tinyInteger('game_code');
             $table->integer('dbref');
-            $table->timestamp('created_at');
+            $table->timestamp('created_at')->default(null); // Stops DB from auto-populating 'on update'
             $table->enum('type', ['player', 'room', 'thing']);
 
             $table->bigInteger('aid')->nullable();
