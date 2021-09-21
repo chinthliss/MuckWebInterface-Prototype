@@ -253,7 +253,7 @@ class MultiplayerController extends Controller
 
         $result = $muck->changeCharacterPassword($user, $character, $request['password']);
         if ($result) {
-            $request->session()->flash('message-success', "The password for {$character->getName()} was changed as requested. You can now use this password to logon via a telnet client.");
+            $request->session()->flash('message-success', "The password for {$character->name()} was changed as requested. You can now use this password to logon via a telnet client.");
             return redirect(route('multiplayer.character.select'));
         }
         else throw ValidationException::withMessages(['character'=>["Something went wrong, if this continues please notify staff."]]);

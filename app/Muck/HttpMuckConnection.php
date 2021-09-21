@@ -80,7 +80,7 @@ class HttpMuckConnection implements MuckConnection
         foreach (explode(chr(13) . chr(10), $response) as $line) {
             if (!trim($line)) continue;
             $character = MuckCharacter::fromMuckResponse($line);
-            $characters[$character->getDbref()] = $character;
+            $characters[$character->dbref()] = $character;
         }
         return collect($characters);
     }
@@ -204,7 +204,7 @@ class HttpMuckConnection implements MuckConnection
     {
         if (!array_key_exists('password', $credentials)) return false;
         return $this->requestFromMuck('validateCredentials', [
-            'dbref' => $character->getDbref(),
+            'dbref' => $character->dbref(),
             'password' => $credentials['password']
         ]);
     }
@@ -307,7 +307,7 @@ class HttpMuckConnection implements MuckConnection
     {
         $response = $this->requestFromMuck('changeCharacterPassword', [
             'aid' => $user->getAid(),
-            'dbref' => $character->getDbref(),
+            'dbref' => $character->dbref(),
             'password' => $password
         ]);
         return ($response === 'OK');

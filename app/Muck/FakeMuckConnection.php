@@ -58,8 +58,8 @@ class FakeMuckConnection implements MuckConnection
     public function validateCredentials(MuckCharacter $character, array $credentials): bool
     {
         self::fakeMuckCall('validateCredentials', $credentials);
-        if ($character->getDbref() == 1234 && $credentials['password'] == 'password') return true;
-        if ($character->getDbref() == 1234 && $credentials['password'] == 'password2') return true;
+        if ($character->dbref() == 1234 && $credentials['password'] == 'password') return true;
+        if ($character->dbref() == 1234 && $credentials['password'] == 'password2') return true;
         return false;
     }
 
@@ -329,7 +329,7 @@ class FakeMuckConnection implements MuckConnection
     {
         self::fakeMuckCall('changeCharacterPassword', [
             'aid' => $user->getAid(),
-            'dbref' => $character->getDbref(),
+            'dbref' => $character->dbref(),
             'password' => $password
         ]);
         return true;

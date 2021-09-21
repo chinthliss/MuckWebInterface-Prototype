@@ -188,13 +188,13 @@ class User implements Authenticatable, MustVerifyEmail
     public function getCharacterDbref(): ?int
     {
         if (!$this->character) return null;
-        return $this->character->getDbref();
+        return $this->character->dbref();
     }
 
     public function getCharacterName(): ?string
     {
         if (!$this->character) return null;
-        return $this->character->getName();
+        return $this->character->name();
     }
 
     public function setCharacter(MuckCharacter $character)

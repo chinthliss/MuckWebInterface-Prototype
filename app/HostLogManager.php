@@ -21,11 +21,11 @@ class HostLogManager
                 [
                     'host_ip' => $ip,
                     'aid' => $user ? $user->getAid() : 0, // To match existing format
-                    'plyr_ref' => $character ? $character->getDbref() : -1, // To match existing format
+                    'plyr_ref' => $character ? $character->dbref() : -1, // To match existing format
                     'muckname' => config('muck.muck_name')
                 ], [
                     'host_name' => $hostName,
-                    'plyr_name' => $character ? $character->getName() : '', // To match existing format
+                    'plyr_name' => $character ? $character->name() : '', // To match existing format
                     'tstamp' => Carbon::now()->timestamp
                 ]
             );

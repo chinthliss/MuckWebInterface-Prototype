@@ -45,7 +45,7 @@ class AccountNotificationTest extends TestCase
         $this->assertDatabaseHas('account_notifications', [
             'aid' => $user->getAid(),
             'game_code' => config('muck.muck_code'),
-            'character_dbref' => $character->getDbref()
+            'character_dbref' => $character->dbref()
         ]);
     }
 

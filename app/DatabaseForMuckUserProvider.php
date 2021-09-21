@@ -470,7 +470,7 @@ class DatabaseForMuckUserProvider implements UserProvider
             case 'FLOAT':
                 return (float)$row->propdata;
             case 'OBJECT':
-                return new MuckDbref($row->propdata);
+                return new MuckDbref($row->propdata, 'TBC Replace with service call when done', 'T');
             // Other values are 'STRING'
             default:
                 return $row->propdata;

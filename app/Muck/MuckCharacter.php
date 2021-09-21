@@ -12,11 +12,6 @@ namespace App\Muck;
 class MuckCharacter extends MuckDbref
 {
     /**
-     * @var string
-     */
-    private $name;
-
-    /**
      * @var bool
      */
     private $wizard = false;
@@ -33,21 +28,10 @@ class MuckCharacter extends MuckDbref
 
     public function __construct(int $dbref, string $name, int $level = null, array $flags = [])
     {
-        parent::__construct($dbref);
-        $this->name = $name;
+        parent::__construct($dbref, $name, 'P');
         $this->level = $level;
         if (in_array('unapproved', $flags)) $this->approved = false;
         if (in_array('wizard', $flags)) $this->wizard = true;
-    }
-
-    public function getDbref(): int
-    {
-        return $this->toInt();
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
     }
 
     public function isApproved(): bool
