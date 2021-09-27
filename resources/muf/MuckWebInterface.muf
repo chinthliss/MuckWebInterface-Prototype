@@ -55,17 +55,33 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     descr "\r\n" descrnotify    
 ;
 
-(Default representation of a player. Presently Dbref,Name,Level,avatar,ColonSeparatedFlags)
-: playerToString[ dbref:player -- str:representation ]
-    player @ intostr "," strcat
-    player @ name "" "," subst strcat "," strcat
-    player @ truelevel intostr strcat "," strcat
-    "" strcat "," strcat
-    { }list
-    player @ mlevel 3 > if "wizard" swap array_appenditem then
-    player @ "approved?" getstatint not if "unapproved" swap array_appenditem then
-    ":" array_join strcat
-;
+(Turns a muck object into a string representation in the form: dbref,creationTimestamp,typeFlag,metadata,name)
+(Metadata depends on the type of object and is presently:)
+(   Player - aid|level|avatar|colonSeparatedFlags )
+(   Zombie - level|avatar )
+: objectToString[ dbref:object -- str:representation ]
+    object @ intostr "," strcat (Shared start - just the dbref)
+    object @ timestamps pop pop pop intostr strcat "," strcat
+    "" (Typeflag and metadata)
+    object @ player? if
+      pop "P,"
+      object @ acct_any2aid intostr strcat "|" strcat
+      object @ truelevel intostr strcat "|" strcat
+      "avatarstring" strcat (avatar TBC)
+      "|" strcat
+      { }list
+      object @ mlevel 3 > if "wizard" swap array_appenditem then
+      object @ "approved?" getstatint not if "unapproved" swap array_appenditem then
+      ":" array_join strcat
+    then
+    object @ "zombie" flag? if
+      pop "Z,"
+      object @ truelevel intostr strcat "|" strcat
+      "" strcat (avatar TBC)
+    then
+    ?dup not if "T," then
+    strcat "," strcat object @ name strcat
+; PUBLIC objectToString (for testing)
 
 ( -------------------------------------------------- )
 ( Handlers - Nonspecific )
@@ -76,13 +92,13 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     descr "TEST" descrnotify
 ; selfcall handleRequest_test
 
-(Expects 'aid' set, returns playerToString separated by lines)
+(Expects 'aid' set, returns objectToString separated by lines)
 : handleRequest_getCharacters[ arr:webcall -- ]
     webcall @ "aid" array_getitem ?dup if
         startAcceptedResponse
         acct_getalts
         foreach nip
-            playerToString descr swap descrnotify
+            objectToString descr swap descrnotify
         repeat
     else response400 then
 ; selfcall handleRequest_getCharacters
@@ -146,7 +162,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     else response400 then
 ; selfcall handleRequest_findProblemsWithCharacterPassword
 
-(Expects 'name' and 'aid' set, returns OK|<Dbref>|<InitialPassword> if successful or ERROR|<error> if there was an issue. )
+(Expects 'name' and 'aid' set, returns OK|<InitialPassword>|<character> if successful or ERROR|<error> if there was an issue. )
 : handleRequest_createCharacterForAccount[ arr:webcall -- ]
     webcall @ "aid" array_getitem ?dup if acct_any2aid else response400 exit then var! account
     webcall @ "name" array_getitem ?dup if capital else response400 exit then var! newName
@@ -171,7 +187,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     newCharacter @ "@/initial_password" newPassword @ setprop
     newCharacter @ "@/created_by" prog setprop
     
-    "OK|" newCharacter @ intostr strcat "|" strcat newPassword @ strcat
+    "OK|" newPassword @ intostr strcat "|" strcat newCharacter @ objectToString strcat
     descr swap descrnotify
 ; selfcall handleRequest_createCharacterForAccount
 
@@ -303,20 +319,41 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     "OK" descr swap descrnotify
 ; selfcall handleRequest_changeCharacterPassword
 
+( -------------------------------------------------- )
+( Handlers - Muck object retrieval / verification )
+( -------------------------------------------------- )
+
+(Expects 'dbref' set, returns objectToString or nothing)
+: handleRequest_getByDbref[ arr:webcall -- ]
+    webcall @ "dbref" array_getitem ?dup if
+        startAcceptedResponse
+        atoi dbref dup ok? if
+            objectToString descr swap descrnotify
+        else pop then
+    else response400 then
+; selfcall handleRequest_getByDbref
+
+(Expects 'name' set, returns objectToString or nothing)    
+: handleRequest_getByPlayerName[ arr:webcall -- ]
+    webcall @ "name" array_getitem ?dup if
+        startAcceptedResponse
+        pmatch dup ok? if
+            objectToString descr swap descrnotify
+        else pop then
+    else response400 then
+; selfcall handleRequest_getByPlayerName
 
 ( -------------------------------------------------- )
 ( Handlers - Auth )
 ( -------------------------------------------------- )
 
-
-
-(Expects either 'email' or 'api_token', returns 'account,[playerToString]' if one is matched or returns empty response)
+(Expects either 'email' or 'api_token', returns 'account,[objectToString]' if one is matched or returns empty response)
 (Because this is passed directly from the login form, email will actually be the character name)
 : handleRequest_retrieveByCredentials[ arr:webcall -- ]
     webcall @ "email" array_getitem ?dup if
         startAcceptedResponse
         pmatch dup ok? if
-            dup acct_any2aid intostr "," strcat swap playerToString strcat
+            dup acct_any2aid intostr "," strcat swap objectToString strcat
             descr swap descrnotify 
         else pop then
         exit
@@ -343,25 +380,6 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         descr swap descrnotify 
     else response400 then
 ; selfcall handleRequest_validateCredentials
-
-(Expects 'dbref' and 'account', returns: )
-(  Blank string if the character can't be found or doesn't belong to that account. )
-(  A playerToString response if the dbref is a valid player on that account. )
-: handleRequest_verifyAccountHasCharacter[ arr:webcall -- ]
-    webcall @ "account" array_getitem ?dup if acct_any2aid else response400 exit then var! account
-    webcall @ "dbref" array_getitem ?dup if atoi dbref else response400 exit then var! character
-    startAcceptedResponse
-    character @ player? if
-        character @ acct_any2aid
-        account @ = if
-            (Check character isn't banned)
-            (TBC: To be replaced with an appropriate prop later)
-            character @ "@banned" getpropstr if exit then
-            character @ playerToString
-            descr swap descrnotify
-        then
-    then
-; selfcall handleRequest_verifyAccountHasCharacter
 
 ( -------------------------------------------------- )
 ( Payment related )

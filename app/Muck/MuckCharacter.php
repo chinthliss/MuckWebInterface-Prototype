@@ -3,35 +3,36 @@
 
 namespace App\Muck;
 
+use Illuminate\Support\Carbon;
+
 /**
  * Class MuckCharacter
- * Builds on MuckDbref to add unique character details
- * This is largely an empty stub to pass to the client - at which point the client will query for more info as appropriate
+ * Builds on MuckDbref to add unique character details for either a player object or NPC zombie
  * @package App\Muck
  */
 class MuckCharacter extends MuckDbref
 {
-    /**
-     * @var bool
-     */
-    private $wizard = false;
+    private bool $wizard = false;
 
-    /**
-     * @var bool
-     */
-    private $approved = true;
+    private bool $approved = true;
 
-    /**
-     * @var int|null
-     */
-    private $level;
+    private ?int $level;
 
-    public function __construct(int $dbref, string $name, int $level = null, array $flags = [])
+    private ?int $accountId;
+
+    public function __construct(int $dbref, string $name, Carbon $createdTimestamp,
+                                int $level = null, string $avatar = null, array $flags = [], int $accountId = null)
     {
-        parent::__construct($dbref, $name, 'P');
+        parent::__construct($dbref, $name, 'P', $createdTimestamp);
         $this->level = $level;
+        $this->accountId = $accountId;
         if (in_array('unapproved', $flags)) $this->approved = false;
         if (in_array('wizard', $flags)) $this->wizard = true;
+    }
+
+    public function typeFlag(): string
+    {
+        return ($this->accountId ? 'P' : 'Z');
     }
 
     public function isApproved(): bool
@@ -48,18 +49,5 @@ class MuckCharacter extends MuckDbref
             'approved' => $this->approved,
             'wizard' => $this->wizard
         ];
-    }
-
-    public static function fromMuckResponse(string $muckResponse): MuckCharacter
-    {
-        $parts = explode(',', $muckResponse);
-        if (count($parts) !== 5)
-            throw new \InvalidArgumentException("Muck response contains the wrong number of parts");
-        list($dbref, $characterName, $level, $avatar, $flagsAsString) = $parts;
-        $flags = [];
-        if ($flagsAsString) {
-            $flags = explode(':', $flagsAsString);
-        }
-        return new self($dbref, $characterName, $level, $flags);
     }
 }

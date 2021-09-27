@@ -10,12 +10,32 @@ use App\User;
 interface MuckConnection
 {
 
+    #region Muck object retrieval / verification
+
+    /**
+     * Fetches an object by its dbref.
+     * @param int $dbref
+     * @return MuckDbref|null
+     */
+    public function getByDbref(int $dbref): ?MuckDbref;
+
+
+    /**
+     * Fetches a player object by name.
+     * @param string $name
+     * @return MuckDbref|null
+     */
+    public function getByPlayerName(string $name): ?MuckDbref;
+
     /**
      * Get all the characters of a given account
      * @param User $user
      * @return null|Collection in the form [characterDbref:[MuckCharacter]]
      */
     public function getCharactersOf(User $user): ?Collection;
+
+    #endregion Muck object retrieval / verification
+
 
     /**
      * Returns the latest connect or disconnect from any character on the account
@@ -58,6 +78,7 @@ interface MuckConnection
     /**
      * Creates the given character and returns it
      * @param string $name
+     * @param User $user
      * @return array Consists of character and initialPassword
      */
     public function createCharacterForUser(string $name, User $user): array;
@@ -65,7 +86,7 @@ interface MuckConnection
     /**
      * Returns {success, messages} with success being a boolean and messages being an array of strings
      * @param array $characterData
-     * @return MuckCharacter|null
+     * @return array
      */
     public function finalizeCharacter(array $characterData): array;
 
@@ -129,9 +150,9 @@ interface MuckConnection
     /**
      * @param int $accountId
      * @param int $accountCurrency
-     * @return mixed
+     * @return int AmountRewarded
      */
-    public function fulfillPatreonSupport(int $accountId, int $accountCurrency);
+    public function fulfillPatreonSupport(int $accountId, int $accountCurrency): int;
 
     /**
      * @param int $accountId

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\AccountNotificationManager;
 use App\Muck\MuckCharacter;
 use App\Notifications\MuckWebInterfaceNotification;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -40,7 +41,7 @@ class AccountNotificationTest extends TestCase
     public function testNotifyingWithGameAndCharacterWorks()
     {
         $user = $this->loginAsValidatedUser();
-        $character = new MuckCharacter(1234, 'test', 1, []);
+        $character = new MuckCharacter(1234, 'test', Carbon::now(), 0, '', []);
         MuckWebInterfaceNotification::NotifyCharacter($user, $character, 'Test');
         $this->assertDatabaseHas('account_notifications', [
             'aid' => $user->getAid(),

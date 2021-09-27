@@ -19,9 +19,7 @@ class CreateMuckObjectsTable extends Migration
             $table->integer('dbref');
             $table->timestamp('created_at')->default(0); // Stops DB from auto-populating 'on update'
             $table->enum('type', ['player', 'room', 'thing']);
-
-            $table->bigInteger('aid')->nullable();
-            $table->string('name', 255)->nullable();
+            $table->string('name', 255);
             $table->timestamp('deleted_at')->nullable()
                 ->comment('Only tracked for player objects, everything else is just deleted from this table.');
 

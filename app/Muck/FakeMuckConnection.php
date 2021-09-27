@@ -11,9 +11,20 @@ use Illuminate\Support\Facades\Log;
 class FakeMuckConnection implements MuckConnection
 {
 
+    private array $fakeDatabase;
+
     public function __construct(array $config)
     {
-
+        $this->fakeDatabase = [
+            // Wizard character
+            1234 => new MuckCharacter(1234, 'TestCharacter', Carbon::now(), 100, '', ['wizard'], 1),
+            // Non-wizard character
+            2345 => new MuckCharacter(2345, 'TestCharacter2', Carbon::now(), 14, '', [], 1),
+            // Unapproved character
+            3456 => new MuckCharacter(3456, 'TestCharacter3', Carbon::now(), 0, '', ['unapproved'], 1),
+            // Unapproved character on other account
+            4567 => new MuckCharacter(4567, 'TestCharacterA1', Carbon::now(), 0, '', ['unapproved'], 6)
+        ];
     }
 
     /**
@@ -24,7 +35,7 @@ class FakeMuckConnection implements MuckConnection
     private static function fakeMuckCall(string $call, array $data = [])
     {
         $dataAsString = json_encode($data);
-        Log::debug("FakeMuckCall - {$call}: Data={$dataAsString}");
+        Log::debug("FakeMuckCall - $call, data: $dataAsString");
     }
 
     //region Auth Requests
@@ -38,16 +49,16 @@ class FakeMuckConnection implements MuckConnection
         if (array_key_exists('email', $credentials)) {
             $email = strtolower($credentials['email']);
             if ($email == 'testcharacter')
-                return [1, MuckCharacter::fromMuckResponse('1234,TestCharacter,100,,wizard')];
+                return [1, $this->fakeDatabase[1234]];
             if ($email == 'testcharacter2')
-                return [1, MuckCharacter::fromMuckResponse('2345,TestCharacter2,14,,')];
+                return [1, $this->fakeDatabase[2345]];
         }
         if (array_key_exists('api_token', $credentials)) {
             $token = $credentials['api_token'];
             if ($token == 'token_testcharacter')
-                return [1, MuckCharacter::fromMuckResponse('1234,TestCharacter,100,,wizard')];
+                return [1, $this->fakeDatabase[1234]];
             if ($token == 'token_testcharacter2')
-                return [1, MuckCharacter::fromMuckResponse('2345,TestCharacter2,14,,')];
+                return [1, $this->fakeDatabase[2345]];
         }
         return null;
     }
@@ -69,15 +80,8 @@ class FakeMuckConnection implements MuckConnection
             'account' => $user->getAid(),
             'dbref' => $dbref
         ]);
-        if ($dbref == '1234' and $user->getAid() === 1)
-            return MuckCharacter::fromMuckResponse('1234,TestCharacter,100,,wizard');
-        if ($dbref == '2345' and $user->getAid() === 1)
-            return MuckCharacter::fromMuckResponse('2345,TestCharacter2,100,,');
-        if ($dbref == '3456' and $user->getAid() === 1)
-            return MuckCharacter::fromMuckResponse('3456,TestCharacter3,0,,unapproved');
-        if ($dbref == '4567' and $user->getAid() === 6)
-            return MuckCharacter::fromMuckResponse('4567,TestCharacterA1,0,,unapproved');
-        return null;
+        $character = $this->fakeDatabase[$dbref];
+        return $character->aid() == $user->getAid() ? $character : null;
     }
     //endregion
 
@@ -91,14 +95,14 @@ class FakeMuckConnection implements MuckConnection
         $result = [];
         if ($user->getAid() === 1) {
             $result = [
-                1234 => MuckCharacter::fromMuckResponse('1234,TestCharacter,100,,wizard'),
-                2345 => MuckCharacter::fromMuckResponse('2345,TestCharacter2,14,,'),
-                3456 => MuckCharacter::fromMuckResponse('3456,TestCharacter3,0,,unapproved')
+                1234 => $this->fakeDatabase[1234],
+                2345 => $this->fakeDatabase[2345],
+                3456 => $this->fakeDatabase[3456]
             ];
         }
         if ($user->getAid() === 6) {
             $result = [
-                4567 => MuckCharacter::fromMuckResponse('4567,TestCharacterA1,0,,unapproved')
+                4567 => $this->fakeDatabase[4567]
             ];
         }
         return collect($result);
@@ -156,7 +160,7 @@ class FakeMuckConnection implements MuckConnection
     {
         self::fakeMuckCall('createCharacter', ['name' => $name, 'aid' => $user->getAid()]);
         return [
-            "character" => new MuckCharacter(4657, 'FakeCharacter'),
+            "character" => new MuckCharacter(4657, 'FakeCharacter', Carbon::now(), $user->getAid()),
             "initialPassword" => 'test'
         ];
     }
@@ -333,5 +337,17 @@ class FakeMuckConnection implements MuckConnection
             'password' => $password
         ]);
         return true;
+    }
+
+    public function getByDbref(int $dbref): ?MuckDbref
+    {
+        self::fakeMuckCall('getByDbref', ['dbref' => $dbref]);
+        return null;
+    }
+
+    public function getByPlayerName(string $name): ?MuckDbref
+    {
+        self::fakeMuckCall('getByPlayerName', ['name' => $name]);
+        return null;
     }
 }

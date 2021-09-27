@@ -5,20 +5,21 @@ namespace App\Muck;
 
 use App\Helpers\Ansi;
 use App\User;
-use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Client;
-use Error;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
+use Exception;
+use Error;
 
 class HttpMuckConnection implements MuckConnection
 {
 
-    private $salt = null;
-    private $client = null;
-    private $uri = null;
+    private string $salt;
+    private Client $client;
+    private string $uri;
 
     public function __construct(array $config)
     {
@@ -34,7 +35,7 @@ class HttpMuckConnection implements MuckConnection
         $this->uri = $config['uri'];
     }
 
-    private function redactForLog(array $credentials) : array
+    private function redactForLog(array $credentials): array
     {
         if (array_key_exists('password', $credentials)) $credentials['password'] = '********';
         return $credentials;
@@ -44,7 +45,6 @@ class HttpMuckConnection implements MuckConnection
      * @param string $request
      * @param array $data
      * @return string
-     * @throws GuzzleException
      */
     protected function requestFromMuck(string $request, array $data = []): string
     {
@@ -60,7 +60,7 @@ class HttpMuckConnection implements MuckConnection
                 'form_params' => $data
             ]);
         } catch (GuzzleException $e) {
-            throw $e;
+            throw new Error("Connection to muck failed - " . $e->getMessage());
         }
         //getBody() returns a stream, so need to ensure we complete and parse such:
         //The result will also have a trailing \r\n
@@ -79,7 +79,7 @@ class HttpMuckConnection implements MuckConnection
         //Form of result is \r\n separated lines of dbref,name,level,flags
         foreach (explode(chr(13) . chr(10), $response) as $line) {
             if (!trim($line)) continue;
-            $character = MuckCharacter::fromMuckResponse($line);
+            $character = $this->parseMuckObjectResponse($line);
             $characters[$character->dbref()] = $character;
         }
         return collect($characters);
@@ -140,17 +140,21 @@ class HttpMuckConnection implements MuckConnection
 
     /**
      * @inheritDoc
+     * @throws Exception
      */
     public function createCharacterForUser(string $name, User $user): array
     {
         $response = $this->requestFromMuck('createCharacterForAccount', ['name' => $name, 'aid' => $user->getAid()]);
         $response = explode('|', $response);
+        // Response is either:
+        //   ERROR|error message
+        //   OK|initial password|character object representation
         if ($response[0] != 'OK') {
             throw new Exception(array_key_exists(1, $response) ? $response[1] : 'Connection error with game');
         }
         return [
-            "character" => new MuckCharacter($response[1], $name),
-            "initialPassword" => $response[2]
+            "character" => $this->parseMuckObjectResponse( join('', array_slice($response,2))),
+            "initialPassword" => $response[1]
         ];
     }
 
@@ -192,7 +196,8 @@ class HttpMuckConnection implements MuckConnection
         if ($split = strpos($response, ',')) {
             $aid = intval(substr($response, 0, $split));
             $characterString = substr($response, $split + 1);
-            return [$aid, MuckCharacter::fromMuckResponse($characterString)];
+            $character = $this->parseMuckObjectResponse($characterString);
+            return [$aid, $character];
         }
         return null;
     }
@@ -215,7 +220,7 @@ class HttpMuckConnection implements MuckConnection
             'account' => $user->getAid(),
             'dbref' => $dbref
         ]);
-        return $response ? MuckCharacter::fromMuckResponse($response) : null;
+        return $response ? $this->parseMuckObjectResponse($response) : null;
     }
 
     #endregion Auth Requests
@@ -225,6 +230,7 @@ class HttpMuckConnection implements MuckConnection
      */
     public function usdToAccountCurrency(float $usdAmount): ?int
     {
+        /** @var User $user */
         $user = auth()->user();
         if (!$user || !$user->getAid()) return null;
 
@@ -311,6 +317,72 @@ class HttpMuckConnection implements MuckConnection
             'password' => $password
         ]);
         return ($response === 'OK');
+    }
+
+    /**
+     * Parses a objectToString response from the muck
+     * @param string $muckResponse
+     * @return MuckDbref|MuckCharacter
+     */
+    private function parseMuckObjectResponse(string $muckResponse): MuckDbref
+    {
+        /*
+         * Expected format: dbref,creationTimestamp,typeFlag,metadata,name
+         * Name is at the end because it can contain commas.
+         * Metadata used:
+         * Player - aid|level|avatar|colonSeparatedFlags
+         * Zombie - level|avatar
+         */
+        $parts = explode(',', $muckResponse);
+        if (count($parts) < 5)
+            throw new InvalidArgumentException("Muck response contains the wrong number of parts");
+
+        // The first four parts are fixed
+        list($dbref, $creationTimestamp, $typeFlag, $metadata) = $parts;
+        // The name itself can contain commas, so we reassemble any remaining parts
+        $name = join(',', array_slice($parts, 4));
+        $dbref = intval($dbref);
+        $creationTimestamp = Carbon::createFromTimestampUTC($creationTimestamp);
+
+        switch ($typeFlag) {
+            case 'P':
+                list($accountId, $level, $avatar, $flagsAsString) = $metadata;
+                $flags = $flagsAsString ? explode(':', $flagsAsString) : null;
+                $muckObject = new MuckCharacter($dbref, $name, $creationTimestamp,
+                    $level, $avatar, $flags, $accountId);
+                break;
+            case 'Z':
+                list($level, $avatar) = $metadata;
+                $muckObject = new MuckCharacter($dbref, $name, $creationTimestamp,
+                    $level, $avatar);
+                break;
+            case 'R':
+                $muckObject = new MuckDbref($dbref, $name, $typeFlag, $creationTimestamp);
+                break;
+            case 'T':
+                $muckObject = new MuckDbref($dbref, $name, $typeFlag, $creationTimestamp);
+                break;
+            default:
+                throw new Error("Code missing to parse the given typeflag.");
+        }
+        return $muckObject;
+    }
+
+    public function getByDbref(int $dbref): ?MuckDbref
+    {
+        $response = $this->requestFromMuck('getByDbref', ['dbref' => $dbref]);
+        if (!$response) return null;
+
+        return $this->parseMuckObjectResponse($response);
+
+    }
+
+    public function getByPlayerName(string $name): ?MuckDbref
+    {
+        $response = $this->requestFromMuck('getByPlayerName', ['name' => $name]);
+        if (!$response) return null;
+
+        return $this->parseMuckObjectResponse($response);
     }
 
 

@@ -30,7 +30,7 @@ class DatabaseForMuckUserProvider implements UserProvider
         $this->muckConnection = $muckConnection;
     }
 
-    private function redactCredentials(array $credentials) : array
+    private function redactCredentials(array $credentials): array
     {
         if (array_key_exists('password', $credentials)) $credentials['password'] = '********';
         return $credentials;
@@ -108,7 +108,7 @@ class DatabaseForMuckUserProvider implements UserProvider
                     ->first();
                 if (!$accountQuery) return null; //Account referenced by muck but wasn't found in DB!
                 $user = User::fromDatabaseResponse($accountQuery);
-                session(['lastCharacterDbref' => $character->getDbref()]);
+                session(['lastCharacterDbref' => $character->dbref()]);
                 $user->setCharacter($character);
                 return $user;
             }
@@ -230,7 +230,7 @@ class DatabaseForMuckUserProvider implements UserProvider
     /**
      * @return User[]
      */
-    public function getAllRoles() : array
+    public function getAllRoles(): array
     {
         $rows = DB::table('account_roles')->get();
         $users = [];
