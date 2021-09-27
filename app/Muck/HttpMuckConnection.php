@@ -347,7 +347,7 @@ class HttpMuckConnection implements MuckConnection
         switch ($typeFlag) {
             case 'P':
                 list($accountId, $level, $avatar, $flagsAsString) = $metadata;
-                $flags = $flagsAsString ? explode(':', $flagsAsString) : null;
+                $flags = $flagsAsString ? explode(':', $flagsAsString) : [];
                 $muckObject = new MuckCharacter($dbref, $name, $creationTimestamp,
                     $level, $avatar, $flags, $accountId);
                 break;
