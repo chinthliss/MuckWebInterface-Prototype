@@ -39,14 +39,14 @@ class MuckObjectService
     /**
      * Fetches an object by its dbref.
      * @param int $dbref
-     * @return MuckDbref
+     * @return ?MuckDbref
      */
-    public function getByDbref(int $dbref): MuckDbref
+    public function getByDbref(int $dbref): ?MuckDbref
     {
         if (array_key_exists($dbref, $this->byDbref)) return $this->byDbref[$dbref];
 
         $object = $this->connection->getByDbref($dbref);
-        $this->byDbref[$object->dbref()] = $object;
+        if ($object) $this->byDbref[$object->dbref()] = $object;
 
         return $object;
     }
@@ -54,15 +54,17 @@ class MuckObjectService
     /**
      * Fetches a player object by name.
      * @param string $name
-     * @return MuckDbref
+     * @return ?MuckDbref
      */
-    public function getByPlayerName(string $name): MuckDbref
+    public function getByPlayerName(string $name): ?MuckDbref
     {
         if (array_key_exists($name, $this->byName)) return $this->byName[$name];
 
         $object = $this->connection->getByPlayerName($name);
-        $this->byDbref[$object->dbref()] = $object;
-        $this->byName[$object->name()] = $object;
+        if ($object) {
+            $this->byDbref[$object->dbref()] = $object;
+            $this->byName[$object->name()] = $object;
+        }
 
         return $object;
     }

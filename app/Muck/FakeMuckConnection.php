@@ -5,7 +5,6 @@ namespace App\Muck;
 
 use App\User;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
 class FakeMuckConnection implements MuckConnection
@@ -74,16 +73,6 @@ class FakeMuckConnection implements MuckConnection
         return false;
     }
 
-    public function retrieveAndVerifyCharacterOnAccount(User $user, int $dbref): ?MuckCharacter
-    {
-        self::fakeMuckCall('verifyAccountHasCharacter', [
-            'account' => $user->getAid(),
-            'dbref' => $dbref
-        ]);
-        if (!array_key_exists($dbref, $this->fakeDatabase)) return null;
-        $character = $this->fakeDatabase[$dbref];
-        return $character->aid() == $user->getAid() ? $character : null;
-    }
     //endregion
 
 
@@ -343,12 +332,15 @@ class FakeMuckConnection implements MuckConnection
     public function getByDbref(int $dbref): ?MuckDbref
     {
         self::fakeMuckCall('getByDbref', ['dbref' => $dbref]);
-        return null;
+        $object = null;
+        if (array_key_exists($dbref, $this->fakeDatabase)) $object = $this->fakeDatabase[$dbref];
+        Log::debug("FakeMuckCall - getByDbref result: " . $object);
+        return $object;
     }
 
     public function getByPlayerName(string $name): ?MuckDbref
     {
         self::fakeMuckCall('getByPlayerName', ['name' => $name]);
-        return null;
+        throw new \Error("Not implemented");
     }
 }

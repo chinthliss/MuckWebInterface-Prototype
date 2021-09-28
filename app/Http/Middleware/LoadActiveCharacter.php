@@ -2,7 +2,9 @@
 
 namespace App\Http\Middleware;
 
-use App\Muck\MuckConnection;
+use App\Muck\MuckCharacter;
+use App\Muck\MuckObjectService;
+use App\User;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -14,11 +16,11 @@ use Illuminate\Support\Facades\Log;
 class LoadActiveCharacter
 {
     /**
-     * @var MuckConnection
+     * @var MuckObjectService
      */
     protected $muck;
 
-    public function __construct(MuckConnection $muck)
+    public function __construct(MuckObjectService $muck)
     {
         $this->muck = $muck;
     }
@@ -35,6 +37,7 @@ class LoadActiveCharacter
     {
         $clearCookie = false;
 
+        /** @var User $user */
         $user = $request->user('account');
         if ($user) {
             // Header is the definitive place to have the character specified
@@ -45,15 +48,16 @@ class LoadActiveCharacter
 
             $characterDbref = intval($characterDbref);
             if ($characterDbref) {
-                $character = $this->muck->retrieveAndVerifyCharacterOnAccount($user, $characterDbref);
-                if ($character) {
-                    Log::debug("MultiplayerCharacter requested $characterDbref - accepted.");
+                /** @var MuckCharacter $character */
+                $character = $this->muck->getByDbref($characterDbref);
+                if ($character && $character->aid() == $user->getAid()) {
+                    Log::debug("MultiplayerCharacter requested $characterDbref for $user - accepted as $character");
                     $user->setCharacter($character);
                     // For the future? Add a context to all related log calls
                     // Log::withContext(['character' => $character->getName()];
                 }
                 else {
-                    Log::debug("MultiplayerCharacter requested $characterDbref - rejected, clearing cookie.");
+                    Log::debug("MultiplayerCharacter requested $characterDbref for $user - rejected, clearing cookie.");
                     $clearCookie = true;
                 }
             }

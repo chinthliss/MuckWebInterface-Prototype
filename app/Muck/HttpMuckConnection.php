@@ -214,15 +214,6 @@ class HttpMuckConnection implements MuckConnection
         ]);
     }
 
-    public function retrieveAndVerifyCharacterOnAccount(User $user, int $dbref): ?MuckCharacter
-    {
-        $response = $this->requestFromMuck('verifyAccountHasCharacter', [
-            'account' => $user->getAid(),
-            'dbref' => $dbref
-        ]);
-        return $response ? $this->parseMuckObjectResponse($response) : null;
-    }
-
     #endregion Auth Requests
 
     /**

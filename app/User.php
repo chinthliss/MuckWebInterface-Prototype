@@ -48,6 +48,11 @@ class User implements Authenticatable, MustVerifyEmail
         $this->aid = $accountId;
     }
 
+    public function __toString()
+    {
+        return "User#" . $this->aid;
+    }
+
     public static function fromDatabaseResponse(\stdClass $query): User
     {
         if (
