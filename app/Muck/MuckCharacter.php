@@ -18,6 +18,7 @@ class MuckCharacter extends MuckDbref
 
     private ?int $level;
 
+    // Null if zombie
     private ?int $accountId;
 
     public function __construct(int $dbref, string $name, Carbon $createdTimestamp,
@@ -30,7 +31,7 @@ class MuckCharacter extends MuckDbref
         if (in_array('wizard', $flags)) $this->wizard = true;
     }
 
-    public function aid(): int
+    public function aid(): ?int
     {
         return $this->accountId;
     }
