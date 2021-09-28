@@ -545,3 +545,4 @@ q
 !! App::make(App\Muck\MuckConnection::class)->fulfillAccountCurrencyPurchase(3989,1,2,null)
 !! App::make(App\Muck\MuckConnection::class)->fulfillPatreonSupport(3989,1)
 !! App::make(App\Muck\MuckConnection::class)->getCharacterInitialSetupConfiguration(User::find(3989))
+!! App::make(App\Muck\MuckObjectService::class)->getbyDbref(1173)->toArray()

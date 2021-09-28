@@ -330,6 +330,7 @@ class HttpMuckConnection implements MuckConnection
 
         // The first four parts are fixed
         list($dbref, $creationTimestamp, $typeFlag, $metadata) = $parts;
+        $metadata = explode('|', $metadata);
         // The name itself can contain commas, so we reassemble any remaining parts
         $name = join(',', array_slice($parts, 4));
         $dbref = intval($dbref);
