@@ -7,6 +7,7 @@ use App\Muck\MuckObjectService;
 use App\User;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -35,8 +36,6 @@ class LoadActiveCharacter
      */
     public function handle(Request $request, Closure $next)
     {
-        $clearCookie = false;
-
         /** @var User $user */
         $user = $request->user('account');
         if ($user) {
@@ -58,15 +57,10 @@ class LoadActiveCharacter
                 }
                 else {
                     Log::debug("MultiplayerCharacter requested $characterDbref for $user - rejected, clearing cookie.");
-                    $clearCookie = true;
+                    Cookie::queue(Cookie::forget('character-dbref'));
                 }
             }
         }
-        $response = $next($request);
-
-        if ($clearCookie && method_exists($response, 'withCookie'))
-            return $response->withCookie(cookie()->forget('character-dbref'));
-        else
-            return $response;
+        return $next($request);
     }
 }

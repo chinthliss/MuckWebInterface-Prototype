@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -32,8 +33,9 @@ class MultiplayerCharacterTest extends TestCase
         $response->assertCookie('character-dbref', 1234);
 
         //On the next call, the character should have loaded again and the header should be set
-        $response = $this->get(route('multiplayer.home'));
-        $user = auth()->user();
+        $response = $this->withCookie('character-dbref', 1234)->get(route('multiplayer.home'));
+        /** @var User $user */
+        $user = auth('account')->user();
         $this->assertNotNull($user->getCharacter(), "Character wasn't set on User");
         $response->assertCookie('character-dbref');
         $response->assertSee('<meta name="character-dbref" content="1234">', false);
@@ -48,6 +50,25 @@ class MultiplayerCharacterTest extends TestCase
         $response = $this->post(route('multiplayer.character.set'), ['dbref' => 5234]);
         $this->assertNull($user->getCharacter(), "Character was set on User");
         $response->assertCookieMissing('character-dbref');
+    }
+
+    public function testCharacterCanBeLoadedFromCookie()
+    {
+        $this->loginAsValidatedUser();
+        $response = $this->withCookie('character-dbref', 1234)->get(route('multiplayer.home'));
+        // If the cookie was rejected, it will have been set to expired
+        $response->assertCookieNotExpired('character-dbref');
+        /** @var User $user */
+        $user = auth('account')->user();
+        $this->assertNotNull($user->getCharacter(), "Character wasn't set on User");
+    }
+
+    public function testInvalidCharacterOnCookieIsClearedOnLoad()
+    {
+        $this->loginAsValidatedUser();
+        $response = $this->withCookie('character-dbref', 7234)->get(route('multiplayer.avatar'));
+        // 'Unset' cookies are set to null but expire, so we need to test it's expired rather than missing
+        $response->assertCookieExpired('character-dbref');
     }
 
     // Related - AccountLoginTest::testCanLoginWithCorrectMuckCredentials
