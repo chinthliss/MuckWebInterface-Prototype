@@ -42,8 +42,7 @@ class AccountNotificationManager
             if (!$row->game_code || !$row->character_dbref)
                 array_push($result['user'], $row);
             else {
-                Log::debug("Characters: " . json_encode($characters));
-                $character = $characters->has($row->character_dbref) ? $characters[$row->character_dbref] : null;
+                $character = array_key_exists($row->character_dbref, $characters) ? $characters[$row->character_dbref] : null;
                 $character_name = $character ? $character->getName() : 'Unknown';
                 if (!array_key_exists($character_name, $result['character'])) $result['character'][$character_name] = [];
                 array_push($result['character'][$character_name], $row);

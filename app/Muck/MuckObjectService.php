@@ -2,15 +2,14 @@
 
 namespace App\Muck;
 
+use App\User;
+use Illuminate\Support\Carbon;
 
 /*
  * Acts as:
  *   A cache of verified objects from the muck to save repeated requests to the database.
  *   Verification of cached objects loaded from the database.
  */
-
-use Illuminate\Support\Carbon;
-
 class MuckObjectService
 {
     private MuckConnection $connection;
@@ -66,5 +65,20 @@ class MuckObjectService
         $this->byName[$object->name()] = $object;
 
         return $object;
+    }
+
+    /**
+     * Get all the characters of a given user.
+     * @param User $user
+     * @return array<int,MuckCharacter>
+     */
+    public function getCharactersOf(User $user): array
+    {
+        $characters = $this->connection->getCharactersOf($user);
+        foreach ($characters as $character) {
+            $this->byDbref[$character->dbref()] = $character;
+            $this->byName[$character->name()] = $character;
+        }
+        return $characters;
     }
 }

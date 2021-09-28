@@ -80,6 +80,7 @@ class FakeMuckConnection implements MuckConnection
             'account' => $user->getAid(),
             'dbref' => $dbref
         ]);
+        if (!array_key_exists($dbref, $this->fakeDatabase)) return null;
         $character = $this->fakeDatabase[$dbref];
         return $character->aid() == $user->getAid() ? $character : null;
     }
@@ -89,7 +90,7 @@ class FakeMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function getCharactersOf(User $user): ?Collection
+    public function getCharactersOf(User $user): array
     {
         self::fakeMuckCall('getCharactersOf', ['aid' => $user->getAid()]);
         $result = [];
@@ -105,7 +106,7 @@ class FakeMuckConnection implements MuckConnection
                 4567 => $this->fakeDatabase[4567]
             ];
         }
-        return collect($result);
+        return $result;
     }
 
     /**

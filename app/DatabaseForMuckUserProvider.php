@@ -3,8 +3,10 @@
 namespace App;
 
 use App\Admin\AccountNote;
+use App\Muck\MuckCharacter;
 use App\Muck\MuckDbref;
 use App\Muck\MuckConnection;
+use App\Muck\MuckObjectService;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -23,11 +25,13 @@ use MuckInterop;
 class DatabaseForMuckUserProvider implements UserProvider
 {
 
-    private $muckConnection;
+    private MuckObjectService $muckObjectService;
+    private MuckConnection $muckConnection;
 
-    public function __construct(MuckConnection $muckConnection)
+    public function __construct(MuckConnection $muckConnection, MuckObjectService $muckObjectService)
     {
         $this->muckConnection = $muckConnection;
+        $this->muckObjectService = $muckObjectService;
     }
 
     private function redactCredentials(array $credentials): array
@@ -437,9 +441,14 @@ class DatabaseForMuckUserProvider implements UserProvider
 
     #endregion Email
 
-    public function getCharacters(User $user): Collection
+    /**
+     * Get characters for user
+     * @param User $user
+     * @return array<int,MuckCharacter>
+     */
+    public function getCharacters(User $user): array
     {
-        return $this->muckConnection->getCharactersOf($user);
+        return $this->muckObjectService->getCharactersOf($user);
     }
 
     public function getAccountLastConnect(User $user): ?Carbon

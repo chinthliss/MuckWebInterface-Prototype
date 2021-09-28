@@ -72,7 +72,7 @@ class HttpMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function getCharactersOf(User $user): ?Collection
+    public function getCharactersOf(User $user): array
     {
         $characters = [];
         $response = $this->requestFromMuck('getCharacters', ['aid' => $user->getAid()]);
@@ -82,7 +82,7 @@ class HttpMuckConnection implements MuckConnection
             $character = $this->parseMuckObjectResponse($line);
             $characters[$character->dbref()] = $character;
         }
-        return collect($characters);
+        return $characters;
     }
 
     #region Character Creation / Generation

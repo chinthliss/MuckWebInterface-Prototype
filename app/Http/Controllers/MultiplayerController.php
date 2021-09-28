@@ -243,7 +243,7 @@ class MultiplayerController extends Controller
 
         $characters = $user->getCharacters();
         /** @var MuckCharacter $character */
-        $character = $characters->has($request['character']) ? $characters[$request['character']] : null;
+        $character = array_key_exists($request['character'], $characters) ? $characters[$request['character']] : null;
         if (!$character) {
             throw ValidationException::withMessages(['character'=>["The provided character was incorrect."]]);
         }

@@ -30,6 +30,11 @@ class MuckCharacter extends MuckDbref
         if (in_array('wizard', $flags)) $this->wizard = true;
     }
 
+    public function aid(): int
+    {
+        return $this->accountId;
+    }
+
     public function typeFlag(): string
     {
         return ($this->accountId ? 'P' : 'Z');

@@ -7,7 +7,6 @@ use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Collection;
 use JetBrains\PhpStorm\ArrayShape;
 use MuckInterop;
 
@@ -39,10 +38,10 @@ class User implements Authenticatable, MustVerifyEmail
     public bool $emailVerified = false; // Only for primary email. Temporary.
 
     /**
-     * Characters of this user.
-     * @var Collection<MuckCharacter>|null
+     * Characters of this user. Null if they haven't been loaded yet.
+     * @var array<int, MuckCharacter>|null
      */
-    private ?Collection $characters = null;
+    private ?array $characters = null;
 
     public function __construct(int $accountId)
     {
@@ -203,9 +202,9 @@ class User implements Authenticatable, MustVerifyEmail
     }
 
     /**
-     * @return Collection<MuckCharacter>|null
+     * @return array<int,MuckCharacter>
      */
-    public function getCharacters(): ?Collection
+    public function getCharacters(): array
     {
         if (!$this->characters) $this->characters = $this->getProvider()->getCharacters($this);
         return $this->characters;

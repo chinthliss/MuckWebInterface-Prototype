@@ -4,7 +4,6 @@
 namespace App\Muck;
 
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
 use App\User;
 
 interface MuckConnection
@@ -28,11 +27,11 @@ interface MuckConnection
     public function getByPlayerName(string $name): ?MuckDbref;
 
     /**
-     * Get all the characters of a given account
+     * Get all the characters of a given account.
      * @param User $user
-     * @return null|Collection in the form [characterDbref:[MuckCharacter]]
+     * @return array<int,MuckCharacter>
      */
-    public function getCharactersOf(User $user): ?Collection;
+    public function getCharactersOf(User $user): array;
 
     #endregion Muck object retrieval / verification
 
