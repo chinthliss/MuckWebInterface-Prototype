@@ -8,7 +8,6 @@ use App\User;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Client;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Exception;
@@ -189,22 +188,6 @@ class HttpMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function retrieveByCredentials(array $credentials): ?array
-    {
-        $response = $this->requestFromMuck('retrieveByCredentials', $credentials);
-        //Muck returns character string but with an extra aid value at the front
-        if ($split = strpos($response, ',')) {
-            $aid = intval(substr($response, 0, $split));
-            $characterString = substr($response, $split + 1);
-            $character = $this->parseMuckObjectResponse($characterString);
-            return [$aid, $character];
-        }
-        return null;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function validateCredentials(MuckCharacter $character, array $credentials): bool
     {
         if (!array_key_exists('password', $credentials)) return false;
@@ -360,6 +343,9 @@ class HttpMuckConnection implements MuckConnection
         return $muckObject;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getByDbref(int $dbref): ?MuckDbref
     {
         $response = $this->requestFromMuck('getByDbref', ['dbref' => $dbref]);
@@ -369,9 +355,23 @@ class HttpMuckConnection implements MuckConnection
 
     }
 
-    public function getByPlayerName(string $name): ?MuckDbref
+    /**
+     * @inheritDoc
+     */
+    public function getByPlayerName(string $name): ?MuckCharacter
     {
         $response = $this->requestFromMuck('getByPlayerName', ['name' => $name]);
+        if (!$response) return null;
+
+        return $this->parseMuckObjectResponse($response);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getByApiToken(string $apiToken): ?MuckCharacter
+    {
+        $response = $this->requestFromMuck('getByApiToken', ['api_token' => $apiToken]);
         if (!$response) return null;
 
         return $this->parseMuckObjectResponse($response);

@@ -10,11 +10,15 @@ use Illuminate\Support\Facades\Log;
 class FakeMuckConnection implements MuckConnection
 {
 
-    private array $fakeDatabase;
+    /** @var array<int, MuckDbref> */
+    private array $fakeDatabaseByDbref;
+
+    /** @var array<string, MuckCharacter> */
+    private array $fakeDatabaseByPlayerName;
 
     public function __construct(array $config)
     {
-        $this->fakeDatabase = [
+        $this->fakeDatabaseByDbref = [
             // Wizard character
             1234 => new MuckCharacter(1234, 'TestCharacter', Carbon::now(), 100, '', ['wizard'], 1),
             // Non-wizard character
@@ -24,6 +28,9 @@ class FakeMuckConnection implements MuckConnection
             // Unapproved character on other account
             4567 => new MuckCharacter(4567, 'TestCharacterA1', Carbon::now(), 0, '', ['unapproved'], 6)
         ];
+        foreach ($this->fakeDatabaseByDbref as $entry) {
+            if ($entry->typeFlag() == 'P') $this->fakeDatabaseByPlayerName[strtolower($entry->name())] = $entry;
+        }
     }
 
     /**
@@ -37,30 +44,7 @@ class FakeMuckConnection implements MuckConnection
         Log::debug("FakeMuckCall - $call, data: $dataAsString");
     }
 
-    //region Auth Requests
-
-    /**
-     * @inheritDoc
-     */
-    public function retrieveByCredentials(array $credentials): ?array
-    {
-        self::fakeMuckCall('retrieveByCredentials', $credentials);
-        if (array_key_exists('email', $credentials)) {
-            $email = strtolower($credentials['email']);
-            if ($email == 'testcharacter')
-                return [1, $this->fakeDatabase[1234]];
-            if ($email == 'testcharacter2')
-                return [1, $this->fakeDatabase[2345]];
-        }
-        if (array_key_exists('api_token', $credentials)) {
-            $token = $credentials['api_token'];
-            if ($token == 'token_testcharacter')
-                return [1, $this->fakeDatabase[1234]];
-            if ($token == 'token_testcharacter2')
-                return [1, $this->fakeDatabase[2345]];
-        }
-        return null;
-    }
+    #region Auth Requests
 
     /**
      * @inheritDoc
@@ -73,7 +57,7 @@ class FakeMuckConnection implements MuckConnection
         return false;
     }
 
-    //endregion
+    #endregion Auth Requests
 
 
     /**
@@ -85,14 +69,14 @@ class FakeMuckConnection implements MuckConnection
         $result = [];
         if ($user->getAid() === 1) {
             $result = [
-                1234 => $this->fakeDatabase[1234],
-                2345 => $this->fakeDatabase[2345],
-                3456 => $this->fakeDatabase[3456]
+                1234 => $this->fakeDatabaseByDbref[1234],
+                2345 => $this->fakeDatabaseByDbref[2345],
+                3456 => $this->fakeDatabaseByDbref[3456]
             ];
         }
         if ($user->getAid() === 6) {
             $result = [
-                4567 => $this->fakeDatabase[4567]
+                4567 => $this->fakeDatabaseByDbref[4567]
             ];
         }
         return $result;
@@ -329,18 +313,37 @@ class FakeMuckConnection implements MuckConnection
         return true;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getByDbref(int $dbref): ?MuckDbref
     {
         self::fakeMuckCall('getByDbref', ['dbref' => $dbref]);
         $object = null;
-        if (array_key_exists($dbref, $this->fakeDatabase)) $object = $this->fakeDatabase[$dbref];
+        if (array_key_exists($dbref, $this->fakeDatabaseByDbref)) $object = $this->fakeDatabaseByDbref[$dbref];
         Log::debug("FakeMuckCall - getByDbref result: " . $object);
         return $object;
     }
 
-    public function getByPlayerName(string $name): ?MuckDbref
+    /**
+     * @inheritDoc
+     */
+    public function getByPlayerName(string $name): ?MuckCharacter
     {
         self::fakeMuckCall('getByPlayerName', ['name' => $name]);
-        throw new \Error("Not implemented");
+        $nameLowerCase = strtolower($name);
+        if (array_key_exists($nameLowerCase, $this->fakeDatabaseByPlayerName))
+            return $this->fakeDatabaseByPlayerName[$nameLowerCase];
+        return null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getByApiToken(string $apiToken): ?MuckCharacter
+    {
+        self::fakeMuckCall('getByApiToken', ['api_token' => $apiToken]);
+        if ($apiToken == 'token_testcharacter') return $this->fakeDatabaseByDbref[1234];
+        return null;
     }
 }

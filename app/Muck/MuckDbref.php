@@ -75,4 +75,9 @@ class MuckDbref
         return $this->dbref;
     }
 
+    public function typeFlag()
+    {
+        return $this->typeFlag;
+    }
+
 }

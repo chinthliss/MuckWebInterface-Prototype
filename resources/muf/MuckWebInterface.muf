@@ -320,7 +320,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 ; selfcall handleRequest_changeCharacterPassword
 
 ( -------------------------------------------------- )
-( Handlers - Muck object retrieval / verification )
+( Handlers - Muck object retrieval / verification    )
 ( -------------------------------------------------- )
 
 (Expects 'dbref' set, returns objectToString or nothing)
@@ -343,29 +343,13 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     else response400 then
 ; selfcall handleRequest_getByPlayerName
 
-( -------------------------------------------------- )
-( Handlers - Auth )
-( -------------------------------------------------- )
-
-(Expects either 'email' or 'api_token', returns 'account,[objectToString]' if one is matched or returns empty response)
-(Because this is passed directly from the login form, email will actually be the character name)
-: handleRequest_retrieveByCredentials[ arr:webcall -- ]
-    webcall @ "email" array_getitem ?dup if
-        startAcceptedResponse
-        pmatch dup ok? if
-            dup acct_any2aid intostr "," strcat swap objectToString strcat
-            descr swap descrnotify 
-        else pop then
-        exit
-    then
+(Expects 'api_token' set, returns objectToString or nothing)    
+: handleRequest_getByApiToken[ arr:webcall -- ]
     webcall @ "api_token" array_getitem ?dup if
         startAcceptedResponse
-        (TODO: Not implemented yet)
-        pop
-        exit
-    then
-    response400
-; selfcall handleRequest_retrieveByCredentials
+        pop (Not Implemented Yet)
+    else response400 then
+; selfcall handleRequest_getByApiToken
 
 (Expects 'dbref' and 'password' set, returns either 'true' or 'false')
 : handleRequest_validateCredentials[ arr:webcall -- ]
@@ -382,7 +366,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 ; selfcall handleRequest_validateCredentials
 
 ( -------------------------------------------------- )
-( Payment related )
+( Handlers - Payment related                         )
 ( -------------------------------------------------- )
 
 (Expects 'amount' and 'account', returns value in account currency)

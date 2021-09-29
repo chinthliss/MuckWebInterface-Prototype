@@ -22,9 +22,16 @@ interface MuckConnection
     /**
      * Fetches a player object by name.
      * @param string $name
-     * @return MuckDbref|null
+     * @return MuckCharacter|null
      */
-    public function getByPlayerName(string $name): ?MuckDbref;
+    public function getByPlayerName(string $name): ?MuckCharacter;
+
+    /**
+     * Fetches a player object by API token.
+     * @param string $apiToken
+     * @return MuckCharacter|null
+     */
+    public function getByApiToken(string $apiToken): ?MuckCharacter;
 
     /**
      * Get all the characters of a given account.
@@ -100,15 +107,6 @@ interface MuckConnection
 
     #region Auth
     //These functions mimic the equivalent Laravel database calls
-
-    /**
-     * If valid, returns an array in the form [aid, MuckCharacter]
-     * Worth noting the credentials passed are from the login form so 'email' rather than 'name'.
-     * May also be 'api_token' since this route is used for api token validation
-     * @param array $credentials
-     * @return array|null
-     */
-    public function retrieveByCredentials(array $credentials): ?array;
 
     /**
      * Given a character and credentials, asks the muck to verify them (via password)

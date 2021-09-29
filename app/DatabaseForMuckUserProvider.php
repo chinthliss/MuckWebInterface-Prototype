@@ -9,7 +9,6 @@ use App\Muck\MuckConnection;
 use App\Muck\MuckObjectService;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -99,26 +98,59 @@ class DatabaseForMuckUserProvider implements UserProvider
             if ($accountQuery) return User::fromDatabaseResponse($accountQuery);
         }
 
-        //If it's an email that might be a character name or an api_token we try the muck
-        if (
-            (array_key_exists('email', $credentials) && !strpos($credentials['email'], '@'))
-            || array_key_exists('api_token', $credentials)
-        ) {
-            $lookup = $this->muckConnection->retrieveByCredentials($credentials);
-            if ($lookup) {
-                list($aid, $character) = $lookup;
+        //If it's an email that might be a character name we try the muck
+        if (array_key_exists('email', $credentials) && !strpos($credentials['email'], '@')) {
+            $character = $this->muckConnection->getByPlayerName($credentials['email']);
+            if ($character) {
                 $accountQuery = $this->getRetrievalQuery()
-                    ->where('accounts.aid', $aid)
+                    ->where('accounts.aid', $character->aid())
                     ->first();
                 if (!$accountQuery) return null; //Account referenced by muck but wasn't found in DB!
                 $user = User::fromDatabaseResponse($accountQuery);
-                session(['lastCharacterDbref' => $character->dbref()]);
                 $user->setCharacter($character);
                 return $user;
             }
         }
 
+        //If it's an api_token we try the muck
+        if (array_key_exists('api_token', $credentials)) {
+            $character = $this->muckConnection->getByApiToken($credentials['api_token']);
+            if ($character) {
+                $accountQuery = $this->getRetrievalQuery()
+                    ->where('accounts.aid', $character->aid())
+                    ->first();
+                if (!$accountQuery) return null; //Account referenced by muck but wasn't found in DB!
+                $user = User::fromDatabaseResponse($accountQuery);
+                $user->setCharacter($character);
+                return $user;
+            }
+
+        }
+
         return null;
+    }
+
+    /**
+     * Validate a user against the given credentials.
+     *
+     * @param User $user
+     * @param array $credentials
+     * @return bool
+     */
+    public function validateCredentials($user, array $credentials): bool
+    {
+        // return Hash::check($credentials['password'], $user->getAuthPassword());
+        Log::debug('UserProvider ValidateCredentials for ' . $user->getAid() . ' with ' . json_encode($this->redactCredentials($credentials)));
+        //Try the database retrieved details first
+        if (method_exists($user, 'getPasswordType')
+            && $user->getPasswordType() == 'SHA1SALT'
+            && MuckInterop::verifySHA1SALTPassword($credentials['password'], $user->getAuthPassword()))
+            return true;
+        //Otherwise try the muck
+        if (method_exists($user, 'getCharacter') && $user->getCharacter()) {
+            return $this->muckConnection->validateCredentials($user->getCharacter(), $credentials);
+        }
+        return false;
     }
 
     /**
@@ -253,30 +285,6 @@ class DatabaseForMuckUserProvider implements UserProvider
         DB::table('accounts')
             ->where('aid', $user->getAid())
             ->update([$user->getRememberTokenName() => $token]);
-    }
-
-
-    /**
-     * Validate a user against the given credentials.
-     *
-     * @param User $user
-     * @param array $credentials
-     * @return bool
-     */
-    public function validateCredentials($user, array $credentials): bool
-    {
-        // return Hash::check($credentials['password'], $user->getAuthPassword());
-        Log::debug('UserProvider ValidateCredentials for ' . $user->getAid() . ' with ' . json_encode($this->redactCredentials($credentials)));
-        //Try the database retrieved details first
-        if (method_exists($user, 'getPasswordType')
-            && $user->getPasswordType() == 'SHA1SALT'
-            && MuckInterop::verifySHA1SALTPassword($credentials['password'], $user->getAuthPassword()))
-            return true;
-        //Otherwise try the muck
-        if (method_exists($user, 'getCharacter') && $user->getCharacter()) {
-            return $this->muckConnection->validateCredentials($user->getCharacter(), $credentials);
-        }
-        return false;
     }
 
     /**
