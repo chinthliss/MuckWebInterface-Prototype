@@ -39,7 +39,7 @@ class MuckObjectService
     /**
      * Fetches an object by its dbref.
      * @param int $dbref
-     * @return ?MuckDbref
+     * @return MuckDbref|null
      */
     public function getByDbref(int $dbref): ?MuckDbref
     {
@@ -54,9 +54,9 @@ class MuckObjectService
     /**
      * Fetches a player object by name.
      * @param string $name
-     * @return ?MuckDbref
+     * @return MuckCharacter|null
      */
-    public function getByPlayerName(string $name): ?MuckDbref
+    public function getByPlayerName(string $name): ?MuckCharacter
     {
         if (array_key_exists($name, $this->byName)) return $this->byName[$name];
 
@@ -68,6 +68,25 @@ class MuckObjectService
 
         return $object;
     }
+
+    /**
+     * Fetches a player object by their API token
+     * @param string $apiToken
+     * @return MuckCharacter|null
+     */
+    public function getByApiToken(string $apiToken): ?MuckCharacter
+    {
+        // No cache to look through for the API token as we'd only be using it during page load
+        // But we still cache the results
+        $object = $this->connection->getByApiToken($apiToken);
+        if ($object) {
+            $this->byDbref[$object->dbref()] = $object;
+            $this->byName[$object->name()] = $object;
+        }
+
+        return $object;
+    }
+
 
     /**
      * Get all the characters of a given user.

@@ -100,7 +100,7 @@ class DatabaseForMuckUserProvider implements UserProvider
 
         //If it's an email that might be a character name we try the muck
         if (array_key_exists('email', $credentials) && !strpos($credentials['email'], '@')) {
-            $character = $this->muckConnection->getByPlayerName($credentials['email']);
+            $character = $this->muckObjectService->getByPlayerName($credentials['email']);
             if ($character) {
                 $accountQuery = $this->getRetrievalQuery()
                     ->where('accounts.aid', $character->aid())
@@ -114,7 +114,7 @@ class DatabaseForMuckUserProvider implements UserProvider
 
         //If it's an api_token we try the muck
         if (array_key_exists('api_token', $credentials)) {
-            $character = $this->muckConnection->getByApiToken($credentials['api_token']);
+            $character = $this->muckObjectService->getByApiToken($credentials['api_token']);
             if ($character) {
                 $accountQuery = $this->getRetrievalQuery()
                     ->where('accounts.aid', $character->aid())
