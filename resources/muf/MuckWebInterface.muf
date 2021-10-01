@@ -525,9 +525,3 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 .
 c
 q
-!! Testing from tinker on server:
-!! App::make(App\Muck\MuckConnection::class)->fulfillAccountCurrencyPurchase(3989,1,2,null)
-!! App::make(App\Muck\MuckConnection::class)->fulfillPatreonSupport(3989,1)
-!! App::make(App\Muck\MuckConnection::class)->getCharacterInitialSetupConfiguration(User::find(3989))
-!! App::make(App\Muck\MuckObjectService::class)->getbyDbref(1173)->toArray()
-!! App::make(App\Muck\MuckObjectService::class)->getMuckObjectIdFor(App::make(App\Muck\MuckObjectService::class)->getbyDbref(1173))
