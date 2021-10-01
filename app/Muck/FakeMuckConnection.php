@@ -21,8 +21,8 @@ class FakeMuckConnection implements MuckConnection
         $this->fakeDatabaseByDbref = [
             // Wizard character
             1234 => new MuckCharacter(1234, 'TestCharacter', Carbon::now(), 100, '', ['wizard'], 1),
-            // Non-wizard character
-            2345 => new MuckCharacter(2345, 'TestCharacter2', Carbon::now(), 14, '', [], 1),
+            // Non-wizard character with a fixed creation time
+            2345 => new MuckCharacter(2345, 'TestCharacter2', Carbon::create(2000,1,1, 0, 0, 0 ), 14, '', [], 1),
             // Unapproved character
             3456 => new MuckCharacter(3456, 'TestCharacter3', Carbon::now(), 0, '', ['unapproved'], 1),
             // Unapproved character on other account

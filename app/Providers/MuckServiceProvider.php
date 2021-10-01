@@ -6,6 +6,7 @@ use App\Muck\MuckConnection;
 use App\Muck\FakeMuckConnection;
 use App\Muck\HttpMuckConnection;
 use App\Muck\MuckObjectService;
+use App\Muck\MuckObjectsProviderViaDatabase;
 use Error;
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
@@ -31,12 +32,14 @@ class MuckServiceProvider extends ServiceProvider implements DeferrableProvider
         if ($driver == 'http') $connection = new HttpMuckConnection($config);
         if (!$driver) throw new Error('Unrecognized muck driver: ' . $driver);
 
+        $provider = new MuckObjectsProviderViaDatabase();
+
         $this->app->singleton(MuckConnection::class, function($app) use ($connection) {
             return $connection;
         });
 
-        $this->app->singleton(MuckObjectService::class, function($app) use ($connection) {
-            return new MuckObjectService($connection);
+        $this->app->singleton(MuckObjectService::class, function($app) use ($connection, $provider) {
+            return new MuckObjectService($connection, $provider);
         });
     }
 
