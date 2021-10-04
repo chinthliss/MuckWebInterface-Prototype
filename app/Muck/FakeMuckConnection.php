@@ -18,15 +18,16 @@ class FakeMuckConnection implements MuckConnection
 
     public function __construct(array $config)
     {
+        $fixedTime = Carbon::create(2000,1,1, 0, 0, 0 );
         $this->fakeDatabaseByDbref = [
             // Wizard character
-            1234 => new MuckCharacter(1234, 'TestCharacter', Carbon::now(), 100, '', ['wizard'], 1),
+            1234 => new MuckCharacter(1234, 'TestCharacter', $fixedTime, 100, '', ['wizard'], 1),
             // Non-wizard character with a fixed creation time
-            2345 => new MuckCharacter(2345, 'TestCharacter2', Carbon::create(2000,1,1, 0, 0, 0 ), 14, '', [], 1),
+            2345 => new MuckCharacter(2345, 'TestCharacter2', $fixedTime, 14, '', [], 1),
             // Unapproved character
-            3456 => new MuckCharacter(3456, 'TestCharacter3', Carbon::now(), 0, '', ['unapproved'], 1),
+            3456 => new MuckCharacter(3456, 'TestCharacter3', $fixedTime, 0, '', ['unapproved'], 1),
             // Unapproved character on other account
-            4567 => new MuckCharacter(4567, 'TestCharacterA1', Carbon::now(), 0, '', ['unapproved'], 6)
+            4567 => new MuckCharacter(4567, 'TestCharacterA1', $fixedTime, 0, '', ['unapproved'], 6)
         ];
         foreach ($this->fakeDatabaseByDbref as $entry) {
             if ($entry->typeFlag() == 'P') $this->fakeDatabaseByPlayerName[strtolower($entry->name())] = $entry;
