@@ -29,7 +29,6 @@ interface MuckObjectsProvider
     /**
      * If the object is a player, it's flagged as deleted, otherwise it's actually deleted
      * @param int $id
-     * @return mixed
      */
     public function removeById(int $id);
 
