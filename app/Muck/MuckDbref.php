@@ -80,4 +80,15 @@ class MuckDbref
         return $this->typeFlag;
     }
 
+    public function toArray()
+    {
+        return [
+            'dbref' => $this->dbref,
+            'type' => $this->typeFlag,
+            'name' => $this->name,
+            'created' => $this->createdTimestamp,
+            'muckObjectId' => $this->muckObjectId
+        ];
+    }
+
 }

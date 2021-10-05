@@ -2,6 +2,7 @@
 
 namespace App\Muck;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -9,35 +10,22 @@ class MuckObjectsProviderViaDatabase implements MuckObjectsProvider
 {
 
     /**
-     * Retrieves the dbref associated with the given MuckObjectId
-     * @param int $id
-     * @return MuckDbref
+     * @inheritDoc
      */
-    public function getById(int $id): MuckDbref
+    public function getById(int $id): ?array
     {
-        Log::debug("MuckObject - Retrieving object with the id of $id");
-        $object = null;
+        Log::debug("MuckObjectDB - Retrieving object with the id of $id");
         $row = DB::table('muck_objects')
             ->where('id', '=', $id)
             ->first();
-        if ($row) {
-            $typeFlag = 'T';
-            switch ($row->type) {
-                case 'player':
-                    $typeFlag = 'P';
-                    break;
-                case 'zombie':
-                    $typeFlag = 'Z';
-                    break;
-                case 'room':
-                    $typeFlag = 'R';
-                    break;
-            }
-            $object = new MuckDbref($row->dbref, $row->name, $typeFlag, $row->created_at);
-        }
 
-        Log::debug("MuckObject - Retrieved object: $object");
-        return $object;
+        if (!$row) return null;
+        return [
+            'dbref' => $row->dbref,
+            'created' => new Carbon($row->created_at),
+            'name' => $row->name,
+            'deleted' => ($row->deleted_at != null)
+        ];
     }
 
     /**
@@ -47,7 +35,7 @@ class MuckObjectsProviderViaDatabase implements MuckObjectsProvider
      */
     public function getIdFor(MuckDbref $muckDbref): int
     {
-        Log::debug("MuckObject - Fetching ID for $muckDbref");
+        Log::debug("MuckObjectDB - Fetching ID for $muckDbref");
 
         // Try to find it first
         $row = DB::table('muck_objects')
@@ -56,7 +44,7 @@ class MuckObjectsProviderViaDatabase implements MuckObjectsProvider
             ->where('created_at', '=', $muckDbref->createdTimestamp())
             ->first();
         if ($row) {
-            Log::debug("MuckObject - Found existing ID of $row->id for $muckDbref");
+            Log::debug("MuckObjectDB - Found existing ID of $row->id for $muckDbref");
             return $row->id;
         }
 
@@ -83,7 +71,36 @@ class MuckObjectsProviderViaDatabase implements MuckObjectsProvider
 
         $id = DB::table('muck_objects')
             ->insertGetId($databaseArray);
-        Log::debug("MuckObject - Created new ID of $id for $muckDbref");
+        Log::debug("MuckObjectDB - Created new ID of $id for $muckDbref");
         return $id;
+    }
+
+    public function removeById(int $id)
+    {
+        Log::debug("MuckObjectDB - Remove request for ID: $id");
+        $row = DB::table('muck_objects')
+            ->where('id', '=', $id)
+            ->first();
+        if ($row) {
+            if ($row->type == 'player') {
+                DB::table('muck_objects')
+                    ->where('id', '=', $id)
+                    ->update(['deleted_at' => Carbon::now()]);
+                Log::debug("MuckObjectDB - Flagged player entry as deleted, ID: $id");
+            } else {
+                DB::table('muck_objects')
+                    ->where('id', '=', $id)
+                    ->delete();
+                Log::debug("MuckObjectDB - Deleted row with ID: $id");
+            }
+        }
+    }
+
+    public function updateName(int $id, string $name)
+    {
+        Log::debug("MuckObjectDB - Updating name for $id to: $name");
+        DB::table('muck_objects')
+            ->where('id', '=', $id)
+            ->update(['name' => $name]);
     }
 }

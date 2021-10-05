@@ -108,10 +108,10 @@ class MuckObjectService
 
     /**
      * Lookup the object for the given MuckObjectId
-     * @param string $id
-     * @return MuckDbref|null
+     * @param int $id
+     * @return null|MuckDbref
      */
-    public function getByMuckObjectId(string $id): ?MuckDbref
+    public function getByMuckObjectId(int $id): ?MuckDbref
     {
         Log::debug("MuckObjectService.getByMuckObjectId called for $id");
 
@@ -120,11 +120,27 @@ class MuckObjectService
             Log::debug("MuckObjectService.getByMuckObjectId returning already fetched object - $id: $object");
             return $object;
         }
-        $object = $this->provider->getById($id);
-        if ($object) {
-            $this->byMuckObjectId[$id] = $object;
-            $this->byDbref[$object->dbref()] = $object;
-            if ($object->typeFlag() === 'p') $this->byName[$object->name()] = $object;
+
+        $object = null;
+        $details = $this->provider->getById($id);
+
+        if ($details) {
+            if (!$details['deleted']) {
+                // At this point we need the verified details from the muck, so fetch the object that has that dbref
+                // This will also take care of inserting the current dbref into the cache
+                $object = $this->getByDbref($details['dbref']);
+                // And now make sure that we're the same dbref
+                if ($object->createdTimestamp() != $details['created']) {
+                    $details['deleted'] = true;
+                    $this->provider->removeById($id);
+                } elseif ($object->name() !== $details['name']) {
+                    // Need to update name in DB
+                    $this->provider->updateName($id, $object->name());
+                }
+            }
+            if ($details['deleted']) {
+                $object = new MuckDbref($details['dbref'], $details['name'] . '(DELETED)', 'T', $details['created']);
+            }
         }
 
         Log::debug("MuckObjectService.getByMuckObjectId fetched object - $id: $object");
