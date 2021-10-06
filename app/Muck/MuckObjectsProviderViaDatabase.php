@@ -51,13 +51,13 @@ class MuckObjectsProviderViaDatabase implements MuckObjectsProvider
         //Otherwise create an entry
         $type = 'thing';
         switch ($muckDbref->typeFlag()) {
-            case 'P':
+            case 'p':
                 $type = 'player';
                 break;
-            case 'Z':
+            case 'z':
                 $type = 'zombie';
                 break;
-            case 'R':
+            case 'r':
                 $type = 'room';
                 break;
         }

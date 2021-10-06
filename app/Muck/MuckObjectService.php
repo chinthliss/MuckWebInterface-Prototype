@@ -42,6 +42,19 @@ class MuckObjectService
     }
 
     /**
+     * Should not be called by anything returning a non-valid, deleted object.
+     * @param MuckDbref|null $object
+     */
+    private function cacheAsRequired(?MuckDbref $object)
+    {
+        if ($object) {
+            $this->byDbref[$object->dbref()] = $object;
+            if ($object->muckObjectId()) $this->byMuckObjectId[$object->muckObjectId()] = $object;
+            if ($object->typeFlag() == 'p') $this->byName[$object->name()] = $object;
+        }
+    }
+
+    /**
      * Fetches an object by its dbref.
      * @param int $dbref
      * @return MuckDbref|null
@@ -57,7 +70,7 @@ class MuckObjectService
         }
 
         $object = $this->connection->getByDbref($dbref);
-        if ($object) $this->byDbref[$object->dbref()] = $object;
+        $this->cacheAsRequired($object);
 
         Log::debug("MuckObjectService.getByDbref looked up - $dbref: $object");
         return $object;
@@ -79,10 +92,7 @@ class MuckObjectService
         }
 
         $object = $this->connection->getByPlayerName($name);
-        if ($object) {
-            $this->byDbref[$object->dbref()] = $object;
-            $this->byName[$object->name()] = $object;
-        }
+        $this->cacheAsRequired($object);
 
         Log::debug("MuckObjectService.getByPlayerName looked up - $name: $object");
         return $object;
@@ -98,10 +108,7 @@ class MuckObjectService
         // No cache to look through for the API token as we'd only be using it during page load
         // But we still cache the results
         $object = $this->connection->getByApiToken($apiToken);
-        if ($object) {
-            $this->byDbref[$object->dbref()] = $object;
-            $this->byName[$object->name()] = $object;
-        }
+        $this->cacheAsRequired($object);
 
         return $object;
     }
@@ -139,7 +146,7 @@ class MuckObjectService
                 }
             }
             if ($details['deleted']) {
-                $object = new MuckDbref($details['dbref'], $details['name'] . '(DELETED)', 'T', $details['created']);
+                $object = new MuckDbref($details['dbref'], $details['name'] . '(DELETED)', 't', $details['created']);
             }
         }
 
@@ -178,8 +185,7 @@ class MuckObjectService
     {
         $characters = $this->connection->getCharactersOf($user);
         foreach ($characters as $character) {
-            $this->byDbref[$character->dbref()] = $character;
-            $this->byName[$character->name()] = $character;
+            $this->cacheAsRequired($character);
         }
         return $characters;
     }

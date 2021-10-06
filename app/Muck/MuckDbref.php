@@ -11,10 +11,10 @@ use Illuminate\Support\Carbon;
 class MuckDbref
 {
     public static array $typeFlags = [
-        'P' => 'player',
-        'Z' => 'zombie',
-        'R' => 'room',
-        'T' => 'thing'
+        'p' => 'player',
+        'z' => 'zombie',
+        'r' => 'room',
+        't' => 'thing'
     ];
 
     protected int $dbref;
@@ -24,7 +24,7 @@ class MuckDbref
     protected string $typeFlag;
 
     /**
-     * @var Carbon|null The created timestamp - in conjunction with the dbref acts as a signature since dbrefs can be reused
+     * @var Carbon The created timestamp - in conjunction with the dbref acts as a signature since dbrefs can be reused
      */
     protected Carbon $createdTimestamp;
 
@@ -37,6 +37,7 @@ class MuckDbref
      * @param int $dbref
      * @param string $name
      * @param string $typeFlag
+     * @param Carbon $createdTimestamp
      */
     public function __construct(int $dbref, string $name, string $typeFlag, Carbon $createdTimestamp)
     {
@@ -70,17 +71,22 @@ class MuckDbref
         return $this->createdTimestamp;
     }
 
-    public function toInt()
+    public function toInt() : int
     {
         return $this->dbref;
     }
 
-    public function typeFlag()
+    public function typeFlag() : string
     {
         return $this->typeFlag;
     }
 
-    public function toArray()
+    public function muckObjectId() : ?int
+    {
+        return $this->muckObjectId;
+    }
+
+    public function toArray() : array
     {
         return [
             'dbref' => $this->dbref,

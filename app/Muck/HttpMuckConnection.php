@@ -320,21 +320,21 @@ class HttpMuckConnection implements MuckConnection
         $creationTimestamp = Carbon::createFromTimestampUTC($creationTimestamp);
 
         switch ($typeFlag) {
-            case 'P':
+            case 'p':
                 list($accountId, $level, $avatar, $flagsAsString) = $metadata;
                 $flags = $flagsAsString ? explode(':', $flagsAsString) : [];
                 $muckObject = new MuckCharacter($dbref, $name, $creationTimestamp,
                     $level, $avatar, $flags, $accountId);
                 break;
-            case 'Z':
+            case 'z':
                 list($level, $avatar) = $metadata;
                 $muckObject = new MuckCharacter($dbref, $name, $creationTimestamp,
                     $level, $avatar);
                 break;
-            case 'R':
+            case 'r':
                 $muckObject = new MuckDbref($dbref, $name, $typeFlag, $creationTimestamp);
                 break;
-            case 'T':
+            case 't':
                 $muckObject = new MuckDbref($dbref, $name, $typeFlag, $creationTimestamp);
                 break;
             default:

@@ -30,7 +30,7 @@ class FakeMuckConnection implements MuckConnection
             4567 => new MuckCharacter(4567, 'TestCharacterA1', $fixedTime, 0, '', ['unapproved'], 6)
         ];
         foreach ($this->fakeDatabaseByDbref as $entry) {
-            if ($entry->typeFlag() == 'P') $this->fakeDatabaseByPlayerName[strtolower($entry->name())] = $entry;
+            if ($entry->typeFlag() == 'p') $this->fakeDatabaseByPlayerName[strtolower($entry->name())] = $entry;
         }
     }
 
