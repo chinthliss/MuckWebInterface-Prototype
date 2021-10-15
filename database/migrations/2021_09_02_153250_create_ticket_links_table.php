@@ -17,6 +17,8 @@ class CreateTicketLinksTable extends Migration
             $table->bigInteger('from_ticket_id')->index();
             $table->bigInteger('to_ticket_id')->index();
             $table->enum('link_type', ['duplicate', 'related']);
+
+            $table->primary(['from_ticket_id', 'to_ticket_id']);
         });
     }
 

@@ -86,6 +86,15 @@ class MuckDbref
         return $this->muckObjectId;
     }
 
+    /**
+     * Utility class to check if this is a player
+     * @return bool
+     */
+    public function isPlayer(): bool
+    {
+        return $this->typeFlag == 'p';
+    }
+
     public function toArray() : array
     {
         return [

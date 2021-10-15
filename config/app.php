@@ -182,7 +182,7 @@ return [
         App\Providers\PayPalServiceProvider::class,
         App\Providers\PatreonServiceProvider::class,
         App\Providers\AccountNotificationsServiceProvider::class,
-
+        App\Providers\SupportTicketServiceProvider::class,
     ],
 
     /*
