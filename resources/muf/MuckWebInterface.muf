@@ -64,7 +64,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     object @ timestamps pop pop pop intostr strcat "," strcat
     "" (Typeflag and metadata)
     object @ player? if
-      pop "P,"
+      pop "p,"
       object @ acct_any2aid intostr strcat "|" strcat
       object @ truelevel intostr strcat "|" strcat
       "avatarstring" strcat (avatar TBC)
@@ -75,11 +75,11 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
       ":" array_join strcat
     then
     object @ "zombie" flag? if
-      pop "Z,"
+      pop "z,"
       object @ truelevel intostr strcat "|" strcat
       "" strcat (avatar TBC)
     then
-    ?dup not if "T," then
+    ?dup not if "t," then
     strcat "," strcat object @ name strcat
 ; PUBLIC objectToString (for testing)
 
