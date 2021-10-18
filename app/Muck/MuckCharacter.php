@@ -24,7 +24,7 @@ class MuckCharacter extends MuckDbref
     public function __construct(int $dbref, string $name, Carbon $createdTimestamp,
                                 int $level = null, string $avatar = null, array $flags = [], int $accountId = null)
     {
-        parent::__construct($dbref, $name, 'p', $createdTimestamp);
+        parent::__construct($dbref, $name, $accountId ? 'p' : 'z', $createdTimestamp);
         $this->level = $level;
         $this->accountId = $accountId;
         if (in_array('unapproved', $flags)) $this->approved = false;
@@ -34,11 +34,6 @@ class MuckCharacter extends MuckDbref
     public function aid(): ?int
     {
         return $this->accountId;
-    }
-
-    public function typeFlag(): string
-    {
-        return ($this->accountId ? 'p' : 'z');
     }
 
     public function isApproved(): bool
