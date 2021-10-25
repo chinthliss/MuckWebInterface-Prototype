@@ -49,7 +49,6 @@ class MuckObjectService
     {
         if ($object) {
             $this->byDbref[$object->dbref()] = $object;
-            if ($object->muckObjectId()) $this->byMuckObjectId[$object->muckObjectId()] = $object;
             if ($object->typeFlag() == 'p') $this->byName[$object->name()] = $object;
         }
     }

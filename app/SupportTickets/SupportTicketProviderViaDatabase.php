@@ -35,9 +35,10 @@ class SupportTicketProviderViaDatabase implements SupportTicketProvider
             $row->title,
             $user,
             $character,
-            $row->created_at ? new Carbon($row->created_at) : null,
+            new Carbon($row->created_at),
             $row->status,
             $row->status_at ? new Carbon($row->status_at) : null,
+            new Carbon($row->updated_at),
             $row->closure_reason,
             $row->closed_at ? new Carbon($row->closed_at) : null,
             $row->public,
@@ -71,7 +72,7 @@ class SupportTicketProviderViaDatabase implements SupportTicketProvider
             ->get();
         foreach ($rows as $row) {
             $ticket = $this->fromDatabaseRow($row);
-            $tickets[$ticket->id] = $ticket;
+            $tickets[] = $ticket;
         }
         return $tickets;
     }
@@ -87,7 +88,7 @@ class SupportTicketProviderViaDatabase implements SupportTicketProvider
             ->get();
         foreach ($rows as $row) {
             $ticket = $this->fromDatabaseRow($row);
-            $tickets[$ticket->id] = $ticket;
+            $tickets[] = $ticket;
         }
         return $tickets;
     }
@@ -105,7 +106,7 @@ class SupportTicketProviderViaDatabase implements SupportTicketProvider
             ->get();
         foreach ($rows as $row) {
             $ticket = $this->fromDatabaseRow($row);
-            $tickets[$ticket->id] = $ticket;
+            $tickets[] = $ticket;
         }
         return $tickets;
     }
@@ -158,7 +159,7 @@ class SupportTicketProviderViaDatabase implements SupportTicketProvider
             'content' => $content
         ];
         if ($fromUser) $values['from_aid'] = $fromUser->getAid();
-        if ($fromMuckObject) $values['from_muck_object_id'] = $fromMuckObject->muckObjectId();
+        if ($fromMuckObject) $values['from_muck_object_id'] = $this->muckObjects->getMuckObjectIdFor($fromMuckObject);
         DB::table('ticket_log')->insert($values);
     }
 
@@ -225,7 +226,7 @@ class SupportTicketProviderViaDatabase implements SupportTicketProvider
         $rows = DB::table('ticket_subscribers')
             ->where('ticket_id', '=', $ticket->id)
             ->get();
-        foreach($rows as $row) {
+        foreach ($rows as $row) {
             $result[$row->aid] = $row->interest;
         }
         return $result;

@@ -21,3 +21,6 @@ $service=App::make(App\SupportTickets\SupportTicketService::class); $service->li
 $service=App::make(App\SupportTickets\SupportTicketService::class); $service->getSubscriptions($service->getTicketById(1))
 $service=App::make(App\SupportTickets\SupportTicketService::class); $service->addSubscription($service->getTicketById(1), User::find(1), 'work')
 $service=App::make(App\SupportTickets\SupportTicketService::class); $service->removeSubscription($service->getTicketById(1), User::find(1), 'work')
+$service=App::make(App\SupportTickets\SupportTicketService::class); $service->addNote($service->getTicketById(1), 'Test Note', true, User::find(1))
+$service=App::make(App\SupportTickets\SupportTicketService::class); $service->addNote($service->getTicketById(1), 'Test Note with character', true, User::find(1), App::make(App\Muck\MuckObjectService::class)->getbyDbref(1234))
+

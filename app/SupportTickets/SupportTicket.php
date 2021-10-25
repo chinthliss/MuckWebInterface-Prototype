@@ -73,6 +73,7 @@ class SupportTicket
         $ticket->closedAt = null;
         $ticket->closureReason = null;
         $ticket->isPublic = false;
+        $ticket->updatedAt = Carbon::now();
         return $ticket;
     }
 
@@ -85,6 +86,7 @@ class SupportTicket
         Carbon     $createdAt,
         string     $status,
         Carbon     $statusAt,
+        Carbon     $updatedAt,
         ?string    $closureReason,
         ?Carbon    $closedAt,
         bool       $isPublic,
@@ -103,6 +105,7 @@ class SupportTicket
         $ticket->createdAt = $createdAt;
         $ticket->status = $status;
         $ticket->statusAt = $statusAt;
+        $ticket->updatedAt = $updatedAt;
         $ticket->closedAt = $closedAt;
         $ticket->closureReason = $closureReason;
         $ticket->isPublic = $isPublic;
@@ -114,13 +117,16 @@ class SupportTicket
         return "SupportTicket#$this->id[$this->category/$this->title]";
     }
 
+    /**
+     * Returns an array
+     * @return array
+     */
     public function toArray(): array
     {
         $array = [
             'id' => $this->id,
             'category' => $this->category,
             'title' => $this->title,
-            'content' => $this->content,
             'createdAt' => $this->createdAt,
             'statusAt' => $this->statusAt,
             'status' => $this->status,

@@ -36,12 +36,26 @@ class SupportTicketLog
     {
         $array = [
             'when' => $this->when,
+            'whenTimespan' => $this->when->diffForHumans(),
             'type' => $this->type,
             'staffOnly' => $this->staffOnly,
             'content' => $this->content
         ];
-        if ($this->user) $array['user'] = $this->user->getAid();
-        if ($this->character) $array['character'] = $this->character->name();
+        if ($this->character) {
+            $array['character'] = $this->character->name();
+        }
         return $array;
     }
+
+    public function toAdminArray(): array
+    {
+        $array = $this->toArray();
+        if ($this->user) {
+            $array['user'] = $this->user->getAid();
+            $array['user_url'] = $this->user->getAdminUrl();
+        }
+        if ($this->character) $array['characterDbref'] = $this->character->dbref();
+        return $array;
+    }
+
 }

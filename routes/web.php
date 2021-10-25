@@ -19,6 +19,7 @@ use App\Http\Controllers\Payment\CardManagementController;
 use App\Http\Controllers\Payment\PatreonController;
 use App\Http\Controllers\Payment\PayPalController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\SupportTicketController;
 
 /*
 |--------------------------------------------------------------------------
@@ -57,7 +58,7 @@ Route::get('/accountlocked', [AccountController::class, 'lockedAccount'])
 |--------------------------------------------------------------------------
 */
 
-Route::group(['middleware' => ['web', 'guest']], function() {
+Route::group(['middleware' => ['web', 'guest']], function () {
     Route::get('login', [AccountController::class, 'showLoginForm'])
         ->name('login');
     Route::post('account/login', [AccountController::class, 'loginAccount'])
@@ -81,7 +82,7 @@ Route::group(['middleware' => ['web', 'guest']], function() {
 | Pages that require a login but doesn't need verification or the TOS to be agreed to.
 |--------------------------------------------------------------------------
 */
-Route::group(['middleware' => ['web', 'auth:account']], function() {
+Route::group(['middleware' => ['web', 'auth:account']], function () {
     Route::post('logout', [AccountController::class, 'logout'])->name('logout');
     Route::get('account/verifyemail', [AccountEmailController::class, 'show'])
         ->name('verification.notice'); // Name is required for Laravel's verification middleware
@@ -96,7 +97,7 @@ Route::group(['middleware' => ['web', 'auth:account']], function() {
 | Core pages that require a verified account and the TOS agreed to
 |--------------------------------------------------------------------------
 */
-Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']], function() {
+Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']], function () {
 
     //Account
     Route::get('account', [AccountController::class, 'show'])->name('auth.account');
@@ -130,9 +131,20 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
     Route::get('account/notifications', [AccountNotificationsController::class, 'show'])
         ->name('account.notifications');
     Route::get('account/notifications/api', [AccountNotificationsController::class, 'getNotifications'])
-        ->name('account.notifications.api');  //TODO: Replace with api call
-    Route::delete('account/notifications/api/{id}', [AccountNotificationsController::class, 'deleteNotification']); //TODO: Replace with api call
-    Route::delete('account/notifications/api', [AccountNotificationsController::class, 'deleteAllNotifications']); //TODO: Replace with api call
+        ->name('account.notifications.api');
+    Route::delete('account/notifications/api/{id}', [AccountNotificationsController::class, 'deleteNotification']);
+    Route::delete('account/notifications/api', [AccountNotificationsController::class, 'deleteAllNotifications']);
+
+    //Support (User)
+    Route::prefix('support')->group(function () {
+        Route::get('/', [SupportTicketController::class, 'showUserHome'])
+            ->name('support.user.home');
+        Route::get('tickets', [SupportTicketController::class, 'getUserTickets'])
+            ->name('support.user.tickets');
+        Route::get('ticket/{id}', [SupportTicketController::class, 'showUserTicket'])
+            ->name('support.user.ticket');
+
+    });
 
     //Account Currency
     Route::get('accountcurrency', [AccountCurrencyController::class, 'show'])
@@ -169,7 +181,7 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
 | Multiplayer content that doesn't require a character
 |--------------------------------------------------------------------------
 */
-Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'not.locked']], function() {
+Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'not.locked']], function () {
 
     Route::get('multiplayer', [MultiplayerController::class, 'showMultiplayerDashboard'])
         ->name('multiplayer.home');
@@ -197,7 +209,7 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
 | Multiplayer content that requires a character
 |--------------------------------------------------------------------------
 */
-Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'not.locked', 'character']], function() {
+Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'not.locked', 'character']], function () {
     Route::get('multiplayer/avatar', [MultiplayerController::class, 'showAvatarEditor'])
         ->name('multiplayer.avatar');
     Route::get('multiplayer/connect', [MultiplayerController::class, 'showConnect'])
@@ -209,7 +221,7 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
 | Singleplayer content
 |--------------------------------------------------------------------------
 */
-Route::prefix('singleplayer')->group(function() {
+Route::prefix('singleplayer')->group(function () {
     //No additional middleware required
     Route::group(['middleware' => ['web']], function () {
         Route::get('/', [SingleplayerController::class, 'showHome'])
@@ -222,7 +234,7 @@ Route::prefix('singleplayer')->group(function() {
 | Game Staff pages
 |--------------------------------------------------------------------------
 */
-Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'role:staff']], function() {
+Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'role:staff']], function () {
     Route::get('admin', [AdminController::class, 'show'])
         ->name('admin.home');
 
@@ -232,6 +244,19 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
         ->name('admin.accounts.api');
     Route::get('admin/account/{accountId}', [AdminController::class, 'showAccount'])
         ->name('admin.account');
+
+    //Support (Agent)
+    Route::prefix('support/agent/')->group(function () {
+        Route::get('/', [SupportTicketController::class, 'showAgentHome'])
+            ->name('support.agent.home');
+        Route::get('tickets', [SupportTicketController::class, 'getAgentTickets'])
+            ->name('support.agent.tickets');
+        Route::get('ticket/{id}', [SupportTicketController::class, 'showAgentTicket'])
+            ->name('support.agent.ticket');
+
+
+    });
+
 });
 
 /*
@@ -239,21 +264,21 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
 | Website admin pages
 |--------------------------------------------------------------------------
 */
-Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'role:admin']], function() {
+Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'role:admin']], function () {
     Route::get('accountcurrency/subscriptions', [AccountCurrencyController::class, 'adminViewSubscriptions'])
         ->name('admin.subscriptions');
     Route::get('accountcurrency/subscriptions/api', [AccountCurrencyController::class, 'adminGetSubscriptions'])
-        ->name('admin.subscriptions.api'); //TODO: Replace with api call
+        ->name('admin.subscriptions.api');
 
     Route::get('accountcurrency/transactions', [AccountCurrencyController::class, 'adminViewTransactions'])
         ->name('admin.transactions');
     Route::get('accountcurrency/transactions/api', [AccountCurrencyController::class, 'adminGetTransactions'])
-        ->name('admin.transactions.api'); //TODO: Replace with api call
+        ->name('admin.transactions.api');
 
     Route::get('admin/patreons', [PatreonController::class, 'adminShow'])
         ->name('admin.patrons');
     Route::get('admin/patreons/api', [PatreonController::class, 'adminGetPatrons'])
-        ->name('admin.patrons.api'); //TODO: Replace with api call
+        ->name('admin.patrons.api');
 
     Route::get('admin/roles', [AdminController::class, 'showAccountRoles'])
         ->name('admin.roles');

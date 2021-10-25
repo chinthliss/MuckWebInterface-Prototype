@@ -29,11 +29,6 @@ class MuckDbref
     protected Carbon $createdTimestamp;
 
     /**
-     * @var int|null This object's reference in the Muck Object table, if loaded
-     */
-    protected ?int $muckObjectId = null;
-
-    /**
      * @param int $dbref
      * @param string $name
      * @param string $typeFlag
@@ -81,11 +76,6 @@ class MuckDbref
         return $this->typeFlag;
     }
 
-    public function muckObjectId() : ?int
-    {
-        return $this->muckObjectId;
-    }
-
     /**
      * Utility class to check if this is a player
      * @return bool
@@ -101,8 +91,7 @@ class MuckDbref
             'dbref' => $this->dbref,
             'type' => $this->typeFlag,
             'name' => $this->name,
-            'created' => $this->createdTimestamp,
-            'muckObjectId' => $this->muckObjectId
+            'created' => $this->createdTimestamp
         ];
     }
 

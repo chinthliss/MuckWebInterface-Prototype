@@ -53,6 +53,11 @@ class User implements Authenticatable, MustVerifyEmail
         return "User#" . $this->aid;
     }
 
+    public function getAdminUrl() : string
+    {
+        return route('admin.account', ['accountId' => $this->getAid()]);
+    }
+
     public static function fromDatabaseResponse(\stdClass $query): User
     {
         if (
@@ -345,7 +350,7 @@ class User implements Authenticatable, MustVerifyEmail
             'primary_email' => $this->email,
             'roles' => $this->roles,
             'locked' => $this->lockedAt,
-            'url' => route('admin.account', ['accountId' => $this->getAid()])
+            'url' => $this->getAdminUrl()
         ];
     }
     #endregion Admin functionality

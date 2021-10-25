@@ -26,6 +26,17 @@ class SupportTicketService
         $this->provider = $provider;
     }
 
+    /**
+     * Returns whether the given user is allowed to view this ticket
+     * @param User $user
+     * @param SupportTicket $ticket
+     * @return bool
+     */
+    public function userCanSeeTicket(User $user, SupportTicket $ticket): bool
+    {
+        return $ticket->user == $user || $ticket->isPublic;
+    }
+
     public function getTicketById(int $id): ?SupportTicket
     {
         return $this->provider->getById($id);
@@ -40,11 +51,25 @@ class SupportTicketService
     }
 
     /**
+     * Gets all active tickets
      * @return array<int, SupportTicket>
      */
     public function getActiveTickets(): array
     {
         return $this->provider->getActive();
+    }
+
+    /**
+     * Gets all active tickets that a particular user can see
+     * @return array<int, SupportTicket>
+     */
+    public function getActiveTicketsForUser(User $user): array
+    {
+        $results = [];
+        foreach ($this->provider->getActive() as $ticket) {
+            if ($this->userCanSeeTicket($user, $ticket)) $results[] = $ticket;
+        }
+        return $results;
     }
 
     private function saveTicket(SupportTicket $ticket)
@@ -169,13 +194,19 @@ class SupportTicketService
 
         $this->provider->addSubscription($ticket, $user, $interest);
 
-        $message = match ($interest) {
-            'work' => "Agent started working on ticket: $user.",
-            'watch' => "User started watching ticket: $user.",
-            default => null,
-        };
-        $this->addLogEntry($ticket, 'system', false, $user, null, $message);
+        if ($interest == 'work') {
+            $message = "Agent started working on ticket.";
+            $isPublic = true;
+            if ($ticket->status == 'new') {
+                $ticket->status = 'open';
+                $ticket->statusAt = Carbon::now();
+            }
+        } else {
+            $isPublic = false;
+            $message = "User started watching ticket.";
+        }
 
+        $this->addLogEntry($ticket, 'system', $isPublic, $user, null, $message);
         $this->saveTicket($ticket);
 
     }

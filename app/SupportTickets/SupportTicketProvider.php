@@ -15,17 +15,17 @@ interface SupportTicketProvider
 
     /**
      * @param string $category
-     * @return array<int, SupportTicket>
+     * @return SupportTicket[]
      */
     public function getByCategory(string $category): array;
 
     /**
-     * @return array<int, SupportTicket>
+     * @return SupportTicket[]
      */
     public function getOpen(): array;
 
     /**
-     * @return array<int, SupportTicket>
+     * @return SupportTicket[]
      */
     public function getActive(): array;
 

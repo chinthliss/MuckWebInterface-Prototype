@@ -106,8 +106,9 @@
         <!-- Left side bar -->
         <nav id="site_navigation_left" class="col-12 col-md-3 col-xl-2">
             <div class="navbar-text">Some text!</div>
-
             @auth
+                <a class="nav-link" href="{{ route('support.user.home') }}">Support / Request</a>
+
                 <h4 class="nav-link mt-2 pl-0"><a href="{{ route('singleplayer.home') }}">Singleplayer</a></h4>
                 <div>???</div>
 
@@ -120,6 +121,7 @@
 
                 @Staff
                 <h4 class="nav-link mt-2 pl-0"><a href="{{ route('admin.home') }}">Game Staff</a></h4>
+                <a class="nav-link" href="{{ route('support.agent.home') }}">Support / Request Agent</a>
                 <a class="nav-link" href="{{ route('admin.accounts') }}">Account Browser</a>
                 <a class="nav-link" href="{{ route('admin.roles') }}">Account Roles List</a>
                 @endStaff
