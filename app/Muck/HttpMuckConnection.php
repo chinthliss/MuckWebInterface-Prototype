@@ -309,7 +309,7 @@ class HttpMuckConnection implements MuckConnection
          */
         $parts = explode(',', $muckResponse);
         if (count($parts) < 5)
-            throw new InvalidArgumentException("Muck response contains the wrong number of parts");
+            throw new InvalidArgumentException("parseMuckObjectResponse: Response contains the wrong number of parts: $muckResponse");
 
         // The first four parts are fixed
         list($dbref, $creationTimestamp, $typeFlag, $metadata) = $parts;
@@ -321,6 +321,8 @@ class HttpMuckConnection implements MuckConnection
 
         switch ($typeFlag) {
             case 'p':
+                if (count($metadata) != 4)
+                    throw new InvalidArgumentException("parseMuckObjectResponse: Expected 4 items in metadata for a player: $muckResponse");
                 list($accountId, $level, $avatar, $flagsAsString) = $metadata;
                 $flags = $flagsAsString ? explode(':', $flagsAsString) : [];
                 $muckObject = new MuckCharacter($dbref, $name, $creationTimestamp,
