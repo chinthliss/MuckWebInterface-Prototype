@@ -28,7 +28,7 @@ class SupportTicketLink
             'to' => $this->to->id,
             'to_title' => $this->to->title,
             'to_url' => route('support.user.ticket', ['id' => $this->to->id]),
-            'type' => ucfirst($this->type),
+            'type' => $this->type,
         ];
     }
 
@@ -41,7 +41,7 @@ class SupportTicketLink
             'to' => $this->to->id,
             'to_title' => $this->to->title,
             'to_url' => route('support.agent.ticket', ['id' => $this->to->id]),
-            'type' => ucfirst($this->type),
+            'type' => $this->type,
         ];
     }
 

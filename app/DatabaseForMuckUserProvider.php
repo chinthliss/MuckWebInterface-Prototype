@@ -27,6 +27,8 @@ class DatabaseForMuckUserProvider implements UserProvider
     private MuckObjectService $muckObjectService;
     private MuckConnection $muckConnection;
 
+    // TODO: Add caching of user lookups
+
     public function __construct(MuckConnection $muckConnection, MuckObjectService $muckObjectService)
     {
         $this->muckConnection = $muckConnection;

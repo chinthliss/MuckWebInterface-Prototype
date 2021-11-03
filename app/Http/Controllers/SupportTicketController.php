@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\SupportTickets\SupportTicketService;
-use App\SupportTickets\SupportTicket;
 use App\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 
 class SupportTicketController extends Controller
 {
-
     public function showUserHome() : View
     {
         return view('support.user.home')->with([
@@ -24,6 +24,11 @@ class SupportTicketController extends Controller
         ]);
     }
 
+    public function getUpdatedAt(SupportTicketService $service, int $id) : Carbon
+    {
+        return $service->getLastUpdatedById($id);
+    }
+
     public function getUserTickets(SupportTicketService $service) : array
     {
         /** @var User $user */
@@ -35,7 +40,7 @@ class SupportTicketController extends Controller
                 'url' => route('support.user.ticket', ['id' => $ticket->id]),
                 'category' => $ticket->category,
                 'title' => $ticket->title,
-                'status' => ucfirst($ticket->status),
+                'status' => $ticket->status,
                 'lastUpdatedAt' => $ticket->updatedAt,
                 'lastUpdatedAtTimespan' => $ticket->updatedAt->diffForHumans(),
                 'isPublic' => $ticket->isPublic
@@ -62,7 +67,7 @@ class SupportTicketController extends Controller
                 'url' => route('support.agent.ticket', ['id' => $ticket->id]),
                 'category' => $ticket->category,
                 'title' => $ticket->title,
-                'status' => ucfirst($ticket->status),
+                'status' => $ticket->status,
                 'lastUpdatedAt' => $ticket->updatedAt,
                 'lastUpdatedAtTimespan' => $ticket->updatedAt->diffForHumans(),
                 'isPublic' => $ticket->isPublic,
@@ -80,59 +85,80 @@ class SupportTicketController extends Controller
 
         if (!$ticket) abort(404);
 
-        $output = [
-            'id' => $ticket->id,
-            'url' => route('support.agent.ticket', ['id' => $ticket->id]),
-            'category' => $ticket->category,
-            'title' => $ticket->title,
-            'content' => $ticket->content,
-            'createdAt' => $ticket->createdAt,
-            'createdAtTimespan' => $ticket->createdAt->diffForHumans(),
-            'status' => ucfirst($ticket->status),
-            'statusAt' => $ticket->statusAt,
-            'statusAtTimespan' => $ticket->statusAt->diffForHumans(),
-            'closedAt' => $ticket->closedAt,
-            'closedAtTimespan' => $ticket->closedAt ? $ticket->closedAt->diffForHumans() : null,
-            'closureReason' => ucfirst($ticket->closureReason),
-            'isPublic' => $ticket->isPublic,
-            'updatedAt' => $ticket->updatedAt,
-            'updatedAtTimespan' => $ticket->updatedAt->diffForHumans()
-        ];
-        if ($ticket->user) $output['requesterAccountId'] = $ticket->user->getAid();
-        if ($ticket->character) {
-            $output['requesterCharacterDbref'] = $ticket->character->dbref();
-            $output['requesterCharacterName'] = $ticket->character->name();
-        }
-
-        $output['log'] = array_map(function($entry) {
-            return $entry->toAdminArray();
-        }, $service->getLog($ticket));
-
-        $output['links_from'] = [];
-        $output['links_to'] = [];
-        foreach ($service->getLinks($ticket) as $link) {
-            if ($link->from->id == $ticket->id)
-                $output['links_to'][] = $link->toAgentArray();
-            else
-                $output['links_from'][] = $link->toAgentArray();
-        }
-
-        $output['watchers'] = [];
-        $output['workers'] = [];
-        foreach ($service->getSubscriptions($ticket) as $accountId=>$type) {
-            $subscription = [
-                'accountId' => $accountId,
-                'url' => route('admin.account', ['accountId' => $accountId])
-            ];
-            if ($type == 'work')
-                $output['workers'][] = $subscription;
-            else
-                $output['watchers'][] = $subscription;
-        }
-
         return view('support.agent.ticket', [
-            'ticket' => $output
+            'ticket' => $ticket->serializeForAgent($service),
+            'pollUrl' => route('support.getUpdatedAt', ['id' => $ticket->id]),
+            'updateUrl' => route('support.agent.ticket', ['id' => $ticket->id]),
+            'categoryConfiguration' => $service->getCategoryConfiguration()
         ]);
+    }
+
+    // Returns new representation of the ticket on success
+    public function handleAgentUpdate(Request $request, SupportTicketService $service, int $id): array
+    {
+        $ticket = $service->getTicketById($id);
+        if (!$ticket) abort(404);
+
+        /** @var User $user */
+        $user = auth()->user();
+        $character = $user->getCharacter();
+
+        $foundSomething = false;
+
+        if ($request->has('title')) {
+            $foundSomething = true;
+            $service->setTitle($ticket, $request->get('title'), $user, $character);
+        }
+
+        if ($request->has('category')) {
+            $foundSomething = true;
+            $service->setCategory($ticket, $request->get('category'), $user, $character);
+        }
+
+        if ($request->has('status')) {
+            $foundSomething = true;
+            if ($request->has('closureReason'))
+                $service->closeTicket($ticket, $request->get('closureReason'), $user, $character);
+            else
+                $service->setStatus($ticket, $request->get('status'), $user, $character);
+        }
+
+        if ($request->has('isPublic')) {
+            $foundSomething = true;
+            $service->setPublic($ticket, $request->get('isPublic'), $user, $character);
+        }
+
+        // Things that aren't just changing values on the ticket
+        if ($request->has('task')) {
+            $task = $request->get('task');
+
+            if ($task == 'RemoveMeAsWorker') {
+                $foundSomething = true;
+                $service->removeSubscription($ticket, $user, 'work');
+            }
+
+            if ($task == 'AddMeAsWorker') {
+                $foundSomething = true;
+                $service->addSubscription($ticket, $user, 'work');
+            }
+
+            if ($task == 'RemoveMeAsWatcher') {
+                $foundSomething = true;
+                $service->removeSubscription($ticket, $user, 'watch');
+            }
+
+            if ($task == 'AddMeAsWatcher') {
+                $foundSomething = true;
+                $service->addSubscription($ticket, $user, 'watch');
+            }
+
+        }
+
+        if (!$foundSomething) {
+            abort(400, "Couldn't find anything to update in the request.");
+        }
+
+        return $ticket->serializeForAgent($service);
     }
 
 }

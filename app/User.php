@@ -53,6 +53,16 @@ class User implements Authenticatable, MustVerifyEmail
         return "User#" . $this->aid;
     }
 
+    /**
+     * Checks whether two user objects share the same accountId
+     * @param User $otherUser
+     * @return bool
+     */
+    public function is(User $otherUser) : bool
+    {
+        return $this->aid === $otherUser->getAid();
+    }
+
     public function getAdminUrl() : string
     {
         return route('admin.account', ['accountId' => $this->getAid()]);

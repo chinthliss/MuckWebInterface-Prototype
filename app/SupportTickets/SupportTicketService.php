@@ -13,6 +13,8 @@ class SupportTicketService
 {
     private SupportTicketProvider $provider;
 
+    private array $validStatuses = ['new', 'open', 'pending', 'held', 'closed'];
+
     private array $validClosureReasons = ['completed', 'denied', 'duplicate'];
 
     private array $validLogTypes = ['system', 'note', 'upvote', 'downvote'];
@@ -20,6 +22,36 @@ class SupportTicketService
     private array $validLinkTypes = ['duplicate', 'related'];
 
     private array $validInterestTypes = ['watch', 'work'];
+
+    /**
+     * @var SupportTicketCategory[]
+     */
+    private array $categoryConfiguration;
+
+    /**
+     * @return SupportTicketCategory[]
+     */
+    public function getCategoryConfiguration(): array
+    {
+        if (!isset($this->categoryConfiguration)) {
+            // For now hard coded. May replace this with something more dynamic later
+            $this->categoryConfiguration = [
+                new SupportTicketCategory('chargen', 'Chargen'),
+                new SupportTicketCategory('building', 'Building'),
+                new SupportTicketCategory('code', 'Code'),
+                new SupportTicketCategory('disputes', 'Disputes', neverPublic: true),
+                new SupportTicketCategory('gear', 'Gear'),
+                new SupportTicketCategory('judge', 'Judge'),
+                new SupportTicketCategory('typo', 'Typo'),
+                new SupportTicketCategory('makopool', 'Mako Pool', usersCannotRaise: true),
+                new SupportTicketCategory('monsterreview', 'Monster Review', usersCannotRaise: true),
+                new SupportTicketCategory('research', 'Research', usersCannotRaise: true),
+                new SupportTicketCategory('stretchgoal', 'Stretch Goal', usersCannotRaise: true),
+                new SupportTicketCategory('suggestion', 'Suggestion')
+            ];
+        }
+        return $this->categoryConfiguration;
+    }
 
     public function __construct(SupportTicketProvider $provider)
     {
@@ -34,12 +66,22 @@ class SupportTicketService
      */
     public function userCanSeeTicket(User $user, SupportTicket $ticket): bool
     {
-        return $ticket->user == $user || $ticket->isPublic;
+        return $ticket->user === $user || $ticket->isPublic;
     }
 
+    /**
+     * @param int $id
+     * @return SupportTicket|null
+     */
     public function getTicketById(int $id): ?SupportTicket
     {
         return $this->provider->getById($id);
+    }
+
+    // Streamlined method for polling the updated by
+    public function getLastUpdatedById(int $id): Carbon
+    {
+        return $this->provider->getUpdatedAt($id);
     }
 
     /**
@@ -72,12 +114,23 @@ class SupportTicketService
         return $results;
     }
 
+    /**
+     * @param SupportTicket $ticket
+     */
     private function saveTicket(SupportTicket $ticket)
     {
         $ticket->updatedAt = Carbon::now();
         $this->provider->save($ticket);
     }
 
+    /**
+     * @param string $category
+     * @param string $title
+     * @param string $content
+     * @param User|null $user
+     * @param MuckCharacter|null $character
+     * @return SupportTicket
+     */
     public function createTicket(string $category, string $title, string $content,
                                  ?User  $user = null, ?MuckCharacter $character = null): SupportTicket
     {
@@ -86,6 +139,13 @@ class SupportTicketService
         return $this->provider->create($category, $title, $content, $user, $character);
     }
 
+    /**
+     * @param SupportTicket $ticket
+     * @param string $closureReason
+     * @param User|null $fromUser
+     * @param MuckDbref|null $fromCharacter
+     * @throws Exception
+     */
     public function closeTicket(SupportTicket $ticket, string $closureReason, ?User $fromUser = null, ?MuckDbref $fromCharacter = null)
     {
         if (!in_array($closureReason, $this->validClosureReasons))
@@ -100,7 +160,64 @@ class SupportTicketService
         $ticket->closureReason = $closureReason;
         $ticket->closedAt = Carbon::now();
         $this->saveTicket($ticket);
-        $this->addLogEntry($ticket, 'system', true, $fromUser, $fromCharacter, "Ticket closed with reason: $closureReason");
+        $this->addLogEntry($ticket, 'system', true, $fromUser, $fromCharacter, "Ticket closed with reason: " . ucfirst($closureReason));
+    }
+
+    /**
+     * @param SupportTicket $ticket
+     * @param string $status
+     * @param User|null $fromUser
+     * @param MuckDbref|null $fromCharacter
+     */
+    public function setStatus(SupportTicket $ticket, string $status, ?User $fromUser = null, ?MuckDbref $fromCharacter = null)
+    {
+        if (!in_array($status, $this->validStatuses))
+            throw new Error("Invalid status specified when setting ticket status");
+
+        if ($status === 'closed')
+            throw new Error("Closing a ticket should be done by the closeTicket function");
+
+        $ticket->status = $status;
+        $ticket->statusAt = Carbon::now();
+        if ($ticket->closedAt) {
+            $ticket->closedAt = null;
+            $ticket->closureReason = null;
+            $message = "Ticket re-opened and status changed to: " . ucfirst($status);
+        } else {
+            $message = "Status changed to: " . ucfirst($status);
+        }
+
+        $this->saveTicket($ticket);
+        $this->addLogEntry($ticket, 'system', true, $fromUser, $fromCharacter, $message);
+    }
+
+    /**
+     * @param SupportTicket $ticket
+     * @param bool $isPublic
+     * @param User|null $fromUser
+     * @param MuckDbref|null $fromCharacter
+     */
+    public function setPublic(SupportTicket $ticket, bool $isPublic, ?User $fromUser = null, ?MuckDbref $fromCharacter = null)
+    {
+        if ($ticket->isPublic === $isPublic) return;
+
+        if ($ticket->isPublic) {
+            // Need to remove non-agent watchers
+            $subscriptions = $this->getSubscriptions($ticket);
+            foreach($subscriptions as $accountId => $subscriptionInterest) {
+                if ($subscriptionInterest == 'work') {
+                    $user = User::find($accountId);
+                    if (!$user->hasRole('staff')) $this->removeSubscription($ticket, User::find($accountId), 'work');
+                }
+            }
+            $message = "Ticket has been made private.";
+        } else {
+            $message = "Ticket has been made public.";
+        }
+
+        $ticket->isPublic = $isPublic;
+        $this->addLogEntry($ticket, 'system', true, $fromUser, $fromCharacter, $message);
+        $this->saveTicket($ticket);
     }
 
     /**
@@ -132,14 +249,33 @@ class SupportTicketService
     /**
      * @param SupportTicket $ticket
      * @param string $note
+     * @param bool $isPublic
      * @param User|null $fromUser
      * @param MuckDbref|null $fromCharacter
      */
     public function addNote(SupportTicket $ticket, string $note, bool $isPublic, ?User $fromUser = null, ?MuckDbref $fromCharacter = null)
     {
         $this->addLogEntry($ticket, 'note', $isPublic, $fromUser, $fromCharacter, $note);
+
+        // If a ticket is pending and the requester adds a response, it changes back to open
+        if ($ticket->status == 'pending' && $fromUser === $ticket->user) {
+            $this->setStatus($ticket, 'open', null, null);
+        }
+
+        // New tickets change to open if something is done on them
+        if ($ticket->status == 'new') {
+            $this->setStatus($ticket, 'open', null, null);
+        }
     }
 
+    /**
+     * @param SupportTicket $from
+     * @param SupportTicket $to
+     * @param string $linkType
+     * @param User|null $fromUser
+     * @param MuckDbref|null $fromCharacter
+     * @throws Exception
+     */
     public function linkTickets(SupportTicket $from, SupportTicket $to, string $linkType, ?User $fromUser = null, ?MuckDbref $fromCharacter = null)
     {
         if (!in_array($linkType, $this->validLinkTypes))
@@ -170,7 +306,7 @@ class SupportTicketService
     /**
      * Returns an array of aid:interest
      * @param SupportTicket $ticket
-     * @return array<int, string>
+     * @return SupportTicketSubscription[]
      */
     public function getSubscriptions(SupportTicket $ticket): array
     {
@@ -181,6 +317,7 @@ class SupportTicketService
      * @param SupportTicket $ticket
      * @param User $user
      * @param string $interest
+     * @throws Exception
      */
     public function addSubscription(SupportTicket $ticket, User $user, string $interest)
     {
@@ -195,7 +332,7 @@ class SupportTicketService
         $this->provider->addSubscription($ticket, $user, $interest);
 
         if ($interest == 'work') {
-            $message = "Agent started working on ticket.";
+            $message = "Agent added as working on ticket";
             $isPublic = true;
             if ($ticket->status == 'new') {
                 $ticket->status = 'open';
@@ -203,37 +340,81 @@ class SupportTicketService
             }
         } else {
             $isPublic = false;
-            $message = "User started watching ticket.";
+            $message = "User started watching ticket";
         }
 
         $this->addLogEntry($ticket, 'system', $isPublic, $user, null, $message);
         $this->saveTicket($ticket);
-
     }
 
+    /**
+     * @param SupportTicket $ticket
+     * @param User $user
+     * @param string $interest
+     * @throws Exception
+     */
     public function removeSubscription(SupportTicket $ticket, User $user, string $interest)
     {
         if (!in_array($interest, $this->validInterestTypes))
             throw new Error("Invalid interest type specified when removing subscription");
 
         $found = false;
-        foreach ($this->provider->getSubscriptions($ticket) as $existingAid => $existingInterest) {
-            if ($existingAid == $user->getAid() && $existingInterest == $interest)
+        foreach ($this->provider->getSubscriptions($ticket) as $subscription) {
+            if ($subscription->user->is($user) && $subscription->interest == $interest)
                 $found = true;
         }
         if (!$found) throw new Exception("Subscription doesn't exist.");
 
         $this->provider->removeSubscription($ticket, $user, $interest);
 
-        $message = match ($interest) {
-            'work' => "Agent stopped working on ticket: $user.",
-            'watch' => "User stopped watching ticket: $user.",
-            default => null,
-        };
-        $this->addLogEntry($ticket, 'system', false, $user, null, $message);
-
+        switch ($interest) {
+            case 'work':
+                $message = "Agent no longer working on ticket";
+                $isPublic = true;
+                break;
+            case 'watch':
+                $message = "User stopped watching ticket";
+                $isPublic = false;
+                break;
+        }
+        $this->addLogEntry($ticket, 'system', $isPublic, $user, null, $message);
         $this->saveTicket($ticket);
+    }
 
+    /**
+     * @param SupportTicket $ticket
+     * @param string $title
+     * @param User|null $user
+     * @param MuckCharacter|null $character
+     */
+    public function setTitle(SupportTicket $ticket, string $title,
+                             ?User         $user = null, ?MuckCharacter $character = null)
+    {
+        $ticket->title = $title;
+        $this->addLogEntry($ticket, 'system', true, $user, $character,
+            "Title changed to: $title");
+        $this->saveTicket($ticket);
+    }
+
+    /**
+     * @param SupportTicket $ticket
+     * @param string $category
+     * @param User|null $user
+     * @param MuckCharacter|null $character
+     */
+    public function setCategory(SupportTicket $ticket, string $category,
+                                ?User         $user = null, ?MuckCharacter $character = null)
+    {
+        $found = null;
+        foreach ($this->getCategoryConfiguration() as $possibleCategory) {
+            if ($possibleCategory->code === $category) $found = $possibleCategory;
+        }
+        if (!$found) throw new Error("Specified category ($category) is not valid.");
+
+        $ticket->category = $category;
+        $this->addLogEntry($ticket, 'system', true, $user, $character,
+            "Category changed to: $category");
+        $this->saveTicket($ticket);
     }
 
 }

@@ -14,6 +14,9 @@
 
 @section('content')
     <support-ticket-agent
-        :ticket="{{ json_encode($ticket) }}"
+        :initial-ticket="{{ json_encode($ticket) }}"
+        :category-configuration="{{ json_encode($categoryConfiguration) }}"
+        poll-url="{{ $pollUrl }}"
+        update-url="{{ $updateUrl }}"
     ></support-ticket-agent>
 @endsection

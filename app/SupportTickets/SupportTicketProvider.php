@@ -4,6 +4,7 @@ namespace App\SupportTickets;
 
 use App\Muck\MuckDbref;
 use App\User;
+use Illuminate\Support\Carbon;
 
 interface SupportTicketProvider
 {
@@ -28,6 +29,12 @@ interface SupportTicketProvider
      * @return SupportTicket[]
      */
     public function getActive(): array;
+
+    /**
+     * Gets just the updated at time of a ticket, used for polling to check for changes
+     * @return Carbon
+     */
+    public function getUpdatedAt(int $id): Carbon;
 
     /**
      * @param string $category
@@ -77,7 +84,7 @@ interface SupportTicketProvider
     /**
      * Returns an array of aid:interest
      * @param SupportTicket $ticket
-     * @return array<int, string>
+     * @return SupportTicketSubscription[]
      */
     public function getSubscriptions(SupportTicket $ticket): array;
 

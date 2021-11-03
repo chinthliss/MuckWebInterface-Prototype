@@ -111,6 +111,15 @@ class SupportTicketProviderViaDatabase implements SupportTicketProvider
         return $tickets;
     }
 
+    public function getUpdatedAt(int $id): Carbon
+    {
+        return new Carbon(
+            DB::table('tickets')
+            ->where('id', '=', $id)
+            ->value('updated_at')
+        );
+    }
+
     /**
      * @inheritDoc
      */
@@ -227,7 +236,7 @@ class SupportTicketProviderViaDatabase implements SupportTicketProvider
             ->where('ticket_id', '=', $ticket->id)
             ->get();
         foreach ($rows as $row) {
-            $result[$row->aid] = $row->interest;
+            $result[] = new SupportTicketSubscription($ticket, User::find($row->aid), $row->interest);
         }
         return $result;
     }

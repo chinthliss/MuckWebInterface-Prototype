@@ -138,4 +138,54 @@ class SupportTicket
         if ($this->character) $array['character'] = $this->character->name();
         return $array;
     }
+
+    public function serializeForAgent(SupportTicketService $service) : array
+    {
+        $output = [
+            'id' => $this->id,
+            'url' => route('support.agent.ticket', ['id' => $this->id]),
+            'category' => $this->category,
+            'title' => $this->title,
+            'content' => $this->content,
+            'createdAt' => $this->createdAt,
+            'createdAtTimespan' => $this->createdAt->diffForHumans(),
+            'status' => $this->status,
+            'statusAt' => $this->statusAt,
+            'statusAtTimespan' => $this->statusAt->diffForHumans(),
+            'closedAt' => $this->closedAt,
+            'closedAtTimespan' => $this->closedAt ? $this->closedAt->diffForHumans() : null,
+            'closureReason' => $this->closureReason,
+            'isPublic' => $this->isPublic,
+            'updatedAt' => $this->updatedAt,
+            'updatedAtTimespan' => $this->updatedAt->diffForHumans()
+        ];
+        if ($this->user) $output['requesterAccountId'] = $this->user->getAid();
+        if ($this->character) {
+            $output['requesterCharacterDbref'] = $this->character->dbref();
+            $output['requesterCharacterName'] = $this->character->name();
+        }
+
+        $output['log'] = array_map(function($entry) {
+            return $entry->toAdminArray();
+        }, $service->getLog($this));
+
+        $output['links_from'] = [];
+        $output['links_to'] = [];
+        foreach ($service->getLinks($this) as $link) {
+            if ($link->from->id == $this->id)
+                $output['links_to'][] = $link->toAgentArray();
+            else
+                $output['links_from'][] = $link->toAgentArray();
+        }
+
+        $output['watchers'] = [];
+        $output['workers'] = [];
+        foreach ($service->getSubscriptions($this) as $subscription) {
+            if ($subscription->interest == 'work')
+                $output['workers'][] = $subscription->toAdminArray();
+            else
+                $output['watchers'][] = $subscription->toAdminArray();
+        }
+        return $output;
+    }
 }
