@@ -266,6 +266,9 @@ class SupportTicketService
         if ($ticket->status == 'new') {
             $this->setStatus($ticket, 'open', null, null);
         }
+
+        // And finally save ticket to update the updatedAt time.
+        $this->saveTicket($ticket);
     }
 
     /**
@@ -280,6 +283,9 @@ class SupportTicketService
     {
         if (!in_array($linkType, $this->validLinkTypes))
             throw new Error("Invalid link type specified when linking tickets");
+
+        if ($from->id === $to->id)
+            throw new Error("Attempt to create a link from and to the same ticket!");
 
         $existingLinks = $this->provider->getLinks($from);
         foreach ($existingLinks as $link) {

@@ -87,7 +87,7 @@
         </div>
 
         <div class="row mt-2">
-            <div class="col" v-for="link in ticket.links_from"><i class="fas fa-arrow-left"></i> Linked as
+            <div class="col-12" v-for="link in ticket.links_from"><i class="fas fa-arrow-left"></i> Linked as
                 '{{ capital(link.type) }}' from <a :href="link.from_url">Ticket #{{ link.from }}</a> ({{
                     link.from_title
                 }}).
@@ -95,7 +95,7 @@
         </div>
 
         <div class="row mt-2">
-            <div class="col" v-for="link in ticket.links_to"><i class="fas fa-arrow-right"></i> Linked as
+            <div class="col-12" v-for="link in ticket.links_to"><i class="fas fa-arrow-right"></i> Linked as
                 '{{ capital(link.type) }}' to <a :href="link.to_url">Ticket #{{ link.to }}</a> ({{ link.to_title }}).
             </div>
         </div>
@@ -122,12 +122,13 @@
         <div class="divider"></div>
 
         <div class="row">
-            <div class="col mt-2" v-html="parseUserContent(ticket.content)"></div>
+            <div class="col mt-2 muckContent" v-html="parseUserContent(ticket.content)"></div>
         </div>
 
         <div class="divider"></div>
 
         <h3 class="mt-2">Log</h3>
+        <p class="text-muted"> Items marked with a '<i class="fas fa-eye-slash"></i>' are visible to staff only.</p>
 
 
         <div class="log-entry" v-for="entry in ticket.log">
@@ -155,8 +156,9 @@
 
         <div class="form-group">
             <label class="label mt-2" for="addNote">Add New Note</label>
-            <textarea class="form-control" id="addNote" rows="3"></textarea>
-            <button class="mt-2 btn btn-secondary">Add Note</button>
+            <textarea class="form-control muckContent" id="addNote" rows="3" v-model="newNoteContent"></textarea>
+            <button class="mt-2 btn btn-secondary" :disabled="!newNoteContent" @click="addPublicNote">Add Public Note</button>
+            <button class="mt-2 btn btn-secondary" :disabled="!newNoteContent" @click="addPrivateNote">Add Staff-Only Note</button>
         </div>
 
         <DialogConfirmEdit id="editCategoryOrTitle" title="Edit Category/Title" @save="saveCategoryOrTitle">
@@ -175,7 +177,7 @@
             </div>
         </DialogConfirmEdit>
 
-        <DialogConfirmEdit id="changeStatusOrClose" title="Change Status / Close">
+        <DialogConfirmEdit id="changeStatusOrClose" title="Change Status / Close" hide-save>
 
             <div class="row">
                 <div class="col">
@@ -237,8 +239,33 @@
             </div>
         </DialogConfirmEdit>
 
-        <DialogConfirmEdit id="addLink" title="Add Link" @save="saveLink">
-            ???
+        <DialogConfirmEdit id="addLink" title="Add Link" hide-save>
+            <div class="form-group">
+                <label for="newLinkTo">ID of ticket to link to</label>
+                <input class="form-control w-100" v-model="newLinkTo" id="newLinkTo">
+
+                <div class="row mt-2">
+                    <div class="col">
+                        <button type="button" class="btn btn-primary btn-block"
+                                :disabled="!newLinkTo"
+                                @click="saveLink('duplicate')">
+                            Link as Duplicate
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col">
+                        <button type="button" class="btn btn-primary btn-block"
+                                :disabled="!newLinkTo"
+                                @click="saveLink('related')">
+                            Link as Related
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
         </DialogConfirmEdit>
 
     </div>
@@ -257,7 +284,9 @@ export default {
             ticket: null,
             remoteUpdatedAt: null,
             newTitle: null,
-            newCategory: null
+            newCategory: null,
+            newNoteContent: null,
+            newLinkTo: null,
         };
     },
     computed: {},
@@ -298,7 +327,7 @@ export default {
         },
         parseUserContent: function (content) {
             let parsedContent = $('<div class="user-content"></div>');
-            content.split('\\n').forEach(function (line) {
+            content.split('\n').forEach(function (line) {
                 let parsedLine = $('<div></div>');
                 parsedLine.text(line);
                 parsedContent.append(parsedLine);
@@ -360,9 +389,21 @@ export default {
         changePublicStatus: function() {
             this.updateTicket({isPublic: !this.ticket.isPublic});
         },
-        saveLink: function() {
-            console.log("Add link");
+        saveLink: function(typeOfLink) {
+            $('#addLink').modal('hide');
+            this.updateTicket({task: 'AddLink', to: this.newLinkTo, type: typeOfLink});
+        },
+        addPublicNote: function() {
+            const content = this.newNoteContent.replace(/\r/g, '');
+            this.updateTicket({task: 'AddPublicNote', content: content});
+            this.newNoteContent = '';
+        },
+        addPrivateNote: function() {
+            const content = this.newNoteContent.replace(/\r/g, '');
+            this.updateTicket({task: 'AddPrivateNote', content: content});
+            this.newNoteContent = '';
         }
+
     },
     mounted: function () {
         const self = this;
@@ -405,8 +446,8 @@ export default {
 }
 
 .log-type-note {
+    @extend .muckContent;
     color: #8888cc;
 }
-
 
 </style>

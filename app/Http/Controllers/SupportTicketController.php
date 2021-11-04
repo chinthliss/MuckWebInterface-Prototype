@@ -152,6 +152,22 @@ class SupportTicketController extends Controller
                 $service->addSubscription($ticket, $user, 'watch');
             }
 
+            if ($task == 'AddPublicNote' && $request->has('content')) {
+                $foundSomething = true;
+                $service->addNote($ticket, $request->get('content'), true, $user, $character);
+            }
+
+            if ($task == 'AddPrivateNote' && $request->has('content')) {
+                $foundSomething = true;
+                $service->addNote($ticket, $request->get('content'), false, $user, $character);
+            }
+
+            if ($task == 'AddLink' && $request->has('to') && $request->has('type')) {
+                $foundSomething = true;
+                $ticketTo = $service->getTicketById($request->get('to'));
+                $service->linkTickets($ticket, $ticketTo, $request->get('type'), $user, $character);
+            }
+
         }
 
         if (!$foundSomething) {
