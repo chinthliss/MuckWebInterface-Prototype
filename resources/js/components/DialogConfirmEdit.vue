@@ -16,7 +16,7 @@
                 <div class="modal-footer">
                     <button @click="clickCancel" type="button" class="btn btn-secondary" data-dismiss="modal">Cancel
                     </button>
-                    <button @click="clickSave" type="button" class="btn btn-primary" data-dismiss="modal">
+                    <button v-if="!hideSave" @click="clickSave" type="button" class="btn btn-primary" data-dismiss="modal">
                         {{ saveLabelOrDefault }}
                     </button>
                 </div>
@@ -31,6 +31,7 @@ export default {
     props: {
         title: {type: String, required: false},
         saveLabel: {type: String, required: false},
+        hideSave: {type: Boolean, required: false}
     },
     computed: {
         titleOrDefault: function () {
