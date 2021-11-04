@@ -31,3 +31,9 @@ $card-cap-bg: $backgroundColor;
 $card-cap-color: $primary;
 
 $table-dark-bg: #252835;
+
+// Not actually a variable but here so it can be extended easily into other things.
+.muckContent {
+    font-family: ui-monospace,"Cascadia Mono","Segoe UI Mono","Liberation Mono",Menlo,Monaco,Consolas,monospace;
+    white-space: pre-wrap;
+}
