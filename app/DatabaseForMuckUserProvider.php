@@ -27,7 +27,10 @@ class DatabaseForMuckUserProvider implements UserProvider
     private MuckObjectService $muckObjectService;
     private MuckConnection $muckConnection;
 
-    // TODO: Add caching of user lookups
+    /**
+     * @var array<int, User>
+     */
+    private array $cachedUserById = [];
 
     public function __construct(MuckConnection $muckConnection, MuckObjectService $muckObjectService)
     {
@@ -59,6 +62,10 @@ class DatabaseForMuckUserProvider implements UserProvider
      */
     public function retrieveById($identifier)
     {
+        if (array_key_exists( $identifier, $this->cachedUserById)) {
+            Log::debug("UserProvider RetrieveById returned cached entry for $identifier");
+            return $this->cachedUserById[$identifier];
+        }
         Log::debug('UserProvider RetrieveById attempt for ' . $identifier);
         //Retrieve account details from database first
         $accountQuery = $this->getRetrievalQuery()
@@ -66,6 +73,7 @@ class DatabaseForMuckUserProvider implements UserProvider
             ->first();
         if (!$accountQuery) return null;
         $user = User::fromDatabaseResponse($accountQuery);
+        $this->cachedUserById[$identifier] = $user;
         Log::debug('UserProvider RetrieveById result for ' . $identifier . ', result = ' . $user->getAid());
         return $user;
     }
