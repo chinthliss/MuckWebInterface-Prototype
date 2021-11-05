@@ -46,7 +46,7 @@ class SupportTicketController extends Controller
                 'isPublic' => $ticket->isPublic
             ];
             //Only provide account ID if it's the users
-            if ($ticket->user == $user) $array['user'] = $ticket->user->getAid();
+            if ($ticket->user->is($user)) $array['user'] = $ticket->user->getAid();
             if ($ticket->character) $array['character'] = $ticket->character->name();
             return $array;
         },$service->getActiveTicketsForUser($user));
