@@ -1,3 +1,4 @@
+<!-- Dialog that has 'save' and 'close' buttons. Events are fired by doing one or the other. -->
 <template>
     <div class="modal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
@@ -16,7 +17,7 @@
                 <div class="modal-footer">
                     <button @click="clickCancel" type="button" class="btn btn-secondary" data-dismiss="modal">Cancel
                     </button>
-                    <button v-if="!hideSave" @click="clickSave" type="button" class="btn btn-primary" data-dismiss="modal">
+                    <button @click="clickSave" type="button" class="btn btn-primary" data-dismiss="modal">
                         {{ saveLabelOrDefault }}
                     </button>
                 </div>
@@ -27,11 +28,10 @@
 
 <script>
 export default {
-    name: "dialog-confirm-edit",
+    name: "dialog-confirm",
     props: {
         title: {type: String, required: false},
-        saveLabel: {type: String, required: false},
-        hideSave: {type: Boolean, required: false}
+        saveLabel: {type: String, required: false}
     },
     computed: {
         titleOrDefault: function () {

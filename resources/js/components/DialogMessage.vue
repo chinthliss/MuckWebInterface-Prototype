@@ -1,5 +1,6 @@
+<!-- Dialog that contains no buttons and can be closed at a whim with no reaction. -->
 <template>
-    <div id="dialog-message" class="modal" tabindex="-1" role="dialog">
+    <div class="modal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">

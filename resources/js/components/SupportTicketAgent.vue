@@ -161,7 +161,7 @@
             <button class="mt-2 btn btn-secondary" :disabled="!newNoteContent" @click="addPrivateNote">Add Staff-Only Note</button>
         </div>
 
-        <DialogConfirmEdit id="editCategoryOrTitle" title="Edit Category/Title" @save="saveCategoryOrTitle">
+        <DialogConfirm id="editCategoryOrTitle" title="Edit Category/Title" @save="saveCategoryOrTitle">
             <div class="form-group">
                 <label for="editCategory">Select Category</label>
                 <select class="form-control" id="editCategory" v-model="newCategory">
@@ -175,9 +175,9 @@
                 <label for="editTitle">Title</label>
                 <input class="form-control w-100" v-model="newTitle" id="editTitle">
             </div>
-        </DialogConfirmEdit>
+        </DialogConfirm>
 
-        <DialogConfirmEdit id="changeStatusOrClose" title="Change Status / Close" hide-save>
+        <DialogMessage id="changeStatusOrClose" title="Change Status / Close">
 
             <div class="row">
                 <div class="col">
@@ -237,9 +237,9 @@
                     </button>
                 </div>
             </div>
-        </DialogConfirmEdit>
+        </DialogMessage>
 
-        <DialogConfirmEdit id="addLink" title="Add Link" hide-save>
+        <DialogMessage id="addLink" title="Add Link">
             <div class="form-group">
                 <label for="newLinkTo">ID of ticket to link to</label>
                 <input class="form-control w-100" v-model="newLinkTo" id="newLinkTo">
@@ -266,18 +266,19 @@
 
             </div>
 
-        </DialogConfirmEdit>
+        </DialogMessage>
 
     </div>
 </template>
 
 <script>
 import CharacterCard from "./CharacterCard";
-import DialogConfirmEdit from "./DialogConfirmEdit";
+import DialogConfirm from "./DialogConfirm";
+import DialogMessage from "./DialogMessage";
 
 export default {
     name: "support-ticket-agent",
-    components: {DialogConfirmEdit, CharacterCard},
+    components: {DialogConfirm, DialogMessage, CharacterCard},
     props: ['initialTicket', 'pollUrl', 'updateUrl', 'categoryConfiguration'],
     data: function () {
         return {
