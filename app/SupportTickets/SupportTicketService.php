@@ -335,6 +335,8 @@ class SupportTicketService
                 throw new Exception('Subscription already exists');
         }
 
+        if ($ticket->closedAt) throw new Exception('Ticket is closed');
+
         $this->provider->addSubscription($ticket, $user, $interest);
 
         if ($interest == 'work') {

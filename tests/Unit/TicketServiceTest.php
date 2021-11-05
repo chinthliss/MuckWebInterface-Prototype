@@ -111,5 +111,10 @@ class TicketServiceTest extends TestCase
         $service->removeSubscription($ticket, $user, 'watch');
         $subscriptions = $service->getSubscriptions($ticket);
         $this->assertEmpty($subscriptions);
+
+        //Ensure we can't subscribe to a closed ticket
+        $service->closeTicket($ticket, 'completed');
+        $this->expectException(Exception::class);
+        $service->addSubscription($ticket, $user, 'work');
     }
 }
