@@ -128,10 +128,9 @@
         </div>
 
         <!-- Message Modal -->
-        <dialog-message id="messageModal"
-                        :content="message_dialog_content"
-                        :header="message_dialog_header"
-        ></dialog-message>
+        <dialog-message id="messageModal" :title="message_dialog_header">
+            {{ message_dialog_content }}
+        </dialog-message>
     </div>
 </template>
 

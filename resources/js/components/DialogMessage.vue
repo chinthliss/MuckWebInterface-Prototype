@@ -9,7 +9,9 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <p v-html="content"></p>
+                    <div class="container-fluid">
+                        <slot></slot>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
@@ -22,12 +24,12 @@
 <script>
     export default {
         name: "dialog-message",
-        props: [
-            'header', 'content'
-        ],
+        props: {
+            title: {type: String, required: false}
+        },
         computed: {
             titleOrDefault: function() {
-                return this.header ?? "Message";
+                return this.title ?? "Message";
             }
         }
     }

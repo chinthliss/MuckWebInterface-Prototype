@@ -35,10 +35,9 @@
                                     @transaction-accepted="buyCharacterSlotAccepted"
         ></dialog-approve-transaction>
 
-        <dialog-message id="DialogMessage"
-                        :content="messageDialogContent"
-                        :header="messageDialogHeader"
-        ></dialog-message>
+        <dialog-message id="DialogMessage" :title="messageDialogHeader">
+            {{ messageDialogContent }}
+        </dialog-message>
     </div>
 </template>
 
