@@ -36,11 +36,12 @@ class SupportTicketService
         if (!isset($this->categoryConfiguration)) {
             // For now hard coded. May replace this with something more dynamic later
             $this->categoryConfiguration = [
+                new SupportTicketCategory('account', 'Account', neverPublic: true),
                 new SupportTicketCategory('chargen', 'Chargen'),
                 new SupportTicketCategory('building', 'Building'),
                 new SupportTicketCategory('code', 'Code'),
-                new SupportTicketCategory('disputes', 'Disputes', neverPublic: true),
-                new SupportTicketCategory('gear', 'Gear'),
+                new SupportTicketCategory('disputes', 'Disputes', neverPublic: true, requiresCharacter: true),
+                new SupportTicketCategory('gear', 'Gear', requiresCharacter: true),
                 new SupportTicketCategory('judge', 'Judge'),
                 new SupportTicketCategory('typo', 'Typo'),
                 new SupportTicketCategory('makopool', 'Mako Pool', usersCannotRaise: true),
