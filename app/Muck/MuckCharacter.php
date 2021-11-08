@@ -41,6 +41,11 @@ class MuckCharacter extends MuckDbref
         return $this->approved;
     }
 
+    public function isStaff(): bool
+    {
+        return $this->wizard;
+    }
+
     public function toArray(): array
     {
         return [

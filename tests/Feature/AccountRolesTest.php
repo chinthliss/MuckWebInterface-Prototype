@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Support\Facades\Auth;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -10,8 +9,8 @@ class AccountRolesTest extends TestCase
 {
     use RefreshDatabase;
 
-    private $staffId = 6;
-    private $adminId = 7;
+    private $staffRequiredPage = '/admin';
+    private $adminRequiredPage = '/accountcurrency/transactions';
 
     protected function setUp(): void
     {
@@ -19,76 +18,101 @@ class AccountRolesTest extends TestCase
         $this->seed();
     }
 
-    public function testCheckSeedIsOkay()
+    #region hasRole testing
+
+    public function testUserDoesNotHaveStaffRole()
     {
-        $this->assertDatabaseHas('accounts', [
-            'email' => 'test@test.com',
-            'password' => '0A095F587AFCB082:EC2F0D2ACB7788E26E0A36C32C6475C589860589' // Password
-        ]);
-        $this->assertDatabaseHas('account_emails', [
-            'email' => 'test@test.com'
-        ]);
-        $this->assertDatabaseHas('account_emails', [
-            'email' => 'admin@test.com'
-        ]);
+        $user = $this->loginAsValidatedUser();
+        $this->assertFalse($user->hasRole('staff'));
     }
 
-    /**
-     * @depends testCheckSeedIsOkay
-     */
     public function testUserDoesNotHaveAdminRole()
     {
         $user = $this->loginAsValidatedUser();
         $this->assertFalse($user->hasRole('admin'));
     }
 
-    /**
-     * @depends testCheckSeedIsOkay
-     */
-    public function testAdminDoesHaveAdminRole()
+    public function testStaffDoesHaveStaffRole()
     {
-        $user = $this->loginAsAdminUser();
-        $this->asserttrue($user->hasRole('admin'));
+        $user = $this->loginAsStaffUser();
+        $this->assertTrue($user->hasRole('staff'));
     }
 
-    /**
-     * @depends testCheckSeedIsOkay
-     */
+    public function testStaffDoesNotHaveAdminRole()
+    {
+        $user = $this->loginAsStaffUser();
+        $this->assertFalse($user->hasRole('admin'));
+    }
+
     public function testAdminHasAnyRole()
     {
         $user = $this->loginAsAdminUser();
-        $this->assertTrue($user->hasRole('other_role'));
+        $this->assertTrue($user->hasRole('staff'));
+        $this->assertTrue($user->hasRole('admin'));
+        $this->assertTrue($user->hasRole('not_actually_a_role'));
     }
 
-    /**
-     * @depends testCheckSeedIsOkay
-     */
-    public function testUserWithRoleHasThatRole()
+    #endregion
+
+    #region Middleware testing
+    public function testUserCannotAccessStaffPage()
     {
-        Auth::loginUsingId($this->adminId);
-        $user = $this->getPresentUser();
-        $this->assertTrue($user->hasRole('other_role'));
+        $this->loginAsValidatedUser();
+        $response = $this->get($this->staffRequiredPage);
+        $response->assertForbidden();
     }
 
     public function testUserCannotAccessAdminPage()
     {
         $this->loginAsValidatedUser();
-        $response = $this->get('/admin');
+        $response = $this->get($this->adminRequiredPage);
         $response->assertForbidden();
     }
 
-    public function testAdminCanAccessAdminPage()
+    public function testStaffCanAccessStaffPage()
     {
-        Auth::loginUsingId($this->adminId);
-        $response = $this->get('/admin');
+        $this->loginAsStaffUser();
+        $response = $this->get($this->staffRequiredPage);
         $response->assertSuccessful();
     }
 
     public function testStaffCanNotAccessAdminPage()
     {
-        Auth::loginUsingId($this->staffId);
-        $response = $this->get('/accountcurrency/transactions');
+        $this->loginAsStaffUser();
+        $response = $this->get($this->adminRequiredPage);
         $response->assertForbidden();
     }
+
+    public function testAdminCanAccessStaffPage()
+    {
+        $this->loginAsAdminUser();
+        $response = $this->get($this->staffRequiredPage);
+        $response->assertSuccessful();
+    }
+
+    public function testAdminCanAccessAdminPage()
+    {
+        $this->loginAsAdminUser();
+        $response = $this->get($this->adminRequiredPage);
+        $response->assertSuccessful();
+    }
+
+    public function testStaffCharacterCanAccessStaffPage()
+    {
+        $this->loginAsValidatedUser();
+        $this->post(route('multiplayer.character.set'), ['dbref' => 1234]);
+        $response = $this->get($this->staffRequiredPage);
+        $response->assertSuccessful();
+    }
+
+    public function testStaffCharacterCannotAccessAdminPage()
+    {
+        $this->loginAsValidatedUser();
+        $this->post(route('multiplayer.character.set'), ['dbref' => 1234]);
+        $response = $this->get($this->adminRequiredPage);
+        $response->assertForbidden();
+    }
+
+    #endregion
 }
 

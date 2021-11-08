@@ -445,8 +445,9 @@ class User implements Authenticatable, MustVerifyEmail
     {
         $this->loadRolesIfRequired();
 
-        //Admin role has every role
-        return in_array($role, $this->roles) || in_array('admin', $this->roles);
+        return in_array($role, $this->roles)
+            || in_array('admin', $this->roles) //Admin role has every role
+            || ($role == 'staff' && $this->character && $this->character->isStaff()); // Staff characters are staff
     }
 
     private function loadRolesIfRequired()

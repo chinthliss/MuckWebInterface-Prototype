@@ -1,6 +1,7 @@
 <template>
     <div class="container">
         <h1>Account Roles List</h1>
+        <p>Even if an account doesn't have a staff flag, they will still count as such if logged in as a wizard character.</p>
         <b-table dark striped hover small
                  :items="users"
                  :fields="fields"
