@@ -204,6 +204,16 @@ class User implements Authenticatable, MustVerifyEmail
         return $this->character;
     }
 
+    /**
+     * Just returns present character if they're staff.
+     * Intending to one day potentially extend this to allow staff to tag a particular character as their staff one.
+     * @return MuckCharacter|null
+     */
+    public function getStaffCharacter(): ?MuckCharacter
+    {
+        return $this->character?->isStaff() ? $this->character : null;
+    }
+
     public function getCharacterDbref(): ?int
     {
         if (!$this->character) return null;
