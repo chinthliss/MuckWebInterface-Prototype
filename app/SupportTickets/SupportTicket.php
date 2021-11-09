@@ -139,6 +139,30 @@ class SupportTicket
         return $array;
     }
 
+    public function serializeForAgentListing(SupportTicketService $service) : array
+    {
+        $working = [];
+        foreach ($service->getSubscriptions($this) as $subWho => $subType) {
+            $subscriber = User::find($subWho);
+            if ($subWho && $subType == 'work') $working[] = $subscriber->getAid();
+        }
+
+        $array = [
+            'id' => $this->id,
+            'url' => route('support.agent.ticket', ['id' => $this->id]),
+            'category' => $this->category,
+            'title' => $this->title,
+            'status' => $this->status,
+            'lastUpdatedAt' => $this->updatedAt,
+            'lastUpdatedAtTimespan' => $this->updatedAt->diffForHumans(),
+            'isPublic' => $this->isPublic,
+            'working' => $working
+        ];
+        if ($this->user) $array['user'] = $this->user->getAid();
+        if ($this->character) $array['character'] = $this->character->name();
+        return $array;
+    }
+
     public function serializeForAgent(SupportTicketService $service) : array
     {
         $output = [
@@ -153,7 +177,7 @@ class SupportTicket
             'statusAt' => $this->statusAt,
             'statusAtTimespan' => $this->statusAt->diffForHumans(),
             'closedAt' => $this->closedAt,
-            'closedAtTimespan' => $this->closedAt ? $this->closedAt->diffForHumans() : null,
+            'closedAtTimespan' => $this->closedAt?->diffForHumans(),
             'closureReason' => $this->closureReason,
             'isPublic' => $this->isPublic,
             'updatedAt' => $this->updatedAt,

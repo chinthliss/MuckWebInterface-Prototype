@@ -58,7 +58,8 @@ export default {
                 },
                 {
                     key: 'status',
-                    label: 'Status'
+                    label: 'Status',
+                    formatter: 'capital'
                 },
                 {
                     key: 'lastUpdatedAt',

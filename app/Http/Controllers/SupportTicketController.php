@@ -10,31 +10,31 @@ use Illuminate\View\View;
 
 class SupportTicketController extends Controller
 {
-    public function showUserHome() : View
+    public function showUserHome(): View
     {
         return view('support.user.home')->with([
             'ticketsUrl' => route('support.user.tickets')
         ]);
     }
 
-    public function showAgentHome() : View
+    public function showAgentHome(): View
     {
         return view('support.agent.home')->with([
             'ticketsUrl' => route('support.agent.tickets')
         ]);
     }
 
-    public function getUpdatedAt(SupportTicketService $service, int $id) : Carbon
+    public function getUpdatedAt(SupportTicketService $service, int $id): Carbon
     {
         return $service->getLastUpdatedById($id);
     }
 
-    public function getUserTickets(SupportTicketService $service) : array
+    public function getUserTickets(SupportTicketService $service): array
     {
         /** @var User $user */
         $user = auth()->user();
 
-        return array_map(function($ticket) use ($user) {
+        return array_map(function ($ticket) use ($user) {
             $array = [
                 'id' => $ticket->id,
                 'url' => route('support.user.ticket', ['id' => $ticket->id]),
@@ -49,37 +49,17 @@ class SupportTicketController extends Controller
             if ($ticket->user->is($user)) $array['user'] = $ticket->user->getAid();
             if ($ticket->character) $array['character'] = $ticket->character->name();
             return $array;
-        },$service->getActiveTicketsForUser($user));
+        }, $service->getActiveTicketsForUser($user));
     }
 
-    public function getAgentTickets(SupportTicketService $service) : array
+    public function getAgentTickets(SupportTicketService $service): array
     {
-        return array_map(function($ticket) use ($service) {
-
-            $working = [];
-            foreach ($service->getSubscriptions($ticket) as $subWho => $subType) {
-                $subscriber = User::find($subWho);
-                if ($subWho && $subType == 'work') $working[] = $subscriber->getAid();
-            }
-
-            $array = [
-                'id' => $ticket->id,
-                'url' => route('support.agent.ticket', ['id' => $ticket->id]),
-                'category' => $ticket->category,
-                'title' => $ticket->title,
-                'status' => $ticket->status,
-                'lastUpdatedAt' => $ticket->updatedAt,
-                'lastUpdatedAtTimespan' => $ticket->updatedAt->diffForHumans(),
-                'isPublic' => $ticket->isPublic,
-                'working' => $working
-            ];
-            if ($ticket->user) $array['user'] = $ticket->user->getAid();
-            if ($ticket->character) $array['character'] = $ticket->character->name();
-            return $array;
-        },$service->getActiveTickets());
+        return array_map(function ($ticket) use ($service) {
+            return $ticket->serializeForAgentListing($service);
+        }, $service->getActiveTickets());
     }
 
-    public function showAgentTicket(SupportTicketService $service, int $id) : View
+    public function showAgentTicket(SupportTicketService $service, int $id): View
     {
         $ticket = $service->getTicketById($id);
         if (!$ticket) abort(404);
