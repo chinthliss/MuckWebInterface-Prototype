@@ -27,7 +27,9 @@ class FakeMuckConnection implements MuckConnection
             // Unapproved character
             3456 => new MuckCharacter(3456, 'TestCharacter3', $fixedTime, 0, '', ['unapproved'], 1),
             // Unapproved character on other account
-            4567 => new MuckCharacter(4567, 'TestCharacterA1', $fixedTime, 0, '', ['unapproved'], 6)
+            4567 => new MuckCharacter(4567, 'TestCharacterA1', $fixedTime, 0, '', ['unapproved'], 6),
+            // Approved character on admin account
+            5678 => new MuckCharacter(5678, 'AdminCharacter', $fixedTime, 0, '', ['wizard'], 7)
         ];
         foreach ($this->fakeDatabaseByDbref as $entry) {
             if ($entry->typeFlag() == 'p') $this->fakeDatabaseByPlayerName[strtolower($entry->name())] = $entry;
@@ -68,17 +70,8 @@ class FakeMuckConnection implements MuckConnection
     {
         self::fakeMuckCall('getCharactersOf', ['aid' => $user->getAid()]);
         $result = [];
-        if ($user->getAid() === 1) {
-            $result = [
-                1234 => $this->fakeDatabaseByDbref[1234],
-                2345 => $this->fakeDatabaseByDbref[2345],
-                3456 => $this->fakeDatabaseByDbref[3456]
-            ];
-        }
-        if ($user->getAid() === 6) {
-            $result = [
-                4567 => $this->fakeDatabaseByDbref[4567]
-            ];
+        foreach ($this->fakeDatabaseByDbref as $character) {
+            if ($character->aid() == $user->getAid()) $result[$character->dbref()] = $character;
         }
         return $result;
     }
