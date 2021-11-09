@@ -82,14 +82,18 @@ class SupportTicketController extends Controller
     public function showAgentTicket(SupportTicketService $service, int $id) : View
     {
         $ticket = $service->getTicketById($id);
-
         if (!$ticket) abort(404);
+
+        /** @var User $user */
+        $user = auth()->user();
+        $character = $user->getStaffCharacter();
 
         return view('support.agent.ticket', [
             'ticket' => $ticket->serializeForAgent($service),
             'pollUrl' => route('support.getUpdatedAt', ['id' => $ticket->id]),
             'updateUrl' => route('support.agent.ticket', ['id' => $ticket->id]),
-            'categoryConfiguration' => $service->getCategoryConfiguration()
+            'categoryConfiguration' => $service->getCategoryConfiguration(),
+            'staffCharacter' => $character?->name()
         ]);
     }
 
@@ -97,11 +101,13 @@ class SupportTicketController extends Controller
     public function handleAgentUpdate(Request $request, SupportTicketService $service, int $id): array
     {
         $ticket = $service->getTicketById($id);
-        if (!$ticket) abort(404);
+        if (!$ticket) abort(404, "Ticket doesn't exist.");
 
         /** @var User $user */
         $user = auth()->user();
-        $character = $user->getCharacter();
+        $character = $user->getStaffCharacter();
+
+        if (!$character) abort(401, "No staff character associated with connection.");
 
         $foundSomething = false;
 

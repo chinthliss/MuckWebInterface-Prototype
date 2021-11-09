@@ -18,5 +18,6 @@
         :category-configuration="{{ json_encode($categoryConfiguration) }}"
         poll-url="{{ $pollUrl }}"
         update-url="{{ $updateUrl }}"
+        staff-character="{{ $staffCharacter }}"
     ></support-ticket-agent>
 @endsection

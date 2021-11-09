@@ -4,10 +4,17 @@
     </div>
     <div v-else class="container">
         <h2>Ticket #{{ ticket.id }}</h2>
+
         <div v-if="remoteUpdatedAt && remoteUpdatedAt > ticket.updatedAt" class="alert alert-warning text-center">
             This ticket has been updated since you loaded it, some of the details may have changed.
             <br/>You should refresh as soon as possible to get the latest details!
         </div>
+
+        <div v-if="!staffCharacter" class="alert alert-warning text-center">
+            You are not logged in as a staff character.
+            <br/>Whilst you can view this ticket you won't be able to make any changes.
+        </div>
+
         <div class="row">
             <div class="col-12 col-lg-3 col-xl-2 mt-2">
                 <div class="label editable" @click="showEditCategoryOrTitle">Category <i class="fas fa-edit"></i></div>
@@ -263,9 +270,11 @@
                         </button>
                     </div>
                 </div>
-
             </div>
+        </DialogMessage>
 
+        <DialogMessage id="noStaffCharacter">
+            You need to be logged on as a staff character in order to update a ticket.
         </DialogMessage>
 
     </div>
@@ -279,7 +288,13 @@ import DialogMessage from "./DialogMessage";
 export default {
     name: "support-ticket-agent",
     components: {DialogConfirm, DialogMessage, CharacterCard},
-    props: ['initialTicket', 'pollUrl', 'updateUrl', 'categoryConfiguration'],
+    props: [
+        'initialTicket',
+        'pollUrl',
+        'updateUrl',
+        'categoryConfiguration',
+        'staffCharacter'
+    ],
     data: function () {
         return {
             ticket: null,
@@ -356,6 +371,9 @@ export default {
                 })
                 .catch(error => {
                     console.log("An error occurred with the requestData ", requestData, " when updating ticket: ", error);
+                    if (error.response.status === 401) { // Refused due to no staff character
+                        $('#noStaffCharacter').modal();
+                    }
                 });
         },
         saveCategoryOrTitle: function () {
