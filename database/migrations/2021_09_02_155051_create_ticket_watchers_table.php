@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateTicketSubscribersTable extends Migration
+class CreateTicketWatchersTable extends Migration
 {
     /**
      * Run the migrations.
@@ -26,6 +26,6 @@ class CreateTicketSubscribersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('ticket_subscribers');
+        Schema::dropIfExists('ticket_watchers');
     }
 }
