@@ -94,27 +94,35 @@ class TicketServiceTest extends TestCase
         $this->assertEquals($toLink->to->id, $toTicket->id);
     }
 
-    public function testSubscribing()
+    public function testWatching()
     {
         $this->seed();
         $user = $this->loginAsValidatedUser();
         $service = $this->app->make(SupportTicketService::class);
         $ticket = $service->createTicket('testCategory', 'testTitle,', 'testContent');
 
-        $subscriptions = $service->getSubscriptions($ticket);
-        $this->assertEmpty($subscriptions);
+        $watchers = $service->getWatchers($ticket);
+        $this->assertEmpty($watchers);
 
-        $service->addSubscription($ticket, $user, 'watch');
-        $subscriptions = $service->getSubscriptions($ticket);
-        $this->assertNotEmpty($subscriptions);
+        $service->addWatcher($ticket, $user);
+        $watchers = $service->getWatchers($ticket);
+        $this->assertNotEmpty($watchers);
 
-        $service->removeSubscription($ticket, $user, 'watch');
-        $subscriptions = $service->getSubscriptions($ticket);
-        $this->assertEmpty($subscriptions);
+        $service->removeWatcher($ticket, $user);
+        $watchers = $service->getWatchers($ticket);
+        $this->assertEmpty($watchers);
+    }
 
-        //Ensure we can't subscribe to a closed ticket
-        $service->closeTicket($ticket, 'completed');
-        $this->expectException(Exception::class);
-        $service->addSubscription($ticket, $user, 'work');
+    public function testSetAgent()
+    {
+        $this->seed();
+        $user = $this->loginAsValidatedUser();
+        $service = $this->app->make(SupportTicketService::class);
+        $ticket = $service->createTicket('testCategory', 'testTitle,', 'testContent');
+
+        $service->setAgent($ticket, $user);
+
+        $ticket = $service->getTicketById($ticket->id);
+        $this->assertEquals($ticket->agentUser, $user);
     }
 }
