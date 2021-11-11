@@ -32,7 +32,7 @@ class AdminController extends Controller
         $user = User::find($accountId);
         if (!$user) abort(404);
         return view('admin.account')->with([
-            'account' => $user->toAdminArray(),
+            'account' => $user->serializeForAdminComplete(),
             'muckName' => config('muck.muck_name')
         ]);
     }
@@ -87,7 +87,7 @@ class AdminController extends Controller
 
         $parsedResults = [];
         foreach ($results as $user) {
-            array_push($parsedResults, $user->toAdminArray());
+            array_push($parsedResults, $user->serializeForAdminComplete());
         }
         return $parsedResults;
     }
@@ -97,7 +97,7 @@ class AdminController extends Controller
         $roles = $userProvider->getAllRoles();
         $users = [];
         foreach ($roles as $role) {
-            $users[] = $role->toAdminArray();
+            $users[] = $role->serializeForAdminComplete();
         }
         return view('admin.accountroles')->with([
             'users' => $users

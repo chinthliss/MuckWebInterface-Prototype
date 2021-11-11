@@ -337,6 +337,37 @@ class User implements Authenticatable, MustVerifyEmail
         return $this->getProvider()->getAccountNotes($this);
     }
 
+    /**
+     * Returns a simple representation of a User
+     * @return array
+     */
+    #[ArrayShape([
+        'id' => "int|null",
+        'created' => "\Carbon\Carbon|null",
+        'lastConnected' => "\Carbon\Carbon|null",
+        'roles' => 'array',
+        'locked' => '\Carbon\Carbon|null',
+        'url' => "string"
+    ])]
+    public function serializeForAdmin(): array
+    {
+        $this->loadRolesIfRequired();
+
+        return [
+            'id' => $this->getAid(),
+            'created' => $this->createdAt,
+            'lastConnected' => $this->getLastConnect(),
+            'roles' => $this->roles,
+            'locked' => $this->lockedAt,
+            'url' => $this->getAdminUrl()
+        ];
+    }
+
+    /**
+     * Produces an array to output for an Admin page.
+     * Includes costly operations such as fetching characters and all emails
+     * @return array
+     */
     #[ArrayShape([
         'id' => "int|null",
         'created' => "\Carbon\Carbon|null",
@@ -350,7 +381,7 @@ class User implements Authenticatable, MustVerifyEmail
         'locked' => '\Carbon\Carbon|null',
         'url' => "string"
     ])]
-    public function toAdminArray(): array
+    public function serializeForAdminComplete(): array
     {
         $characters = [];
         foreach ($this->getCharacters() as $character) {

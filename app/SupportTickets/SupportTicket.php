@@ -134,11 +134,11 @@ class SupportTicket
             'lastUpdatedAtTimespan' => $this->updatedAt->diffForHumans(),
             'isPublic' => $this->isPublic,
             'from' => [
-                'user' => $this->fromUser->toAdminArray(),
+                'user' => $this->fromUser->serializeForAdmin(),
                 'character' => $this->fromCharacter?->toArray()
             ],
             'agent' => [
-                'user' => $this->agentUser?->toAdminArray(),
+                'user' => $this->agentUser?->serializeForAdmin(),
                 'character' => $this->agentCharacter?->toArray()
             ]
         ];
@@ -164,11 +164,11 @@ class SupportTicket
             'updatedAt' => $this->updatedAt,
             'updatedAtTimespan' => $this->updatedAt->diffForHumans(),
             'from' => [
-                'user' => $this->fromUser->toAdminArray(),
+                'user' => $this->fromUser->serializeForAdmin(),
                 'character' => $this->fromCharacter?->toArray()
             ],
             'agent' => [
-                'user' => $this->agentUser?->toAdminArray(),
+                'user' => $this->agentUser?->serializeForAdmin(),
                 'character' => $this->agentCharacter?->toArray()
             ]
         ];
@@ -188,7 +188,7 @@ class SupportTicket
 
         $output['watchers'] = [];
         foreach ($service->getWatchers($this) as $user) {
-            $output['watchers'][] = $user->toAdminArray();
+            $output['watchers'][] = $user->serializeForAdmin();
         }
         return $output;
     }
