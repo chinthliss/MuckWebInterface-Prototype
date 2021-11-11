@@ -57,10 +57,10 @@ interface SupportTicketProvider
      * @param string $logType
      * @param bool $isPublic
      * @param User|null $fromUser
-     * @param MuckDbref|null $fromMuckObject
+     * @param MuckDbref|null $fromMuckDbref
      * @param string $content
      */
-    public function log(SupportTicket $ticket, string $logType, bool $isPublic, ?User $fromUser, ?MuckDbref $fromMuckObject, string $content): void;
+    public function log(SupportTicket $ticket, string $logType, bool $isPublic, ?User $fromUser, ?MuckDbref $fromMuckDbref, string $content): void;
 
     /**
      * @param SupportTicket $ticket
@@ -82,22 +82,21 @@ interface SupportTicketProvider
     public function getLinks(SupportTicket $ticket): array;
 
     /**
-     * Returns an array of aid:interest
+     * Returns an array of Users watching this ticket
      * @param SupportTicket $ticket
-     * @return SupportTicketSubscription[]
+     * @return User[]
      */
-    public function getSubscriptions(SupportTicket $ticket): array;
-
-    /**
-     * @param SupportTicket $ticket
-     * @param User $user
-     * @param string $interest
-     */
-    public function addSubscription(SupportTicket $ticket, User $user, string $interest): void;
+    public function getWatchers(SupportTicket $ticket): array;
 
     /**
      * @param SupportTicket $ticket
      * @param User $user
      */
-    public function removeSubscription(SupportTicket $ticket, User $user, string $interest): void;
+    public function addWatcher(SupportTicket $ticket, User $user): void;
+
+    /**
+     * @param SupportTicket $ticket
+     * @param User $user
+     */
+    public function removeWatcher(SupportTicket $ticket, User $user): void;
 }

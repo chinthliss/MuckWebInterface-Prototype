@@ -11,8 +11,10 @@ class SupportTicket
     public int $id;
     public string $category;
     public string $title;
-    public ?User $user;
-    public ?MuckDbref $character;
+    public ?User $fromUser;
+    public ?MuckDbref $fromCharacter;
+    public ?User $agentUser;
+    public ?MuckDbref $agentCharacter;
     public Carbon $createdAt;
     public Carbon $updatedAt;
     public string $status;
@@ -44,8 +46,8 @@ class SupportTicket
         $this->category = $category;
         $this->title = $title;
         $this->content = $content;
-        $this->user = $user;
-        $this->character = $character;
+        $this->fromUser = $user;
+        $this->fromCharacter = $character;
     }
 
     public static function createNew(
@@ -53,8 +55,8 @@ class SupportTicket
         string     $category,
         string     $title,
         string     $content,
-        ?User      $user,
-        ?MuckDbref $character
+        ?User      $fromUser,
+        ?MuckDbref $fromCharacter
     ): SupportTicket
     {
         $ticket = new self(
@@ -62,8 +64,8 @@ class SupportTicket
             $category,
             $title,
             $content,
-            $user,
-            $character
+            $fromUser,
+            $fromCharacter
         );
 
         //Defaults for new ticket
@@ -81,8 +83,10 @@ class SupportTicket
         int        $id,
         string     $category,
         string     $title,
-        ?User      $user,
-        ?MuckDbref $character,
+        ?User      $fromUser,
+        ?MuckDbref $fromCharacter,
+        ?User      $agentUser,
+        ?MuckDbref $agentCharacter,
         Carbon     $createdAt,
         string     $status,
         Carbon     $statusAt,
@@ -98,10 +102,11 @@ class SupportTicket
             $category,
             $title,
             $content,
-            $user,
-            $character
+            $fromUser,
+            $fromCharacter
         );
-
+        $ticket->agentUser = $agentUser;
+        $ticket->agentCharacter = $agentCharacter;
         $ticket->createdAt = $createdAt;
         $ticket->status = $status;
         $ticket->statusAt = $statusAt;
@@ -117,37 +122,9 @@ class SupportTicket
         return "SupportTicket#$this->id[$this->category/$this->title]";
     }
 
-    /**
-     * Returns an array
-     * @return array
-     */
-    public function toArray(): array
-    {
-        $array = [
-            'id' => $this->id,
-            'category' => $this->category,
-            'title' => $this->title,
-            'createdAt' => $this->createdAt,
-            'statusAt' => $this->statusAt,
-            'status' => $this->status,
-            'closedAt' => $this->closedAt,
-            'closureReason' => $this->closureReason,
-            'isPublic' => $this->isPublic
-        ];
-        if ($this->user) $array['user'] = $this->user->getAid();
-        if ($this->character) $array['character'] = $this->character->name();
-        return $array;
-    }
-
     public function serializeForAgentListing(SupportTicketService $service) : array
     {
-        $working = [];
-        foreach ($service->getSubscriptions($this) as $subWho => $subType) {
-            $subscriber = User::find($subWho);
-            if ($subWho && $subType == 'work') $working[] = $subscriber->getAid();
-        }
-
-        $array = [
+        return [
             'id' => $this->id,
             'url' => route('support.agent.ticket', ['id' => $this->id]),
             'category' => $this->category,
@@ -156,11 +133,15 @@ class SupportTicket
             'lastUpdatedAt' => $this->updatedAt,
             'lastUpdatedAtTimespan' => $this->updatedAt->diffForHumans(),
             'isPublic' => $this->isPublic,
-            'working' => $working
+            'from' => [
+                'user' => $this->fromUser->toAdminArray(),
+                'character' => $this->fromCharacter?->toArray()
+            ],
+            'agent' => [
+                'user' => $this->agentUser?->toAdminArray(),
+                'character' => $this->agentCharacter?->toArray()
+            ]
         ];
-        if ($this->user) $array['user'] = $this->user->getAid();
-        if ($this->character) $array['character'] = $this->character->name();
-        return $array;
     }
 
     public function serializeForAgent(SupportTicketService $service) : array
@@ -181,13 +162,16 @@ class SupportTicket
             'closureReason' => $this->closureReason,
             'isPublic' => $this->isPublic,
             'updatedAt' => $this->updatedAt,
-            'updatedAtTimespan' => $this->updatedAt->diffForHumans()
+            'updatedAtTimespan' => $this->updatedAt->diffForHumans(),
+            'from' => [
+                'user' => $this->fromUser->toAdminArray(),
+                'character' => $this->fromCharacter?->toArray()
+            ],
+            'agent' => [
+                'user' => $this->agentUser?->toAdminArray(),
+                'character' => $this->agentCharacter?->toArray()
+            ]
         ];
-        if ($this->user) $output['requesterAccountId'] = $this->user->getAid();
-        if ($this->character) {
-            $output['requesterCharacterDbref'] = $this->character->dbref();
-            $output['requesterCharacterName'] = $this->character->name();
-        }
 
         $output['log'] = array_map(function($entry) {
             return $entry->toAdminArray();
@@ -203,12 +187,8 @@ class SupportTicket
         }
 
         $output['watchers'] = [];
-        $output['workers'] = [];
-        foreach ($service->getSubscriptions($this) as $subscription) {
-            if ($subscription->interest == 'work')
-                $output['workers'][] = $subscription->toAdminArray();
-            else
-                $output['watchers'][] = $subscription->toAdminArray();
+        foreach ($service->getWatchers($this) as $user) {
+            $output['watchers'][] = $user->toAdminArray();
         }
         return $output;
     }

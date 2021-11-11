@@ -46,8 +46,8 @@ class SupportTicketController extends Controller
                 'isPublic' => $ticket->isPublic
             ];
             //Only provide account ID if it's the users
-            if ($ticket->user->is($user)) $array['user'] = $ticket->user->getAid();
-            if ($ticket->character) $array['character'] = $ticket->character->name();
+            if ($ticket->fromUser->is($user)) $array['user'] = $ticket->fromUser->getAid();
+            if ($ticket->fromCharacter) $array['character'] = $ticket->fromCharacter->name();
             return $array;
         }, $service->getActiveTicketsForUser($user));
     }
@@ -118,24 +118,24 @@ class SupportTicketController extends Controller
         if ($request->has('task')) {
             $task = $request->get('task');
 
-            if ($task == 'RemoveMeAsWorker') {
+            if ($task == 'TakeTicket') {
                 $foundSomething = true;
-                $service->removeSubscription($ticket, $user, 'work');
+                $service->setAgent($ticket, $user, $user->getStaffCharacter());
             }
 
-            if ($task == 'AddMeAsWorker') {
+            if ($task == 'AbandonTicket') {
                 $foundSomething = true;
-                $service->addSubscription($ticket, $user, 'work');
+                $service->setAgent($ticket, null);
             }
 
-            if ($task == 'RemoveMeAsWatcher') {
+            if ($task == 'RemoveWatcher') {
                 $foundSomething = true;
-                $service->removeSubscription($ticket, $user, 'watch');
+                $service->removeWatcher($ticket, $user);
             }
 
-            if ($task == 'AddMeAsWatcher') {
+            if ($task == 'AddWatcher') {
                 $foundSomething = true;
-                $service->addSubscription($ticket, $user, 'watch');
+                $service->addWatcher($ticket, $user);
             }
 
             if ($task == 'AddPublicNote' && $request->has('content')) {

@@ -21,8 +21,6 @@ class SupportTicketService
 
     private array $validLinkTypes = ['duplicate', 'related'];
 
-    private array $validInterestTypes = ['watch', 'work'];
-
     /**
      * @var SupportTicketCategory[]
      */
@@ -67,7 +65,7 @@ class SupportTicketService
      */
     public function userCanSeeTicket(User $user, SupportTicket $ticket): bool
     {
-        return $ticket->user->is($user) || $ticket->isPublic;
+        return $ticket->fromUser->is($user) || $ticket->isPublic;
     }
 
     /**
@@ -122,6 +120,18 @@ class SupportTicketService
     {
         $ticket->updatedAt = Carbon::now();
         $this->provider->save($ticket);
+    }
+
+    /**
+     * Internal function to avoid duplication.
+     * @param SupportTicket $ticket
+     */
+    private function potentiallyUpdateStatusAutomatically(SupportTicket $ticket)
+    {
+        // New tickets change to open if something is done on them
+        if ($ticket->status == 'new') {
+            $this->setStatus($ticket, 'open');
+        }
     }
 
     /**
@@ -197,19 +207,17 @@ class SupportTicketService
      * @param bool $isPublic
      * @param User|null $fromUser
      * @param MuckDbref|null $fromCharacter
+     * @throws Exception
      */
     public function setPublic(SupportTicket $ticket, bool $isPublic, ?User $fromUser = null, ?MuckDbref $fromCharacter = null)
     {
         if ($ticket->isPublic === $isPublic) return;
 
         if ($ticket->isPublic) {
-            // Need to remove non-agent watchers
-            $subscriptions = $this->getSubscriptions($ticket);
-            foreach($subscriptions as $accountId => $subscriptionInterest) {
-                if ($subscriptionInterest == 'work') {
-                    $user = User::find($accountId);
-                    if (!$user->hasRole('staff')) $this->removeSubscription($ticket, User::find($accountId), 'work');
-                }
+            // Need to remove all watchers
+            $watchers = $this->provider->getWatchers($ticket);
+            foreach ($watchers as $watcher) {
+                $this->removeWatcher($ticket, $watcher);
             }
             $message = "Ticket has been made private.";
         } else {
@@ -259,14 +267,11 @@ class SupportTicketService
         $this->addLogEntry($ticket, 'note', $isPublic, $fromUser, $fromCharacter, $note);
 
         // If a ticket is pending and the requester adds a response, it changes back to open
-        if ($ticket->status == 'pending' && $fromUser->is($ticket->user)) {
-            $this->setStatus($ticket, 'open', null, null);
+        if ($ticket->status == 'pending' && $fromUser->is($ticket->fromUser)) {
+            $this->setStatus($ticket, 'open');
         }
 
-        // New tickets change to open if something is done on them
-        if ($ticket->status == 'new') {
-            $this->setStatus($ticket, 'open', null, null);
-        }
+        $this->potentiallyUpdateStatusAutomatically($ticket);
 
         // And finally save ticket to update the updatedAt time.
         $this->saveTicket($ticket);
@@ -313,80 +318,47 @@ class SupportTicketService
     /**
      * Returns an array of aid:interest
      * @param SupportTicket $ticket
-     * @return SupportTicketSubscription[]
+     * @return User[]
      */
-    public function getSubscriptions(SupportTicket $ticket): array
+    public function getWatchers(SupportTicket $ticket): array
     {
-        return $this->provider->getSubscriptions($ticket);
+        return $this->provider->getWatchers($ticket);
     }
 
     /**
      * @param SupportTicket $ticket
      * @param User $user
-     * @param string $interest
      * @throws Exception
      */
-    public function addSubscription(SupportTicket $ticket, User $user, string $interest)
+    public function addWatcher(SupportTicket $ticket, User $user)
     {
-        if (!in_array($interest, $this->validInterestTypes))
-            throw new Error("Invalid interest type specified when adding subscription");
-
-        foreach ($this->provider->getSubscriptions($ticket) as $existingAid => $existingInterest) {
-            if ($existingAid == $user->getAid() && $existingInterest == $interest)
-                throw new Exception('Subscription already exists');
+        foreach ($this->provider->getWatchers($ticket) as $existing) {
+            if ($existing->is($user))
+                throw new Exception('Already watching that ticket');
         }
 
-        if ($ticket->closedAt) throw new Exception('Ticket is closed');
+        $this->provider->addWatcher($ticket, $user);
 
-        $this->provider->addSubscription($ticket, $user, $interest);
-
-        if ($interest == 'work') {
-            $message = "Agent added as working on ticket";
-            $isPublic = true;
-            if ($ticket->status == 'new') {
-                $ticket->status = 'open';
-                $ticket->statusAt = Carbon::now();
-            }
-        } else {
-            $isPublic = false;
-            $message = "User started watching ticket";
-        }
-
-        $this->addLogEntry($ticket, 'system', $isPublic, $user, null, $message);
+        $this->addLogEntry($ticket, 'system', false, $user, null, "User started watching ticket");
         $this->saveTicket($ticket);
     }
 
     /**
      * @param SupportTicket $ticket
      * @param User $user
-     * @param string $interest
      * @throws Exception
      */
-    public function removeSubscription(SupportTicket $ticket, User $user, string $interest)
+    public function removeWatcher(SupportTicket $ticket, User $user)
     {
-        if (!in_array($interest, $this->validInterestTypes))
-            throw new Error("Invalid interest type specified when removing subscription");
-
         $found = false;
-        foreach ($this->provider->getSubscriptions($ticket) as $subscription) {
-            if ($subscription->user->is($user) && $subscription->interest == $interest)
-                $found = true;
+        foreach ($this->provider->getWatchers($ticket) as $watcher) {
+            if ($watcher->is($user)) $found = true;
         }
-        if (!$found) throw new Exception("Subscription doesn't exist.");
+        if (!$found) throw new Exception("Nothing to remove - User isn't watching the ticket.");
 
-        $this->provider->removeSubscription($ticket, $user, $interest);
+        $this->provider->removeWatcher($ticket, $user);
 
-        switch ($interest) {
-            case 'work':
-                $message = "Agent no longer working on ticket";
-                $isPublic = true;
-                break;
-            case 'watch':
-                $message = "User stopped watching ticket";
-                $isPublic = false;
-                break;
-        }
-        $this->addLogEntry($ticket, 'system', $isPublic, $user, null, $message);
+        $this->addLogEntry($ticket, 'system', false, $user, null, "User stopped watching ticket");
         $this->saveTicket($ticket);
     }
 
@@ -423,6 +395,35 @@ class SupportTicketService
         $ticket->category = $category;
         $this->addLogEntry($ticket, 'system', true, $user, $character,
             "Category changed to: $category");
+        $this->saveTicket($ticket);
+    }
+
+    /**
+     * @param SupportTicket $ticket
+     * @param User|null $user
+     * @param MuckCharacter|null $character
+     * @throws Exception
+     */
+    public function setAgent(SupportTicket $ticket, ?User $user, ?MuckCharacter $character = null)
+    {
+        if ($ticket->closedAt) {
+            throw new Exception("Ticket is closed.");
+        }
+
+        $ticket->agentUser = $user;
+        $ticket->agentCharacter = $character;
+
+        if ($user) {
+            if ($character)
+                $message = "Ticket assigned to: " . $character->name();
+            else
+                $message = "Ticked assigned";
+        } else $message = "Ticket unassigned";
+
+        $this->addLogEntry($ticket, 'system', true, $user, $character, $message);
+
+        $this->potentiallyUpdateStatusAutomatically($ticket);
+
         $this->saveTicket($ticket);
     }
 

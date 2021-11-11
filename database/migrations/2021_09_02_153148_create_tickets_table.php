@@ -25,6 +25,9 @@ class CreateTicketsTable extends Migration
             $table->bigInteger('from_muck_object_id')->nullable()->index()
                 ->comment('Tickets without a muck_object reference are considered account tickets.');
 
+            $table->bigInteger('agent_aid')->nullable()->index();
+            $table->bigInteger('agent_muck_object_id')->nullable()->index();
+
             $table->enum('status', ['new', 'open', 'pending', 'held', 'closed'])->default('new');
             $table->timestamp('status_at')->useCurrent()
                 ->comment('Last time the status was changed.');

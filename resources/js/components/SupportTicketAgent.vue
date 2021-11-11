@@ -26,7 +26,11 @@
             </div>
             <div class="col-12 col-xl-3 mt-2">
                 <div class="label">Raised by</div>
-                <div class="value">{{ ticket.requesterCharacterName }} (#{{ ticket.requesterCharacterDbref }})</div>
+                <character-card v-if="ticket.from.character" :character="ticket.from.character"
+                                mode="tag" class="mr-2 mb-2 align-top">
+                </character-card>
+                <div v-if="ticket.from.user" class="value"><a :href="ticket.from.user.url">Account #{{ ticket.from.user.id }}</a></div>
+                <div v-else class="value">(System)</div>
             </div>
         </div>
 
@@ -68,18 +72,17 @@
 
         <div class="row">
             <div class="col-12 col-xl-4 mt-2">
-                <div class="label">Working</div>
+                <div class="label">Handling</div>
                 <div class="value">
-                    <span class="mr-2" v-for="worker in ticket.workers"><a
-                        :href="worker.accountUrl">User#{{ worker.accountId }}</a></span>
+                    <span v-if="ticket.agent.character">{{ ticket.agent.character.name }}</span>
+                    <span v-else-if="ticket.agent.user">Account #{{ ticket.agent.user.id }}</span>
+                    <span v-else>Unassigned</span>
                 </div>
+
             </div>
             <div class="col-12 col-xl-4 mt-2">
                 <div class="label">Watching</div>
-                <div class="value">
-                    <span class="mr-2" v-for="watcher in ticket.watchers"><a
-                        :href="watcher.accountUrl">User#{{ watcher.accountId }}</a></span>
-                </div>
+                <div class="value">{{ ticket.watchers.length }}</div>
             </div>
             <div class="col-12 col-xl-4 mt-2">
                 <div class="label">Voting</div>
@@ -315,25 +318,20 @@ export default {
             return label || `Unknown(${this.ticket.category}))`;
         },
         isWorkingTicket: function() {
-            let accountId = parseInt(document.querySelector('meta[name="account-id"]').content);
-            if (!this.ticket.workers) return false;
-            let found = false;
-            this.ticket.workers.forEach(worker => {
-                if (worker.accountId === accountId) found = true;
-            });
-            return found;
+            const characterDbref = parseInt(document.querySelector('meta[name="character-dbref"]').content);
+            return this.ticket.agent.character && this.ticket.agent.character.dbref === characterDbref;
         },
         isWatchingTicket: function() {
             let accountId = parseInt(document.querySelector('meta[name="account-id"]').content);
             if (!this.ticket.watchers) return false;
             let found = false;
             this.ticket.watchers.forEach(watcher => {
-                if (watcher.accountId === accountId) found = true;
+                if (watcher.id === accountId) found = true;
             });
             return found;
         },
         assignOrUnassignLabel: function () {
-            return this.isWorkingTicket() ? 'Remove me as Working' : 'Add me as Working';
+            return this.isWorkingTicket() ? 'Abandon Ticket' : 'Take Ticket';
         },
         watchOrUnwatchLabel: function() {
             return this.isWatchingTicket() ? 'Stop Watching' : 'Start Watching';
@@ -392,17 +390,17 @@ export default {
         assignOrUnassignToMe: function () {
             let data = {};
             if (this.isWorkingTicket())
-                data['task'] = 'RemoveMeAsWorker';
+                data['task'] = 'AbandonTicket';
             else
-                data['task'] = 'AddMeAsWorker';
+                data['task'] = 'TakeTicket';
             this.updateTicket(data);
         },
         watchOrUnwatchTicket: function () {
             let data = {};
             if (this.isWatchingTicket())
-                data['task'] = 'RemoveMeAsWatcher';
+                data['task'] = 'RemoveWatcher';
             else
-                data['task'] = 'AddMeAsWatcher';
+                data['task'] = 'AddWatcher';
             this.updateTicket(data);
         },
         changePublicStatus: function() {

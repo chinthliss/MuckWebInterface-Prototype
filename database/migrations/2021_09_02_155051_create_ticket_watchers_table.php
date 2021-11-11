@@ -13,10 +13,9 @@ class CreateTicketSubscribersTable extends Migration
      */
     public function up()
     {
-        Schema::create('ticket_subscribers', function (Blueprint $table) {
+        Schema::create('ticket_watchers', function (Blueprint $table) {
             $table->bigInteger('ticket_id')->index();
             $table->bigInteger('aid')->nullable()->index();
-            $table->enum('interest', ['watch', 'work']);
         });
     }
 

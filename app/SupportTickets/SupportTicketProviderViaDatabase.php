@@ -23,18 +23,26 @@ class SupportTicketProviderViaDatabase implements SupportTicketProvider
      */
     public function fromDatabaseRow(object $row): SupportTicket
     {
-        $user = null;
-        if ($row->from_aid) $user = User::find($row->from_aid);
+        $fromUser = null;
+        if ($row->from_aid) $fromUser = User::find($row->from_aid);
 
-        $character = null;
-        if ($row->from_muck_object_id) $character = $this->muckObjects->getByMuckObjectId($row->from_muck_object_id);
+        $fromCharacter = null;
+        if ($row->from_muck_object_id) $fromCharacter = $this->muckObjects->getByMuckObjectId($row->from_muck_object_id);
+
+        $agentUser = null;
+        if ($row->agent_aid) $agentUser = User::find($row->agent_aid);
+
+        $agentCharacter = null;
+        if ($row->agent_muck_object_id) $agentCharacter = $this->muckObjects->getByMuckObjectId($row->agent_muck_object_id);
 
         return SupportTicket::createExisting(
             $row->id,
             $row->category,
             $row->title,
-            $user,
-            $character,
+            $fromUser,
+            $fromCharacter,
+            $agentUser,
+            $agentCharacter,
             new Carbon($row->created_at),
             $row->status,
             $row->status_at ? new Carbon($row->status_at) : null,
@@ -152,14 +160,16 @@ class SupportTicketProviderViaDatabase implements SupportTicketProvider
                 'status_at' => $ticket->statusAt,
                 'closure_reason' => $ticket->closureReason,
                 'closed_at' => $ticket->closedAt,
-                'public' => $ticket->isPublic
+                'public' => $ticket->isPublic,
+                'agent_aid' => $ticket->agentUser?->getAid(),
+                'agent_muck_object_id' => $ticket->agentCharacter ? $this->muckObjects->getMuckObjectIdFor($ticket->agentCharacter) : null
             ]);
     }
 
     /**
      * @inerhitDoc
      */
-    public function log(SupportTicket $ticket, string $logType, bool $isPublic, ?User $fromUser, ?MuckDbref $fromMuckObject, string $content): void
+    public function log(SupportTicket $ticket, string $logType, bool $isPublic, ?User $fromUser, ?MuckDbref $fromMuckDbref, string $content): void
     {
         $values = [
             'ticket_id' => $ticket->id,
@@ -168,7 +178,7 @@ class SupportTicketProviderViaDatabase implements SupportTicketProvider
             'content' => $content
         ];
         if ($fromUser) $values['from_aid'] = $fromUser->getAid();
-        if ($fromMuckObject) $values['from_muck_object_id'] = $this->muckObjects->getMuckObjectIdFor($fromMuckObject);
+        if ($fromMuckDbref) $values['from_muck_object_id'] = $this->muckObjects->getMuckObjectIdFor($fromMuckDbref);
         DB::table('ticket_log')->insert($values);
     }
 
@@ -229,34 +239,32 @@ class SupportTicketProviderViaDatabase implements SupportTicketProvider
     /**
      * @inheritDoc
      */
-    public function getSubscriptions(SupportTicket $ticket): array
+    public function getWatchers(SupportTicket $ticket): array
     {
         $result = [];
-        $rows = DB::table('ticket_subscribers')
+        $rows = DB::table('ticket_watchers')
             ->where('ticket_id', '=', $ticket->id)
             ->get();
         foreach ($rows as $row) {
-            $result[] = new SupportTicketSubscription($ticket, User::find($row->aid), $row->interest);
+            $result[] = User::find($row->aid);
         }
         return $result;
     }
 
-    public function addSubscription(SupportTicket $ticket, User $user, string $interest): void
+    public function addWatcher(SupportTicket $ticket, User $user): void
     {
-        DB::table('ticket_subscribers')
+        DB::table('ticket_watchers')
             ->insert([
                 'ticket_id' => $ticket->id,
-                'aid' => $user->getAid(),
-                'interest' => $interest
+                'aid' => $user->getAid()
             ]);
     }
 
-    public function removeSubscription(SupportTicket $ticket, User $user, string $interest): void
+    public function removeWatcher(SupportTicket $ticket, User $user): void
     {
-        DB::table('ticket_subscribers')
+        DB::table('ticket_watchers')
             ->where('ticket_id', '=', $ticket->id)
             ->where('aid', '=', $user->getAid())
-            ->where('interest', '=', $interest)
             ->delete();
     }
 }
