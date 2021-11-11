@@ -150,6 +150,7 @@ class MuckObjectService
         }
 
         Log::debug("MuckObjectService.getByMuckObjectId fetched object - $id: $object");
+        $this->byMuckObjectId[$id] = $object;
         return $object;
     }
 
