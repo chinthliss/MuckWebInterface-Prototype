@@ -116,9 +116,9 @@ class SupportTicketService
     /**
      * @param SupportTicket $ticket
      */
-    private function saveTicket(SupportTicket $ticket)
+    private function saveTicket(SupportTicket $ticket, bool $amendUpdatedAt = true)
     {
-        $ticket->updatedAt = Carbon::now();
+        if ($amendUpdatedAt) $ticket->updatedAt = Carbon::now();
         $this->provider->save($ticket);
     }
 
@@ -340,7 +340,7 @@ class SupportTicketService
         $this->provider->addWatcher($ticket, $user);
 
         $this->addLogEntry($ticket, 'system', false, $user, null, "User started watching ticket");
-        $this->saveTicket($ticket);
+        $this->saveTicket($ticket, false);
     }
 
     /**
@@ -359,7 +359,7 @@ class SupportTicketService
         $this->provider->removeWatcher($ticket, $user);
 
         $this->addLogEntry($ticket, 'system', false, $user, null, "User stopped watching ticket");
-        $this->saveTicket($ticket);
+        $this->saveTicket($ticket, false);
     }
 
     /**
@@ -406,9 +406,7 @@ class SupportTicketService
      */
     public function setAgent(SupportTicket $ticket, ?User $user, ?MuckCharacter $character = null)
     {
-        if ($ticket->closedAt) {
-            throw new Exception("Ticket is closed.");
-        }
+        if ($ticket->closedAt) throw new Exception("Ticket is closed.");
 
         $ticket->agentUser = $user;
         $ticket->agentCharacter = $character;
@@ -425,6 +423,57 @@ class SupportTicketService
         $this->potentiallyUpdateStatusAutomatically($ticket);
 
         $this->saveTicket($ticket);
+    }
+
+    /**
+     * @param SupportTicket $ticket
+     * @param User $user
+     * @param MuckCharacter|null $character
+     * @return bool
+     */
+    public function hasVoted(SupportTicket $ticket, User $user, ?MuckCharacter $character = null) : bool
+    {
+        foreach ($this->getLog($ticket) as $logEntry) {
+            if ($logEntry->type !== 'upvote' && $logEntry->type !== 'downvote') continue;
+            if ($logEntry->user->is($user) && $logEntry->character === $character) return true;
+        }
+        return false;
+    }
+
+    /**
+     * @param SupportTicket $ticket
+     * @param string $voteType 'up' or 'down'
+     * @param User $user
+     * @param MuckCharacter|null $character
+     * @throws Exception
+     */
+    public function voteOn(SupportTicket $ticket, string $voteType, User $user, ?MuckCharacter $character = null)
+    {
+        if ($ticket->closedAt) throw new Exception("Ticket is closed.");
+
+        if ($this->hasVoted($ticket, $user, $character)) throw new Exception("Already voted on that ticket.");
+        switch ($voteType) {
+            case 'up':
+                $ticket->votesUp++;
+                $logType = 'upvote';
+                $message = "Ticket voted for: ";
+                break;
+            case 'down':
+                $ticket->votesDown++;
+                $logType = 'downvote';
+                $message = "Ticket voted against: ";
+                break;
+            default:
+                throw new Exception ("Invalid vote type.");
+        }
+        if ($character)
+            $message .= $character->name();
+        else
+            $message .= "Account#" . $user->getAid();
+
+        $this->addLogEntry($ticket, $logType, false, $user, $character, $message);
+
+        $this->saveTicket($ticket, false);
     }
 
 }

@@ -11,12 +11,16 @@
                 <span>{{ outputCarbonString(data.value) }}</span> <span class="small text-muted">{{ data.item.lastUpdatedAtTimespan }}</span>
             </template>
 
-            <template #cell(character)="data">
-                <span>{{ data.value }}</span> <span class="small text-muted">{{ data.item.user ? `Account#${data.item.user}` : '' }}</span>
+            <template #cell(from)="data">
+                <span v-if="data.value.character">{{ data.value.character.name }}</span>
+                <span v-else-if="data.value.user">{{ `Account#${data.value.user.id}` }}</span>
+                <span v-else>None</span>
             </template>
 
-            <template #cell(working)="data">
-                <span>{{ data.value.join(', ') }}</span>
+            <template #cell(agent)="data">
+                <span v-if="data.value.character">{{ data.value.character.name }}</span>
+                <span v-else-if="data.value.user">{{ `Account#${data.value.user.id}` }}</span>
+                <span v-else>--</span>
             </template>
 
 
@@ -49,11 +53,11 @@ export default {
                     label: 'Title'
                 },
                 {
-                    key: 'character',
+                    key: 'from',
                     label: 'Requester'
                 },
                 {
-                    key: 'working',
+                    key: 'agent',
                     label: 'Assigned'
                 },
                 {

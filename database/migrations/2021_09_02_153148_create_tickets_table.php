@@ -35,6 +35,8 @@ class CreateTicketsTable extends Migration
             $table->timestamp('closed_at')->nullable()->index();
             $table->boolean('public')->default(false);
 
+            $table->smallInteger('votes_for')->unsigned()->default(0);
+            $table->smallInteger('votes_against')->unsigned()->default(0);
             $table->text('content');
         });
     }

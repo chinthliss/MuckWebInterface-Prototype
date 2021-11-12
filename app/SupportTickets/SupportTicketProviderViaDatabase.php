@@ -50,6 +50,8 @@ class SupportTicketProviderViaDatabase implements SupportTicketProvider
             $row->closure_reason,
             $row->closed_at ? new Carbon($row->closed_at) : null,
             $row->public,
+            $row->votes_for,
+            $row->votes_against,
             $row->content
         );
     }
@@ -162,7 +164,9 @@ class SupportTicketProviderViaDatabase implements SupportTicketProvider
                 'closed_at' => $ticket->closedAt,
                 'public' => $ticket->isPublic,
                 'agent_aid' => $ticket->agentUser?->getAid(),
-                'agent_muck_object_id' => $ticket->agentCharacter ? $this->muckObjects->getMuckObjectIdFor($ticket->agentCharacter) : null
+                'agent_muck_object_id' => $ticket->agentCharacter ? $this->muckObjects->getMuckObjectIdFor($ticket->agentCharacter) : null,
+                'votes_for' => $ticket->votesUp,
+                'votes_against' => $ticket->votesDown
             ]);
     }
 

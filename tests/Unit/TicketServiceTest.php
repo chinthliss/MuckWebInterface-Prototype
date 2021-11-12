@@ -125,4 +125,38 @@ class TicketServiceTest extends TestCase
         $ticket = $service->getTicketById($ticket->id);
         $this->assertEquals($ticket->agentUser, $user);
     }
+
+    public function testHasVotedOnTicket()
+    {
+        $this->seed();
+        $service = $this->app->make(SupportTicketService::class);
+        $ticket = $service->createTicket('testCategory', 'testTitle,', 'testContent');
+
+        $user = $this->loginAsValidatedUser();
+        $this->assertFalse($service->hasVoted($ticket, $user));
+        $service->voteOn($ticket, 'up', $user);
+        $this->assertTrue($service->hasVoted($ticket, $user));
+
+        // Make sure first doesn't interfere with a second
+        $secondUser = $this->loginAsOtherValidatedUser();
+        $this->assertFalse($service->hasVoted($ticket, $secondUser));
+        $service->voteOn($ticket, 'up', $secondUser);
+        $this->assertTrue($service->hasVoted($ticket, $secondUser));
+    }
+
+    public function testVoteOnTicket()
+    {
+        $this->seed();
+        $service = $this->app->make(SupportTicketService::class);
+        $ticket = $service->createTicket('testCategory', 'testTitle,', 'testContent');
+
+        $user = $this->loginAsValidatedUser();
+        $service->voteOn($ticket, 'up', $user);
+        $this->assertEquals(1, $ticket->votesUp);
+        $this->assertEquals(0, $ticket->votesDown);
+
+        //Should be prevented from voting again
+        $this->expectException(Exception::class);
+        $service->voteOn($ticket, 'up', $user);
+    }
 }

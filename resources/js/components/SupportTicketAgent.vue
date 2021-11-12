@@ -95,8 +95,8 @@
             <div class="col-12 col-xl-4 mt-2">
                 <div class="label">Voting</div>
                 <div class="value" v-if="ticket.isPublic">
-                    <i class="fas fa-thumbs-up"></i> 0 Agree<br/>
-                    <i class="fas fa-thumbs-down"></i> 0 Disagree
+                    <i class="fas fa-thumbs-up"></i> {{ ticket.votes.up }} Agree<br/>
+                    <i class="fas fa-thumbs-down"></i> {{ ticket.votes.down }} Disagree
                 </div>
                 <div class="value" v-else>
                     No voting, ticket isn't public.

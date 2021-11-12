@@ -23,6 +23,8 @@ class SupportTicket
     public ?Carbon $closedAt;
     public bool $isPublic;
     public string $content;
+    public int $votesUp;
+    public int $votesDown;
 
     /**
      * Use the createNew and createExisting static functions instead
@@ -94,6 +96,8 @@ class SupportTicket
         ?string    $closureReason,
         ?Carbon    $closedAt,
         bool       $isPublic,
+        int        $votesUp,
+        int        $votesDown,
         string     $content
     ): SupportTicket
     {
@@ -114,6 +118,8 @@ class SupportTicket
         $ticket->closedAt = $closedAt;
         $ticket->closureReason = $closureReason;
         $ticket->isPublic = $isPublic;
+        $ticket->votesUp = $votesUp;
+        $ticket->votesDown = $votesDown;
         return $ticket;
     }
 
@@ -133,6 +139,10 @@ class SupportTicket
             'lastUpdatedAt' => $this->updatedAt,
             'lastUpdatedAtTimespan' => $this->updatedAt->diffForHumans(),
             'isPublic' => $this->isPublic,
+            'votes' => [
+                'up' => $this->votesUp,
+                'down' => $this->votesDown
+            ],
             'from' => [
                 'user' => $this->fromUser->serializeForAdmin(),
                 'character' => $this->fromCharacter?->toArray()
@@ -161,6 +171,10 @@ class SupportTicket
             'closedAtTimespan' => $this->closedAt?->diffForHumans(),
             'closureReason' => $this->closureReason,
             'isPublic' => $this->isPublic,
+            'votes' => [
+                'up' => $this->votesUp,
+                'down' => $this->votesDown
+            ],
             'updatedAt' => $this->updatedAt,
             'updatedAtTimespan' => $this->updatedAt->diffForHumans(),
             'from' => [
