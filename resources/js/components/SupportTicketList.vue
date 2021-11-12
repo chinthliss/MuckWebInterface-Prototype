@@ -23,6 +23,12 @@
                 <span v-else>--</span>
             </template>
 
+            <template #cell(votes)="data">
+                <span v-if="data.item.isPublic">
+                    {{ data.value.up }} <i class="fas fa-thumbs-up"></i>,
+                    {{ data.value.down }} <i class="fas fa-thumbs-down"></i>
+                </span>
+            </template>
 
         </b-table>
 
@@ -42,32 +48,43 @@ export default {
             tableFields: [
                 {
                     key: 'id',
-                    label: 'ID'
+                    label: 'ID',
+                    sortable:true
                 },
                 {
                     key: 'category',
-                    label: 'Category'
+                    label: 'Category',
+                    sortable:true
                 },
                 {
                     key: 'title',
-                    label: 'Title'
+                    label: 'Title',
+                    sortable:true
                 },
                 {
                     key: 'from',
-                    label: 'Requester'
+                    label: 'Requester',
+                    sortable:true
                 },
                 {
                     key: 'agent',
-                    label: 'Assigned'
+                    label: 'Assigned',
+                    sortable:true
                 },
                 {
                     key: 'status',
                     label: 'Status',
-                    formatter: 'capital'
+                    formatter: 'capital',
+                    sortable:true
                 },
                 {
                     key: 'lastUpdatedAt',
-                    label: 'Last Update'
+                    label: 'Last Update',
+                    sortable:true
+                },
+                {
+                    key: 'votes',
+                    label: 'Votes'
                 }
             ]
         }

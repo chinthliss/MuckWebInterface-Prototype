@@ -26,6 +26,7 @@ interface SupportTicketProvider
     public function getOpen(): array;
 
     /**
+     * Active tickets are those that are open or have been updated in any way in the last 3 days.
      * @return SupportTicket[]
      */
     public function getActive(): array;
