@@ -413,12 +413,12 @@ export default {
         },
         addPublicNote: function() {
             const content = this.newNoteContent.replace(/\r/g, '');
-            this.updateTicket({task: 'AddPublicNote', content: content});
+            this.updateTicket({task: 'AddPublicNote', muck_content: content});
             this.newNoteContent = '';
         },
         addPrivateNote: function() {
             const content = this.newNoteContent.replace(/\r/g, '');
-            this.updateTicket({task: 'AddPrivateNote', content: content});
+            this.updateTicket({task: 'AddPrivateNote', muck_content: content});
             this.newNoteContent = '';
         }
 

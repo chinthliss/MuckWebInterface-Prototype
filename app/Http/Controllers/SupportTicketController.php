@@ -138,14 +138,14 @@ class SupportTicketController extends Controller
                 $service->addWatcher($ticket, $user);
             }
 
-            if ($task == 'AddPublicNote' && $request->has('content')) {
+            if ($task == 'AddPublicNote' && $request->has('muck_content')) {
                 $foundSomething = true;
-                $service->addNote($ticket, $request->get('content'), true, $user, $character);
+                $service->addNote($ticket, $request->get('muck_content'), true, $user, $character);
             }
 
-            if ($task == 'AddPrivateNote' && $request->has('content')) {
+            if ($task == 'AddPrivateNote' && $request->has('muck_content')) {
                 $foundSomething = true;
-                $service->addNote($ticket, $request->get('content'), false, $user, $character);
+                $service->addNote($ticket, $request->get('muck_content'), false, $user, $character);
             }
 
             if ($task == 'AddLink' && $request->has('to') && $request->has('type')) {
