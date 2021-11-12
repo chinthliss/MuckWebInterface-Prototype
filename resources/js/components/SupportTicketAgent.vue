@@ -15,16 +15,24 @@
             <br/>Whilst you can view this ticket you won't be able to make any changes.
         </div>
 
-        <div class="row">
-            <div class="col-12 col-lg-3 col-xl-2 mt-2">
-                <div class="label editable" @click="showEditCategoryOrTitle">Category <i class="fas fa-edit"></i></div>
-                <div class="value">{{ categoryLabel() }}</div>
+        <div class="d-flex flex-column flex-xl-row">
+            <div class="flex-xl-grow-1">
+                <div class="d-flex flex-column flex-xl-row">
+                    <div>
+                        <div class="label editable" @click="showEditCategoryOrTitle">Category <i class="fas fa-edit"></i></div>
+                        <div class="value">{{ categoryLabel() }}</div>
+                    </div>
+                    <div class="mt-2 mt-xl-0 ml-xl-4 flex-xl-grow-1">
+                        <div class="label editable" @click="showEditCategoryOrTitle">Title <i class="fas fa-edit"></i></div>
+                        <div class="value" v-html="parseUserContent(ticket.title)"></div>
+                    </div>
+                </div>
+                <div class="mt-2 mt-xl-0">
+                        <div class="label">Description</div>
+                        <div class="muckContent" v-html="parseUserContent(ticket.content)"></div>
+                </div>
             </div>
-            <div class="col-12 col-lg-9 col-xl-7 mt-2">
-                <div class="label editable" @click="showEditCategoryOrTitle">Title <i class="fas fa-edit"></i></div>
-                <div class="value" v-html="parseUserContent(ticket.title)"></div>
-            </div>
-            <div class="col-12 col-xl-3 mt-2">
+            <div class="mt-2 mt-xl-0 ml-xl-4">
                 <div class="label">Raised by</div>
                 <character-card v-if="ticket.from.character" :character="ticket.from.character"
                                 mode="tag" class="mr-2 mb-2 align-top">
@@ -116,9 +124,8 @@
                     <button type="button" class="btn btn-secondary" @click="showChangeStatusOrClose">Change Status /
                         Close
                     </button>
-                    <button type="button" class="btn btn-secondary" @click="assignOrUnassignToMe">
-                        {{ assignOrUnassignLabel() }}
-                    </button>
+                    <button type="button" class="btn btn-secondary" @click="assignOrUnassignToMe"
+                            :disabled="ticket.closedAt">{{ assignOrUnassignLabel() }}</button>
                     <button type="button" class="btn btn-secondary">Assign to Other(s)</button>
                     <button type="button" class="btn btn-secondary" @click="watchOrUnwatchTicket">
                         {{ watchOrUnwatchLabel() }}
@@ -129,12 +136,6 @@
                 </div>
             </div>
         </div>
-        <div class="divider"></div>
-
-        <div class="row">
-            <div class="col mt-2 muckContent" v-html="parseUserContent(ticket.content)"></div>
-        </div>
-
         <div class="divider"></div>
 
         <h3 class="mt-2">Log</h3>
