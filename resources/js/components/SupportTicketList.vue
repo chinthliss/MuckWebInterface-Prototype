@@ -1,14 +1,16 @@
 <template>
     <div class="container">
         <h2>Tickets</h2>
-        <b-table dark striped hover small
+        <b-table dark hover small
                  :items="tableContent"
                  :fields="tableFields"
                  :busy="tableLoading"
+                 :tbody-tr-class="rowClass"
                  @row-clicked="tableRowClicked"
         >
             <template #cell(lastUpdatedAt)="data">
-                <span>{{ outputCarbonString(data.value) }}</span> <span class="small text-muted">{{ data.item.lastUpdatedAtTimespan }}</span>
+                <span>{{ outputCarbonString(data.value) }}</span> <span
+                class="small text-muted">{{ data.item.lastUpdatedAtTimespan }}</span>
             </template>
 
             <template #cell(from)="data">
@@ -39,9 +41,9 @@
 export default {
     name: "support-ticket-list",
     props: {
-        ticketsUrl: {type: String, required: true},
+        ticketsUrl: {type: String, required: true}
     },
-    data: function() {
+    data: function () {
         return {
             tableContent: [],
             tableLoading: false,
@@ -49,38 +51,38 @@ export default {
                 {
                     key: 'id',
                     label: 'ID',
-                    sortable:true
+                    sortable: true
                 },
                 {
                     key: 'category',
                     label: 'Category',
-                    sortable:true
+                    sortable: true
                 },
                 {
                     key: 'title',
                     label: 'Title',
-                    sortable:true
+                    sortable: true
                 },
                 {
                     key: 'from',
                     label: 'Requester',
-                    sortable:true
+                    sortable: true
                 },
                 {
                     key: 'agent',
                     label: 'Assigned',
-                    sortable:true
+                    sortable: true
                 },
                 {
                     key: 'status',
                     label: 'Status',
                     formatter: 'capital',
-                    sortable:true
+                    sortable: true
                 },
                 {
                     key: 'lastUpdatedAt',
                     label: 'Last Update',
-                    sortable:true
+                    sortable: true
                 },
                 {
                     key: 'votes',
@@ -90,7 +92,7 @@ export default {
         }
     },
     methods: {
-        refreshTableContent: function() {
+        refreshTableContent: function () {
             this.tableLoading = true;
             axios
                 .get(this.ticketsUrl, {})
@@ -104,6 +106,11 @@ export default {
         },
         tableRowClicked: function (row) {
             window.open(row.url, '_blank');
+        },
+        rowClass: function (item) {
+            if (item.status === 'closed') return "ticket-closed";
+            if (item.status === 'open' || item.status === 'new') return "ticket-active";
+            return "ticket-inactive";
         }
     },
     mounted() {
@@ -112,6 +119,23 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+@import '@/_variables.scss';
+
+::v-deep .ticket-closed {
+    cursor: pointer;
+    background-color: black;
+    color: $text-muted;
+}
+
+::v-deep .ticket-inactive {
+    cursor: pointer;
+    color: $text-muted;
+}
+
+::v-deep .ticket-active {
+    cursor: pointer;
+}
+
 
 </style>
