@@ -35,20 +35,7 @@ class SupportTicketController extends Controller
         $user = auth()->user();
 
         return array_map(function ($ticket) use ($user) {
-            $array = [
-                'id' => $ticket->id,
-                'url' => route('support.user.ticket', ['id' => $ticket->id]),
-                'category' => $ticket->category,
-                'title' => $ticket->title,
-                'status' => $ticket->status,
-                'lastUpdatedAt' => $ticket->updatedAt,
-                'lastUpdatedAtTimespan' => $ticket->updatedAt->diffForHumans(),
-                'isPublic' => $ticket->isPublic
-            ];
-            //Only provide account ID if it's the users
-            if ($ticket->fromUser->is($user)) $array['user'] = $ticket->fromUser->getAid();
-            if ($ticket->fromCharacter) $array['character'] = $ticket->fromCharacter->name();
-            return $array;
+            return $ticket->serializeForUserListing();
         }, $service->getActiveTicketsForUser($user));
     }
 

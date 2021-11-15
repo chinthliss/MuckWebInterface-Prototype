@@ -128,6 +128,25 @@ class SupportTicket
         return "SupportTicket#$this->id[$this->category/$this->title]";
     }
 
+    public function serializeForUserListing() : array
+    {
+        return [
+            'id' => $this->id,
+            'url' => route('support.user.ticket', ['id' => $this->id]),
+            'category' => $this->category,
+            'title' => $this->title,
+            'status' => $this->status,
+            'lastUpdatedAt' => $this->updatedAt,
+            'lastUpdatedAtTimespan' => $this->updatedAt->diffForHumans(),
+            'isPublic' => $this->isPublic,
+            'votes' => [
+                'up' => $this->votesUp,
+                'down' => $this->votesDown
+            ],
+            'from' => $this->fromCharacter?->toArray()
+        ];
+    }
+
     public function serializeForAgentListing(SupportTicketService $service) : array
     {
         return [
