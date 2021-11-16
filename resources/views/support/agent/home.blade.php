@@ -14,5 +14,6 @@
 @section('content')
     <support-ticket-list
         tickets-url="{{ $ticketsUrl }}"
+        :agent="true"
     ></support-ticket-list>
 @endsection

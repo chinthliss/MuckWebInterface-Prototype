@@ -35,14 +35,17 @@ class SupportTicketController extends Controller
         $user = auth()->user();
 
         return array_map(function ($ticket) use ($user) {
-            return $ticket->serializeForUserListing();
+            return $ticket->serializeForListing($user);
         }, $service->getActiveTicketsForUser($user));
     }
 
     public function getAgentTickets(SupportTicketService $service): array
     {
-        return array_map(function ($ticket) use ($service) {
-            return $ticket->serializeForAgentListing($service);
+        /** @var User $user */
+        $user = auth()->user();
+
+        return array_map(function ($ticket) use ($service, $user) {
+            return $ticket->serializeForListing($user);
         }, $service->getActiveTickets());
     }
 

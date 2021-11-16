@@ -1,11 +1,29 @@
 <template>
     <div class="container">
         <h2>Tickets</h2>
+
+        <div class="btn-group btn-group-toggle mb-2" role="group" aria-label="View Mode" data-toggle="buttons">
+            <label class="btn btn-secondary active">
+                <input type="radio" name="view" autocomplete="off" value="active" v-model="tableFilter">Active
+            </label>
+            <label class="btn btn-secondary">
+                <input type="radio" name="view" autocomplete="off" value="open" v-model="tableFilter">Any Open Tickets
+            </label>
+            <label v-if="agent" class="btn btn-secondary">
+                <input type="radio" name="view" autocomplete="off" value="assigned" v-model="tableFilter">My Assigned Tickets
+            </label>
+            <label class="btn btn-secondary">
+                <input type="radio" name="view" autocomplete="off" value="raised" v-model="tableFilter">My Raised Tickets
+            </label>
+        </div>
+
         <b-table dark hover small
                  :items="tableContent"
                  :fields="tableFields"
                  :busy="tableLoading"
                  :tbody-tr-class="rowClass"
+                 :filter="tableFilter"
+                 :filter-function="filterRow"
                  @row-clicked="tableRowClicked"
         >
             <template #cell(lastUpdatedAt)="data">
@@ -15,13 +33,15 @@
 
             <template #cell(from)="data">
                 <span v-if="data.value.character">{{ data.value.character.name }}</span>
-                <span v-else-if="data.value.user">{{ `Account#${data.value.user.id}` }}</span>
+                <span v-else-if="data.value.user.id">{{ `Account#${data.value.user.id}` }}</span>
+                <span v-else-if="data.value.user">Account Based</span>
                 <span v-else>None</span>
             </template>
 
             <template #cell(agent)="data">
                 <span v-if="data.value.character">{{ data.value.character.name }}</span>
-                <span v-else-if="data.value.user">{{ `Account#${data.value.user.id}` }}</span>
+                <span v-else-if="data.value.user.id">{{ `Account#${data.value.user.id}` }}</span>
+                <span v-else-if="data.value.user">Yes</span>
                 <span v-else>--</span>
             </template>
 
@@ -41,11 +61,13 @@
 export default {
     name: "support-ticket-list",
     props: {
-        ticketsUrl: {type: String, required: true}
+        ticketsUrl: {type: String, required: true},
+        agent: {type: Boolean, required: false}
     },
     data: function () {
         return {
             tableContent: [],
+            tableFilter: 'active',
             tableLoading: false,
             tableFields: [
                 {
@@ -111,6 +133,13 @@ export default {
             if (item.status === 'closed') return "ticket-closed";
             if (item.status === 'open' || item.status === 'new') return "ticket-active";
             return "ticket-inactive";
+        },
+        filterRow: function(row, filter) {
+            if (filter === 'active') return true;
+            if (filter === 'open' && row.status !== 'closed') return true;
+            if (filter === 'assigned' && row.agent.own) return true;
+            if (filter === 'raised' && row.from.own) return true;
+            return false;
         }
     },
     mounted() {

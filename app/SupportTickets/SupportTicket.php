@@ -128,7 +128,7 @@ class SupportTicket
         return "SupportTicket#$this->id[$this->category/$this->title]";
     }
 
-    public function serializeForUserListing() : array
+    public function serializeForListing(User $user) : array
     {
         return [
             'id' => $this->id,
@@ -143,32 +143,15 @@ class SupportTicket
                 'up' => $this->votesUp,
                 'down' => $this->votesDown
             ],
-            'from' => $this->fromCharacter?->toArray()
-        ];
-    }
-
-    public function serializeForAgentListing(SupportTicketService $service) : array
-    {
-        return [
-            'id' => $this->id,
-            'url' => route('support.agent.ticket', ['id' => $this->id]),
-            'category' => $this->category,
-            'title' => $this->title,
-            'status' => $this->status,
-            'lastUpdatedAt' => $this->updatedAt,
-            'lastUpdatedAtTimespan' => $this->updatedAt->diffForHumans(),
-            'isPublic' => $this->isPublic,
-            'votes' => [
-                'up' => $this->votesUp,
-                'down' => $this->votesDown
-            ],
             'from' => [
-                'user' => $this->fromUser->serializeForAdmin(),
-                'character' => $this->fromCharacter?->toArray()
+                'user' => $user->isStaff() ? $this->fromUser->serializeForAdmin() : ($this->fromUser ? true : false),
+                'character' => $this->fromCharacter?->toArray(),
+                'own' => $user->is($this->fromUser)
             ],
             'agent' => [
-                'user' => $this->agentUser?->serializeForAdmin(),
-                'character' => $this->agentCharacter?->toArray()
+                'user' => $user->isStaff() ? $this->agentUser?->serializeForAdmin() : ($this->agentUser ? true : false),
+                'character' => $this->agentCharacter?->toArray(),
+                'own' => $user->is($this->agentUser)
             ]
         ];
     }
