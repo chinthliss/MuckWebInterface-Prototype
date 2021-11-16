@@ -58,9 +58,9 @@ class User implements Authenticatable, MustVerifyEmail
      * @param User $otherUser
      * @return bool
      */
-    public function is(User $otherUser) : bool
+    public function is(?User $otherUser) : bool
     {
-        return $this->aid === $otherUser->getAid();
+        return $this->aid === $otherUser?->getAid();
     }
 
     public function getAdminUrl() : string
@@ -495,6 +495,19 @@ class User implements Authenticatable, MustVerifyEmail
     {
         if ($this->roles == null) $this->getProvider()->loadRolesFor($this);
     }
+
+    //Shortcut to checking if the user has the staff role
+    public function isStaff(): bool
+    {
+        return $this->hasRole('staff');
+    }
+
+    //Shortcut to checking if the user has the admin role
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('admin');
+    }
+
     #endregion Roles
 
 }
