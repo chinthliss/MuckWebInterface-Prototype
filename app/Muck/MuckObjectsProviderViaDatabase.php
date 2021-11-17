@@ -20,6 +20,10 @@ class MuckObjectsProviderViaDatabase implements MuckObjectsProvider
             ->first();
 
         if (!$row) return null;
+
+        // Because we don't presently have a means to handle dbrefs from another game
+        if ($row->game_code != config('muck.muck_code')) return null;
+
         return [
             'dbref' => $row->dbref,
             'created' => new Carbon($row->created_at),
