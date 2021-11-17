@@ -156,6 +156,13 @@ class SupportTicket
         ];
     }
 
+    public function serializeForUser(SupportTicketService $service) : array
+    {
+        return [
+            'id' => $this->id
+        ];
+    }
+
     public function serializeForAgent(SupportTicketService $service) : array
     {
         $output = [

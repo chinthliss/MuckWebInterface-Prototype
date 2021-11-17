@@ -67,6 +67,19 @@ class SupportTicketController extends Controller
         ]);
     }
 
+    public function showUserTicket(SupportTicketService $service, int $id): View
+    {
+        $ticket = $service->getTicketById($id);
+        if (!$ticket) abort(404);
+
+        return view('support.user.ticket', [
+            'ticket' => $ticket->serializeForUser($service),
+            'pollUrl' => route('support.getUpdatedAt', ['id' => $ticket->id]),
+            'updateUrl' => route('support.user.ticket', ['id' => $ticket->id])
+        ]);
+
+    }
+
     // Returns new representation of the ticket on success
     public function handleAgentUpdate(Request $request, SupportTicketService $service, int $id): array
     {
