@@ -55,8 +55,8 @@
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                     <a class="dropdown-item" href="#" @click="setCategoryFilter(null)">All categories</a>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" v-for="category in categoryList()"
-                       href="#" @click="setCategoryFilter(category)">{{ category }}</a>
+                    <a class="dropdown-item" v-for="(categoryLabel, categoryCode) in categoryList()"
+                       href="#" @click="setCategoryFilter(categoryCode)">{{ categoryLabel }}</a>
                 </div>
             </div>
 
@@ -210,9 +210,10 @@ export default {
             return result;
         },
         categoryList: function () {
-            let result = [];
+            let result = {};
             this.tableContent.forEach(row => {
-                result.push(this.capital(row.category));
+                const config = this.categoryConfigurationFor(row.categoryCode);
+                if (config) result[config.code] = config.name;
             });
             return result;
         },
@@ -228,7 +229,9 @@ export default {
                 this.tableFilter.category = filter;
         },
         categoryFilterLabel: function () {
-            return this.tableFilter.category ? this.tableFilter.category : "All";
+            if (!this.tableFilter.category) return "All";
+            const config = this.categoryConfigurationFor(this.tableFilter.category);
+            return config.name;
         },
         categoryLabel: function(categoryCode) {
             const config = this.categoryConfigurationFor(categoryCode);
@@ -237,7 +240,7 @@ export default {
         filterRow: function (row, filter) {
             //Category filtering, find a reason to not show it
             if (filter.category) {
-                if (filter.category.toLowerCase() !== row.category.toLowerCase()) return false;
+                if (filter.category !== row.categoryCode) return false;
             }
             //Type filtering, find a reason to not show it
             if (filter.type !== 'all') {
