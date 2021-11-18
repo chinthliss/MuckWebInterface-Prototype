@@ -214,7 +214,7 @@ class SupportTicket
             'updatedAt' => $this->updatedAt,
             'updatedAtTimespan' => $this->updatedAt->diffForHumans(),
             'from' => [
-                'user' => $this->fromUser->serializeForAdmin(),
+                'user' => $this->fromUser?->serializeForAdmin(),
                 'character' => $this->fromCharacter?->toArray()
             ],
             'agent' => [
