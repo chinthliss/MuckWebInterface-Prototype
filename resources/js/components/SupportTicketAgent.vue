@@ -1,6 +1,6 @@
 <template>
     <div v-if="!ticket" class="container">
-        No ticket.
+        Ticket loading..
     </div>
     <div v-else class="container">
         <h2>Ticket #{{ ticket.id }}</h2>
@@ -175,7 +175,7 @@
         <DialogConfirm id="editCategoryOrTitle" title="Edit Category/Title" @save="saveCategoryOrTitle">
             <div class="form-group">
                 <label for="editCategory">Select Category</label>
-                <select class="form-control" id="editCategory" v-model="newCategory">
+                <select class="form-control" id="editCategory" v-model="newCategoryCode">
                     <option :value="category.code" v-for="category in categoryConfiguration">{{
                             category.name
                         }}
@@ -304,7 +304,7 @@ export default {
             ticket: null,
             remoteUpdatedAt: null,
             newTitle: null,
-            newCategory: null,
+            newCategoryCode: null,
             newNoteContent: null,
             newLinkTo: null,
         };
@@ -314,16 +314,16 @@ export default {
         categoryLabel: function () {
             let label = null;
             this.categoryConfiguration.forEach(config => {
-                if (config.code === this.ticket.category) label = config.name;
+                if (config.code === this.ticket.categoryCode) label = config.name;
             });
-            return label || `Unknown(${this.ticket.category}))`;
+            return label || `Unknown(${this.ticket.categoryCode}))`;
         },
         isWorkingTicket: function() {
-            const characterDbref = parseInt(document.querySelector('meta[name="character-dbref"]').content);
+            const characterDbref = parseInt(document.querySelector('meta[name="character-dbref"]')?.content);
             return this.ticket.agent.character && this.ticket.agent.character.dbref === characterDbref;
         },
         isWatchingTicket: function() {
-            let accountId = parseInt(document.querySelector('meta[name="account-id"]').content);
+            let accountId = parseInt(document.querySelector('meta[name="account-id"]')?.content);
             if (!this.ticket.watchers) return false;
             let found = false;
             this.ticket.watchers.forEach(watcher => {
@@ -379,8 +379,8 @@ export default {
             let updateData = {};
             if (this.ticket.title !== this.newTitle)
                 updateData.title = this.newTitle;
-            if (this.ticket.category !== this.newCategory)
-                updateData.category = this.newCategory;
+            if (this.ticket.categoryCode !== this.newCategoryCode)
+                updateData.category = this.newCategoryCode;
             if (updateData.title || updateData.category) this.updateTicket(updateData);
         },
         saveChangeStatusOrClose: function (newStatus, newClosureReason) {
@@ -427,7 +427,7 @@ export default {
         const self = this;
         self.ticket = self.initialTicket;
         self.newTitle = self.ticket.title;
-        self.newCategory = self.ticket.category;
+        self.newCategoryCode = self.ticket.categoryCode;
 
         setInterval(function () {
             axios.get(self.pollUrl)

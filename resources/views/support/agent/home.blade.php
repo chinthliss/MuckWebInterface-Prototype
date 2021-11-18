@@ -14,6 +14,7 @@
 @section('content')
     <support-ticket-list
         tickets-url="{{ $ticketsUrl }}"
+        :category-configuration="{{ json_encode($categoryConfiguration) }}"
         :agent="true"
     ></support-ticket-list>
 @endsection

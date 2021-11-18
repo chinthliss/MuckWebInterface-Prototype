@@ -9,7 +9,7 @@ use Illuminate\Support\Carbon;
 class SupportTicket
 {
     public int $id;
-    public string $category;
+    public string $categoryCode;
     public string $title;
     public ?int $gameCode;
     public ?User $fromUser;
@@ -30,7 +30,7 @@ class SupportTicket
     /**
      * Use the createNew and createExisting static functions instead
      * @param int $id
-     * @param string $category
+     * @param string $categoryCode
      * @param string $title
      * @param string $content
      * @param int $gameCode
@@ -39,7 +39,7 @@ class SupportTicket
      */
     private function __construct(
         int        $id,
-        string     $category,
+        string     $categoryCode,
         string     $title,
         string     $content,
         ?int       $gameCode,
@@ -48,7 +48,7 @@ class SupportTicket
     )
     {
         $this->id = $id;
-        $this->category = $category;
+        $this->categoryCode = $categoryCode;
         $this->title = $title;
         $this->content = $content;
         $this->gameCode = $gameCode;
@@ -58,7 +58,7 @@ class SupportTicket
 
     public static function createNew(
         int        $id,
-        string     $category,
+        string     $categoryCode,
         string     $title,
         string     $content,
         ?User      $fromUser,
@@ -67,7 +67,7 @@ class SupportTicket
     {
         $ticket = new self(
             $id,
-            $category,
+            $categoryCode,
             $title,
             $content,
             config('muck.muck_code'),
@@ -88,7 +88,7 @@ class SupportTicket
 
     public static function createExisting(
         int        $id,
-        string     $category,
+        string     $categoryCode,
         string     $title,
         ?int       $gameCode,
         ?User      $fromUser,
@@ -109,7 +109,7 @@ class SupportTicket
     {
         $ticket = new self(
             $id,
-            $category,
+            $categoryCode,
             $title,
             $content,
             $gameCode,
@@ -132,15 +132,16 @@ class SupportTicket
 
     public function __toString(): string
     {
-        return "SupportTicket#$this->id[$this->category/$this->title]";
+        return "SupportTicket#$this->id[$this->categoryCode/$this->title]";
     }
 
-    public function serializeForListing(User $user) : array
+    // Shared parts of listing serialization
+    private function serializeForListing(User $user) : array
     {
         return [
             'id' => $this->id,
-            'url' => route('support.user.ticket', ['id' => $this->id]),
-            'category' => $this->category,
+            'url' => null, // Changed by calling method
+            'categoryCode' => $this->categoryCode,
             'title' => $this->title,
             'status' => $this->status,
             'lastUpdatedAt' => $this->updatedAt,
@@ -151,17 +152,36 @@ class SupportTicket
                 'down' => $this->votesDown
             ],
             'from' => [
-                'user' => $user->isStaff() ? $this->fromUser->serializeForAdmin() : ($this->fromUser ? true : false),
+                'user' => null, // Changed by calling method
                 'character' => $this->fromCharacter?->toArray(),
                 'own' => $user->is($this->fromUser)
             ],
             'agent' => [
-                'user' => $user->isStaff() ? $this->agentUser?->serializeForAdmin() : ($this->agentUser ? true : false),
+                'user' => null, // Changed by calling method
                 'character' => $this->agentCharacter?->toArray(),
                 'own' => $user->is($this->agentUser)
             ]
         ];
     }
+
+    public function serializeForUserListing(User $user) : array
+    {
+        $array = $this->serializeForListing($user);
+        $array['url'] = route('support.user.ticket', ['id' => $this->id]);
+        $array['from']['user'] = $this->fromUser ? true : false;
+        $array['agent']['user'] = $this->agentUser ? true : false;
+        return $array;
+    }
+
+    public function serializeForAgentListing(User $user) : array
+    {
+        $array = $this->serializeForListing($user);
+        $array['url'] = route('support.agent.ticket', ['id' => $this->id]);
+        $array['from']['user'] = $this->fromUser->serializeForAdmin();
+        $array['agent']['user'] = $this->agentUser?->serializeForAdmin();
+        return $array;
+    }
+
 
     public function serializeForUser(SupportTicketService $service) : array
     {
@@ -175,7 +195,7 @@ class SupportTicket
         $output = [
             'id' => $this->id,
             'url' => route('support.agent.ticket', ['id' => $this->id]),
-            'category' => $this->category,
+            'categoryCode' => $this->categoryCode,
             'title' => $this->title,
             'content' => $this->content,
             'createdAt' => $this->createdAt,

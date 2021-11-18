@@ -36,12 +36,12 @@ class SupportTicketService
             $this->categoryConfiguration = [
                 // Issues
                 new SupportTicketCategory('account', 'Account', 'issue',
-                    'Issues with an account, such as email, subscriptions and payments.', neverPublic: true, notGameSpecific: true),
+                    'Account issues, such as email, subscriptions and payments.', neverPublic: true, notGameSpecific: true),
                 new SupportTicketCategory('character', 'Character', 'issue',
-                    'Issues with a character, such as skills or statuses.'),
+                    'Character issues, such as skills or statuses.'),
                 new SupportTicketCategory('code', 'Code', 'issue',
                     'Things crashing or not running as expected.'),
-                new SupportTicketCategory('disputes', 'Disputes', 'issue',
+                new SupportTicketCategory('dispute', 'Dispute', 'issue',
                     'Issues with another player.', neverPublic: true),
                 new SupportTicketCategory('gear', 'Gear', 'issue',
                     'Pieces of equipment broken/missing.'),
@@ -49,13 +49,13 @@ class SupportTicketService
                     'Report spelling errors.'),
                 // Requests
                 new SupportTicketCategory('building', 'Building', 'request',
-                    'Request new rooms or alterations to existing rooms.'),
+                    'New rooms or alterations to existing rooms.'),
                 new SupportTicketCategory('monsterreview', 'Monster Review', 'request',
-                    'Request a monster be reviewed.', usersCannotRaise: true),
+                    'Review a monster.', usersCannotRaise: true),
                 new SupportTicketCategory('judge', 'Judge', 'request',
-                    'Request a scene be judged.'),
+                    'Have a scene judged.'),
                 new SupportTicketCategory('suggestion', 'Suggestion', 'request',
-                    'Suggest something.'),
+                    'Make a suggestion.'),
                 // Tasks
                 new SupportTicketCategory('makopool', 'Mako Pool', 'task',
                     'Tasks raised by mako pools', usersCannotRaise: true),
@@ -429,9 +429,9 @@ class SupportTicketService
         $category = $this->getCategory($categoryCode);
         if (!$category) throw new Error("Specified category ($categoryCode) is not valid.");
 
-        $ticket->category = $categoryCode;
+        $ticket->categoryCode = $categoryCode;
         $this->addLogEntry($ticket, 'system', true, $user, $character,
-            "Category changed to: $categoryCode");
+            "Category changed to: $category->name");
         $this->saveTicket($ticket);
     }
 

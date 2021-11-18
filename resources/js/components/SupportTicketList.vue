@@ -4,29 +4,53 @@
 
         <div class="btn-toolbar">
 
-            <div class="btn-group btn-group-toggle mb-2 mr-2" role="group" aria-label="View Mode" data-toggle="buttons">
+            <div class="btn-group btn-group-toggle mb-2 mr-2" role="group" aria-label="Ticket Filter" data-toggle="buttons">
+                <label class="align-self-end mr-1">Ticket Filter</label>
                 <label class="btn btn-secondary active">
                     <input type="radio" name="view" autocomplete="off" value="active" v-model="tableFilter.view">
-                    All Active Tickets
+                    All
                 </label>
                 <label class="btn btn-secondary">
                     <input type="radio" name="view" autocomplete="off" value="open" v-model="tableFilter.view">
-                    Open Tickets
+                    Open
                 </label>
                 <label v-if="agent" class="btn btn-secondary">
                     <input type="radio" name="view" autocomplete="off" value="assigned" v-model="tableFilter.view">
-                    My Assigned Tickets
+                    My Assigned
                 </label>
                 <label class="btn btn-secondary">
                     <input type="radio" name="view" autocomplete="off" value="raised" v-model="tableFilter.view">
-                    My Raised Tickets
+                    My Raised
                 </label>
             </div>
 
+            <div class="btn-group btn-group-toggle mb-2 mr-2" role="group" aria-label="Type Filter"
+                 v-if="agent" data-toggle="buttons">
+                <label class="align-self-end mr-1">Type Filter</label>
+                <label class="btn btn-secondary active">
+                    <input type="radio" name="type" autocomplete="off" value="all" v-model="tableFilter.type">
+                    All
+                </label>
+                <label class="btn btn-secondary active">
+                    <input type="radio" name="type" autocomplete="off" value="issue" v-model="tableFilter.type">
+                    Issues
+                </label>
+                <label class="btn btn-secondary">
+                    <input type="radio" name="type" autocomplete="off" value="request" v-model="tableFilter.type">
+                    Requests
+                </label>
+                <label class="btn btn-secondary">
+                    <input type="radio" name="type" autocomplete="off" value="task" v-model="tableFilter.type">
+                    Tasks
+                </label>
+            </div>
+
+
             <div class="dropdown mb-2 mr-2">
+                <label class="align-self-end mr-1">Category Filter</label>
                 <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    {{ this.categoryLabel() }}
+                    {{ this.categoryFilterLabel() }}
                 </button>
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                     <a class="dropdown-item" href="#" @click="setCategoryFilter(null)">All categories</a>
@@ -36,12 +60,7 @@
                 </div>
             </div>
 
-            <div class="input-group form-inline mb-2">
-                <label class="sr-only" for="quickOpen">Jump to ticket</label>
-                <input type="text" id="quickOpen" class="form-control" @change="gotoTicket"
-                       v-model="gotoTicketId" placeholder="Enter an ID to jump to">
-                <button class="btn btn-secondary" @click="gotoTicket">Go</button>
-            </div>
+
         </div>
 
         <b-table dark hover small stacked="lg"
@@ -81,6 +100,19 @@
 
         </b-table>
 
+        <div class="row">
+             <div class="col">
+                <div class="form-inline float-right">
+                    <div class="form-group">
+                        <label for="quickOpen" class="mr-2">Jump to a specific ticket</label>
+                        <input type="text" id="quickOpen" class="form-control" @change="gotoTicket"
+                               v-model="gotoTicketId" placeholder="Enter an ID to jump to">
+                    </div>
+                    <button class="btn btn-secondary" @click="gotoTicket">Go</button>
+                </div>
+             </div>
+        </div>
+
     </div>
 </template>
 
@@ -89,6 +121,7 @@ export default {
     name: "support-ticket-list",
     props: {
         ticketsUrl: {type: String, required: true},
+        categoryConfiguration: {type: Array, required: true},
         agent: {type: Boolean, required: false}
     },
     data: function () {
@@ -96,6 +129,7 @@ export default {
             tableContent: [],
             tableFilter: {
                 view: 'active',
+                type: 'all',
                 category: null
             },
             tableLoading: false,
@@ -107,9 +141,9 @@ export default {
                     sortable: true
                 },
                 {
-                    key: 'category',
+                    key: 'categoryCode',
                     label: 'Category',
-                    formatter: 'capital',
+                    formatter: 'categoryLabel',
                     class: 'text-nowrap',
                     sortable: true
                 },
@@ -175,7 +209,7 @@ export default {
             });
             return result;
         },
-        rowClass: function (item) {
+         rowClass: function (item) {
             if (item.status === 'closed') return "ticket-closed";
             if (item.status === 'open' || item.status === 'new') return "ticket-active";
             return "ticket-inactive";
@@ -186,8 +220,15 @@ export default {
             else
                 this.tableFilter.category = filter;
         },
-        categoryLabel: function () {
-            return this.tableFilter.category ? "Category filter: " + this.tableFilter.category : "Showing all Categories";
+        categoryFilterLabel: function () {
+            return this.tableFilter.category ? this.tableFilter.category : "All";
+        },
+        categoryLabel: function(categoryCode) {
+            let label = null;
+            this.categoryConfiguration.forEach(config => {
+                if (config.code === categoryCode) label = config.name;
+            });
+            return label || `Unknown(${categoryCode}))`;
         },
         filterRow: function (row, filter) {
             //Category filtering, find a reason to not show it

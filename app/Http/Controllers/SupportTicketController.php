@@ -10,17 +10,19 @@ use Illuminate\View\View;
 
 class SupportTicketController extends Controller
 {
-    public function showUserHome(): View
+    public function showUserHome(SupportTicketService $service): View
     {
         return view('support.user.home')->with([
-            'ticketsUrl' => route('support.user.tickets')
+            'ticketsUrl' => route('support.user.tickets'),
+            'categoryConfiguration' => $service->getCategoryConfiguration()
         ]);
     }
 
-    public function showAgentHome(): View
+    public function showAgentHome(SupportTicketService $service): View
     {
         return view('support.agent.home')->with([
-            'ticketsUrl' => route('support.agent.tickets')
+            'ticketsUrl' => route('support.agent.tickets'),
+            'categoryConfiguration' => $service->getCategoryConfiguration()
         ]);
     }
 
@@ -35,7 +37,7 @@ class SupportTicketController extends Controller
         $user = auth()->user();
 
         return array_map(function ($ticket) use ($user) {
-            return $ticket->serializeForListing($user);
+            return $ticket->serializeForUserListing($user);
         }, $service->getActiveTicketsForUser($user));
     }
 
@@ -45,7 +47,7 @@ class SupportTicketController extends Controller
         $user = auth()->user();
 
         return array_map(function ($ticket) use ($service, $user) {
-            return $ticket->serializeForListing($user);
+            return $ticket->serializeForAgentListing($user);
         }, $service->getActiveTickets());
     }
 
@@ -75,7 +77,8 @@ class SupportTicketController extends Controller
         return view('support.user.ticket', [
             'ticket' => $ticket->serializeForUser($service),
             'pollUrl' => route('support.getUpdatedAt', ['id' => $ticket->id]),
-            'updateUrl' => route('support.user.ticket', ['id' => $ticket->id])
+            'updateUrl' => route('support.user.ticket', ['id' => $ticket->id]),
+            'categoryConfiguration' => $service->getCategoryConfiguration()
         ]);
 
     }

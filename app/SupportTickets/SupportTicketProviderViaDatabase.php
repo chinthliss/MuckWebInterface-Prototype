@@ -158,7 +158,7 @@ class SupportTicketProviderViaDatabase implements SupportTicketProvider
         DB::table('tickets')
             ->where('id', '=', $ticket->id)
             ->update([
-                'category' => $ticket->category,
+                'category' => $ticket->categoryCode,
                 'title' => $ticket->title,
                 'updated_at' => $ticket->updatedAt,
                 'status' => $ticket->status,
