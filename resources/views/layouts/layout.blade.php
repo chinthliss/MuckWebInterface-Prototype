@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta property="og:type" content="website" />
     <meta property="og:site_name" content="{{ config('app.name', 'MuckWebInterface') }}">
     <meta property="og:image" content="{{ url('/favicon32.png') }}">
     @hasSection('title')<meta property="og:title" content="@yield('title')">@endif
