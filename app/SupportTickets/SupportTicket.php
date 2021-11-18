@@ -177,7 +177,7 @@ class SupportTicket
     {
         $array = $this->serializeForListing($user);
         $array['url'] = route('support.agent.ticket', ['id' => $this->id]);
-        $array['from']['user'] = $this->fromUser->serializeForAdmin();
+        $array['from']['user'] = $this->fromUser?->serializeForAdmin();
         $array['agent']['user'] = $this->agentUser?->serializeForAdmin();
         return $array;
     }
