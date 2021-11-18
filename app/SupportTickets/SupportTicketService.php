@@ -34,19 +34,36 @@ class SupportTicketService
         if (!isset($this->categoryConfiguration)) {
             // For now hard coded. May replace this with something more dynamic later
             $this->categoryConfiguration = [
-                new SupportTicketCategory('account', 'Account', neverPublic: true),
-                new SupportTicketCategory('chargen', 'Chargen'),
-                new SupportTicketCategory('building', 'Building'),
-                new SupportTicketCategory('code', 'Code'),
-                new SupportTicketCategory('disputes', 'Disputes', neverPublic: true, requiresCharacter: true),
-                new SupportTicketCategory('gear', 'Gear', requiresCharacter: true),
-                new SupportTicketCategory('judge', 'Judge'),
-                new SupportTicketCategory('typo', 'Typo'),
-                new SupportTicketCategory('makopool', 'Mako Pool', usersCannotRaise: true),
-                new SupportTicketCategory('monsterreview', 'Monster Review', usersCannotRaise: true),
-                new SupportTicketCategory('research', 'Research', usersCannotRaise: true),
-                new SupportTicketCategory('stretchgoal', 'Stretch Goal', usersCannotRaise: true),
-                new SupportTicketCategory('suggestion', 'Suggestion')
+                // Issues
+                new SupportTicketCategory('account', 'Account', 'issue',
+                    'Issues with an account, such as email, subscriptions and payments.', neverPublic: true, notGameSpecific: true),
+                new SupportTicketCategory('character', 'Character', 'issue',
+                    'Issues with a character, such as skills or statuses.'),
+                new SupportTicketCategory('code', 'Code', 'issue',
+                    'Things crashing or not running as expected.'),
+                new SupportTicketCategory('disputes', 'Disputes', 'issue',
+                    'Issues with another player.', neverPublic: true),
+                new SupportTicketCategory('gear', 'Gear', 'issue',
+                    'Pieces of equipment broken/missing.'),
+                new SupportTicketCategory('typo', 'Typo', 'issue',
+                    'Report spelling errors.'),
+                // Requests
+                new SupportTicketCategory('building', 'Building', 'request',
+                    'Request new rooms or alterations to existing rooms.'),
+                new SupportTicketCategory('monsterreview', 'Monster Review', 'request',
+                    'Request a monster be reviewed.', usersCannotRaise: true),
+                new SupportTicketCategory('judge', 'Judge', 'request',
+                    'Request a scene be judged.'),
+                new SupportTicketCategory('suggestion', 'Suggestion', 'request',
+                    'Suggest something.'),
+                // Tasks
+                new SupportTicketCategory('makopool', 'Mako Pool', 'task',
+                    'Tasks raised by mako pools', usersCannotRaise: true),
+                new SupportTicketCategory('research', 'Research', 'task',
+                    'Tasks raised by research', usersCannotRaise: true),
+                new SupportTicketCategory('stretchgoal', 'Stretch Goal', 'task',
+                    'Tasks raised by stretch goals', usersCannotRaise: true)
+
             ];
         }
         return $this->categoryConfiguration;
@@ -115,6 +132,7 @@ class SupportTicketService
 
     /**
      * @param SupportTicket $ticket
+     * @param bool $amendUpdatedAt
      */
     private function saveTicket(SupportTicket $ticket, bool $amendUpdatedAt = true)
     {
