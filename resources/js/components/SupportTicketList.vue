@@ -202,6 +202,13 @@ export default {
         tableRowClicked: function (row) {
             window.open(row.url, '_blank');
         },
+        categoryConfigurationFor: function(categoryCode) {
+            let result = null;
+            this.categoryConfiguration.forEach(config => {
+                if (config.code === categoryCode) result = config;
+            });
+            return result;
+        },
         categoryList: function () {
             let result = [];
             this.tableContent.forEach(row => {
@@ -224,18 +231,20 @@ export default {
             return this.tableFilter.category ? this.tableFilter.category : "All";
         },
         categoryLabel: function(categoryCode) {
-            let label = null;
-            this.categoryConfiguration.forEach(config => {
-                if (config.code === categoryCode) label = config.name;
-            });
-            return label || `Unknown(${categoryCode}))`;
+            const config = this.categoryConfigurationFor(categoryCode);
+            return config ? config.name : `Unknown(${categoryCode}))`;
         },
         filterRow: function (row, filter) {
             //Category filtering, find a reason to not show it
             if (filter.category) {
                 if (filter.category.toLowerCase() !== row.category.toLowerCase()) return false;
             }
-            //View filtering, find a reason to show it
+            //Type filtering, find a reason to not show it
+            if (filter.type !== 'all') {
+                const config = this.categoryConfigurationFor(row.categoryCode);
+                if (config && config.type !== filter.type) return false;
+            }
+            //Ticket filtering, find a reason to show it
             if (filter.view === 'active') return true;
             if (filter.view === 'open' && row.status !== 'closed') return true;
             if (filter.view === 'assigned' && row.agent.own) return true;
