@@ -15,10 +15,10 @@ interface SupportTicketProvider
     public function getById(int $id): ?SupportTicket;
 
     /**
-     * @param string $category
+     * @param string $categoryCode
      * @return SupportTicket[]
      */
-    public function getByCategory(string $category): array;
+    public function getByCategory(string $categoryCode): array;
 
     /**
      * @return SupportTicket[]
@@ -38,14 +38,14 @@ interface SupportTicketProvider
     public function getUpdatedAt(int $id): Carbon;
 
     /**
-     * @param string $category
+     * @param string $categoryCode
      * @param string $title
      * @param string $content
      * @param User|null $user
      * @param MuckDbref|null $character
      * @return SupportTicket
      */
-    public function create(string $category, string $title, string $content,
+    public function create(string $categoryCode, string $title, string $content, ?int $gameCode,
                            ?User  $user, ?MuckDbref $character): SupportTicket;
 
     /**

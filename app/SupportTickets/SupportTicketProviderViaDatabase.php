@@ -39,6 +39,7 @@ class SupportTicketProviderViaDatabase implements SupportTicketProvider
             $row->id,
             $row->category,
             $row->title,
+            $row->game_code,
             $fromUser,
             $fromCharacter,
             $agentUser,
@@ -74,11 +75,11 @@ class SupportTicketProviderViaDatabase implements SupportTicketProvider
     /**
      * @inheritDoc
      */
-    public function getByCategory(string $category): array
+    public function getByCategory(string $categoryCode): array
     {
         $tickets = [];
         $rows = DB::table('tickets')
-            ->where('category', '=', $category)
+            ->where('category', '=', $categoryCode)
             ->get();
         foreach ($rows as $row) {
             $ticket = $this->fromDatabaseRow($row);
@@ -133,14 +134,16 @@ class SupportTicketProviderViaDatabase implements SupportTicketProvider
     /**
      * @inheritDoc
      */
-    public function create(string $category, string $title, string $content,
+    public function create(string $categoryCode, string $title, string $content, ?int $gameCode,
                            ?User  $user, ?MuckDbref $character): SupportTicket
     {
         $array = [
-            'category' => $category,
+            'category' => $categoryCode,
             'title' => $title,
-            'content' => $content
+            'content' => $content,
+            'game_code' => $gameCode
         ];
+
         if ($user) $array['from_aid'] = $user->getAid();
         if ($character) $array['from_muck_object_id'] = $this->muckObjects->getMuckObjectIdFor($character);
         $newId = DB::table('tickets')->insertGetId($array);

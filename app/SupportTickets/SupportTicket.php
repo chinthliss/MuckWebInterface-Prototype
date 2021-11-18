@@ -11,6 +11,7 @@ class SupportTicket
     public int $id;
     public string $category;
     public string $title;
+    public ?int $gameCode;
     public ?User $fromUser;
     public ?MuckDbref $fromCharacter;
     public ?User $agentUser;
@@ -32,6 +33,7 @@ class SupportTicket
      * @param string $category
      * @param string $title
      * @param string $content
+     * @param int $gameCode
      * @param User|null $user
      * @param MuckDbref|null $character
      */
@@ -40,6 +42,7 @@ class SupportTicket
         string     $category,
         string     $title,
         string     $content,
+        ?int       $gameCode,
         ?User      $user,
         ?MuckDbref $character
     )
@@ -48,6 +51,7 @@ class SupportTicket
         $this->category = $category;
         $this->title = $title;
         $this->content = $content;
+        $this->gameCode = $gameCode;
         $this->fromUser = $user;
         $this->fromCharacter = $character;
     }
@@ -66,6 +70,7 @@ class SupportTicket
             $category,
             $title,
             $content,
+            config('muck.muck_code'),
             $fromUser,
             $fromCharacter
         );
@@ -85,6 +90,7 @@ class SupportTicket
         int        $id,
         string     $category,
         string     $title,
+        ?int       $gameCode,
         ?User      $fromUser,
         ?MuckDbref $fromCharacter,
         ?User      $agentUser,
@@ -106,6 +112,7 @@ class SupportTicket
             $category,
             $title,
             $content,
+            $gameCode,
             $fromUser,
             $fromCharacter
         );

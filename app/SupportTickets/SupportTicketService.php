@@ -69,6 +69,14 @@ class SupportTicketService
         return $this->categoryConfiguration;
     }
 
+    public function getCategory(string $categoryCode)
+    {
+        foreach ($this->getCategoryConfiguration() as $possibleCategory) {
+            if ($possibleCategory->code === $categoryCode) return $possibleCategory;
+        }
+        return null;
+    }
+
     public function __construct(SupportTicketProvider $provider)
     {
         $this->provider = $provider;
@@ -114,7 +122,13 @@ class SupportTicketService
      */
     public function getActiveTickets(): array
     {
-        return $this->provider->getActive();
+        $results = [];
+        foreach ($this->provider->getActive() as $ticket) {
+            if ($ticket->gameCode && $ticket->gameCode != config('muck.muck_code')) continue;
+            $results[] = $ticket;
+        }
+        return $results;
+
     }
 
     /**
@@ -125,7 +139,9 @@ class SupportTicketService
     {
         $results = [];
         foreach ($this->provider->getActive() as $ticket) {
-            if ($this->userCanSeeTicket($user, $ticket)) $results[] = $ticket;
+            if ($ticket->gameCode && $ticket->gameCode != config('muck.muck_code')) continue;
+            if (!$this->userCanSeeTicket($user, $ticket)) continue;
+            $results[] = $ticket;
         }
         return $results;
     }
@@ -153,19 +169,25 @@ class SupportTicketService
     }
 
     /**
-     * @param string $category
+     * @param string $categoryCode
      * @param string $title
      * @param string $content
      * @param User|null $user
      * @param MuckCharacter|null $character
      * @return SupportTicket
      */
-    public function createTicket(string $category, string $title, string $content,
+    public function createTicket(string $categoryCode, string $title, string $content,
                                  ?User  $user = null, ?MuckCharacter $character = null): SupportTicket
     {
         if ($user && $character && $user->getAid() !== $character->aid())
             throw new Error("Attempt to create a ticket with a character and user with different accountIDs");
-        return $this->provider->create($category, $title, $content, $user, $character);
+
+        $category = $this->getCategory($categoryCode);
+        if ($category && $category->notGameSpecific)
+            $gameCode = null;
+        else
+            $gameCode = config('muck.muck_code');
+        return $this->provider->create($categoryCode, $title, $content, $gameCode, $user, $character);
     }
 
     /**
@@ -397,22 +419,19 @@ class SupportTicketService
 
     /**
      * @param SupportTicket $ticket
-     * @param string $category
+     * @param string $categoryCode
      * @param User|null $user
      * @param MuckCharacter|null $character
      */
-    public function setCategory(SupportTicket $ticket, string $category,
+    public function setCategory(SupportTicket $ticket, string $categoryCode,
                                 ?User         $user = null, ?MuckCharacter $character = null)
     {
-        $found = null;
-        foreach ($this->getCategoryConfiguration() as $possibleCategory) {
-            if ($possibleCategory->code === $category) $found = $possibleCategory;
-        }
-        if (!$found) throw new Error("Specified category ($category) is not valid.");
+        $category = $this->getCategory($categoryCode);
+        if (!$category) throw new Error("Specified category ($categoryCode) is not valid.");
 
-        $ticket->category = $category;
+        $ticket->category = $categoryCode;
         $this->addLogEntry($ticket, 'system', true, $user, $character,
-            "Category changed to: $category");
+            "Category changed to: $categoryCode");
         $this->saveTicket($ticket);
     }
 

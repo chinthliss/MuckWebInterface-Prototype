@@ -20,6 +20,7 @@ class CreateTicketsTable extends Migration
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
 
+            $table->tinyInteger('game_code')->nullable();
             $table->bigInteger('from_aid')->nullable()->index()
                 ->comment('Tickets without an account reference are considered system tickets.');
             $table->bigInteger('from_muck_object_id')->nullable()->index()
