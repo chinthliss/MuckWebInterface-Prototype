@@ -79,9 +79,9 @@
 
             <template #cell(from)="data">
                 <span v-if="data.value.character">{{ data.value.character.name }}</span>
-                <span v-else-if="data.value.user.id">{{ `Account#${data.value.user.id}` }}</span>
+                <span v-else-if="data.value.user && data.value.user.id">{{ `Account#${data.value.user.id}` }}</span>
                 <span v-else-if="data.value.user">Account Based</span>
-                <span v-else>None</span>
+                <span v-else>--</span>
             </template>
 
             <template #cell(agent)="data">
