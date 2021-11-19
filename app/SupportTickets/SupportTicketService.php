@@ -443,7 +443,7 @@ class SupportTicketService
      */
     public function setAgent(SupportTicket $ticket, ?User $user, ?MuckCharacter $character = null)
     {
-        if ($ticket->closedAt) throw new Exception("Ticket is closed.");
+        if ($ticket->closedAt) throw new Exception("Can't set agent - ticket is closed.");
 
         $ticket->agentUser = $user;
         $ticket->agentCharacter = $character;
@@ -486,9 +486,10 @@ class SupportTicketService
      */
     public function voteOn(SupportTicket $ticket, string $voteType, User $user, ?MuckCharacter $character = null)
     {
-        if ($ticket->closedAt) throw new Exception("Ticket is closed.");
+        if ($ticket->closedAt) throw new Exception("Can't vote on a closed ticket.");
 
-        if ($this->hasVoted($ticket, $user, $character)) throw new Exception("Already voted on that ticket.");
+        if ($this->hasVoted($ticket, $user, $character))
+            throw new Exception("Can't vote as already voted.");
         switch ($voteType) {
             case 'up':
                 $ticket->votesUp++;

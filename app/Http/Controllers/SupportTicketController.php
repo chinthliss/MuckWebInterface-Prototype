@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Muck\MuckConnection;
 use App\SupportTickets\SupportTicketService;
 use App\User;
 use Illuminate\Http\Request;
@@ -93,7 +94,7 @@ class SupportTicketController extends Controller
         $user = auth()->user();
         $character = $user->getStaffCharacter();
 
-        if (!$character) abort(401, "No staff character associated with connection.");
+        if (!$character) abort(401, "Can't update a ticket unless logged in as a staff character.");
 
         $foundSomething = false;
 
@@ -118,6 +119,16 @@ class SupportTicketController extends Controller
         if ($request->has('isPublic')) {
             $foundSomething = true;
             $service->setPublic($ticket, $request->get('isPublic'), $user, $character);
+        }
+
+        if ($request->has('agent')) {
+            $foundSomething = true;
+            $character = resolve(MuckConnection::class)->getByPlayerName($request->get('agent'));
+            if ($character && $character->isStaff()) {
+                $service->setAgent($ticket, User::find($character->aid()), $character);
+            } else {
+                abort(400, "Either that character doesn't exist or they aren't staff.");
+            }
         }
 
         // Things that aren't just changing values on the ticket

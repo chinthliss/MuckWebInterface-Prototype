@@ -126,7 +126,7 @@
                     </button>
                     <button type="button" class="btn btn-secondary" @click="assignOrUnassignToMe"
                             :disabled="ticket.closedAt">{{ assignOrUnassignLabel() }}</button>
-                    <button type="button" class="btn btn-secondary">Assign to Other(s)</button>
+                    <button type="button" class="btn btn-secondary" @click="showAssignTicket">Assign to Another</button>
                     <button type="button" class="btn btn-secondary" @click="watchOrUnwatchTicket">
                         {{ watchOrUnwatchLabel() }}
                     </button>
@@ -277,8 +277,25 @@
             </div>
         </DialogMessage>
 
-        <DialogMessage id="noStaffCharacter">
-            You need to be logged on as a staff character in order to update a ticket.
+        <DialogMessage id="assignTicket" title="Assign Ticket">
+            <div class="form-group">
+                <label for="assignTo">Assign to</label>
+                <input class="form-control w-100" v-model="newAssignTo" id="assignTo">
+
+                <div class="row mt-2">
+                    <div class="col">
+                        <button type="button" class="btn btn-primary btn-block"
+                                :disabled="!newAssignTo"
+                                @click="assignTicket">
+                            Assign Ticket
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </DialogMessage>
+
+        <DialogMessage id="errorMessage">
+            {{ this.errorMessage }}
         </DialogMessage>
 
     </div>
@@ -307,6 +324,8 @@ export default {
             newCategoryCode: null,
             newNoteContent: null,
             newLinkTo: null,
+            newAssignTo: null,
+            errorMessage: null
         };
     },
     computed: {},
@@ -355,6 +374,9 @@ export default {
         showChangeStatusOrClose: function () {
             $('#changeStatusOrClose').modal();
         },
+        showAssignTicket: function () {
+            $('#assignTicket').modal();
+        },
         showAddLink: function () {
             $('#addLink').modal();
         },
@@ -370,9 +392,9 @@ export default {
                 })
                 .catch(error => {
                     console.log("An error occurred with the requestData ", requestData, " when updating ticket: ", error);
-                    if (error.response.status === 401) { // Refused due to no staff character
-                        $('#noStaffCharacter').modal();
-                    }
+                    console.log(error.response);
+                    this.errorMessage = error?.response?.data?.message || error.message;
+                    $('#errorMessage').modal();
                 });
         },
         saveCategoryOrTitle: function () {
@@ -410,6 +432,10 @@ export default {
         saveLink: function(typeOfLink) {
             $('#addLink').modal('hide');
             this.updateTicket({task: 'AddLink', to: this.newLinkTo, type: typeOfLink});
+        },
+        assignTicket: function() {
+            $('#assignTicket').modal('hide');
+            this.updateTicket({agent: this.newAssignTo});
         },
         addPublicNote: function() {
             const content = this.newNoteContent.replace(/\r/g, '');
