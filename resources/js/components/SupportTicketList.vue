@@ -72,6 +72,13 @@
                  :filter-function="filterRow"
                  @row-clicked="tableRowClicked"
         >
+            <template #table-busy>
+                <div class="text-center my-2">
+                    <b-spinner class="align-middle" variant="primary"></b-spinner>
+                    <strong>Loading...</strong>
+                </div>
+            </template>
+
             <template #cell(lastUpdatedAt)="data">
                 <span>{{ outputCarbonString(data.value) }}</span><br/>
                 <span class="small text-muted">{{ data.item.lastUpdatedAtTimespan }}</span>
@@ -218,6 +225,7 @@ export default {
             return result;
         },
          rowClass: function (item) {
+            if (!item) return; // Busy row display won't pass an item
             if (item.status === 'closed') return "ticket-closed";
             if (item.status === 'open' || item.status === 'new') return "ticket-active";
             return "ticket-inactive";

@@ -309,13 +309,13 @@ import DialogMessage from "./DialogMessage";
 export default {
     name: "support-ticket-agent",
     components: {DialogConfirm, DialogMessage, CharacterCard},
-    props: [
-        'initialTicket',
-        'pollUrl',
-        'updateUrl',
-        'categoryConfiguration',
-        'staffCharacter'
-    ],
+    props: {
+        initialTicket:{type: Object, required: true},
+        pollUrl:{type: String, required: true},
+        updateUrl:{type: String, required: true},
+        categoryConfiguration:{type: Array, required: true},
+        staffCharacter:{type: String, required: true}
+    },
     data: function () {
         return {
             ticket: null,
