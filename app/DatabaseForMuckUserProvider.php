@@ -569,7 +569,7 @@ class DatabaseForMuckUserProvider implements UserProvider
         foreach ($rows as $row) {
             $nextNote = new AccountNote();
             $nextNote->accountId = $row->aid;
-            $nextNote->whenAt = Carbon::createFromTimestampUTC($row->when);
+            $nextNote->whenAt = Carbon::createFromTimestamp($row->when);
             $nextNote->body = $row->message;
             $nextNote->staffMember = $row->staff_member;
             $nextNote->game = $row->game;

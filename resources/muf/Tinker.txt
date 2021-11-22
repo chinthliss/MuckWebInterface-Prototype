@@ -6,6 +6,8 @@ App::make(App\Muck\MuckConnection::class)->getCharacterInitialSetupConfiguration
 App::make(App\Muck\MuckConnection::class)->createCharacterForUser("chintestb", User::find(3989))
 
 App::make(App\Muck\MuckObjectService::class)->getbyDbref(1173)->toArray()
+App::make(App\Muck\MuckObjectService::class)->getbyPlayerName('Test')->toArray()
+App::make(App\Muck\MuckObjectService::class)->getLastConnect('Test')
 App::make(App\Muck\MuckObjectService::class)->getMuckObjectIdFor(App::make(App\Muck\MuckObjectService::class)->getbyDbref(1173))
 
 App::make(App\SupportTickets\SupportTicketService::class)->getTicketById(1)
