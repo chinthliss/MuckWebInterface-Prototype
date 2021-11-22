@@ -145,6 +145,9 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
             ->name('support.user.ticket');
         Route::get('ticket/{id}/updatedAt', [SupportTicketController::class, 'getUpdatedAt'])
             ->name('support.getUpdatedAt'); // Shared with agent getUpdatedAt
+        Route::get('newticket', [SupportTicketController::class, 'showUserRaiseTicket'])
+            ->name('support.user.new');
+        Route::post('newticket', [SupportTicketController::class, 'processUserRaiseTicket']);
     });
 
     //Account Currency
@@ -256,6 +259,11 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
             ->name('support.agent.ticket');
         //Also uses support.agent.ticket as route
         Route::post('ticket/{id}', [SupportTicketController::class, 'handleAgentUpdate']);
+        Route::get('newticket', [SupportTicketController::class, 'showAgentRaiseTicket'])
+            ->name('support.agent.new');
+        Route::post('newticket', [SupportTicketController::class, 'processAgentRaiseTicket']);
+
+
 
     });
 

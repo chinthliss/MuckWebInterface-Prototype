@@ -1,20 +1,21 @@
 @extends('layouts.layout')
 
 @section('title')
-    Support
+    Raise a ticket
 @endsection
 
 @section('breadcrumbs')
     {{ Breadcrumbs::render([
         [ 'route' => 'home', 'label' => 'Home' ],
-        [ 'label' => 'Support' ]
+        [ 'route' => 'support.user.tickets', 'label' => 'Tickets' ],
+        [ 'label' => 'Ticket' ]
     ]) }}
 @endsection
 
 @section('content')
-    <support-ticket-list
-        tickets-url="{{ $ticketsUrl }}"
-        new-ticket-url="{{ $newTicketUrl }}"
+    <support-ticket-new
         :category-configuration="{{ json_encode($categoryConfiguration) }}"
-    ></support-ticket-list>
+        :errors="{{ $errors }}"
+        :old="{{ json_encode(old(), JSON_FORCE_OBJECT) }}"
+    ></support-ticket-new>
 @endsection

@@ -7,6 +7,7 @@ use App\SupportTickets\SupportTicketService;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class SupportTicketController extends Controller
@@ -15,7 +16,8 @@ class SupportTicketController extends Controller
     {
         return view('support.user.home')->with([
             'ticketsUrl' => route('support.user.tickets'),
-            'categoryConfiguration' => $service->getCategoryConfiguration()
+            'categoryConfiguration' => $service->getCategoryConfiguration(),
+            'newTicketUrl' => route('support.user.new')
         ]);
     }
 
@@ -23,7 +25,8 @@ class SupportTicketController extends Controller
     {
         return view('support.agent.home')->with([
             'ticketsUrl' => route('support.agent.tickets'),
-            'categoryConfiguration' => $service->getCategoryConfiguration()
+            'categoryConfiguration' => $service->getCategoryConfiguration(),
+            'newTicketUrl' => route('support.agent.new')
         ]);
     }
 
@@ -180,4 +183,79 @@ class SupportTicketController extends Controller
         return $ticket->serializeForAgent($service);
     }
 
+    #region Raising a ticket
+    public function showUserRaiseTicket(SupportTicketService $service): View
+    {
+        return view('support.user.new')->with([
+            'categoryConfiguration' => $service->getCategoryConfiguration()
+        ]);
+    }
+
+    public function showAgentRaiseTicket(SupportTicketService $service): View
+    {
+        /** @var User $user */
+        $user = auth()->user();
+        $character = $user->getStaffCharacter();
+
+        return view('support.agent.new')->with([
+            'categoryConfiguration' => $service->getCategoryConfiguration(),
+            'staffCharacter' => $character?->name()
+        ]);
+    }
+
+    private function sharedRaiseTicketValidation(Request $request) : array
+    {
+        $request->validate([
+            'ticketCategoryCode' => 'required|max:80',
+            'ticketTitle' => 'required|max:80',
+            'ticketContent' => 'required'
+        ], [
+            'ticketCategoryCode.required' => 'You need to pick a category for the ticket.',
+            'ticketTitle.required' => 'You must enter a short title for the ticket.',
+            'ticketContent.required' => 'You must enter details for the ticket.'
+        ]);
+
+        /** @var User $user */
+        $user = auth()->user();
+        $character = $user->getCharacter();
+
+        return [
+            'categoryCode' => $request->get('ticketCategoryCode'),
+            'title' => $request->get('ticketTitle'),
+            'content' => $request->get('ticketContent'),
+            'user' => $user,
+            'character' => $character
+        ];
+
+    }
+
+    public function processUserRaiseTicket(Request $request, SupportTicketService $service)
+    {
+        $details = $this->sharedRaiseTicketValidation($request);
+
+        $ticket = $service->createTicket($details['categoryCode'], $details['title'],
+            $details['content'], $details['user'], $details['character']);
+
+        return redirect()->route('support.user.ticket', ['id' => $ticket->id]);
+    }
+
+    public function processAgentRaiseTicket(Request $request, SupportTicketService $service, MuckConnection $muck)
+    {
+        $details = $this->sharedRaiseTicketValidation($request);
+
+        $characterOverride = $request->get('ticketCharacter');
+        if ($characterOverride) {
+            $details['character'] = $muck->getByPlayerName($characterOverride);
+            if (!$details['character'])
+                throw ValidationException::withMessages(['ticketCharacter'=>"Couldn't lookup the given name."]);
+            $details['user'] = User::find($details['character']->aid());
+        }
+
+        $ticket = $service->createTicket($details['categoryCode'], $details['title'],
+            $details['content'], $details['user'], $details['character']);
+
+        return redirect()->route('support.agent.ticket', ['id' => $ticket->id]);
+    }
+
+    #endregion
 }

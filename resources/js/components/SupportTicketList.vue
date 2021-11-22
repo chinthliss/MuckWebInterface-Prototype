@@ -107,15 +107,18 @@
 
         </b-table>
 
-        <div class="row">
-             <div class="col">
+        <div class="row mb-2">
+            <div class="col col-md-6">
+                <a class="btn btn-primary" :href="newTicketUrl">Raise New Ticket</a>
+            </div>
+            <div class="col col-md-6">
                 <div class="form-inline float-right">
-                    <div class="form-group">
+                    <div class="form-group mr-1">
                         <label for="quickOpen" class="mr-2">Jump to a specific ticket</label>
                         <input type="text" id="quickOpen" class="form-control" @change="gotoTicket"
                                v-model="gotoTicketId" placeholder="Enter an ID to jump to">
                     </div>
-                    <button class="btn btn-secondary" @click="gotoTicket">Go</button>
+                    <button class="btn btn-primary" @click="gotoTicket">Go</button>
                 </div>
              </div>
         </div>
@@ -128,6 +131,7 @@ export default {
     name: "support-ticket-list",
     props: {
         ticketsUrl: {type: String, required: true},
+        newTicketUrl: {type: String, required: true},
         categoryConfiguration: {type: Array, required: true},
         agent: {type: Boolean, required: false}
     },

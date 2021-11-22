@@ -314,7 +314,7 @@ export default {
         pollUrl:{type: String, required: true},
         updateUrl:{type: String, required: true},
         categoryConfiguration:{type: Array, required: true},
-        staffCharacter:{type: String, required: true}
+        staffCharacter:{type: String, required: false}
     },
     data: function () {
         return {
@@ -459,7 +459,7 @@ export default {
             axios.get(self.pollUrl)
                 .then(response => self.remoteUpdatedAt = response.data);
         }, 60000);
-    },
+    }
 }
 </script>
 
