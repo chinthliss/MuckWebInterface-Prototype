@@ -90,7 +90,7 @@ class SupportTicketService
      */
     public function userCanSeeTicket(User $user, SupportTicket $ticket): bool
     {
-        return $ticket->fromUser->is($user) || $ticket->isPublic;
+        return $ticket->fromUser?->is($user) || $ticket->isPublic;
     }
 
     /**
@@ -307,7 +307,7 @@ class SupportTicketService
         $this->addLogEntry($ticket, 'note', $isPublic, $fromUser, $fromCharacter, $note);
 
         // If a ticket is pending and the requester adds a response, it changes back to open
-        if ($ticket->status == 'pending' && $fromUser->is($ticket->fromUser)) {
+        if ($ticket->status == 'pending' && $fromUser?->is($ticket->fromUser)) {
             $this->setStatus($ticket, 'open');
         }
 
