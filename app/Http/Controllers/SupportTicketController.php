@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Muck\MuckCharacter;
 use App\Muck\MuckConnection;
+use App\SupportTickets\SupportTicket;
 use App\SupportTickets\SupportTicketService;
 use App\User;
 use Illuminate\Http\Request;
@@ -91,43 +93,24 @@ class SupportTicketController extends Controller
 
     }
 
-    // Returns new representation of the ticket on success
-    public function handleUserUpdate(Request $request, SupportTicketService $service, int $id): array
+    // Returns true if found something
+    private function processUpdate(Request $request, SupportTicketService $service, SupportTicket $ticket,
+                                   ?User   $user, ?MuckCharacter $character): bool
     {
-        $ticket = $service->getTicketById($id);
-        if (!$ticket) abort(404, "Ticket doesn't exist.");
-
-        /** @var User $user */
-        $user = auth()->user();
-
-        return $ticket->serializeForUser($service, $user);
-    }
-
-    // Returns new representation of the ticket on success
-    public function handleAgentUpdate(Request $request, SupportTicketService $service, int $id): array
-    {
-        $ticket = $service->getTicketById($id);
-        if (!$ticket) abort(404, "Ticket doesn't exist.");
-
-        /** @var User $user */
-        $user = auth()->user();
-        $character = $user->getStaffCharacter();
-
-        if (!$character) abort(401, "Can't update a ticket unless logged in as a staff character.");
-
         $foundSomething = false;
+        $isStaff = $character->isStaff();
 
-        if ($request->has('title')) {
+        if ($request->has('title') && $isStaff) {
             $foundSomething = true;
             $service->setTitle($ticket, $request->get('title'), $user, $character);
         }
 
-        if ($request->has('category')) {
+        if ($request->has('category') && $isStaff) {
             $foundSomething = true;
             $service->setCategory($ticket, $request->get('category'), $user, $character);
         }
 
-        if ($request->has('status')) {
+        if ($request->has('status') && $isStaff) {
             $foundSomething = true;
             if ($request->has('closureReason'))
                 $service->closeTicket($ticket, $request->get('closureReason'), $user, $character);
@@ -140,7 +123,7 @@ class SupportTicketController extends Controller
             $service->setPublic($ticket, $request->get('isPublic'), $user, $character);
         }
 
-        if ($request->has('agent')) {
+        if ($request->has('agent') && $isStaff) {
             $foundSomething = true;
             $character = resolve(MuckConnection::class)->getByPlayerName($request->get('agent'));
             if ($character && $character->isStaff()) {
@@ -154,12 +137,12 @@ class SupportTicketController extends Controller
         if ($request->has('task')) {
             $task = $request->get('task');
 
-            if ($task == 'TakeTicket') {
+            if ($task == 'TakeTicket' && $isStaff) {
                 $foundSomething = true;
                 $service->setAgent($ticket, $user, $user->getStaffCharacter());
             }
 
-            if ($task == 'AbandonTicket') {
+            if ($task == 'AbandonTicket' && $isStaff) {
                 $foundSomething = true;
                 $service->setAgent($ticket, null);
             }
@@ -179,19 +162,52 @@ class SupportTicketController extends Controller
                 $service->addNote($ticket, $request->get('muck_content'), true, $user, $character);
             }
 
-            if ($task == 'AddPrivateNote' && $request->has('muck_content')) {
+            if ($task == 'AddPrivateNote' && $request->has('muck_content') && $isStaff) {
                 $foundSomething = true;
                 $service->addNote($ticket, $request->get('muck_content'), false, $user, $character);
             }
 
-            if ($task == 'AddLink' && $request->has('to') && $request->has('type')) {
+            if ($task == 'AddLink' && $request->has('to') && $request->has('type') && $isStaff) {
                 $foundSomething = true;
                 $ticketTo = $service->getTicketById($request->get('to'));
                 $service->linkTickets($ticket, $ticketTo, $request->get('type'), $user, $character);
             }
-
         }
 
+        return $foundSomething;
+    }
+
+    // Returns new representation of the ticket on success
+    public function handleUserUpdate(Request $request, SupportTicketService $service, int $id): array
+    {
+        $ticket = $service->getTicketById($id);
+        if (!$ticket) abort(404, "Ticket doesn't exist.");
+
+        /** @var User $user */
+        $user = auth()->user();
+        $character = $user->getCharacter();
+
+        $foundSomething = $this->processUpdate($request, $service, $ticket, $user, $character);
+        if (!$foundSomething) {
+            abort(400, "Couldn't find anything to update in the request.");
+        }
+
+        return $ticket->serializeForUser($service, $user);
+    }
+
+    // Returns new representation of the ticket on success
+    public function handleAgentUpdate(Request $request, SupportTicketService $service, int $id): array
+    {
+        $ticket = $service->getTicketById($id);
+        if (!$ticket) abort(404, "Ticket doesn't exist.");
+
+        /** @var User $user */
+        $user = auth()->user();
+        $character = $user->getStaffCharacter();
+
+        if (!$character) abort(401, "You need to be logged in as a staff character to use this functionality.");
+
+        $foundSomething = $this->processUpdate($request, $service, $ticket, $user, $character);
         if (!$foundSomething) {
             abort(400, "Couldn't find anything to update in the request.");
         }
@@ -219,7 +235,7 @@ class SupportTicketController extends Controller
         ]);
     }
 
-    private function sharedRaiseTicketValidation(Request $request) : array
+    private function sharedRaiseTicketValidation(Request $request): array
     {
         $request->validate([
             'ticketCategoryCode' => 'required|max:80',
@@ -263,7 +279,7 @@ class SupportTicketController extends Controller
         if ($characterOverride) {
             $details['character'] = $muck->getByPlayerName($characterOverride);
             if (!$details['character'])
-                throw ValidationException::withMessages(['ticketCharacter'=>"Couldn't lookup the given name."]);
+                throw ValidationException::withMessages(['ticketCharacter' => "Couldn't lookup the given name."]);
             $details['user'] = User::find($details['character']->aid());
         }
 
