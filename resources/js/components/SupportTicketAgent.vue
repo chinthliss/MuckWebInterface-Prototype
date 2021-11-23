@@ -3,7 +3,8 @@
         Ticket loading..
     </div>
     <div v-else class="container">
-        <h2>Ticket #{{ ticket.id }}</h2>
+        <h2>Ticket #{{ ticket.id }} - Agent View</h2>
+        <div>Link to user version of this ticket: <a :href="userUrl">{{ userUrl }}</a> </div>
 
         <div v-if="remoteUpdatedAt && remoteUpdatedAt > ticket.updatedAt" class="alert alert-warning text-center">
             This ticket has been updated since you loaded it, some of the details may have changed.
@@ -18,16 +19,16 @@
         <div class="d-flex flex-column flex-xl-row">
             <div class="flex-xl-grow-1">
                 <div class="d-flex flex-column flex-xl-row">
-                    <div>
+                    <div class="mt-2">
                         <div class="label editable" @click="showEditCategoryOrTitle">Category <i class="fas fa-edit"></i></div>
                         <div class="value">{{ categoryLabel() }}</div>
                     </div>
-                    <div class="mt-2 mt-xl-0 ml-xl-4 flex-xl-grow-1">
+                    <div class="mt-2 ml-xl-4 flex-xl-grow-1">
                         <div class="label editable" @click="showEditCategoryOrTitle">Title <i class="fas fa-edit"></i></div>
                         <div class="value" v-html="parseUserContent(ticket.title)"></div>
                     </div>
                 </div>
-                <div class="mt-2 mt-xl-0">
+                <div class="mt-2">
                         <div class="label">Description</div>
                         <div class="muckContent" v-html="parseUserContent(ticket.content)"></div>
                 </div>
@@ -311,6 +312,7 @@ export default {
     components: {DialogConfirm, DialogMessage, CharacterCard},
     props: {
         initialTicket:{type: Object, required: true},
+        userUrl:{type: String, required: true},
         pollUrl:{type: String, required: true},
         updateUrl:{type: String, required: true},
         categoryConfiguration:{type: Array, required: true},
@@ -472,7 +474,7 @@ export default {
 
 .label {
     font-size: 80%;
-    font-weight: bold;
+    font-weight: 600;
     color: $primary;
 }
 

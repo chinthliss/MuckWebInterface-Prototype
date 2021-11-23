@@ -8,7 +8,7 @@
     {{ Breadcrumbs::render([
         [ 'route' => 'home', 'label' => 'Home' ],
         [ 'route' => 'support.agent.tickets', 'label' => 'Tickets (Agent)' ],
-        [ 'label' => 'Ticket' ]
+        [ 'label' => 'Ticket (Agent)' ]
     ]) }}
 @endsection
 
@@ -16,6 +16,7 @@
     <support-ticket-agent
         :initial-ticket="{{ json_encode($ticket) }}"
         :category-configuration="{{ json_encode($categoryConfiguration) }}"
+        user-url="{{ $userUrl }}"
         poll-url="{{ $pollUrl }}"
         update-url="{{ $updateUrl }}"
         staff-character="{{ $staffCharacter }}"

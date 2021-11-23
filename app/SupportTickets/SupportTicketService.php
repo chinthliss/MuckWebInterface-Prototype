@@ -69,7 +69,7 @@ class SupportTicketService
         return $this->categoryConfiguration;
     }
 
-    public function getCategory(string $categoryCode)
+    public function getCategory(string $categoryCode) : ?SupportTicketCategory
     {
         foreach ($this->getCategoryConfiguration() as $possibleCategory) {
             if ($possibleCategory->code === $categoryCode) return $possibleCategory;

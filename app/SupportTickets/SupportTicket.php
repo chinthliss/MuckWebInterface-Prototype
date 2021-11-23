@@ -135,8 +135,10 @@ class SupportTicket
         return "SupportTicket#$this->id[$this->categoryCode/$this->title]";
     }
 
+    #region Serialization
+
     // Shared parts of listing serialization
-    private function serializeForListing(User $user) : array
+    private function serializeListingBase(User $user) : array
     {
         return [
             'id' => $this->id,
@@ -166,7 +168,7 @@ class SupportTicket
 
     public function serializeForUserListing(User $user) : array
     {
-        $array = $this->serializeForListing($user);
+        $array = $this->serializeListingBase($user);
         $array['url'] = route('support.user.ticket', ['id' => $this->id]);
         $array['from']['user'] = $this->fromUser ? true : false;
         $array['agent']['user'] = $this->agentUser ? true : false;
@@ -175,26 +177,18 @@ class SupportTicket
 
     public function serializeForAgentListing(User $user) : array
     {
-        $array = $this->serializeForListing($user);
+        $array = $this->serializeListingBase($user);
         $array['url'] = route('support.agent.ticket', ['id' => $this->id]);
         $array['from']['user'] = $this->fromUser?->serializeForAdmin();
         $array['agent']['user'] = $this->agentUser?->serializeForAdmin();
         return $array;
     }
 
-
-    public function serializeForUser(SupportTicketService $service) : array
-    {
-        return [
-            'id' => $this->id
-        ];
-    }
-
-    public function serializeForAgent(SupportTicketService $service) : array
+    private function serializeTicketBase() : array
     {
         $output = [
             'id' => $this->id,
-            'url' => route('support.agent.ticket', ['id' => $this->id]),
+            'url' => null, // For calling method to fill in
             'categoryCode' => $this->categoryCode,
             'title' => $this->title,
             'content' => $this->content,
@@ -213,14 +207,69 @@ class SupportTicket
             ],
             'updatedAt' => $this->updatedAt,
             'updatedAtTimespan' => $this->updatedAt->diffForHumans(),
-            'from' => [
-                'user' => $this->fromUser?->serializeForAdmin(),
-                'character' => $this->fromCharacter?->toArray()
-            ],
-            'agent' => [
-                'user' => $this->agentUser?->serializeForAdmin(),
-                'character' => $this->agentCharacter?->toArray()
-            ]
+            'from' => null, // For calling method to fill in
+            'agent' => null // For calling method to fill in
+        ];
+
+        return $output;
+    }
+
+    public function serializeForUser(SupportTicketService $service, User $user) : array
+    {
+        $output = $this->serializeTicketBase();
+
+        $category = $service->getCategory($this->categoryCode);
+        $output['categoryLabel'] = $category?->name ?? 'Unknown';
+        $output['canMakePublic'] = !($category?->neverPublic);
+
+        $output['url'] = route('support.user.ticket', ['id' => $this->id]);
+
+        $output['from'] = [
+            'user' => $this->fromUser ? true : false,
+            'character' => $this->fromCharacter?->toArray()
+        ];
+        $output['agent'] = [
+            'user' => $this->agentUser ? true : false,
+            'character' => $this->agentCharacter?->toArray()
+        ];
+
+        $output['log'] = [];
+        foreach ($service->getLog($this) as $log) {
+            if (!$log->staffOnly) $output['log'][] = $log->toArray();
+        }
+
+        $output['links_from'] = [];
+        $output['links_to'] = [];
+        foreach ($service->getLinks($this) as $link) {
+            if ($link->from->id == $this->id)
+                $output['links_to'][] = $link->toArray();
+            else
+                $output['links_from'][] = $link->toArray();
+        }
+
+        $watchers = $service->getWatchers($this);
+        $output['watchers'] = count($watchers);
+        $watching = false;
+        foreach ($watchers as $watcher) {
+            if ($watcher->is($user)) $watching = true;
+        }
+        $output['watching'] = $watching;
+
+        return $output;
+    }
+
+    public function serializeForAgent(SupportTicketService $service) : array
+    {
+        $output = $this->serializeTicketBase();
+
+        $output['url'] = route('support.agent.ticket', ['id' => $this->id]);
+        $output['from'] = [
+            'user' => $this->fromUser?->serializeForAdmin(),
+            'character' => $this->fromCharacter?->toArray()
+        ];
+        $output['agent'] = [
+            'user' => $this->agentUser?->serializeForAdmin(),
+            'character' => $this->agentCharacter?->toArray()
         ];
 
         $output['log'] = array_map(function($entry) {
@@ -242,4 +291,6 @@ class SupportTicket
         }
         return $output;
     }
+
+    #endregion Serialization
 }

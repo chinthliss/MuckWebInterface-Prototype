@@ -66,6 +66,7 @@ class SupportTicketController extends Controller
 
         return view('support.agent.ticket', [
             'ticket' => $ticket->serializeForAgent($service),
+            'userUrl' => route('support.user.ticket', ['id' => $ticket->id]),
             'pollUrl' => route('support.getUpdatedAt', ['id' => $ticket->id]),
             'updateUrl' => route('support.agent.ticket', ['id' => $ticket->id]),
             'categoryConfiguration' => $service->getCategoryConfiguration(),
@@ -78,13 +79,28 @@ class SupportTicketController extends Controller
         $ticket = $service->getTicketById($id);
         if (!$ticket) abort(404);
 
+        /** @var User $user */
+        $user = auth()->user();
+
         return view('support.user.ticket', [
-            'ticket' => $ticket->serializeForUser($service),
+            'ticket' => $ticket->serializeForUser($service, $user),
             'pollUrl' => route('support.getUpdatedAt', ['id' => $ticket->id]),
             'updateUrl' => route('support.user.ticket', ['id' => $ticket->id]),
             'categoryConfiguration' => $service->getCategoryConfiguration()
         ]);
 
+    }
+
+    // Returns new representation of the ticket on success
+    public function handleUserUpdate(Request $request, SupportTicketService $service, int $id): array
+    {
+        $ticket = $service->getTicketById($id);
+        if (!$ticket) abort(404, "Ticket doesn't exist.");
+
+        /** @var User $user */
+        $user = auth()->user();
+
+        return $ticket->serializeForUser($service, $user);
     }
 
     // Returns new representation of the ticket on success

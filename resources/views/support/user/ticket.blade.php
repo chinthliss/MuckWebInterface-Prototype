@@ -13,11 +13,9 @@
 @endsection
 
 @section('content')
-    <div class="container">
-        <div class="row">
-            <div class="col text-center">
-                <h1><i class="fas fa-hammer"></i> To Be Completed <i class="fas fa-hammer fa-flip-horizontal"></i></h1>
-            </div>
-        </div>
-    </div>
+    <support-ticket-user
+        :initial-ticket="{{ json_encode($ticket) }}"
+        poll-url="{{ $pollUrl }}"
+        update-url="{{ $updateUrl }}"
+    ></support-ticket-user>
 @endsection

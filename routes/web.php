@@ -143,6 +143,8 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
             ->name('support.user.tickets');
         Route::get('ticket/{id}', [SupportTicketController::class, 'showUserTicket'])
             ->name('support.user.ticket');
+        //Also uses support.user.ticket as route
+        Route::post('ticket/{id}', [SupportTicketController::class, 'handleUserUpdate']);
         Route::get('ticket/{id}/updatedAt', [SupportTicketController::class, 'getUpdatedAt'])
             ->name('support.getUpdatedAt'); // Shared with agent getUpdatedAt
         Route::get('newticket', [SupportTicketController::class, 'showUserRaiseTicket'])
