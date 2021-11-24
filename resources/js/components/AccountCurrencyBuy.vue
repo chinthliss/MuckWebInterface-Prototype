@@ -1,5 +1,14 @@
 <template>
     <div class="container">
+
+        <div class="row">
+            <div class="col">
+                <div class="bg-danger text-dark p-2 mb-2 text-center rounded">
+                    <b>Please do NOT use this page unless you have been instructed to do so.</b>
+                </div>
+            </div>
+        </div>
+        
         <div v-if="isFirstPurchaseOfMonth">
             <h3 class="text-center">Monthly Special</h3>
             <div class="text-center mb-2">You qualify for a free gift if you donate $5 or more! You can only get this
