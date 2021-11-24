@@ -19,11 +19,11 @@ class LoadActiveCharacter
     /**
      * @var MuckObjectService
      */
-    protected $muck;
+    protected $muckObjectService;
 
-    public function __construct(MuckObjectService $muck)
+    public function __construct(MuckObjectService $muckObjectService)
     {
-        $this->muck = $muck;
+        $this->muckObjectService = $muckObjectService;
     }
 
     /**
@@ -48,7 +48,7 @@ class LoadActiveCharacter
             $characterDbref = intval($characterDbref);
             if ($characterDbref) {
                 /** @var MuckCharacter $character */
-                $character = $this->muck->getByDbref($characterDbref);
+                $character = $this->muckObjectService->getByDbref($characterDbref);
                 if ($character && $character->aid() == $user->getAid()) {
                     Log::debug("MultiplayerCharacter requested $characterDbref for $user - accepted as $character");
                     $user->setCharacter($character);

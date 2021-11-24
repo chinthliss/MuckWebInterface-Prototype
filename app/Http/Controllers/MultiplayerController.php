@@ -167,7 +167,7 @@ class MultiplayerController extends Controller
     }
     #endregion Character Creation
 
-    public function setActiveCharacter(Request $request, MuckObjectService $muck): JsonResponse
+    public function setActiveCharacter(Request $request, MuckObjectService $muckObjectService): JsonResponse
     {
         /** @var User $user */
         $user = $request->user('account');
@@ -177,7 +177,7 @@ class MultiplayerController extends Controller
         if (!$dbref) abort(400);
 
         /** @var MuckCharacter $character */
-        $character = $muck->getByDbref($dbref);
+        $character = $muckObjectService->getByDbref($dbref);
         if ($character && $character->aid() == $user->getAid()) {
             // This is sufficient, middleware will set the cookie in the response
             $user->setCharacter($character);
