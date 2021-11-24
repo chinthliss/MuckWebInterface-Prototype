@@ -51,6 +51,7 @@ class HttpMuckConnection implements MuckConnection
         $data['mwi_request'] = $request;
         $data['mwi_timestamp'] = Carbon::now()->timestamp; //This is to ensure that repeated requests don't match
         $signature = sha1(http_build_query($data) . $this->salt);
+        $benchmark = -microtime(true);
         try {
             $result = $this->client->request('POST', $this->uri, [
                 'headers' => [
@@ -61,10 +62,12 @@ class HttpMuckConnection implements MuckConnection
         } catch (GuzzleException $e) {
             throw new Error("Connection to muck failed - " . $e->getMessage());
         }
+        $benchmark += microtime(true);
+        $benchmarkText = round($benchmark / 1000.0, 2);
         //getBody() returns a stream, so need to ensure we complete and parse such:
         //The result will also have a trailing \r\n
         $parsedResult = rtrim($result->getBody()->getContents());
-        Log::debug('requestFromMuck:' . $request . ', response: ' . json_encode($parsedResult));
+        Log::debug("requestFromMuck: $request, time taken: {$benchmarkText}ms, response: " . json_encode($parsedResult));
         return $parsedResult;
     }
 
@@ -340,7 +343,7 @@ class HttpMuckConnection implements MuckConnection
                 $muckObject = new MuckDbref($dbref, $name, $typeFlag, $creationTimestamp);
                 break;
             default:
-                throw new Error("Code missing to parse the given typeflag.");
+                throw new Error("Code missing to parse the given typeFlag.");
         }
         return $muckObject;
     }
