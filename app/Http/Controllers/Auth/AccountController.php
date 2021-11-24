@@ -57,7 +57,7 @@ class AccountController extends Controller
         if ($attemptResult) {
             $request->session()->regenerate();
             $user = $this->guard()->user();
-            event(new Login($this->guard(), $user, $remember));
+            event(new Login($this->guard()::class, $user, $remember));
             //TODO: Look better at implementing loginThrottle
             // $this->clearLoginAttempts($request);
 
@@ -71,7 +71,7 @@ class AccountController extends Controller
             return response()->json($response);
         } else {
             $user = $this->guard()->getProvider()->retrieveByCredentials($request->only('email'));
-            event(new Failed($this->guard(), $user, $request->only('email', 'password')));
+            event(new Failed($this->guard()::class, $user, $request->only('email', 'password')));
             throw ValidationException::withMessages(['password' => ['Unrecognized Email/Password or Character/Password combination.']]);
         }
     }
@@ -99,7 +99,7 @@ class AccountController extends Controller
         $remember = $request->has('forget') ? !$request['forget'] : true;
         $this->guard()->login($user, $remember);
 
-        event(new Login($this->guard(), $user, $remember));
+        event(new Login($this->guard()::class, $user, $remember));
 
         // Set referral on new account if one is in the session
         if ($request->session()->has('account.referral')) {
@@ -122,7 +122,7 @@ class AccountController extends Controller
         $user = $this->guard()->user();
         $this->guard()->logout();
         $request->session()->invalidate();
-        event(new Logout($this->guard(), $user));
+        event(new Logout($this->guard()::class, $user));
         return redirect()->route('login');
     }
 
