@@ -63,7 +63,7 @@ class HttpMuckConnection implements MuckConnection
             throw new Error("Connection to muck failed - " . $e->getMessage());
         }
         $benchmark += microtime(true);
-        $benchmarkText = round($benchmark / 1000.0, 2);
+        $benchmarkText = round($benchmark * 1000.0, 2);
         //getBody() returns a stream, so need to ensure we complete and parse such:
         //The result will also have a trailing \r\n
         $parsedResult = rtrim($result->getBody()->getContents());
