@@ -20,16 +20,25 @@ class User implements Authenticatable, MustVerifyEmail
 
     protected int $aid;
 
-    protected ?string $email = null; // Primary Email
+    /**
+     * Primary Email, null until checked
+     * @var string|null
+     */
+    protected ?string $email = null;
 
-    /** @var array<string, array>|null  */
+    /**
+     * All email, null until checked
+     * @var array<string, array>|null
+     */
     protected ?array $emails = null;
 
     protected ?string $password = null;
     protected ?string $passwordType = null;
     protected ?string $rememberToken = null;
 
-    protected ?MuckCharacter $character = null; // Active Character
+    protected ?MuckCharacter $character = null; // Active Character, null until checked
+
+    protected ?Carbon $lastConnect = null; // Null until checked
 
     // These are public since they're not stored past the request
     public ?Carbon $createdAt = null;
@@ -323,7 +332,8 @@ class User implements Authenticatable, MustVerifyEmail
      */
     public function getLastConnect(): ?Carbon
     {
-        return $this->getProvider()->getAccountLastConnect($this);
+        if (!$this->lastConnect) $this->lastConnect = $this->getProvider()->getAccountLastConnect($this);
+        return $this->lastConnect;
     }
 
     public function getReferralCount(): int
