@@ -470,17 +470,23 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         repeat
         (Request should have a 'mwi_request' value)
         request @ ?dup if
-            $ifdef is_dev
+            prog "debug" getpropstr "y" instring var! debug
+            debug @ if
                 "[MWI Gateway] Request: " over strcat ", Data: " strcat parsedBody @ 
-                (Redact certain fields)
+                (Redact certain fields and remove internal ones)
                 dup "password" array_getitem if "[Redacted]" swap "password" array_setitem then
+                "mwi_timestamp" array_delitem
                 encodeJson strcat logStatus
-            $endif 
+                systime_precise var! benchmarkStart
+            then
             prog "handleRequest_" rot strcat
             over over cancall? if 
                 parsedBody @ rot rot call
+                debug @ if
+                    "[MWI Gateway] Response took " systime_precise benchmarkStart @ - 1000 * "%.5f" fmtstring strcat "ms" strcat logStatus
+                then
             else
-                "[MWI Gateway] [WARN] Can't call " over strcat ", either function is missing or not callable." strcat logStatus
+                "[MWI Gateway] [WARN] Request came in for function " over strcat " but such is missing or not callable." strcat logStatus
                 pop pop response404 exit
             then        
         else 
@@ -510,13 +516,23 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     dup "down" stringcmp not if
         prog "disabled" "y" setprop
         "WebInterface Disabled." .tell
-        "Ideally you should log onto the server, goto the folder with the webpage in and do 'artisan down' too." .tell
+        "Ideally you should log onto the server, goto the folder with the webpage in and do 'php artisan down' too." .tell
         exit
     then
     dup "up" stringcmp not if
         prog "disabled" remove_prop
         "WebInterface Enabled." .tell
-        "If the webpage was taken down on the server, make sure to log into it, goto the folder with the webpage in and do 'artisan up' too." .tell
+        "If the webpage was taken down on the server, make sure to log into it, goto the folder with the webpage in and do 'php artisan up' too." .tell
+        exit
+    then
+    dup "debug" stringcmp not if
+        prog "debug" getpropstr "y" instring if
+            prog "debug" remove_prop
+            "Debugging disabled." .tell
+        else
+            prog "debug" "y" setprop
+            "Debugging enabled - requests will be logged to logwall." .tell
+        then
         exit
     then
     "This program only handles webcalls." .tell
