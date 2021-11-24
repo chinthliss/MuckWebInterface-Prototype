@@ -160,7 +160,7 @@ class SupportTicketService
      * Internal function to avoid duplication.
      * @param SupportTicket $ticket
      */
-    private function potentiallyUpdateStatusAutomatically(SupportTicket $ticket)
+    private function potentiallyChangeNewTicketToOpen(SupportTicket $ticket)
     {
         // New tickets change to open if something is done on them
         if ($ticket->status == 'new') {
@@ -311,7 +311,7 @@ class SupportTicketService
             $this->setStatus($ticket, 'open');
         }
 
-        $this->potentiallyUpdateStatusAutomatically($ticket);
+        $this->potentiallyChangeNewTicketToOpen($ticket);
 
         // And finally save ticket to update the updatedAt time.
         $this->saveTicket($ticket);
@@ -457,7 +457,7 @@ class SupportTicketService
 
         $this->addLogEntry($ticket, 'system', true, $user, $character, $message);
 
-        $this->potentiallyUpdateStatusAutomatically($ticket);
+        $this->potentiallyChangeNewTicketToOpen($ticket);
 
         $this->saveTicket($ticket);
     }
@@ -465,14 +465,13 @@ class SupportTicketService
     /**
      * @param SupportTicket $ticket
      * @param User $user
-     * @param MuckCharacter|null $character
      * @return bool
      */
-    public function hasVoted(SupportTicket $ticket, User $user, ?MuckCharacter $character = null) : bool
+    public function hasVoted(SupportTicket $ticket, User $user) : bool
     {
         foreach ($this->getLog($ticket) as $logEntry) {
             if ($logEntry->type !== 'upvote' && $logEntry->type !== 'downvote') continue;
-            if ($logEntry->user->is($user) && $logEntry->character === $character) return true;
+            if ($logEntry->user->is($user)) return true;
         }
         return false;
     }
@@ -481,14 +480,13 @@ class SupportTicketService
      * @param SupportTicket $ticket
      * @param string $voteType 'up' or 'down'
      * @param User $user
-     * @param MuckCharacter|null $character
      * @throws Exception
      */
-    public function voteOn(SupportTicket $ticket, string $voteType, User $user, ?MuckCharacter $character = null)
+    public function voteOn(SupportTicket $ticket, string $voteType, User $user)
     {
         if ($ticket->closedAt) throw new Exception("Can't vote on a closed ticket.");
 
-        if ($this->hasVoted($ticket, $user, $character))
+        if ($this->hasVoted($ticket, $user))
             throw new Exception("Can't vote as already voted.");
         switch ($voteType) {
             case 'up':
@@ -504,12 +502,9 @@ class SupportTicketService
             default:
                 throw new Exception ("Invalid vote type.");
         }
-        if ($character)
-            $message .= $character->name();
-        else
-            $message .= "Account#" . $user->getAid();
+        $message .= "Account#" . $user->getAid();
 
-        $this->addLogEntry($ticket, $logType, false, $user, $character, $message);
+        $this->addLogEntry($ticket, $logType, false, $user, null, $message);
 
         $this->saveTicket($ticket, false);
     }

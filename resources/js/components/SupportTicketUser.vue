@@ -78,9 +78,13 @@
             <div class="col mt-2">
                 <div class="label">Voting</div>
                 <div class="value">
-                    <i class="fas fa-thumbs-up"></i> {{ ticket.votes.up }} Agree<br/>
-                    <i class="fas fa-thumbs-down"></i> {{ ticket.votes.down }} Disagree
+                    <i class="fas fa-thumbs-up"></i> {{ ticket.votes.up }} Agree / For<br/>
+                    <i class="fas fa-thumbs-down"></i> {{ ticket.votes.down }} Disagree / Against
                 </div>
+            </div>
+            <div class="col mt-2" v-if="ticket.canVote">
+                <button class="btn btn-secondary" @click="voteUp">Vote Up <i class="fas fa-thumbs-up"></i></button>
+                <button class="btn btn-secondary ml-2" @click="voteDown">Vote Down <i class="fas fa-thumbs-down"></i></button>
             </div>
         </div>
 
@@ -162,10 +166,11 @@
 
 <script>
 import DialogMessage from "./DialogMessage";
+import CharacterCard from "./CharacterCard";
 
 export default {
     name: "support-ticket-user",
-    components: {DialogMessage},
+    components: {DialogMessage, CharacterCard},
     props: {
         initialTicket:{type: Object, required: true},
         pollUrl:{type: String, required: true},
@@ -225,6 +230,12 @@ export default {
         },
         watchOrUnwatchLabel: function() {
             return this.ticket.watching ? 'Stop Watching' : 'Start Watching';
+        },
+        voteUp: function() {
+            this.updateTicket({task: 'VoteUp'});
+        },
+        voteDown: function() {
+            this.updateTicket({task: 'VoteDown'});
         }
     },
     mounted: function () {

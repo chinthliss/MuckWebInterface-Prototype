@@ -172,6 +172,17 @@ class SupportTicketController extends Controller
                 $ticketTo = $service->getTicketById($request->get('to'));
                 $service->linkTickets($ticket, $ticketTo, $request->get('type'), $user, $character);
             }
+
+            if ($task == 'VoteUp') {
+                $foundSomething = true;
+                $service->voteOn($ticket, 'up', $user);
+            }
+
+            if ($task == 'VoteDown') {
+                $foundSomething = true;
+                $service->voteOn($ticket, 'down', $user);
+            }
+
         }
 
         return $foundSomething;
