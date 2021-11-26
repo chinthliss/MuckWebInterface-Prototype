@@ -1,15 +1,22 @@
 Random collection of saved tinker tests
 
+=== Account Notification
+MuckWebInterfaceNotification::NotifyUser(User::find(1), 'Test');
+MuckWebInterfaceNotification::NotifyCharacter(User::find(1), App::make(App\Muck\MuckObjectService::class)->getbyDbref(1234), 'Test with character');
+
+=== Muck Connection
 App::make(App\Muck\MuckConnection::class)->fulfillAccountCurrencyPurchase(3989,1,2,null)
 App::make(App\Muck\MuckConnection::class)->fulfillPatreonSupport(3989,1)
 App::make(App\Muck\MuckConnection::class)->getCharacterInitialSetupConfiguration(User::find(3989))
 App::make(App\Muck\MuckConnection::class)->createCharacterForUser("chintestb", User::find(3989))
+App::make(App\Muck\MuckConnection::class)->getLastConnect(3989)
 
+=== Muck Object Service
 App::make(App\Muck\MuckObjectService::class)->getbyDbref(1173)->toArray()
 App::make(App\Muck\MuckObjectService::class)->getbyPlayerName('Test')->toArray()
-App::make(App\Muck\MuckObjectService::class)->getLastConnect('Test')
 App::make(App\Muck\MuckObjectService::class)->getMuckObjectIdFor(App::make(App\Muck\MuckObjectService::class)->getbyDbref(1173))
 
+=== Tickets
 App::make(App\SupportTickets\SupportTicketService::class)->getTicketById(1)
 App::make(App\SupportTickets\SupportTicketService::class)->getOpenTickets()
 App::make(App\SupportTickets\SupportTicketService::class)->getActiveTickets()

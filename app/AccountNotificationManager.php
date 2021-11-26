@@ -22,8 +22,7 @@ class AccountNotificationManager
 
     /**
      * @param User $user
-     * @return array
-     * Returned in the form { user:[notification], character:[character_name:[notification]]
+     * @return array Array of [character, created_at, read_at, message]
      */
     public function getNotificationsFor(User $user): array
     {
@@ -37,19 +36,19 @@ class AccountNotificationManager
             ->orderByDesc('created_at');
         $rows = $query->get()->toArray();
         $query->update(['read_at' => Carbon::now()]);
-        $result = ['user' => [], 'character' => []];
+
+        $result = [];
         foreach ($rows as $row) {
-            if (!$row->game_code || !$row->character_dbref)
-                array_push($result['user'], $row);
-            else {
-                $character = array_key_exists($row->character_dbref, $characters) ? $characters[$row->character_dbref] : null;
-                $character_name = $character ? $character->name() : 'Unknown';
-                if (!array_key_exists($character_name, $result['character'])) $result['character'][$character_name] = [];
-                array_push($result['character'][$character_name], $row);
-            }
+            $character = array_key_exists($row->character_dbref, $characters) ? $characters[$row->character_dbref] : null;
+            $result[] = [
+                'id' => $row->id,
+                'character' => $character,
+                'created_at' => $row->created_at,
+                'read_at' => $row->read_at,
+                'message' => $row->message
+            ];
         }
-        Log::debug("Account Notifications - getNotificationsFor Account#{$user->getAid()} found " . count($result['user']) . " user"
-            . " and " . count($result['character']) . " character notifications.");
+        Log::debug("Account Notifications - getNotificationsFor Account#{$user->getAid()}: " . count($result));
         return $result;
     }
 
@@ -63,27 +62,16 @@ class AccountNotificationManager
         $this->storageTable()->delete($id);
     }
 
-    public function deleteAllNotificationsForAccount($accountId)
+    public function deleteAllNotificationsFor($accountId)
     {
         $this->storageTable()
             ->where('aid', '=', $accountId)
-            ->whereNull('character_dbref')
             ->where(function ($query) {
                 $query->whereNull('game_code')
                     ->orWhere('game_code', '=', config('muck.muck_code'));
             })
             ->delete();
     }
-
-    public function deleteAllNotificationsForCharacterDbref($accountId, $dbref)
-    {
-        $this->storageTable()
-            ->where('aid', '=', $accountId)
-            ->where('game_code', '=', config('muck.muck_code'))
-            ->where('character_dbref', '=', $dbref)
-            ->delete();
-    }
-
 
     public function getNotificationCountFor(User $user): int
     {

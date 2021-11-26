@@ -19,9 +19,13 @@ class AccountNotificationsController extends Controller
     {
         /** @var User $user */
         $user = auth()->user();
-
         if (!$user) abort(401);
-        return $notificationManager->getNotificationsFor($user);
+
+        $notifications = $notificationManager->getNotificationsFor($user);
+        return array_map(function ($notification) {
+            if ($notification['character']) $notification['character'] = $notification['character']->name();
+            return $notification;
+        }, $notificationManager->getNotificationsFor($user));
     }
 
     public function deleteNotification(AccountNotificationManager $notificationManager, int $id)
@@ -51,18 +55,7 @@ class AccountNotificationsController extends Controller
 
         if (!$user) abort(401);
 
-        $scope = $request->get('scope');
-        if ($scope != 'character' && $scope != 'account') abort(400);
-
-        if ($scope == 'account') {
-            $notificationManager->deleteAllNotificationsForAccount($user->getAid());
-        }
-
-        if ($scope == 'character') {
-            $characterDbref = $request->get('dbref');
-            if (!$characterDbref) abort(400);
-            $notificationManager->deleteAllNotificationsForCharacterDbref($user->getAid(), $characterDbref);
-        }
+        $notificationManager->deleteAllNotificationsFor($user->getAid());
 
         return "OK";
     }
