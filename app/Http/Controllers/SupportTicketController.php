@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Muck\MuckCharacter;
 use App\Muck\MuckConnection;
+use App\Muck\MuckObjectService;
 use App\SupportTickets\SupportTicket;
 use App\SupportTickets\SupportTicketService;
 use App\User;
@@ -229,8 +230,19 @@ class SupportTicketController extends Controller
     #region Raising a ticket
     public function showUserRaiseTicket(SupportTicketService $service): View
     {
+        $categoryConfiguration = array_values(array_filter($service->getCategoryConfiguration(), function($category) {
+            return !($category->usersCannotRaise);
+        }));
+
+        /** @var User $user */
+        $user = auth()->user();
+        $characters = array_map(function($character) {
+            return $character->name();
+        }, $user->getCharacters());
+
         return view('support.user.new')->with([
-            'categoryConfiguration' => $service->getCategoryConfiguration()
+            'categoryConfiguration' => $categoryConfiguration,
+            'characters' => $characters
         ]);
     }
 
@@ -258,23 +270,37 @@ class SupportTicketController extends Controller
             'ticketContent.required' => 'You must enter details for the ticket.'
         ]);
 
-        /** @var User $user */
-        $user = auth()->user();
-        $character = $user->getCharacter();
-
         return [
             'categoryCode' => $request->get('ticketCategoryCode'),
             'title' => $request->get('ticketTitle'),
-            'content' => $request->get('ticketContent'),
-            'user' => $user,
-            'character' => $character
+            'content' => $request->get('ticketContent')
         ];
 
     }
 
-    public function processUserRaiseTicket(Request $request, SupportTicketService $service)
+    public function processUserRaiseTicket(Request $request, SupportTicketService $service, MuckObjectService $muckObjectService)
     {
         $details = $this->sharedRaiseTicketValidation($request);
+
+        /** @var User $user */
+        $user = auth()->user();
+        $details['user'] = $user;
+
+        // Character is either:
+        // _initial - wasn't set
+        // _account - account based
+        // Or the name of a character
+        $character = $request->get('ticketCharacter');
+        if (!$character || $character === '_initial') {
+            throw ValidationException::withMessages(['ticketCharacter' => "Please specify either a character or that this is account-based."]);
+        }
+        if ($character === '_account') $character = null;
+        else {
+            $character = $muckObjectService->getByPlayerName($character);
+            if (!$character || $character->aid() !== $user->getAid())
+                throw ValidationException::withMessages(['ticketCharacter' => "The selected character is on a different account."]);
+        }
+        $details['character'] = $character;
 
         $ticket = $service->createTicket($details['categoryCode'], $details['title'],
             $details['content'], $details['user'], $details['character']);
@@ -285,6 +311,11 @@ class SupportTicketController extends Controller
     public function processAgentRaiseTicket(Request $request, SupportTicketService $service, MuckConnection $muck)
     {
         $details = $this->sharedRaiseTicketValidation($request);
+
+        /** @var User $user */
+        $user = auth()->user();
+        $details['user'] = $user;
+        $details['character'] = $user->getStaffCharacter();
 
         $characterOverride = $request->get('ticketCharacter');
         if ($characterOverride) {

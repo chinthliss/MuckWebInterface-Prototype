@@ -23,7 +23,7 @@
                 </div>
             </div>
 
-            <div class="row mb-1" v-if="staffCharacter">
+            <div class="row mb-1" v-if="staff">
                 <div class="col col-lg-2">
                     <button class="btn btn-primary w-100" @click="setType('task')">Task
                         <br/><i class="fas fa-tasks"></i></button>
@@ -45,6 +45,11 @@
                 </div>
                 <div class="col my-auto">
                     {{ category.description }}
+                    <span v-if="staff">
+                        <span class="badge badge-pill badge-info" v-if="category.usersCannotRaise">Staff Only</span>
+                        <span class="badge badge-pill badge-info" v-if="category.notGameSpecific">Account Based</span>
+                        <span class="badge badge-pill badge-info" v-if="category.neverPublic">No Public Option</span>
+                    </span>
                 </div>
             </div>
 
@@ -55,20 +60,29 @@
                 <input type="hidden" name="ticketCategoryCode" v-model="ticketCategoryCode">
                 <input type="hidden" name="ticketType" v-model="ticketType">
 
-                <div v-if="staffCharacter">
-                    <div class="form-group">
-                        <label for="ticketCharacter">Character</label>
-                        <input class="form-control" id="ticketCharacter" name="ticketCharacter" v-model="ticketCharacter">
-                        <small id="characterHelp" class="form-text text-muted">Optional - fill this out to raise the ticket on behalf of somebody else.</small>
-                        <div class="text-danger" role="alert">
-                            <p v-for="error in errors.gender">{{ ticketCharacter }}</p>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="form-group">
                     <label for="ticketCategoryLabel">Category</label>
                     <input class="form-control" id="ticketCategoryLabel" name="ticketCategoryLabel" v-model="ticketCategoryLabel" readonly>
+                </div>
+
+                <div v-if="staff" class="form-group">
+                    <label for="ticketCharacter">Assign to a different Character <span class="badge badge-pill badge-info">Staff Only</span></label>
+                    <input class="form-control" id="ticketCharacter" name="ticketCharacter" v-model="ticketCharacter">
+                    <small id="characterHelp" class="form-text text-muted">Optional - Any character can be entered here. If no character is entered, the ticket will be from yourself.</small>
+                    <div class="text-danger" role="alert">
+                        <p v-for="error in errors.ticketCharacter">{{ error }}</p>
+                    </div>
+                </div>
+                <div v-else class="form-group">
+                    <label for="character">Character</label>
+                    <select class="form-control" name="ticketCharacter" v-model="ticketCharacter" >
+                        <option value="_initial">Select a character</option>
+                        <option value="_account">No Character (Account based)</option>
+                        <option v-for="character in characters" :value="character">{{ character }}</option>
+                    </select>
+                    <div class="text-danger" role="alert">
+                        <p v-for="error in errors.ticketCharacter">{{ error }}</p>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -100,7 +114,8 @@ export default {
     name: "support-ticket-new",
     props: {
         categoryConfiguration: {type: Array, required: true},
-        staffCharacter: {type: String, required: false},
+        staff: {type: Boolean, required: false, default: false},
+        characters: {type: Object, required: false, default: []},
         errors: {required: false},
         old: {type: Object, required: false}
     },
@@ -120,10 +135,25 @@ export default {
             this.ticketType = type;
         },
         setCategory: function(categoryCode) {
+            let category = null;
             this.ticketCategoryCode = categoryCode;
-            this.categoryConfiguration.forEach(category => {
-                if (category.code === categoryCode) this.ticketCategoryLabel = category.name;
+            this.categoryConfiguration.forEach(potentialCategory => {
+                if (potentialCategory.code === categoryCode) category = potentialCategory;
             });
+            this.ticketCategoryLabel = category.name;
+
+            // Character default rules if not staff
+            if (!this.staff) {
+                if (category.notGameSpecific)
+                    this.ticketCharacter = '_account';
+                else if (!this.ticketCharacter) {
+                    let dbref = parseInt(document.querySelector('meta[name="character-dbref"]')?.content);
+                    if (dbref && this.characters[dbref])
+                        this.ticketCharacter = this.characters[dbref];
+                    else
+                        this.ticketCharacter = '_initial';
+                }
+            }
         },
         reset: function() {
             this.ticketType = null;

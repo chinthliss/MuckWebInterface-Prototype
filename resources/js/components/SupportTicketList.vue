@@ -63,7 +63,10 @@
 
         </div>
 
-        <b-table dark hover small stacked="lg"
+        <div class="mb-2" v-if="!tableLoading && this.tableContent.length === 0">
+            No tickets to display.
+        </div>
+        <b-table v-else-if="!tableLoading" dark hover small stacked="lg"
                  :items="tableContent"
                  :fields="tableFields"
                  :busy="tableLoading"

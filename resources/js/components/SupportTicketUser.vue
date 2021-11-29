@@ -22,17 +22,16 @@
                         <div class="value" v-html="parseUserContent(ticket.title)"></div>
                     </div>
                 </div>
-                <div class="mt-2 mt-xl-0">
+                <div class="mt-2">
                         <div class="label">Description</div>
                         <div class="muckContent" v-html="parseUserContent(ticket.content)"></div>
                 </div>
             </div>
-            <div class="mt-2 mt-xl-0 ml-xl-4">
+            <div class="mt-2 mt-xl-0 ml-xl-4" v-if="ticket.from.character">
                 <div class="label">Raised by</div>
-                <character-card v-if="ticket.from.character" :character="ticket.from.character"
+                <character-card :character="ticket.from.character"
                                 mode="tag" class="mr-2 mb-2 align-top">
                 </character-card>
-                <div v-else class="value">(System)</div>
             </div>
         </div>
 

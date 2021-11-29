@@ -58,11 +58,11 @@ class SupportTicketService
                     'Make a suggestion.'),
                 // Tasks
                 new SupportTicketCategory('makopool', 'Mako Pool', 'task',
-                    'Tasks raised by mako pools', usersCannotRaise: true),
+                    'Tasks raised by mako pools.', usersCannotRaise: true),
                 new SupportTicketCategory('research', 'Research', 'task',
-                    'Tasks raised by research', usersCannotRaise: true),
+                    'Tasks raised by research.', usersCannotRaise: true),
                 new SupportTicketCategory('stretchgoal', 'Stretch Goal', 'task',
-                    'Tasks raised by stretch goals', usersCannotRaise: true)
+                    'Tasks raised by stretch goals.', usersCannotRaise: true)
 
             ];
         }

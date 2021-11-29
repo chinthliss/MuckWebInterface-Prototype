@@ -15,6 +15,7 @@
 @section('content')
     <support-ticket-new
         :category-configuration="{{ json_encode($categoryConfiguration) }}"
+        :characters="{{ json_encode($characters) }}"
         :errors="{{ $errors }}"
         :old="{{ json_encode(old(), JSON_FORCE_OBJECT) }}"
     ></support-ticket-new>
