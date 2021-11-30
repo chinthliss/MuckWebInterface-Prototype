@@ -6,7 +6,8 @@
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="{{ config('app.name', 'MuckWebInterface') }}">
     <meta property="og:image" content="{{ url('/favicon32.png') }}">
-    @hasSection('title')<meta property="og:title" content="@yield('title')">@endif
+    @hasSection('title')<meta property="og:title" content="@yield('title')">
+    @endif
     <meta property="og:description" content="Under development beta site.">
 
     <!-- CSRF Token -->
@@ -16,7 +17,8 @@
     @auth<meta name="account-id" content="{{ Auth::user()->getAid() }}">@endauth
 
     <!-- Character if set -->
-    @Character<meta name="character-dbref" content="{{ Auth::user()->getCharacterDbref() }}">@endCharacter
+    @Character<meta name="character-dbref" content="{{ Auth::user()->getCharacterDbref() }}">
+    <meta name="character-name" content="{{ Auth::user()->getCharacterName() }}">@endCharacter
 
     <!-- Title -->
     @hasSection('title')<title>@yield('title') ({{ config('app.name', 'MuckWebInterface') }})</title>

@@ -1,8 +1,6 @@
 @extends('layouts.layout')
 
-@section('title')
-    Ticket {{ $ticket['id'] }}
-@endsection
+@section('title')Ticket {{ $ticket['id'] }}@endsection
 
 @section('breadcrumbs')
     {{ Breadcrumbs::render([

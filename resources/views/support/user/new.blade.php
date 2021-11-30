@@ -1,8 +1,6 @@
 @extends('layouts.layout')
 
-@section('title')
-    Raise a ticket
-@endsection
+@section('title')Raise a ticket@endsection
 
 @section('breadcrumbs')
     {{ Breadcrumbs::render([

@@ -166,11 +166,14 @@
             </div>
         </div>
 
-        <div class="form-group">
+        <div v-if="this.postingAs" class="form-group">
             <label class="label mt-2" for="addNote">Add New Note</label>
             <textarea class="form-control muckContent" id="addNote" rows="3" v-model="newNoteContent"></textarea>
-            <button class="mt-2 btn btn-secondary" :disabled="!newNoteContent" @click="addPublicNote">Add Public Note</button>
+            <button class="mt-2 btn btn-secondary" :disabled="!newNoteContent" @click="addPublicNote">Add Public Note as {{ this.postingAs }}</button>
             <button class="mt-2 btn btn-secondary" :disabled="!newNoteContent" @click="addPrivateNote">Add Staff-Only Note</button>
+        </div>
+        <div v-else class="alert alert-warning text-center">
+            You will need to login as a character before you can add notes to this ticket.
         </div>
 
         <DialogConfirm id="editCategoryOrTitle" title="Edit Category/Title" @save="saveCategoryOrTitle">
@@ -330,7 +333,11 @@ export default {
             errorMessage: null
         };
     },
-    computed: {},
+    computed: {
+        postingAs: function() {
+            return document.head.querySelector('meta[name="character-name"]')?.content;
+        }
+    },
     methods: {
         categoryLabel: function () {
             let label = null;
