@@ -57,7 +57,7 @@ class HomeController extends Controller
             [
                 'title' => 'Ticket System',
                 'description' => 'Rewrite of the ticket system to allow it to work separate to the muck and more cohesively from the web side.',
-                'progress' => 'Pending'
+                'progress' => 'In Progress'
             ],
             [
                 'title' => 'Character Ordering',
@@ -71,7 +71,7 @@ class HomeController extends Controller
             ],
             [
                 'title' => 'Character Profile',
-                'description' => "View somebody else's character.",
+                'description' => "View somebody else's character. Note to self - look at including pinfo and view.",
                 'progress' => 'Created but barebone'
             ],
             [
