@@ -160,10 +160,10 @@ class SupportTicketService
      * Internal function to avoid duplication.
      * @param SupportTicket $ticket
      */
-    private function potentiallyChangeNewTicketToOpen(SupportTicket $ticket)
+    private function potentiallyChangeNewTicketToOpen(SupportTicket $ticket, ?User $user)
     {
-        // New tickets change to open if something is done on them
-        if ($ticket->status == 'new') {
+        // New tickets change to open if something is done on them by a staff user
+        if ($ticket->status == 'new' && $user && $user->isStaff()) {
             $this->setStatus($ticket, 'open');
         }
     }
@@ -311,7 +311,7 @@ class SupportTicketService
             $this->setStatus($ticket, 'open');
         }
 
-        $this->potentiallyChangeNewTicketToOpen($ticket);
+        $this->potentiallyChangeNewTicketToOpen($ticket, $fromUser);
 
         // And finally save ticket to update the updatedAt time.
         $this->saveTicket($ticket);
@@ -457,7 +457,7 @@ class SupportTicketService
 
         $this->addLogEntry($ticket, 'system', true, $user, $character, $message);
 
-        $this->potentiallyChangeNewTicketToOpen($ticket);
+        $this->potentiallyChangeNewTicketToOpen($ticket, $user);
 
         $this->saveTicket($ticket);
     }
