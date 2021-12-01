@@ -22,7 +22,8 @@
                 <dt class="col-sm-2">Referrals</dt>
                 <dd class="col-sm-10">{{ account.referrals }}</dd>
             </div>
-            <div class="row">
+
+            <div class="row mt-2">
                 <dt class="col-sm-2">Characters ({{ muckName }})</dt>
                 <dd class="col-sm-10">
                     <div v-if="!account.characters.length">None</div>
@@ -31,7 +32,8 @@
                     </character-card>
                 </dd>
             </div>
-            <div class="row">
+
+            <div class="row mt-2">
                 <dt class="col-sm-2">Emails</dt>
                 <dd class="col-sm-10">
                     <table class="table table-striped">
@@ -45,20 +47,39 @@
                             <td>{{ email }}</td>
                             <td>{{ outputCarbonString(details.created_at) }}</td>
                             <td>{{ outputCarbonString(details.verified_at) }}</td>
-                            <td>{{ email == account.primary_email }}</td>
+                            <td>{{ email === account.primary_email }}</td>
                         </tr>
                     </table>
                 </dd>
             </div>
-            <div class="row">
-                <dt class="col-sm-2">Notes</dt>
+
+            <div class="row mt-2">
+                <dt class="col-sm-2">Account Notes</dt>
                 <dd class="col-sm-10">
                     <div v-if="!account.notes.length">None</div>
                     <div v-for="note in account.notes">
-                        {{
-                            outputCarbonString(note.whenAt) + ' ' + note.staffMember + '@' + note.game + ': ' + note.body
-                        }}
+                        {{ `${outputCarbonString(note.whenAt)} ${note.staffMember}@${note.game}: ${note.body}` }}
                     </div>
+                </dd>
+            </div>
+
+            <div class="row mt-2">
+                <dt class="col-sm-2">Tickets</dt>
+                <dd class="col-sm-10">
+                    <table v-if="previousTickets.length > 0" class="table table-striped">
+                        <tr>
+                            <th scope="col">Ticket ID</th>
+                            <th scope="col">Last Update</th>
+                            <th scope="col">Category</th>
+                            <th scope="col">Title</th>
+                        </tr>
+                        <tr v-for="ticket in previousTickets">
+                            <td><a :href="ticket.url">{{ ticket.id }}</a></td>
+                            <td>{{ outputCarbonString(ticket.lastUpdatedAt) }}</td>
+                            <td>{{ ticket.categoryLabel }}</td>
+                            <td>{{ ticket.title }}</td>
+                        </tr>
+                    </table>
                 </dd>
             </div>
         </dl>
@@ -71,13 +92,12 @@ import CharacterCard from "./CharacterCard";
 export default {
     name: "admin-account",
     components: {CharacterCard},
-    props: ['account', 'muckName'],
+    props: ['account', 'muckName', 'previousTickets'],
     data: function () {
         return {}
     },
     computed: {},
-    methods: {
-    }
+    methods: {}
 }
 </script>
 

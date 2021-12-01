@@ -133,7 +133,8 @@ class SupportTicketService
 
     /**
      * Gets all active tickets that a particular user can see
-     * @return array<int, SupportTicket>
+     * @param User $user
+     * @return SupportTicket[]
      */
     public function getActiveTicketsForUser(User $user): array
     {
@@ -141,6 +142,21 @@ class SupportTicketService
         foreach ($this->provider->getActive() as $ticket) {
             if ($ticket->gameCode && $ticket->gameCode != config('muck.muck_code')) continue;
             if (!$this->userCanSeeTicket($user, $ticket)) continue;
+            $results[] = $ticket;
+        }
+        return $results;
+    }
+
+    /**
+     * Gets all tickets from a user
+     * @param User $user
+     * @return SupportTicket[]
+     */
+    public function getTicketsFromUser(User $user): array
+    {
+        $results = [];
+        foreach ($this->provider->getFrom($user) as $ticket) {
+            if ($ticket->gameCode && $ticket->gameCode != config('muck.muck_code')) continue;
             $results[] = $ticket;
         }
         return $results;

@@ -91,6 +91,22 @@ class SupportTicketProviderViaDatabase implements SupportTicketProvider
     /**
      * @inheritDoc
      */
+    public function getFrom(User $user): array
+    {
+        $tickets = [];
+        $rows = DB::table('tickets')
+            ->where('from_aid', '=', $user->getAid())
+            ->get();
+        foreach ($rows as $row) {
+            $ticket = $this->fromDatabaseRow($row);
+            $tickets[] = $ticket;
+        }
+        return $tickets;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getOpen(): array
     {
         $tickets = [];

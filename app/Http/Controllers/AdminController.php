@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Admin\LogManager;
 use App\DatabaseForMuckUserProvider;
+use App\SupportTickets\SupportTicketService;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -27,13 +28,22 @@ class AdminController extends Controller
         return response()->file(LogManager::getLogFilePathForDate($date));
     }
 
-    public function showAccount(int $accountId)
+    public function showAccount(int $accountId, SupportTicketService $supportTicketService)
     {
         $user = User::find($accountId);
         if (!$user) abort(404);
+
+        $previousTickets = [];
+        foreach($supportTicketService->getTicketsFromUser($user) as $ticket) {
+            $formattedTicket = $ticket->serializeForAgentListing($user);
+            $formattedTicket['categoryLabel'] =
+                $supportTicketService->getCategory($ticket->categoryCode)?->name ?? 'Unknown';
+            $previousTickets[] = $formattedTicket;
+        }
         return view('admin.account')->with([
             'account' => $user->serializeForAdminComplete(),
-            'muckName' => config('muck.muck_name')
+            'muckName' => config('muck.muck_name'),
+            'previousTickets' => $previousTickets
         ]);
     }
 

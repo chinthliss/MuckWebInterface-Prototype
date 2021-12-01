@@ -23,6 +23,11 @@ interface SupportTicketProvider
     /**
      * @return SupportTicket[]
      */
+    public function getFrom(User $user): array;
+
+    /**
+     * @return SupportTicket[]
+     */
     public function getOpen(): array;
 
     /**

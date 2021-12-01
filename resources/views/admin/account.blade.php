@@ -17,5 +17,6 @@
     <admin-account
         :account="{{ json_encode($account) }}"
         muck-name="{{ $muckName }}"
+        :previous-tickets = "{{ json_encode($previousTickets) }}"
     ></admin-account>
 @endsection
