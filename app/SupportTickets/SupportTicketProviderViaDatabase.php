@@ -96,6 +96,7 @@ class SupportTicketProviderViaDatabase implements SupportTicketProvider
         $tickets = [];
         $rows = DB::table('tickets')
             ->where('from_aid', '=', $user->getAid())
+            ->orderBy('created_at', 'desc')
             ->get();
         foreach ($rows as $row) {
             $ticket = $this->fromDatabaseRow($row);
