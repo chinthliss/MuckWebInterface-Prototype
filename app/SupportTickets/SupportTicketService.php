@@ -4,6 +4,7 @@ namespace App\SupportTickets;
 
 use App\Muck\MuckCharacter;
 use App\Muck\MuckDbref;
+use App\Notifications\MuckWebInterfaceNotification;
 use App\User;
 use Error;
 use Exception;
@@ -227,7 +228,9 @@ class SupportTicketService
         $ticket->closureReason = $closureReason;
         $ticket->closedAt = Carbon::now();
         $this->saveTicket($ticket);
-        $this->addLogEntry($ticket, 'system', true, $fromUser, $fromCharacter, "Ticket closed with reason: " . ucfirst($closureReason));
+        $message = "Ticket closed with reason: " . ucfirst($closureReason);
+        $this->addLogEntry($ticket, 'system', true, $fromUser, $fromCharacter, $message);
+        $this->sendNotifications($ticket, $message, $fromUser);
     }
 
     /**
@@ -329,8 +332,12 @@ class SupportTicketService
 
         $this->potentiallyChangeNewTicketToOpen($ticket, $fromUser);
 
-        // And finally save ticket to update the updatedAt time.
+        // Save ticket to update the updatedAt time.
         $this->saveTicket($ticket);
+
+        $message = 'A new note has been added';
+        if ($fromCharacter) $message .= ' by ' . $fromCharacter->name();
+        $this->sendNotifications($ticket, $message, $fromUser);
     }
 
     /**
@@ -478,6 +485,8 @@ class SupportTicketService
         $this->saveTicket($ticket);
     }
 
+    #region Voting
+
     /**
      * @param SupportTicket $ticket
      * @param User $user
@@ -523,6 +532,40 @@ class SupportTicketService
         $this->addLogEntry($ticket, $logType, false, $user, null, $message);
 
         $this->saveTicket($ticket, false);
+    }
+
+    #endregion
+
+    /**
+     * Sends a notification to a ticket's owner, working staff member and watchers.
+     * If source is provided then the notification will skip them.
+     * The notification will be prepended with qualifiers about the ticket number and a person's relation to such
+     * @param SupportTicket $ticket
+     * @param string $message
+     * @param bool $staffOnly
+     */
+    public function sendNotifications(SupportTicket $ticket, string $message, ?User $sourceUser = null, bool $staffOnly = false)
+    {
+        // Owner
+        if ($ticket->fromUser && !$ticket->fromUser->is($sourceUser)) {
+            MuckWebInterfaceNotification::notifyUser($ticket->fromUser,
+                "Your ticket {$ticket->id} has been updated: $message");
+        }
+
+        // Staff
+        if ($ticket->agentUser && !$ticket->agentUser->is($sourceUser)) {
+            MuckWebInterfaceNotification::notifyUser($ticket->agentUser,
+                "Ticket {$ticket->id} has been updated: $message");
+        }
+
+        // Watchers
+        foreach ($this->getWatchers($ticket) as $watcher) {
+            if (!$watcher->is($sourceUser)){
+                MuckWebInterfaceNotification::notifyUser($watcher,
+                    "Ticket {$ticket->id}, that you're watching, has been updated: $message");
+            }
+        }
+
     }
 
 }
