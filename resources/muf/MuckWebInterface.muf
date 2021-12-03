@@ -103,6 +103,91 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     else response400 then
 ; selfcall handleRequest_getCharacters
 
+(Expects 'aid' set, returns lastConnected or 0 for never connected)
+: handleRequest_getLastConnect[ arr:webcall -- ]
+    webcall @ "aid" array_getitem ?dup if
+        startAcceptedResponse
+        0 swap
+        acct_getalts
+        foreach nip
+            dup PROP_lastConnect getprop
+            swap PROP_lastDisconnect getprop
+            math.max math.max
+        repeat
+        intostr descr swap descrnotify
+    else response400 then
+; selfcall handleRequest_getLastConnect
+
+: handleRequest_findAccountsByCharacterName[ arr:webcall -- ]
+    webcall @ "name" array_getitem ?dup if
+        "*" swap "*" strcat strcat var! target
+        startAcceptedResponse
+        { }list
+        #-1 target @ "P" find_array foreach nip
+            acct_any2aid ?dup if intostr swap array_appenditem then
+        repeat
+        1 array_nunion "," array_join
+        descr swap descrnotify
+    else response400 then
+; selfcall handleRequest_findAccountsByCharacterName
+
+(Expects an array containing aid,dbref,password )
+(Returns 'OK' if successful)
+: handleRequest_changeCharacterPassword[ arr:webcall -- ]
+    #-1 var! character
+    webcall @ "dbref" array_getitem ?dup if
+        atoi dbref character !
+    then
+    character @ player? not if response400 exit then
+    
+    0 var! aid
+    webcall @ "aid" array_getitem ?dup if
+        acct_any2aid aid !
+    then
+    aid @ not if response400 exit then
+    
+    webcall @ "password" array_getitem ?dup not if response400 exit then
+    var! password
+    
+    (Does account own character?)
+    character @ acct_any2aid aid @ = not if response401 exit then
+    
+    (Not going to allow wizard passwords to be reset by an external interface for now)
+    character @ mlevel 3 > if response401 exit then
+    
+    startAcceptedResponse
+    "[MWI Gateway] Changed password of " character @ unparseobj strcat " due to request by account " strcat aid @ intostr strcat logStatus
+    character @ password @ newpassword
+   
+    "OK" descr swap descrnotify
+; selfcall handleRequest_changeCharacterPassword
+
+(Passes on a notification to a character to the muck if they're connected.)
+(Takes an array with: aid, [character], message)
+(Returns a count of notifications produced muckside)
+: handleRequest_externalNotification[ arr:webcall -- ]
+    0 var! aid
+    webcall @ "aid" array_getitem ?dup if
+        acct_any2aid aid !
+    then
+    aid @ not if response400 exit then
+    
+    0 var! character
+    webcall @ "character" array_getitem ?dup if
+        atoi dbref dup ok? if character ! else pop then
+    then 
+    
+    webcall @ "message" array_getitem var! message
+    message @ not if response400 exit then
+    
+    aid @ character @ message @ deliverNotificationOnMuck
+    intostr descr swap descrnotify
+; selfcall handleRequest_externalNotification
+
+( -------------------------------------------------- )
+( Handlers - Character Selection and Chargen )
+( -------------------------------------------------- )
+
 (Expects 'aid' set, returns characterSlotCount,characterSlotCost )
 : handleRequest_getCharacterSlotState[ arr:webcall -- ]
     webcall @ "aid" array_getitem ?dup if
@@ -259,65 +344,6 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     
     descr swap encodeJson descrnotify
 ; public handleRequest_getCharacterInitialSetupConfiguration
-
-(Expects 'aid' set, returns lastConnected or 0 for never connected)
-: handleRequest_getLastConnect[ arr:webcall -- ]
-    webcall @ "aid" array_getitem ?dup if
-        startAcceptedResponse
-        0 swap
-        acct_getalts
-        foreach nip
-            dup PROP_lastConnect getprop
-            swap PROP_lastDisconnect getprop
-            math.max math.max
-        repeat
-        intostr descr swap descrnotify
-    else response400 then
-; selfcall handleRequest_getLastConnect
-
-: handleRequest_findAccountsByCharacterName[ arr:webcall -- ]
-    webcall @ "name" array_getitem ?dup if
-        "*" swap "*" strcat strcat var! target
-        startAcceptedResponse
-        { }list
-        #-1 target @ "P" find_array foreach nip
-            acct_any2aid ?dup if intostr swap array_appenditem then
-        repeat
-        1 array_nunion "," array_join
-        descr swap descrnotify
-    else response400 then
-; selfcall handleRequest_findAccountsByCharacterName
-
-(Expects an array containing aid,dbref,password )
-(Returns 'OK' if successful)
-: handleRequest_changeCharacterPassword[ arr:webcall -- ]
-    #-1 var! character
-    webcall @ "dbref" array_getitem ?dup if
-        atoi dbref character !
-    then
-    character @ player? not if response400 exit then
-    
-    0 var! aid
-    webcall @ "aid" array_getitem ?dup if
-        acct_any2aid aid !
-    then
-    aid @ not if response400 exit then
-    
-    webcall @ "password" array_getitem ?dup not if response400 exit then
-    var! password
-    
-    (Does account own character?)
-    character @ acct_any2aid aid @ = not if response401 exit then
-    
-    (Not going to allow wizard passwords to be reset by an external interface for now)
-    character @ mlevel 3 > if response401 exit then
-    
-    startAcceptedResponse
-    "[MWI Gateway] Changed password of " character @ unparseobj strcat " due to request by account " strcat aid @ intostr strcat logStatus
-    character @ password @ newpassword
-   
-    "OK" descr swap descrnotify
-; selfcall handleRequest_changeCharacterPassword
 
 ( -------------------------------------------------- )
 ( Handlers - Muck object retrieval / verification    )
