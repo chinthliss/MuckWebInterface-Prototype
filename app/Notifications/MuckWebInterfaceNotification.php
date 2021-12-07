@@ -16,30 +16,21 @@ class MuckWebInterfaceNotification extends Notification
 {
     use Queueable;
 
-    /**
-     * @var string
-     */
-    private $message;
+    private string $message;
 
-    /**
-     * @var int|null
-     */
-    private $gameCode;
+    private ?int $gameCode;
 
-    /**
-     * @var MuckCharacter|null
-     */
-    private $characterDbref;
+    private ?MuckCharacter $character;
 
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct(string $message, int $gameCode = null, MuckCharacter $characterDbref = null)
+    public function __construct(string $message, int $gameCode = null, MuckCharacter $character = null)
     {
         $this->gameCode = $gameCode;
-        $this->characterDbref = $characterDbref;
+        $this->character = $character;
         $this->message = $message;
     }
 
@@ -66,8 +57,23 @@ class MuckWebInterfaceNotification extends Notification
             'aid' => $notifiable->getAid(),
             'message' => $this->message,
             'game_code' => $this->gameCode,
-            'character_dbref' => $this->characterDbref ? $this->characterDbref->toInt() : null
+            'character_dbref' => $this?->character->toInt()
         ];
+    }
+
+    public function character(): MuckCharacter
+    {
+        return $this->character;
+    }
+
+    public function message(): string
+    {
+        return $this->message;
+    }
+
+    public function gameCode(): ?int
+    {
+        return $this->gameCode;
     }
 
     #region Utilities
@@ -86,9 +92,9 @@ class MuckWebInterfaceNotification extends Notification
      * Utility to send a message that will be visible on any character on this game
      * @param User $user
      * @param string $message
-     * @param int $gameCode Optional, defaults to this game.
+     * @param int|null $gameCode Optional, defaults to this game.
      */
-    public static function notifyUser(User $user, string $message, int $gameCode = null)
+    public static function notifyUser(User $user, string $message, ?int $gameCode = null)
     {
         if (!$gameCode) $gameCode = config('muck.muck_code');
         $user->notify(new MuckWebInterfaceNotification($message, $gameCode));

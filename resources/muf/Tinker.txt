@@ -10,6 +10,7 @@ App::make(App\Muck\MuckConnection::class)->fulfillPatreonSupport(3989,1)
 App::make(App\Muck\MuckConnection::class)->getCharacterInitialSetupConfiguration(User::find(3989))
 App::make(App\Muck\MuckConnection::class)->createCharacterForUser("chintestb", User::find(3989))
 App::make(App\Muck\MuckConnection::class)->getLastConnect(3989)
+App::make(App\Muck\MuckConnection::class)->externalNotification(User::find(3989), App::make(App\Muck\MuckObjectService::class)->getbyDbref(1173), 'Test with character')
 
 === Muck Object Service
 App::make(App\Muck\MuckObjectService::class)->getbyDbref(1173)->toArray()

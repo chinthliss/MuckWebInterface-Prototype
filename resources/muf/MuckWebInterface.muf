@@ -180,6 +180,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     webcall @ "message" array_getitem var! message
     message @ not if response400 exit then
     
+    startAcceptedResponse
     aid @ character @ message @ deliverNotificationOnMuck
     intostr descr swap descrnotify
 ; selfcall handleRequest_externalNotification
