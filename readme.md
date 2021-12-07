@@ -7,7 +7,7 @@ Rename .env.example to .env
 Fill out settings in .env  
 Run commands:  
 ```
-composer install  
+composer install --optimize-autoloader --no-dev  
 npm install
 php artisan key:generate
 ```
