@@ -176,9 +176,9 @@ interface MuckConnection
     /**
      * Lets the muck react to a notification sent from the web-side of things.
      * @param User $user
-     * @param MuckCharacter $character
+     * @param MuckCharacter|null $character
      * @param string $message
      * @return int Number of notifications sent muck side
      */
-    public function externalNotification(User $user, MuckCharacter $character, string $message): int;
+    public function externalNotification(User $user, ?MuckCharacter $character, string $message): int;
 }

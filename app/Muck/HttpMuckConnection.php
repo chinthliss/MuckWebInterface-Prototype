@@ -382,10 +382,13 @@ class HttpMuckConnection implements MuckConnection
         return $this->parseMuckObjectResponse($response);
     }
 
-    public function externalNotification(User $user, MuckCharacter $character, string $message): int
+    /**
+     * @inheritDoc
+     */
+    public function externalNotification(User $user, ?MuckCharacter $character, string $message): int
     {
         $count = $this->requestFromMuck('externalNotification',
-            ['aid' => $user->getAid(), 'character' => $character->dbref(), 'message' => $message]);
+            ['aid' => $user->getAid(), 'character' => $character?->dbref(), 'message' => $message]);
         return (int)$count;
     }
 }

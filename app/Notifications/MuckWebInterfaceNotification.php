@@ -57,11 +57,11 @@ class MuckWebInterfaceNotification extends Notification
             'aid' => $notifiable->getAid(),
             'message' => $this->message,
             'game_code' => $this->gameCode,
-            'character_dbref' => $this?->character->toInt()
+            'character_dbref' => $this->character?->toInt()
         ];
     }
 
-    public function character(): MuckCharacter
+    public function character(): ?MuckCharacter
     {
         return $this->character;
     }

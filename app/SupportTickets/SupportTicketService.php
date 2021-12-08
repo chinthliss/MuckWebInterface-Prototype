@@ -70,7 +70,7 @@ class SupportTicketService
         return $this->categoryConfiguration;
     }
 
-    public function getCategory(string $categoryCode) : ?SupportTicketCategory
+    public function getCategory(string $categoryCode): ?SupportTicketCategory
     {
         foreach ($this->getCategoryConfiguration() as $possibleCategory) {
             if ($possibleCategory->code === $categoryCode) return $possibleCategory;
@@ -337,7 +337,7 @@ class SupportTicketService
 
         $message = 'A new note has been added';
         if ($fromCharacter) $message .= ' by ' . $fromCharacter->name();
-        $this->sendNotifications($ticket, $message, $fromUser);
+        $this->sendNotifications($ticket, $message, $fromUser, !$isPublic);
     }
 
     /**
@@ -492,7 +492,7 @@ class SupportTicketService
      * @param User $user
      * @return bool
      */
-    public function hasVoted(SupportTicket $ticket, User $user) : bool
+    public function hasVoted(SupportTicket $ticket, User $user): bool
     {
         foreach ($this->getLog($ticket) as $logEntry) {
             if ($logEntry->type !== 'upvote' && $logEntry->type !== 'downvote') continue;
@@ -548,8 +548,10 @@ class SupportTicketService
     {
         // Owner
         if ($ticket->fromUser && !$ticket->fromUser->is($sourceUser)) {
-            MuckWebInterfaceNotification::notifyUser($ticket->fromUser,
-                "Your ticket {$ticket->id} has been updated: $message");
+            if (!$staffOnly || $ticket->fromUser->isStaff() || $ticket->fromCharacter?->isStaff()) {
+                MuckWebInterfaceNotification::notifyUser($ticket->fromUser,
+                    "Your ticket {$ticket->id} has been updated: $message");
+            }
         }
 
         // Staff
@@ -560,9 +562,11 @@ class SupportTicketService
 
         // Watchers
         foreach ($this->getWatchers($ticket) as $watcher) {
-            if (!$watcher->is($sourceUser)){
-                MuckWebInterfaceNotification::notifyUser($watcher,
-                    "Ticket {$ticket->id}, that you're watching, has been updated: $message");
+            if (!$watcher->is($sourceUser)) {
+                if (!$staffOnly || $watcher->isStaff()) {
+                    MuckWebInterfaceNotification::notifyUser($watcher,
+                        "Ticket {$ticket->id}, that you're watching, has been updated: $message");
+                }
             }
         }
 

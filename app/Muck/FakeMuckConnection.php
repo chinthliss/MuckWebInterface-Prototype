@@ -341,10 +341,13 @@ class FakeMuckConnection implements MuckConnection
         return null;
     }
 
-    public function externalNotification(User $user, MuckCharacter $character, string $message): int
+    /**
+     * @inheritDoc
+     */
+    public function externalNotification(User $user, ?MuckCharacter $character, string $message): int
     {
         self::fakeMuckCall('externalNotification',
-            ['aid' => $user->getAid(), 'character' => $character->dbref(), 'message' => $message]);
-        if (array_key_exists($character->dbref(), $this->fakeDatabaseByDbref)) return 1; else return 0;
+            ['aid' => $user->getAid(), 'character' => $character?->dbref(), 'message' => $message]);
+        if ($character && array_key_exists($character->dbref(), $this->fakeDatabaseByDbref)) return 1; else return 0;
     }
 }

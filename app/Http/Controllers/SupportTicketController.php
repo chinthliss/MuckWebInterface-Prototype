@@ -230,13 +230,13 @@ class SupportTicketController extends Controller
     #region Raising a ticket
     public function showUserRaiseTicket(SupportTicketService $service): View
     {
-        $categoryConfiguration = array_values(array_filter($service->getCategoryConfiguration(), function($category) {
+        $categoryConfiguration = array_values(array_filter($service->getCategoryConfiguration(), function ($category) {
             return !($category->usersCannotRaise);
         }));
 
         /** @var User $user */
         $user = auth()->user();
-        $characters = array_map(function($character) {
+        $characters = array_map(function ($character) {
             return $character->name();
         }, $user->getCharacters());
 
@@ -314,8 +314,9 @@ class SupportTicketController extends Controller
 
         /** @var User $user */
         $user = auth()->user();
+        $character = $user->getStaffCharacter();
         $details['user'] = $user;
-        $details['character'] = $user->getStaffCharacter();
+        $details['character'] = $character;
 
         $characterOverride = $request->get('ticketCharacter');
         if ($characterOverride) {
@@ -327,6 +328,12 @@ class SupportTicketController extends Controller
 
         $ticket = $service->createTicket($details['categoryCode'], $details['title'],
             $details['content'], $details['user'], $details['character']);
+
+        if ($characterOverride) {
+            $identifyAs = $character ? $character->name() : 'Account#' . $user->getAid();
+            $service->addNote($ticket, 'Ticket created by ' . $identifyAs,
+                false, null, null);
+        }
 
         return redirect()->route('support.agent.ticket', ['id' => $ticket->id]);
     }
