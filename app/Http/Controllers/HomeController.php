@@ -57,7 +57,7 @@ class HomeController extends Controller
             [
                 'title' => 'Ticket System',
                 'description' => 'Rewrite of the ticket system to allow it to work separate to the muck and more cohesively from the web side.',
-                'progress' => 'In Progress'
+                'progress' => 'Largely done, needs muck side functionality'
             ],
             [
                 'title' => 'Character Ordering',
