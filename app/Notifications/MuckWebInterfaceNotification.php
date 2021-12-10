@@ -110,5 +110,13 @@ class MuckWebInterfaceNotification extends Notification
     {
         $user->notify(new MuckWebInterfaceNotification($message, config('muck.muck_code'), $character));
     }
+
+    public static function notifyUserOrCharacter(User $user, ?MuckCharacter $character, string $message)
+    {
+        if ($character)
+            self::notifyCharacter($user, $character, $message);
+        else
+            self::notifyUser($user, $message);
+    }
     #endregion Utilities
 }

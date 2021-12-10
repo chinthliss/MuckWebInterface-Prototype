@@ -549,14 +549,15 @@ class SupportTicketService
         // Owner
         if ($ticket->fromUser && !$ticket->fromUser->is($sourceUser)) {
             if (!$staffOnly || $ticket->fromUser->isStaff() || $ticket->fromCharacter?->isStaff()) {
-                MuckWebInterfaceNotification::notifyUser($ticket->fromUser,
+                // TODO: Make UserOrCharacter utility to forward message as appropriate
+                MuckWebInterfaceNotification::notifyUserOrCharacter($ticket->fromUser, $ticket->fromCharacter,
                     "Your ticket {$ticket->id} has been updated: $message");
             }
         }
 
         // Staff
         if ($ticket->agentUser && !$ticket->agentUser->is($sourceUser)) {
-            MuckWebInterfaceNotification::notifyUser($ticket->agentUser,
+            MuckWebInterfaceNotification::notifyUserOrCharacter($ticket->agentUser, $ticket->agentCharacter,
                 "Ticket {$ticket->id} has been updated: $message");
         }
 
