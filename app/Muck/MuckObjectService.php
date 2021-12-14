@@ -56,7 +56,7 @@ class MuckObjectService
     /**
      * Fetches an object by its dbref.
      * @param int $dbref
-     * @return MuckDbref|null
+     * @return MuckDbref|MuckCharacter|null
      */
     public function getByDbref(int $dbref): ?MuckDbref
     {
