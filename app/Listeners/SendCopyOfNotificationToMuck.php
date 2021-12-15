@@ -3,6 +3,7 @@
 namespace App\Listeners;
 
 use App\Muck\MuckConnection;
+use App\Notifications\MuckWebInterfaceNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Queue\InteractsWithQueue;
@@ -30,6 +31,7 @@ class SendCopyOfNotificationToMuck
      */
     public function handle(NotificationSent $event)
     {
+        if (!is_a($event, MuckWebInterfaceNotification::class)) return;
         if ($event->notification->gameCode() && $event->notification->gameCode() != config('muck.muck_code')) return;
         $this->muckConnection->externalNotification($event->notifiable,
             $event->notification->character(), $event->notification->message());
