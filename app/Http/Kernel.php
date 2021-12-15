@@ -67,6 +67,7 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'tos.agreed' => \App\Http\Middleware\TermsOfServiceAgreed::class,
+        'muck.verified' => \App\Http\Middleware\VerifyFromMuck::class,
         'role' => \App\Http\Middleware\HasRole::class,
         'character' => \App\Http\Middleware\HasApprovedCharacterSet::class,
         'not.locked' => RedirectIfLocked::class

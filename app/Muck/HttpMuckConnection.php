@@ -45,9 +45,9 @@ class HttpMuckConnection implements MuckConnection
      * @param array $data
      * @return string
      */
-    protected function requestFromMuck(string $request, array $data = []): string
+    protected function requestToMuck(string $request, array $data = []): string
     {
-        Log::debug('requestFromMuck:' . $request . ', request: ' . json_encode($this->redactForLog($data)));
+        Log::debug('requestToMuck:' . $request . ', request: ' . json_encode($this->redactForLog($data)));
         $data['mwi_request'] = $request;
         $data['mwi_timestamp'] = Carbon::now()->timestamp; //This is to ensure that repeated requests don't match
         $signature = sha1(http_build_query($data) . $this->salt);
@@ -67,7 +67,7 @@ class HttpMuckConnection implements MuckConnection
         //getBody() returns a stream, so need to ensure we complete and parse such:
         //The result will also have a trailing \r\n
         $parsedResult = rtrim($result->getBody()->getContents());
-        Log::debug("requestFromMuck: $request, time taken: {$benchmarkText}ms, response: " . json_encode($parsedResult));
+        Log::debug("requestToMuck: $request, time taken: {$benchmarkText}ms, response: " . json_encode($parsedResult));
         return $parsedResult;
     }
 
@@ -77,7 +77,7 @@ class HttpMuckConnection implements MuckConnection
     public function getCharactersOf(User $user): array
     {
         $characters = [];
-        $response = $this->requestFromMuck('getCharacters', ['aid' => $user->getAid()]);
+        $response = $this->requestToMuck('getCharacters', ['aid' => $user->getAid()]);
         //Form of result is \r\n separated lines of dbref,name,level,flags
         foreach (explode(chr(13) . chr(10), $response) as $line) {
             if (!trim($line)) continue;
@@ -94,7 +94,7 @@ class HttpMuckConnection implements MuckConnection
      */
     public function getCharacterSlotState(User $user): array
     {
-        $response = $this->requestFromMuck('getCharacterSlotState', ['aid' => $user->getAid()]);
+        $response = $this->requestToMuck('getCharacterSlotState', ['aid' => $user->getAid()]);
         $response = explode(',', $response);
         return [
             "characterSlotCount" => $response[0],
@@ -107,7 +107,7 @@ class HttpMuckConnection implements MuckConnection
      */
     public function buyCharacterSlot(User $user): array
     {
-        $response = $this->requestFromMuck('buyCharacterSlot', ['aid' => $user->getAid()]);
+        $response = $this->requestToMuck('buyCharacterSlot', ['aid' => $user->getAid()]);
         $response = explode(',', $response);
 
         // On error we get ['ERROR',message]
@@ -129,7 +129,7 @@ class HttpMuckConnection implements MuckConnection
      */
     public function findProblemsWithCharacterName(string $name): string
     {
-        return $this->requestFromMuck('findProblemsWithCharacterName', ['name' => $name]);
+        return $this->requestToMuck('findProblemsWithCharacterName', ['name' => $name]);
     }
 
     /**
@@ -137,7 +137,7 @@ class HttpMuckConnection implements MuckConnection
      */
     public function findProblemsWithCharacterPassword(string $password): string
     {
-        return $this->requestFromMuck('findProblemsWithCharacterPassword', ['password' => $password]);
+        return $this->requestToMuck('findProblemsWithCharacterPassword', ['password' => $password]);
     }
 
     /**
@@ -146,7 +146,7 @@ class HttpMuckConnection implements MuckConnection
      */
     public function createCharacterForUser(string $name, User $user): array
     {
-        $response = $this->requestFromMuck('createCharacterForAccount', ['name' => $name, 'aid' => $user->getAid()]);
+        $response = $this->requestToMuck('createCharacterForAccount', ['name' => $name, 'aid' => $user->getAid()]);
         $response = explode('|', $response);
         // Response is either:
         //   ERROR|error message
@@ -163,7 +163,7 @@ class HttpMuckConnection implements MuckConnection
     // @inheritDoc
     public function finalizeCharacter(array $characterData): array
     {
-        $response = $this->requestFromMuck('finalizeNewCharacter', ['characterData' => json_encode($characterData)]);
+        $response = $this->requestToMuck('finalizeNewCharacter', ['characterData' => json_encode($characterData)]);
 
         if ($response === 'OK') return ['success' => true, 'messages' => []];
 
@@ -173,7 +173,7 @@ class HttpMuckConnection implements MuckConnection
 
     public function getCharacterInitialSetupConfiguration(User $user): array
     {
-        $response = $this->requestFromMuck('getCharacterInitialSetupConfiguration', ['aid' => $user->getAid()]);
+        $response = $this->requestToMuck('getCharacterInitialSetupConfiguration', ['aid' => $user->getAid()]);
         $config = json_decode($response, true);
         foreach (['factions', 'perks', 'flaws'] as $section) {
             foreach ($config[$section] as &$item) {
@@ -194,7 +194,7 @@ class HttpMuckConnection implements MuckConnection
     public function validateCredentials(MuckCharacter $character, array $credentials): bool
     {
         if (!array_key_exists('password', $credentials)) return false;
-        return $this->requestFromMuck('validateCredentials', [
+        return $this->requestToMuck('validateCredentials', [
             'dbref' => $character->dbref(),
             'password' => $credentials['password']
         ]);
@@ -211,7 +211,7 @@ class HttpMuckConnection implements MuckConnection
         $user = auth()->user();
         if (!$user || !$user->getAid()) return null;
 
-        $response = $this->requestFromMuck('usdToAccountCurrencyFor', [
+        $response = $this->requestToMuck('usdToAccountCurrencyFor', [
             'amount' => $usdAmount,
             'account' => $user->getAid()
         ]);
@@ -224,7 +224,7 @@ class HttpMuckConnection implements MuckConnection
     public function fulfillAccountCurrencyPurchase(int $accountId, float $usdAmount,
                                                    int $accountCurrency, ?string $subscriptionId): int
     {
-        $response = $this->requestFromMuck('fulfillAccountCurrencyPurchase', [
+        $response = $this->requestToMuck('fulfillAccountCurrencyPurchase', [
             'account' => $accountId,
             'usdAmount' => $usdAmount,
             'accountCurrency' => $accountCurrency,
@@ -238,7 +238,7 @@ class HttpMuckConnection implements MuckConnection
      */
     public function fulfillPatreonSupport(int $accountId, int $accountCurrency): int
     {
-        $response = $this->requestFromMuck('fulfillPatreonSupport', [
+        $response = $this->requestToMuck('fulfillPatreonSupport', [
             'account' => $accountId,
             'accountCurrency' => $accountCurrency
         ]);
@@ -250,7 +250,7 @@ class HttpMuckConnection implements MuckConnection
      */
     public function rewardItem(int $accountId, float $usdAmount, int $accountCurrency, string $itemCode): int
     {
-        $response = $this->requestFromMuck('rewardItem', [
+        $response = $this->requestToMuck('rewardItem', [
             'account' => $accountId,
             'usdAmount' => $usdAmount,
             'accountCurrency' => $accountCurrency,
@@ -264,7 +264,7 @@ class HttpMuckConnection implements MuckConnection
      */
     public function stretchGoals(): array
     {
-        return json_decode($this->requestFromMuck('stretchGoals'), true);
+        return json_decode($this->requestToMuck('stretchGoals'), true);
     }
 
     /**
@@ -272,14 +272,14 @@ class HttpMuckConnection implements MuckConnection
      */
     public function getLastConnect(int $aid): ?Carbon
     {
-        $response = $this->requestFromMuck('getLastConnect', ['aid' => $aid]);
+        $response = $this->requestToMuck('getLastConnect', ['aid' => $aid]);
         if ($response > 0) return Carbon::createFromTimestamp($response);
         return null;
     }
 
     public function findAccountsByCharacterName(string $name): array
     {
-        $response = $this->requestFromMuck('findAccountsByCharacterName', ['name' => $name]);
+        $response = $this->requestToMuck('findAccountsByCharacterName', ['name' => $name]);
         return $response ? explode(',', $response) : [];
     }
 
@@ -288,7 +288,7 @@ class HttpMuckConnection implements MuckConnection
      */
     public function changeCharacterPassword(User $user, MuckCharacter $character, string $password): bool
     {
-        $response = $this->requestFromMuck('changeCharacterPassword', [
+        $response = $this->requestToMuck('changeCharacterPassword', [
             'aid' => $user->getAid(),
             'dbref' => $character->dbref(),
             'password' => $password
@@ -353,7 +353,7 @@ class HttpMuckConnection implements MuckConnection
      */
     public function getByDbref(int $dbref): ?MuckDbref
     {
-        $response = $this->requestFromMuck('getByDbref', ['dbref' => $dbref]);
+        $response = $this->requestToMuck('getByDbref', ['dbref' => $dbref]);
         if (!$response) return null;
 
         return $this->parseMuckObjectResponse($response);
@@ -365,7 +365,7 @@ class HttpMuckConnection implements MuckConnection
      */
     public function getByPlayerName(string $name): ?MuckCharacter
     {
-        $response = $this->requestFromMuck('getByPlayerName', ['name' => $name]);
+        $response = $this->requestToMuck('getByPlayerName', ['name' => $name]);
         if (!$response) return null;
 
         return $this->parseMuckObjectResponse($response);
@@ -376,7 +376,7 @@ class HttpMuckConnection implements MuckConnection
      */
     public function getByApiToken(string $apiToken): ?MuckCharacter
     {
-        $response = $this->requestFromMuck('getByApiToken', ['api_token' => $apiToken]);
+        $response = $this->requestToMuck('getByApiToken', ['api_token' => $apiToken]);
         if (!$response) return null;
 
         return $this->parseMuckObjectResponse($response);
@@ -387,7 +387,7 @@ class HttpMuckConnection implements MuckConnection
      */
     public function externalNotification(User $user, ?MuckCharacter $character, string $message): int
     {
-        $count = $this->requestFromMuck('externalNotification',
+        $count = $this->requestToMuck('externalNotification',
             ['aid' => $user->getAid(), 'character' => $character?->dbref(), 'message' => $message]);
         return (int)$count;
     }

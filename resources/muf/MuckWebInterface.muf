@@ -10,17 +10,24 @@
 @program $www/mwi
 1 999999 d
 i
-( Program to handle core functionality from the web interface. )
-( The webendpoints within this programs are intended to be called by the web interface only so need to be signed. )
-( NOTE: The content is not encrypted because of the fact both sides live on the same server. If ever that changes, then this will need to be revisted. )
-( Since it's used for authentication from the webpage, it also caches session information for other programs to use. )
-( Requests coming in are provided as form data with a POST request. Requests going out are plain text. This is to ensure the easiest workload on the muck.)
+( Program to handle both incoming and outgoing requests between the MWI website and the muck.)
+( This program is only intended to be used on the same machine as the server, if for some reason this ever needs to be changed a couple of things need revisiting: )
+(   Requests to the muck from the server aren't encrypted. )
+(   The requests are signed by SHA1 which is considered compromised. If they were exposed externally it's assumed an attacker could get the key. )
+( Outgoing requests to the website are presently disabled due to networking issues. )
+$pubdef :
 
 $def salt prog "@salt" getpropstr (Stored on prop to avoid being in source. This program is committed to a public respository so do not copy into program!)
 $def allowCrossDomain 0           (Whether to allow cross-domain connections. This should only really be on during testing/development.)
 
 $def PROP_lastConnect    "/@/ConnectTime"
 $def PROP_lastDisconnect "/@/DisconnTime"
+
+(The base url for where the muck can talk to the webpage)
+$def webBaseUrl "https://beta.flexiblesurvival.com/api/muck/"
+$ifdef is_dev
+   $def webBaseUrl "http://mwi.flexiblesurvival.com/api/muck/"
+$endif
 
 $ifdef is_dev
    $def allowCrossDomain 1
@@ -32,6 +39,7 @@ $include $lib/kta/proto
 $include $lib/kta/json
 $include $lib/kta/misc
 $include $lib/kta/strings
+$include $lib/httpclient
 $include $lib/rp
 $include $lib/accountpurchases
 $include $lib/notifications
@@ -470,11 +478,38 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 ; selfcall handleRequest_stretchGoals
 
 ( -------------------------------------------------- )
-( Routing )
+( Outgoing Handling )
 ( -------------------------------------------------- )
 
+(Body passed should be the data object, including mwi_request and mwi_timestamp set)
+: parseBodyAndCreateSignature[ arr:body -- str:parsedBody str:signature ]
+    { body @ foreach "=" swap dup string? not if intostr then strcat strcat repeat }list "&" array_join
+    dup salt strcat sha1hash
+;
 
-: authenticateQuery[ arr:webcall -- bool:authenticated? ]
+: sendRequestToWebpage[ str:endPoint int|dbref:aidOrCharacter dict:data -- str:response int:statusCode ]
+    "Functionality disabled." abort
+    data @ dictionary? not if "Data must be a dictionary" abort then
+    aidOrCharacter @ ?dup if
+        dbref? if
+            aidOrCharacter @ data @ "mwi_dbref" array_setitem data !
+        then
+        aidOrCharacter @ acct_any2aid ?dup if data @ "mw_user" array_setitem  data ! then
+    then
+    systime data @ "mwi_timestamp" array_setitem data !
+    data @ parseBodyAndCreateSignature var! signature var! bodyParsed
+    {
+        "postdata" bodyParsed @
+        "headerData" { "Signature: " signature @ strcat }list
+    }dict 
+    "" swap webBaseUrl endPoint @ strcat "POST" 5 httprequest_ch rot pop
+; PUBLIC sendRequestToWebpage $libdef sendRequestToWebpage
+
+( -------------------------------------------------- )
+( Incoming Routing )
+( -------------------------------------------------- )
+
+: verifySignatureForQuery[ arr:webcall -- bool:authenticated? ]
     webcall @ { "data" "BODY" }list array_nested_get ?dup not if "" then
     webcall @ { "data" "HeaderData" "Signature" }list array_nested_get ?dup not if 0 exit then
     swap salt strcat sha1hash
@@ -482,7 +517,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 ;
 
 : queryRouter[ arr:webcall -- ]
-    webcall @ authenticateQuery if
+    webcall @ verifySignatureForQuery if
         (Convert request body to dict)
         { }dict var! parsedBody
         "" var! request
@@ -526,8 +561,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 ;
 
 : main
-    command @ "(WWW)" stringcmp not if
-        pop
+    command @ "(WWW)" stringcmp not if pop
         prog "disabled" getpropstr "y" instring if
             response503
         else
@@ -540,19 +574,19 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         exit
     then
     me @ mlevel 5 > not if "Wiz-only command." .tell exit then
-    dup "down" stringcmp not if
+    dup "down" stringcmp not if pop
         prog "disabled" "y" setprop
         "WebInterface Disabled." .tell
         "Ideally you should log onto the server, goto the folder with the webpage in and do 'php artisan down' too." .tell
         exit
     then
-    dup "up" stringcmp not if
+    dup "up" stringcmp not if pop
         prog "disabled" remove_prop
         "WebInterface Enabled." .tell
         "If the webpage was taken down on the server, make sure to log into it, goto the folder with the webpage in and do 'php artisan up' too." .tell
         exit
     then
-    dup "debug" stringcmp not if
+    dup "debug" stringcmp not if pop
         prog "debug" getpropstr "y" instring if
             prog "debug" remove_prop
             "Debugging disabled." .tell
@@ -562,9 +596,41 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         then
         exit
     then
+    dup "internaltest" stringcmp not if pop
+        "Sending test request to ourselves." .tell
+        { "mwi_request" "test" "mwi_timestamp" systime }dict var! body
+        body @ parseBodyAndCreateSignature var! signature var! bodyParsed
+        
+        { "Signature" signature @ }dict var! header
+        "http://localhost:" "wwwport" sysparm strcat "/mwi/gateway" strcat var! url
+
+        "^CYAN^Request URL: ^WHITE^" url @ strcat .tell
+        "^CYAN^Request Header" .tell header @ encodeJson .tell
+        "^CYAN^Request Body" .tell body @ encodeJson .tell
+        
+        {
+            "postdata" bodyParsed @
+            "headerData" { header @ foreach ": " swap strcat strcat repeat }list
+        }dict 
+        "" swap url @ "POST" 5 httprequest_ch
+        "__________________" .tell 
+        "^CYAN^Response Status: ^WHITE^" swap intostr strcat .tell
+        "^CYAN^Response Header " .tell swap .tell
+        "^CYAN^Response Body " .tell .tell
+        exit
+    then
+    dup "externaltest" stringcmp not if pop
+        "Sending test to website." .tell
+        "test" #21 { }dict sendRequestToWebpage
+        "^CYAN^Response Code: ^WHITE^" swap intostr strcat .tell
+        "^CYAN^Response: " .tell .tell
+        exit
+    then
     "This program only handles webcalls." .tell
     
 ;
 .
 c
 q
+
+!! @qmuf $include $www/mwi "test" { }dict sendRequestToWebpage

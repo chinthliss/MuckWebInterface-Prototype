@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MuckRequestsController;
 use Illuminate\Http\Request;
 
 /*
@@ -18,8 +19,14 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 */
 // Pages that are freely available:
-Route::get('/terms-of-service-hash', 'Auth\TermsOfServiceController@getHash');
-Route::get('/terms-of-service', 'Auth\TermsOfServiceController@getContent');
+Route::get('terms-of-service-hash', 'Auth\TermsOfServiceController@getHash');
+Route::get('terms-of-service', 'Auth\TermsOfServiceController@getContent');
+
+// Pages that only the muck can use:
+Route::prefix('muck/')->middleware(['muck.verified'])->group(function () {
+    Route::post('test', [MuckRequestsController::class, 'test'])
+        ->name('muck.test');
+});
 
 // Pages that require an api token
 Route::group(['middleware' => ['auth:api']], function() {
