@@ -566,7 +566,7 @@ class SupportTicketService
         // Staff
         if ($ticket->agentUser && !$ticket->agentUser->is($sourceUser)) {
             MuckWebInterfaceNotification::notifyUserOrCharacter($ticket->agentUser, $ticket->agentCharacter,
-                "Ticket {$ticket->id} has been updated: $message");
+                "Ticket {$ticket->id}, that you're handling, has been updated: $message");
         }
 
         // Watchers
