@@ -9,10 +9,10 @@
         </div>
         <div id="checklist">
             <div class="row mb-2">
-                <div class="col-10 col-lg-4">Create or login an account</div>
+                <div class="col-10 col-lg-4">Create an account or login</div>
                 <div class="col-2 col-lg-1"><i class="fas" v-bind:class="[ account ? ['fa-check', 'text-primary'] : ['fa-times', 'text-danger'] ]"></i></div>
                 <div class="col" v-if="!account">
-                    Go to the <a :href="accountUrl">Multiplayer Dashboard</a> to either create a new account or login an existing one.
+                    Go to the <a :href="accountUrl">Multiplayer Dashboard</a> to either create a new account or login to an existing one.
                 </div>
             </div>
             <div class="row mb-2">
