@@ -11,22 +11,22 @@
             <input type="hidden" name="_token" :value="csrf">
             <div class="form-group">
                 <div class="row">
-                    <div class="col-md-3 col-form-label text-md-right"><label for="password">Password</label></div>
-                    <div class="col">
-                        <input type="password" name="password" class="form-control" id="password"
-                               placeholder="Enter existing password" v-bind:class="{ 'is-invalid' : errors.password }">
-                        <div class="invalid-feedback" role="alert">
-                            <p v-for="error in errors.password">{{ error }}</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
                     <div class="col-md-3 col-form-label text-md-right"><label for="email">New Email</label></div>
                     <div class="col">
                         <input type="email" name="email" class="form-control" id="email"
                                placeholder="Enter new email" v-bind:class="{ 'is-invalid' : errors.email }">
                         <div class="invalid-feedback" role="alert">
                             <p v-for="error in errors.email">{{ error }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3 col-form-label text-md-right"><label for="password">Password</label></div>
+                    <div class="col">
+                        <input type="password" name="password" class="form-control" id="password"
+                               placeholder="Enter existing password" v-bind:class="{ 'is-invalid' : errors.password }">
+                        <div class="invalid-feedback" role="alert">
+                            <p v-for="error in errors.password">{{ error }}</p>
                         </div>
                     </div>
                 </div>
