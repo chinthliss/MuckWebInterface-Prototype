@@ -176,12 +176,13 @@ class SupportTicketService
     /**
      * Internal function to avoid duplication.
      * @param SupportTicket $ticket
+     * @param User|null $user
      */
     private function potentiallyChangeNewTicketToOpen(SupportTicket $ticket, ?User $user)
     {
         // New tickets change to open if something is done on them by a staff user
         if ($ticket->status == 'new' && $user && $user->isStaff()) {
-            $this->setStatus($ticket, 'open');
+            $this->setStatus($ticket, 'open', null, null, 'New ticket becomes open once edited.');
         }
     }
 
@@ -238,8 +239,10 @@ class SupportTicketService
      * @param string $status
      * @param User|null $fromUser
      * @param MuckDbref|null $fromCharacter
+     * @param string|null $ruleExplanation Optional explanation as to why a status was changed automatically
      */
-    public function setStatus(SupportTicket $ticket, string $status, ?User $fromUser = null, ?MuckDbref $fromCharacter = null)
+    public function setStatus(SupportTicket $ticket, string $status, ?User $fromUser = null,
+                              ?MuckDbref $fromCharacter = null, string $ruleExplanation = null)
     {
         if (!in_array($status, $this->validStatuses))
             throw new Error("Invalid status specified when setting ticket status");
@@ -249,12 +252,16 @@ class SupportTicketService
 
         $ticket->status = $status;
         $ticket->statusAt = Carbon::now();
+        $upperCaseStatus = ucfirst($status);
         if ($ticket->closedAt) {
             $ticket->closedAt = null;
             $ticket->closureReason = null;
-            $message = "Ticket re-opened and status changed to: " . ucfirst($status);
+            $message = "Ticket re-opened and status changed to {$upperCaseStatus}.";
         } else {
-            $message = "Status changed to: " . ucfirst($status);
+            if ($ruleExplanation)
+                $message = "Status automatically changed to {$upperCaseStatus} due to rule - {$ruleExplanation}. ";
+            else
+                $message = "Status changed to {$upperCaseStatus}.";
         }
 
         $this->saveTicket($ticket);
@@ -327,7 +334,7 @@ class SupportTicketService
 
         // If a ticket is pending and the requester adds a response, it changes back to open
         if ($ticket->status == 'pending' && $fromUser?->is($ticket->fromUser)) {
-            $this->setStatus($ticket, 'open');
+            $this->setStatus($ticket, 'open', null, null, "Pending ticket changes back to open after user response.");
         }
 
         $this->potentiallyChangeNewTicketToOpen($ticket, $fromUser);
@@ -542,6 +549,7 @@ class SupportTicketService
      * The notification will be prepended with qualifiers about the ticket number and a person's relation to such
      * @param SupportTicket $ticket
      * @param string $message
+     * @param User|null $sourceUser
      * @param bool $staffOnly
      */
     public function sendNotifications(SupportTicket $ticket, string $message, ?User $sourceUser = null, bool $staffOnly = false)
