@@ -98,6 +98,7 @@ export default {
                     for (let i = 0; i < this.contentData.length; i++) {
                         if (this.contentData[i].id === id) this.contentData.splice(i, 1);
                     }
+                    this.updateNotificationCount();
                 }).catch(error => {
                     console.log("Failed to delete: ", error);
                 });
@@ -107,10 +108,16 @@ export default {
             return promise
                 .then(response => {
                     this.contentData = [];
+                    this.updateNotificationCount();
                 }).catch(error => {
                     console.log("Failed to delete notifications: ", error);
                 });
+        },
+        updateNotificationCount: function() {
+            const notificationCount = $('#account-notification-count');
+            if (notificationCount) notificationCount.text(this.contentData.length ? this.contentData.length : '');
         }
+
     }
 }
 </script>

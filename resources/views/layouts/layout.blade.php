@@ -68,7 +68,7 @@
                             $user = auth()->user();
                             if ($user) {
                                 $count = resolve('App\AccountNotificationManager')->getNotificationCountFor($user);
-                                if ($count) echo('<span class="badge badge-light">' . $count . '</span>');
+                                echo('<span id="account-notification-count" class="badge badge-light">' . ($count ?: '') . '</span>');
                             }
                             ?>
                         </a>
