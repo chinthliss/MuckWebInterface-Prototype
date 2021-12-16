@@ -1,13 +1,12 @@
 @extends('layouts.layout')
 
-@section('title')
-    Support (Agent)
-@endsection
+@section('title') Support (Agent) @endsection
 
 @section('breadcrumbs')
     {{ Breadcrumbs::render([
         [ 'route' => 'home', 'label' => 'Home' ],
-        [ 'label' => 'Support (Agent)' ]
+        [ 'label' => 'Staff' ],
+        [ 'label' => 'Support' ]
     ]) }}
 @endsection
 

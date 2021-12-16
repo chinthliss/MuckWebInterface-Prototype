@@ -1,11 +1,12 @@
 @extends('layouts.layout')
 
-@section('title')Ticket {{ $ticket['id'] }}@endsection
+@section('title') Ticket {{ $ticket['id'] }} @endsection
 
 @section('breadcrumbs')
     {{ Breadcrumbs::render([
         [ 'route' => 'home', 'label' => 'Home' ],
-        [ 'route' => 'support.agent.tickets', 'label' => 'Tickets (Agent)' ],
+        [ 'label' => 'Staff' ],
+        [ 'route' => 'support.agent.home', 'label' => 'Support' ],
         [ 'label' => 'Ticket (Agent)' ]
     ]) }}
 @endsection

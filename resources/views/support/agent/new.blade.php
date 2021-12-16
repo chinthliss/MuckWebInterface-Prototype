@@ -1,12 +1,13 @@
 @extends('layouts.layout')
 
-@section('title')Raise a ticket@endsection
+@section('title') Raise a ticket @endsection
 
 @section('breadcrumbs')
     {{ Breadcrumbs::render([
         [ 'route' => 'home', 'label' => 'Home' ],
-        [ 'route' => 'support.agent.tickets', 'label' => 'Tickets (Agent)' ],
-        [ 'label' => 'Ticket' ]
+        [ 'label' => 'Staff' ],
+        [ 'route' => 'support.agent.home', 'label' => 'Support' ],
+        [ 'label' => 'New Ticket' ]
     ]) }}
 @endsection
 

@@ -1,8 +1,6 @@
 @extends('layouts.layout')
 
-@section('title')
-    Support
-@endsection
+@section('title') Support @endsection
 
 @section('breadcrumbs')
     {{ Breadcrumbs::render([
