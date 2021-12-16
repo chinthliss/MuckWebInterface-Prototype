@@ -140,7 +140,7 @@
                 <div class="col-12 col-xl-6">
                     <span v-if="entry.character">{{ entry.character }}</span>
                     <span v-bind:class="[ entry.character ? ['text-muted', 'small'] : [] ]" v-if="entry.user">
-                    User#{{ entry.user }}
+                    Account#{{ entry.user }}
                     </span>
                 </div>
             </div>

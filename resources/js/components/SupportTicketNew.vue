@@ -115,7 +115,9 @@ export default {
     props: {
         categoryConfiguration: {type: Array, required: true},
         staff: {type: Boolean, required: false, default: false},
-        characters: {type: Object, required: false, default: []},
+        characters: {type: Object, required: false, default: function () {
+                return {};
+            }},
         errors: {required: false},
         old: {type: Object, required: false}
     },
