@@ -95,6 +95,10 @@
                 </div>
             </template>
 
+            <template #cell(status)="data">
+                {{ capital(data.item.closureReason) || capital(data.value) }}
+            </template>
+
             <template #cell(lastUpdatedAt)="data">
                 <span>{{ outputCarbonString(data.value) }}</span><br/>
                 <span class="small text-muted">{{ data.item.lastUpdatedAtTimespan }}</span>
@@ -177,7 +181,6 @@ export default {
                 {
                     key: 'status',
                     label: 'Status',
-                    formatter: 'capital',
                     class: 'text-nowrap',
                     sortable: true
                 },
@@ -230,8 +233,15 @@ export default {
          rowClass: function (item) {
             if (!item) return; // Busy row display won't pass an item
             if (item.status === 'closed') return "ticket-closed";
-            if (item.status === 'open' || item.status === 'new') return "ticket-active";
-            return "ticket-inactive";
+            // Whether a ticket is 'active' to us depends on who we are.
+             if (this.agent) {
+                 if (item.status === 'open' || item.status === 'new') return "ticket-active";
+                 return "ticket-inactive";
+             } else {
+                 if (item.status === 'pending') return "ticket-active";
+                 return "ticket-inactive";
+             }
+
         },
         setCategoryFilter: function (filter) {
             if (!filter)
@@ -281,7 +291,7 @@ export default {
 
 ::v-deep .ticket-closed {
     cursor: pointer;
-    background-color: black;
+    background-color: darken($table-dark-bg, 10%);
     color: $text-muted;
 }
 

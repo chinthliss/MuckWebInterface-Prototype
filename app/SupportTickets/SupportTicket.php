@@ -146,6 +146,7 @@ class SupportTicket
             'categoryCode' => $this->categoryCode,
             'title' => $this->title,
             'status' => $this->status,
+            'closureReason' => $this->closureReason,
             'lastUpdatedAt' => $this->updatedAt,
             'lastUpdatedAtTimespan' => $this->updatedAt->diffForHumans(),
             'isPublic' => $this->isPublic,
