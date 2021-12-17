@@ -81,13 +81,13 @@
                     <i class="fas fa-thumbs-down"></i> {{ ticket.votes.down }} Disagree / Against
                 </div>
             </div>
-            <div class="col mt-2" v-if="ticket.canVote">
+            <div class="col mt-2" v-if="!ticket.ownTicket">
                 <button class="btn btn-secondary" @click="voteUp">Vote Up <i class="fas fa-thumbs-up"></i></button>
                 <button class="btn btn-secondary ml-2" @click="voteDown">Vote Down <i class="fas fa-thumbs-down"></i></button>
                 <div v-if="ticket.vote">You have previously voted this ticket {{ ticket.vote === 'upvote' ? 'up' : 'down' }}</div>
             </div>
             <div class="col mt-2" v-else>
-                You can't vote on this ticket.
+                As this is your ticket, you can't vote on it.
             </div>
         </div>
 
@@ -101,7 +101,7 @@
             </div>
         </div>
 
-        <div class="d-flex mt-2">
+        <div class="d-flex mt-2" v-if="!ticket.ownTicket">
             <div class="my-auto">
                 <button type="button" class="btn btn-secondary" @click="watchOrUnwatchTicket">
                     {{ watchOrUnwatchLabel() }}

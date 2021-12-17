@@ -222,9 +222,8 @@ class SupportTicket
         $category = $service->getCategory($this->categoryCode);
         $output['categoryLabel'] = $category?->name ?? 'Unknown';
         $output['canMakePublic'] = !($category?->neverPublic);
-        //Can vote unless the same User as the ticket's
-        $output['canVote'] = !$this->fromUser?->is($user);
         $output['vote'] = $service->getVote($this, $user);
+        $output['ownTicket'] = $this->fromUser && $this->fromUser->is($user);
 
         $output['url'] = route('support.user.ticket', ['id' => $this->id]);
 
