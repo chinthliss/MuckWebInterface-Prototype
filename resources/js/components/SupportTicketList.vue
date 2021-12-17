@@ -95,6 +95,10 @@
                 </div>
             </template>
 
+            <template #cell(id)="data">
+                <a :href="data.item.url">{{ data.value }}</a>
+            </template>
+
             <template #cell(status)="data">
                 {{ capital(data.item.closureReason) || capital(data.value) }}
             </template>
@@ -236,13 +240,11 @@ export default {
             // Whether a ticket is 'active' to us depends on who we are.
              if (this.agent) {
                  if (item.status === 'open' || item.status === 'new') return "ticket-active";
-                 return "ticket-inactive";
              } else {
                  if (item.status === 'pending') return "ticket-active";
-                 return "ticket-inactive";
              }
-
-        },
+             return "ticket-inactive";
+         },
         setCategoryFilter: function (filter) {
             if (!filter)
                 this.tableFilter.category = null;
