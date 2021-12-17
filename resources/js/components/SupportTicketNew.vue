@@ -19,7 +19,7 @@
                         <br/><i class="fas fa-comment-dots"></i></button>
                 </div>
                 <div class="col my-auto">
-                    Request something or make a suggestion.
+                    Raise something for staff to act upon, such as a work order. <br/> This also includes making a suggestion.
                 </div>
             </div>
 
