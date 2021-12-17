@@ -171,6 +171,7 @@ class SupportTicketController extends Controller
             if ($task == 'AddLink' && $request->has('to') && $request->has('type') && $isStaff) {
                 $foundSomething = true;
                 $ticketTo = $service->getTicketById($request->get('to'));
+                if (!$ticketTo) throw new \Exception("Couldn't find the ticket to link to.");
                 $service->linkTickets($ticket, $ticketTo, $request->get('type'), $user, $character);
             }
 
@@ -183,9 +184,7 @@ class SupportTicketController extends Controller
                 $foundSomething = true;
                 $service->voteOn($ticket, 'down', $user);
             }
-
         }
-
         return $foundSomething;
     }
 
