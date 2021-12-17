@@ -495,17 +495,18 @@ class SupportTicketService
     #region Voting
 
     /**
+     * Returns 'upvote', 'downvote' or null if the user has not voted
      * @param SupportTicket $ticket
      * @param User $user
-     * @return bool
+     * @return null|string
      */
-    public function hasVoted(SupportTicket $ticket, User $user): bool
+    public function getVote(SupportTicket $ticket, User $user): ?string
     {
         foreach ($this->getLog($ticket) as $logEntry) {
             if ($logEntry->type !== 'upvote' && $logEntry->type !== 'downvote') continue;
-            if ($logEntry->user->is($user)) return true;
+            if ($logEntry->user->is($user)) return $logEntry->type;
         }
-        return false;
+        return null;
     }
 
     /**
@@ -518,7 +519,7 @@ class SupportTicketService
     {
         if ($ticket->closedAt) throw new Exception("Can't vote on a closed ticket.");
 
-        if ($this->hasVoted($ticket, $user))
+        if ($this->getVote($ticket, $user))
             throw new Exception("Can't vote as already voted.");
         switch ($voteType) {
             case 'up':

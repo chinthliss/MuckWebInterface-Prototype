@@ -133,15 +133,15 @@ class TicketServiceTest extends TestCase
         $ticket = $service->createTicket('testCategory', 'testTitle,', 'testContent');
 
         $user = $this->loginAsValidatedUser();
-        $this->assertFalse($service->hasVoted($ticket, $user));
+        $this->assertNull($service->getVote($ticket, $user));
         $service->voteOn($ticket, 'up', $user);
-        $this->assertTrue($service->hasVoted($ticket, $user));
+        $this->assertNotNull($service->getVote($ticket, $user));
 
         // Make sure first doesn't interfere with a second
         $secondUser = $this->loginAsOtherValidatedUser();
-        $this->assertFalse($service->hasVoted($ticket, $secondUser));
+        $this->assertNull($service->getVote($ticket, $secondUser));
         $service->voteOn($ticket, 'up', $secondUser);
-        $this->assertTrue($service->hasVoted($ticket, $secondUser));
+        $this->assertNotNull($service->getVote($ticket, $secondUser));
     }
 
     public function testVoteOnTicket()

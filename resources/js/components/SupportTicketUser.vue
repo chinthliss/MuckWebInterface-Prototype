@@ -84,6 +84,10 @@
             <div class="col mt-2" v-if="ticket.canVote">
                 <button class="btn btn-secondary" @click="voteUp">Vote Up <i class="fas fa-thumbs-up"></i></button>
                 <button class="btn btn-secondary ml-2" @click="voteDown">Vote Down <i class="fas fa-thumbs-down"></i></button>
+                <div v-if="ticket.vote">You have previously voted this ticket {{ ticket.vote === 'upvote' ? 'up' : 'down' }}</div>
+            </div>
+            <div class="col mt-2" v-else>
+                You can't vote on this ticket.
             </div>
         </div>
 
