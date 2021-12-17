@@ -2,8 +2,21 @@
     <div class="container">
         <h2>Tickets</h2>
 
-        <div class="btn-toolbar">
+        <div class="d-flex flex-column flex-xl-row">
+            <div>
+                <a class="btn btn-primary" :href="newTicketUrl">Create Ticket</a>
+            </div>
+            <div class="form-inline ml-xl-auto">
+                <div class="form-group mr-1">
+                    <label for="quickOpen" class="mr-2">Jump to a specific ticket</label>
+                    <input type="text" id="quickOpen" class="form-control" @change="gotoTicket"
+                           v-model="gotoTicketId" placeholder="Enter an ID to jump to">
+                </div>
+                <button class="btn btn-primary" @click="gotoTicket">Go</button>
+            </div>
+        </div>
 
+        <div class="btn-toolbar mt-2">
             <div class="btn-group btn-group-toggle mb-2 mr-2" role="group" aria-label="Ticket Filter" data-toggle="buttons">
                 <label class="align-self-end mr-1">Ticket Filter</label>
                 <label class="btn btn-secondary active">
@@ -109,23 +122,6 @@
             </template>
 
         </b-table>
-
-        <div class="row mb-2">
-            <div class="col col-md-6">
-                <a class="btn btn-primary" :href="newTicketUrl">Raise New Ticket</a>
-            </div>
-            <div class="col col-md-6">
-                <div class="form-inline float-right">
-                    <div class="form-group mr-1">
-                        <label for="quickOpen" class="mr-2">Jump to a specific ticket</label>
-                        <input type="text" id="quickOpen" class="form-control" @change="gotoTicket"
-                               v-model="gotoTicketId" placeholder="Enter an ID to jump to">
-                    </div>
-                    <button class="btn btn-primary" @click="gotoTicket">Go</button>
-                </div>
-             </div>
-        </div>
-
     </div>
 </template>
 
