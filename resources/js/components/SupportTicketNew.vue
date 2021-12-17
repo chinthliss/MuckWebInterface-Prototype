@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        <h2>Raise a Ticket</h2>
+        <h2>New Ticket</h2>
         <div v-if="!ticketType">
             <h3>What type of ticket do you want to raise?</h3>
             <div class="row mb-1">
@@ -34,10 +34,8 @@
             </div>
 
         </div>
-        <div v-if="ticketType">
-            <button class="btn btn-secondary mb-2" @click="reset">Change Type/Category</button>
-        </div>
         <div v-if="ticketType && !ticketCategoryCode">
+            <button class="btn btn-secondary mb-2" @click="reset">Change Ticket Type</button>
             <h3>Please select a category</h3>
             <div class="row mb-1" v-for="category in categoryConfiguration" v-if="category.type === ticketType">
                 <div class="col col-lg-2">
@@ -57,12 +55,12 @@
         <div v-if="ticketType && ticketCategoryCode">
             <form method="POST">
                 <input type="hidden" name="_token" :value="csrf">
-                <input type="hidden" name="ticketCategoryCode" v-model="ticketCategoryCode">
                 <input type="hidden" name="ticketType" v-model="ticketType">
+                <input type="hidden" name="ticketCategoryCode" v-model="ticketCategoryCode">
 
-                <div class="form-group">
-                    <label for="ticketCategoryLabel">Category</label>
-                    <input class="form-control" id="ticketCategoryLabel" name="ticketCategoryLabel" v-model="ticketCategoryLabel" readonly>
+                <div class="d-flex flex-column flex-xl-row align-items-center mb-2">
+                    <div class="">Ticket Category: {{ ticketCategoryLabel }}</div>
+                    <div class=""><button class="btn btn-secondary ml-xl-2" @click="reset">Change Ticket Category</button></div>
                 </div>
 
                 <div v-if="staff" class="form-group">
@@ -73,6 +71,7 @@
                         <p v-for="error in errors.ticketCharacter">{{ error }}</p>
                     </div>
                 </div>
+
                 <div v-else class="form-group">
                     <label for="character">Character</label>
                     <select class="form-control" name="ticketCharacter" v-model="ticketCharacter" >
