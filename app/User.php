@@ -67,12 +67,12 @@ class User implements Authenticatable, MustVerifyEmail
      * @param User $otherUser
      * @return bool
      */
-    public function is(?User $otherUser) : bool
+    public function is(?User $otherUser): bool
     {
         return $this->aid === $otherUser?->getAid();
     }
 
-    public function getAdminUrl() : string
+    public function getAdminUrl(): string
     {
         return route('admin.account', ['accountId' => $this->getAid()]);
     }
@@ -492,13 +492,32 @@ class User implements Authenticatable, MustVerifyEmail
         $this->roles = $roles;
     }
 
+    /**
+     * Tests if a user has a role or counts as having a role
+     * @param string $role
+     * @return bool
+     */
     public function hasRole(string $role): bool
     {
         $this->loadRolesIfRequired();
 
+        // Site admin has every role
+        if (in_array('siteadmin', $this->roles)) return true;
+
+        // Admin can be granted by the logged in character
+        if ($role == 'admin') {
+            return in_array('admin', $this->roles) || ($this->character && $this->character->isAdmin());
+        }
+
+        // Staff can be granted by the logged in character AND the admin role
+        if ($role == 'staff') {
+            return in_array('staff', $this->roles) || in_array('admin', $this->roles)
+                || ($this->character && ($this->character->isAdmin() || $this->character->isStaff()));
+        }
+
+        //Normal handling
         return in_array($role, $this->roles)
-            || in_array('admin', $this->roles) //Admin role has every role
-            || ($role == 'staff' && $this->character && $this->character->isStaff()); // Staff characters are staff
+            || in_array('siteadmin', $this->roles); //Site admin role has every role
     }
 
     private function loadRolesIfRequired()
@@ -506,18 +525,32 @@ class User implements Authenticatable, MustVerifyEmail
         if ($this->roles == null) $this->getProvider()->loadRolesFor($this);
     }
 
-    //Shortcut to checking if the user has the staff role
+    /**
+     * Shortcut to check if a user has a staff role.
+     * This can be true on a non-permanent basis if they're logged in as a staff character
+     * @return bool
+     */
     public function isStaff(): bool
     {
         return $this->hasRole('staff');
     }
 
-    //Shortcut to checking if the user has the admin role
+    /**
+     * Shortcut to check if a user has an admin role.
+     * This can be true on a non-permanent basis if they're logged in as an admin character
+     * @return bool
+     */
+
     public function isAdmin(): bool
     {
         return $this->hasRole('admin');
     }
 
+    //Shortcut to checking if the user has the site admin role
+    public function isSiteAdmin(): bool
+    {
+        return $this->hasRole('siteadmin');
+    }
     #endregion Roles
 
 }

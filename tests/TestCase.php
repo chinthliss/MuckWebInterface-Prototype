@@ -51,9 +51,16 @@ abstract class TestCase extends BaseTestCase
     }
 
     // Also returns user for chaining
-    protected function loginAsLockedUser(): ?User
+    protected function loginAsSiteAdminUser(): ?User
     {
         Auth::loginUsingId('8');
+        return $this->getPresentUser();
+    }
+
+    // Also returns user for chaining
+    protected function loginAsLockedUser(): ?User
+    {
+        Auth::loginUsingId('9');
         return $this->getPresentUser();
     }
 

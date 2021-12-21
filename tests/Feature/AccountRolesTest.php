@@ -9,8 +9,11 @@ class AccountRolesTest extends TestCase
 {
     use RefreshDatabase;
 
-    private $staffRequiredPage = '/admin';
-    private $adminRequiredPage = '/accountcurrency/transactions';
+    private $staffRequiredPage = '/support/agent';
+    private $adminRequiredPage = '/admin/accounts';
+    private $siteAdminRequiredPage = '/accountcurrency/transactions';
+    private $staffCharacter = 2345;
+    private $adminCharacter = 6789;
 
     protected function setUp(): void
     {
@@ -32,6 +35,12 @@ class AccountRolesTest extends TestCase
         $this->assertFalse($user->hasRole('admin'));
     }
 
+    public function testUserDoesNotHaveSiteAdminRole()
+    {
+        $user = $this->loginAsValidatedUser();
+        $this->assertFalse($user->hasRole('siteadmin'));
+    }
+
     public function testStaffDoesHaveStaffRole()
     {
         $user = $this->loginAsStaffUser();
@@ -44,11 +53,18 @@ class AccountRolesTest extends TestCase
         $this->assertFalse($user->hasRole('admin'));
     }
 
+    public function testStaffDoesNotHaveSiteAdminRole()
+    {
+        $user = $this->loginAsStaffUser();
+        $this->assertFalse($user->hasRole('siteadmin'));
+    }
+
     public function testAdminHasAnyRole()
     {
-        $user = $this->loginAsAdminUser();
+        $user = $this->loginAsSiteAdminUser();
         $this->assertTrue($user->hasRole('staff'));
         $this->assertTrue($user->hasRole('admin'));
+        $this->assertTrue($user->hasRole('siteadmin'));
         $this->assertTrue($user->hasRole('not_actually_a_role'));
     }
 
@@ -69,6 +85,13 @@ class AccountRolesTest extends TestCase
         $response->assertForbidden();
     }
 
+    public function testUserCannotAccessSiteAdminPage()
+    {
+        $this->loginAsValidatedUser();
+        $response = $this->get($this->siteAdminRequiredPage);
+        $response->assertForbidden();
+    }
+
     public function testStaffCanAccessStaffPage()
     {
         $this->loginAsStaffUser();
@@ -80,6 +103,13 @@ class AccountRolesTest extends TestCase
     {
         $this->loginAsStaffUser();
         $response = $this->get($this->adminRequiredPage);
+        $response->assertForbidden();
+    }
+
+    public function testStaffCanNotAccessSiteAdminPage()
+    {
+        $this->loginAsStaffUser();
+        $response = $this->get($this->siteAdminRequiredPage);
         $response->assertForbidden();
     }
 
@@ -97,10 +127,17 @@ class AccountRolesTest extends TestCase
         $response->assertSuccessful();
     }
 
+    public function testAdminCannotAccessSiteAdminPage()
+    {
+        $this->loginAsAdminUser();
+        $response = $this->get($this->siteAdminRequiredPage);
+        $response->assertForbidden();
+    }
+
     public function testStaffCharacterCanAccessStaffPage()
     {
         $this->loginAsValidatedUser();
-        $this->post(route('multiplayer.character.set'), ['dbref' => 1234]);
+        $this->post(route('multiplayer.character.set'), ['dbref' => $this->staffCharacter]);
         $response = $this->get($this->staffRequiredPage);
         $response->assertSuccessful();
     }
@@ -108,11 +145,42 @@ class AccountRolesTest extends TestCase
     public function testStaffCharacterCannotAccessAdminPage()
     {
         $this->loginAsValidatedUser();
-        $this->post(route('multiplayer.character.set'), ['dbref' => 1234]);
+        $this->post(route('multiplayer.character.set'), ['dbref' => $this->staffCharacter]);
         $response = $this->get($this->adminRequiredPage);
         $response->assertForbidden();
     }
 
+    public function testStaffCharacterCannotAccessSiteAdminPage()
+    {
+        $this->loginAsValidatedUser();
+        $this->post(route('multiplayer.character.set'), ['dbref' => $this->staffCharacter]);
+        $response = $this->get($this->siteAdminRequiredPage);
+        $response->assertForbidden();
+    }
+
+    public function testAdminCharacterCanAccessStaffPage()
+    {
+        $this->loginAsValidatedUser();
+        $this->post(route('multiplayer.character.set'), ['dbref' => $this->adminCharacter]);
+        $response = $this->get($this->staffRequiredPage);
+        $response->assertSuccessful();
+    }
+
+    public function testAdminCharacterCanAccessAdminPage()
+    {
+        $this->loginAsValidatedUser();
+        $this->post(route('multiplayer.character.set'), ['dbref' => $this->adminCharacter]);
+        $response = $this->get($this->adminRequiredPage);
+        $response->assertSuccessful();
+    }
+
+    public function testAdminCharacterCanNotAccessSiteAdminPage()
+    {
+        $this->loginAsValidatedUser();
+        $this->post(route('multiplayer.character.set'), ['dbref' => $this->adminCharacter]);
+        $response = $this->get($this->siteAdminRequiredPage);
+        $response->assertForbidden();
+    }
     #endregion
 }
 

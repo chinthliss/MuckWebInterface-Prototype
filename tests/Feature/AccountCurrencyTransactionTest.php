@@ -272,7 +272,7 @@ class AccountCurrencyTransactionTest extends TestCase
 
     public function testAdminCanViewAnothersTransactionHistory()
     {
-        $user = $this->loginAsAdminUser();
+        $user = $this->loginAsSiteAdminUser();
         $response = $this->followingRedirects()->json('GET', route('accountcurrency.transactions', [
             'accountId' => $user->getAid() + 1
         ]));

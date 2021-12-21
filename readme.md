@@ -62,6 +62,12 @@ php artisan up
 * Logs are located in `/storage/logs/`
 * Terms-of-service located in `/public/terms-of-service.txt`
 
+## Roles
+Main recognized roles are:
+* Staff - can be inherited from a character with W1 and above
+* Admin - can be inherited from a character with W3 and above
+* Siteadmin - grants EVERY role
+
 ## Active character
 * Works on top of account validation, which authenticates the account beforehand.
 * A request is made to the muck to validate a character exists and belongs to the present account. It also checks the character hasn't been locked in some way.

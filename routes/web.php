@@ -237,19 +237,12 @@ Route::prefix('singleplayer')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Game Staff pages
+| Staff pages
 |--------------------------------------------------------------------------
 */
 Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'role:staff']], function () {
     Route::get('admin', [AdminController::class, 'show'])
         ->name('admin.home');
-
-    Route::get('admin/accounts', [AdminController::class, 'showAccountFinder'])
-        ->name('admin.accounts');
-    Route::get('admin/accounts/api', [AdminController::class, 'findAccounts'])
-        ->name('admin.accounts.api');
-    Route::get('admin/account/{accountId}', [AdminController::class, 'showAccount'])
-        ->name('admin.account');
 
     //Support (Agent)
     Route::prefix('support/agent/')->group(function () {
@@ -264,19 +257,35 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
         Route::get('newticket', [SupportTicketController::class, 'showAgentRaiseTicket'])
             ->name('support.agent.new');
         Route::post('newticket', [SupportTicketController::class, 'processAgentRaiseTicket']);
-
-
-
     });
 
 });
 
 /*
 |--------------------------------------------------------------------------
-| Website admin pages
+| Admin pages
 |--------------------------------------------------------------------------
 */
 Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'role:admin']], function () {
+
+    Route::get('admin/roles', [AdminController::class, 'showAccountRoles'])
+        ->name('admin.roles');
+
+    Route::get('admin/accounts', [AdminController::class, 'showAccountFinder'])
+        ->name('admin.accounts');
+    Route::get('admin/accounts/api', [AdminController::class, 'findAccounts'])
+        ->name('admin.accounts.api');
+    Route::get('admin/account/{accountId}', [AdminController::class, 'showAccount'])
+        ->name('admin.account');
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| Site Admin pages
+|--------------------------------------------------------------------------
+*/
+Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'role:siteadmin']], function () {
     Route::get('accountcurrency/subscriptions', [AccountCurrencyController::class, 'adminViewSubscriptions'])
         ->name('admin.subscriptions');
     Route::get('accountcurrency/subscriptions/api', [AccountCurrencyController::class, 'adminGetSubscriptions'])
@@ -292,11 +301,7 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
     Route::get('admin/patreons/api', [PatreonController::class, 'adminGetPatrons'])
         ->name('admin.patrons.api');
 
-    Route::get('admin/roles', [AdminController::class, 'showAccountRoles'])
-        ->name('admin.roles');
-
     Route::get('admin/logs', [AdminController::class, 'showLogViewer'])
         ->name('admin.logs');
     Route::get('admin/logs/{date}', [AdminController::class, 'getLogForDate']);
-
 });

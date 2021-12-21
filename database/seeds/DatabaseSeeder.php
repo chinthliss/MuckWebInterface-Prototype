@@ -193,13 +193,41 @@ class DatabaseSeeder extends Seeder
             'propdata' => TermsOfService::getTermsOfServiceHash()
         ]);
 
+        // ****************************************
+        // Account 8 - Site Admin account
+        $siteAdminAccountAid = 8;
+        DB::table('accounts')->insert([
+            'aid' => $siteAdminAccountAid,
+            'uuid' => '88888888',
+            'email' => 'siteadmin@test.com',
+            'password' => '0A095F587AFCB082:EC2F0D2ACB7788E26E0A36C32C6475C589860589', //password
+            'password_type' => 'SHA1SALT'
+        ]);
+
+        DB::table('account_emails')->insert([
+            'aid' => $siteAdminAccountAid,
+            'email' => 'siteadmin@test.com',
+            'verified_at' => Carbon::now()
+        ]);
+
+        DB::table('account_roles')->insert([
+            'aid' => $siteAdminAccountAid,
+            'roles' => 'siteadmin'
+        ]);
+
+        DB::table('account_properties')->insert([
+            'aid' => $siteAdminAccountAid,
+            'propname' => 'tos-hash-viewed',
+            'proptype' => 'STRING',
+            'propdata' => TermsOfService::getTermsOfServiceHash()
+        ]);
 
         // ****************************************
-        // Account 8 - banned Account
-        $bannedAccountAid = 8;
+        // Account 9 - banned Account
+        $bannedAccountAid = 9;
         DB::table('accounts')->insert([
             'aid' => $bannedAccountAid,
-            'uuid' => '88888888',
+            'uuid' => '99999999',
             'email' => 'banned@test.com',
             'password' => '0A095F587AFCB082:EC2F0D2ACB7788E26E0A36C32C6475C589860589', //password
             'password_type' => 'SHA1SALT',

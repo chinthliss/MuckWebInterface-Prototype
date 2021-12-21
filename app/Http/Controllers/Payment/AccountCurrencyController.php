@@ -225,7 +225,7 @@ class AccountCurrencyController extends Controller
         $transaction = $transactionManager->getTransaction($id);
 
         if (!$transaction) abort(404);
-        if ($transaction->accountId != $user->getAid() && !$user->hasRole('admin')) abort(403);
+        if ($transaction->accountId != $user->getAid() && !$user->isSiteAdmin()) abort(403);
 
         return view('account-currency-transaction')->with([
             'transaction' => $transaction->toArray()
@@ -238,7 +238,7 @@ class AccountCurrencyController extends Controller
         $user = auth()->user();
 
         if (!$accountId) $accountId = $user->getAid();
-        else if ($accountId !== $user->getAid() && !$user->hasRole('admin')) abort(403);
+        else if ($accountId !== $user->getAid() && !$user->isSiteAdmin()) abort(403);
 
         $transactions = [];
         foreach ($transactionManager->getTransactionsFor($accountId) as $transaction) {
@@ -361,7 +361,7 @@ class AccountCurrencyController extends Controller
         $subscription = $subscriptionManager->getSubscription($id);
 
         if (!$subscription) abort(404);
-        if ($subscription->accountId != $user->getAid() && !$user->hasRole('admin')) abort(403);
+        if ($subscription->accountId != $user->getAid() && !$user->isSiteAdmin()) abort(403);
 
         $transactions = [];
         foreach ($transactionManager->getTransactionsForSubscription($subscription) as $transaction) {

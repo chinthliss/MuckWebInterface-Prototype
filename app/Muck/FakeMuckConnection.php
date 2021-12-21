@@ -20,16 +20,18 @@ class FakeMuckConnection implements MuckConnection
     {
         $fixedTime = Carbon::create(2000,1,1, 0, 0, 0 );
         $this->fakeDatabaseByDbref = [
-            // Wizard character
-            1234 => new MuckCharacter(1234, 'TestCharacter', $fixedTime, 100, '', ['wizard'], 1),
-            // Non-wizard character with a fixed creation time
-            2345 => new MuckCharacter(2345, 'TestCharacter2', $fixedTime, 14, '', [], 1),
+            // Normal character
+            1234 => new MuckCharacter(1234, 'TestCharacter', $fixedTime, 100, '', [], 1),
+            // Character that grants the staff role
+            2345 => new MuckCharacter(2345, 'StaffCharacter', $fixedTime, 14, '', ['staff'], 1),
+            // Character that grants the admin role
+            6789 => new MuckCharacter(6789, 'AdminCharacter', $fixedTime, 23, '', ['admin'], 1),
             // Unapproved character
             3456 => new MuckCharacter(3456, 'TestCharacter3', $fixedTime, 0, '', ['unapproved'], 1),
             // Unapproved character on other account
             4567 => new MuckCharacter(4567, 'TestCharacterA1', $fixedTime, 0, '', ['unapproved'], 6),
             // Approved character on admin account
-            5678 => new MuckCharacter(5678, 'AdminCharacter', $fixedTime, 0, '', ['wizard'], 7)
+            5678 => new MuckCharacter(5678, 'AdminAccountCharacter', $fixedTime, 0, '', ['admin'], 7)
         ];
         foreach ($this->fakeDatabaseByDbref as $entry) {
             if ($entry->typeFlag() == 'p') $this->fakeDatabaseByPlayerName[strtolower($entry->name())] = $entry;
@@ -61,7 +63,6 @@ class FakeMuckConnection implements MuckConnection
     }
 
     #endregion Auth Requests
-
 
     /**
      * @inheritDoc

@@ -32,11 +32,18 @@ class AppServiceProvider extends ServiceProvider
             return $user && $user->hasRole('staff');
         });
 
-        // Add the capability of blade views to tell if user is Site Admin
+        // Add the capability of blade views to tell if user is Admin
         Blade::if('Admin', function() {
             /** @var User $user */
             $user = auth()->user();
             return $user && $user->hasRole('admin');
+        });
+
+        // Add the capability of blade views to tell if user is Site Admin
+        Blade::if('SiteAdmin', function() {
+            /** @var User $user */
+            $user = auth()->user();
+            return $user && $user->hasRole('siteadmin');
         });
 
         Blade::if('Character', function() {

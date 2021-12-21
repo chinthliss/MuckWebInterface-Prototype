@@ -21,10 +21,10 @@ class AccountAdminTest extends TestCase
         $this->assertNotEmpty($notes);
     }
 
-    public function testAdminCanOpenAdminAccountPage()
+    public function testSiteAdminCanOpenAdminAccountPage()
     {
         $this->seed();
-        $this->loginAsAdminUser();
+        $this->loginAsSiteAdminUser();
         $response = $this->followingRedirects()->get(route('admin.account', [
             'accountId' => 1
         ]));

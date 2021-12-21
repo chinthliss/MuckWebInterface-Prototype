@@ -72,20 +72,26 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     object @ timestamps pop pop pop intostr strcat "," strcat
     "" (Typeflag and metadata)
     object @ player? if
-      pop "p,"
-      object @ acct_any2aid intostr strcat "|" strcat
-      object @ truelevel intostr strcat "|" strcat
-      "avatarstring" strcat (avatar TBC)
-      "|" strcat
-      { }list
-      object @ mlevel 3 > if "wizard" swap array_appenditem then
-      object @ "approved?" getstatint not if "unapproved" swap array_appenditem then
-      ":" array_join strcat
+        pop "p,"
+        object @ acct_any2aid intostr strcat "|" strcat
+        object @ truelevel intostr strcat "|" strcat
+        "avatarstring" strcat (avatar TBC)
+        "|" strcat
+        { }list
+        object @ mlevel 5 > if (W3 and above are admin to the site)
+            "admin" swap array_appenditem 
+        else 
+            object @ mlevel 3 > if (W1 and W2 are staff to the site)
+                "staff" swap array_appenditem
+            then 
+        then
+        object @ "approved?" getstatint not if "unapproved" swap array_appenditem then
+        ":" array_join strcat
     then
     object @ "zombie" flag? if
-      pop "z,"
-      object @ truelevel intostr strcat "|" strcat
-      "" strcat (avatar TBC)
+        pop "z,"
+        object @ truelevel intostr strcat "|" strcat
+        "" strcat (avatar TBC)
     then
     ?dup not if "t," then
     strcat "," strcat object @ name strcat

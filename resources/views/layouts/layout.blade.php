@@ -121,19 +121,24 @@
                 <a class="nav-link" href="{{ route('accountcurrency') }}">Buy {{ Lex::get('accountcurrency') }}</a>
 
                 @Staff
-                <h4 class="nav-link mt-2 pl-0"><a href="{{ route('admin.home') }}">Game Staff</a></h4>
+                <h4 class="nav-link mt-2 pl-0"><a href="{{ route('admin.home') }}">Staff</a></h4>
                 <a class="nav-link" href="{{ route('support.agent.home') }}">Support / Request Agent</a>
-                <a class="nav-link" href="{{ route('admin.accounts') }}">Account Browser</a>
-                <a class="nav-link" href="{{ route('admin.roles') }}">Account Roles List</a>
                 @endStaff
 
                 @Admin
+                <h4 class="nav-link mt-2 pl-0"><a href="{{ route('admin.home') }}">Admin</a></h4>
+                <a class="nav-link" href="{{ route('admin.accounts') }}">Account Browser</a>
+                <a class="nav-link" href="{{ route('admin.roles') }}">Account Roles List</a>
+                @endAdmin
+
+                @SiteAdmin
                 <h4 class="nav-link mt-2 pl-0"><a href="{{ route('admin.home') }}">Site Admin</a></h4>
                 <a class="nav-link" href="{{ route('admin.logs') }}">Site Log Viewer</a>
                 <a class="nav-link" href="{{ route('admin.patrons') }}">Patreon Supporter Browser</a>
                 <a class="nav-link" href="{{ route('admin.subscriptions') }}">Payment Subscriptions</a>
                 <a class="nav-link" href="{{ route('admin.transactions') }}">Payment Transactions</a>
-                @endAdmin
+                @endSiteAdmin
+
             @endauth
         </nav>
         <!-- Right side bar -->

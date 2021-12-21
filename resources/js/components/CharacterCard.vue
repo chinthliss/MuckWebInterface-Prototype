@@ -5,9 +5,10 @@
                 <i class="fas fa-user-alt fa-5x"></i>
             </div>
             <div class="name">{{ character.name }}</div>
-            <div v-if="!character.wizard" class="level">{{ character.level }}</div>
-            <div v-if="character.wizard" class="flag staff">Staff</div>
-            <div v-if="!character.approved" class="flag unapproved">Unapproved</div>
+            <div v-if="!character.wizLevel" class="level">{{ character.level }}</div>
+            <div v-else-if="character.wizLevel === 1" class="flag staff">Staff</div>
+            <div v-else-if="character.wizLevel === 2" class="flag staff">Admin</div>
+            <div v-if="character.unapproved" class="flag unapproved">Unapproved</div>
         </div>
     </div>
 </template>
