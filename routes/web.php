@@ -12,6 +12,7 @@ use App\Http\Controllers\Auth\AccountEmailController;
 use App\Http\Controllers\AccountNotificationsController;
 use App\Http\Controllers\Auth\AccountPasswordController;
 use App\Http\Controllers\Auth\TermsOfServiceController;
+use App\Http\Controllers\AvatarController;
 use App\Http\Controllers\MultiplayerController;
 use App\Http\Controllers\SingleplayerController;
 use App\Http\Controllers\Payment\AccountCurrencyController;
@@ -29,6 +30,10 @@ use App\Http\Controllers\SupportTicketController;
 
 Route::get('/', [HomeController::class, 'show'])
     ->name('home');
+
+// There's no security on these because they're just flattened thumbnails
+Route::get('/admin/avatar/doll/{dollName}', [AvatarController::class, 'getThumbnailForDoll'])
+    ->name('admin.avatar.dollthumbnail');
 
 //Character Profiles
 Route::get('c/{characterName}', [MultiplayerController::class, 'showCharacter'])
@@ -216,7 +221,7 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
 |--------------------------------------------------------------------------
 */
 Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'not.locked', 'character']], function () {
-    Route::get('multiplayer/avatar', [MultiplayerController::class, 'showAvatarEditor'])
+    Route::get('multiplayer/avatar', [AvatarController::class, 'showAvatarEditor'])
         ->name('multiplayer.avatar');
     Route::get('multiplayer/connect', [MultiplayerController::class, 'showConnect'])
         ->name('multiplayer.connect');
@@ -304,4 +309,7 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
     Route::get('admin/logs', [AdminController::class, 'showLogViewer'])
         ->name('admin.logs');
     Route::get('admin/logs/{date}', [AdminController::class, 'getLogForDate']);
+
+    Route::get('admin/avatar/dolltest', [AvatarController::class, 'showAdminDollTest'])
+        ->name('admin.avatar.dolltest');
 });

@@ -195,11 +195,6 @@ class MultiplayerController extends Controller
 
     }
 
-    public function showAvatarEditor() : View
-    {
-        return view('multiplayer.avatar');
-    }
-
     public function showConnect() : View
     {
         return view('multiplayer.connect');

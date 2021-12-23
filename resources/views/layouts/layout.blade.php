@@ -134,6 +134,7 @@
                 @SiteAdmin
                 <h4 class="nav-link mt-2 pl-0"><a href="{{ route('admin.home') }}">Site Admin</a></h4>
                 <a class="nav-link" href="{{ route('admin.logs') }}">Site Log Viewer</a>
+                <a class="nav-link" href="{{ route('admin.avatar.dolltest') }}">Avatar Doll Tester</a>
                 <a class="nav-link" href="{{ route('admin.patrons') }}">Patreon Supporter Browser</a>
                 <a class="nav-link" href="{{ route('admin.subscriptions') }}">Payment Subscriptions</a>
                 <a class="nav-link" href="{{ route('admin.transactions') }}">Payment Transactions</a>
