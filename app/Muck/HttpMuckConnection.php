@@ -397,7 +397,7 @@ class HttpMuckConnection implements MuckConnection
      */
     public function avatarDollUsage(): array
     {
-        return json_decode($this->requestToMuck('avatarDollUsage'));
+        return json_decode($this->requestToMuck('avatarDollUsage'), true);
     }
 
 }
