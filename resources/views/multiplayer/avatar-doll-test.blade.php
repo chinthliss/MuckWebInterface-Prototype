@@ -15,6 +15,7 @@
 @section('content')
     <admin-avatar-doll-tester
         :dolls = "{{ json_encode($dolls) }}"
+        :invalid = "{{ json_encode($invalid, JSON_FORCE_OBJECT) }}"
     >
     </admin-avatar-doll-tester>
 @endsection

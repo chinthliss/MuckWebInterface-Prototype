@@ -181,4 +181,10 @@ interface MuckConnection
      * @return int Number of notifications sent muck side
      */
     public function externalNotification(User $user, ?MuckCharacter $character, string $message): int;
+
+    /**
+     * Fetches an array of each avatar doll and what infections use it
+     * @return array<string, array<string>>
+     */
+    public function avatarDollUsage(): array;
 }

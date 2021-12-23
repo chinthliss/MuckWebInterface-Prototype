@@ -351,4 +351,17 @@ class FakeMuckConnection implements MuckConnection
             ['aid' => $user->getAid(), 'character' => $character?->dbref(), 'message' => $message]);
         if ($character && array_key_exists($character->dbref(), $this->fakeDatabaseByDbref)) return 1; else return 0;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function avatarDollUsage(): array
+    {
+        self::fakeMuckCall('avatarDollUsage');
+        return [
+            'FS_Badger' => ['BadgerInfection1', 'BadgerInfection2'],
+            'FS_Bear' => ['NotABear'],
+            'NonExistent' => ['Broken']
+        ];
+    }
 }

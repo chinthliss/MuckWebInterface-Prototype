@@ -391,4 +391,13 @@ class HttpMuckConnection implements MuckConnection
             ['aid' => $user->getAid(), 'character' => $character?->dbref(), 'message' => $message]);
         return (int)$count;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function avatarDollUsage(): array
+    {
+        return json_decode($this->requestToMuck('avatarDollUsage'));
+    }
+
 }

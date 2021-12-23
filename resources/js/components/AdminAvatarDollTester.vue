@@ -8,9 +8,15 @@
                         <img :src="doll.url" alt="Avatar Doll Thumbnail" class="d-block m-auto">
                     </div>
                     <div class="card-body m-auto">
-                        {{ doll.name }}
+                        {{ doll.name }} <span class="badge badge-pill badge-info" v-if="doll.usage.length > 0">{{ doll.usage.length }}</span>
                     </div>
                 </div>
+            </div>
+        </div>
+        <div v-if="Object.values(invalid).length > 0">
+            The following avatar dolls were referenced but couldn't be found:
+            <div v-for="(forms, avatar) in invalid">
+                {{ avatar }}: {{ Object.values(forms).join(', ') }}
             </div>
         </div>
     </div>
@@ -20,7 +26,8 @@
 export default {
     name: "admin-avatar-doll-tester",
     props: {
-        dolls: {type: Array, required: true}
+        dolls: {type: Array, required: true},
+        invalid: {type: Object, required: false}
     }
 }
 </script>

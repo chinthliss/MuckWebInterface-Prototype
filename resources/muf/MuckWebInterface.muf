@@ -199,6 +199,24 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     intostr descr swap descrnotify
 ; selfcall handleRequest_externalNotification
 
+(Returns an array of which infections use which avatar dolls, in the form: { dollName: [infection1.. infectionN] } )
+: handleRequest_avatarDollUsage[ arr:webcall -- ]
+    var infection var doll
+    { }dict (Result)
+    rpsys "infection/" array_get_propdirs
+    foreach nip infection !
+        rpsys "infection/" infection @ strcat "/avatar" strcat getpropstr ?dup if
+            doll !
+            dup doll @ array_getitem 
+            ?dup not if { }list then
+            infection @ swap array_appenditem
+            swap doll @ array_setitem
+        then
+    repeat
+    startAcceptedResponse
+    encodejson descr swap descrnotify
+; selfcall handleRequest_avatarDollUsage
+
 ( -------------------------------------------------- )
 ( Handlers - Character Selection and Chargen )
 ( -------------------------------------------------- )
