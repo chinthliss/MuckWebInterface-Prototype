@@ -205,13 +205,12 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     { }dict (Result)
     rpsys "infection/" array_get_propdirs
     foreach nip infection !
-        rpsys "infection/" infection @ strcat "/avatar" strcat getpropstr ?dup if
-            doll !
-            dup doll @ array_getitem 
-            ?dup not if { }list then
-            infection @ swap array_appenditem
-            swap doll @ array_setitem
-        then
+        rpsys "infection/" infection @ strcat "/avatar" strcat getpropstr 
+        ?dup not if "(default)" then doll !
+        dup doll @ array_getitem 
+        ?dup not if { }list then
+        infection @ swap array_appenditem
+        swap doll @ array_setitem
     repeat
     startAcceptedResponse
     encodejson descr swap descrnotify

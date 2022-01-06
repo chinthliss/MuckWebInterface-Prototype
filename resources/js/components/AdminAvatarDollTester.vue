@@ -2,59 +2,66 @@
     <div class="container">
         <h2>Avatar Paper Doll Tester</h2>
 
-        <div class="form-group">
-            <label for="torso">Torso (Base)</label>
-            <select class="form-control" id="torso" v-model="torso" @change="updateAndRefresh">
-                <option :value="doll" v-for="doll in dolls">{{ doll }}</option>
-            </select>
-        </div>
+        <div class="d-flex flex-column flex-xl-row">
 
-        <div class="form-group">
-            <label for="head">Head</label>
-            <select class="form-control" id="head" v-model="head" @change="updateAndRefresh">
-                <option value="">(Same as base)</option>
-                <option :value="doll" v-for="doll in dolls">{{ doll }}</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="arms">Arms</label>
-            <select class="form-control" id="arms" v-model="arms" @change="updateAndRefresh">
-                <option value="">(Same as base)</option>
-                <option :value="doll" v-for="doll in dolls">{{ doll }}</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="legs">Legs</label>
-            <select class="form-control" id="legs" v-model="legs" @change="updateAndRefresh">
-                <option value="">(Same as base)</option>
-                <option :value="doll" v-for="doll in dolls">{{ doll }}</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="groin">Groin</label>
-            <select class="form-control" id="groin" v-model="groin" @change="updateAndRefresh">
-                <option value="">(Same as base)</option>
-                <option :value="doll" v-for="doll in dolls">{{ doll }}</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="ass">Ass</label>
-            <select class="form-control" id="ass" v-model="ass" @change="updateAndRefresh">
-                <option value="">(Same as base)</option>
-                <option :value="doll" v-for="doll in dolls">{{ doll }}</option>
-            </select>
-        </div>
-
-        <div>
-            <h3>Avatar</h3>
-            <div class="avatarHolder">
-                <img class="avatar" v-if="avatarImg" :width="avatarWidth" :height="avatarHeight" :src="avatarImg"
-                     alt="Avatar Render">
+            <!-- Avatar -->
+            <div class="mr-xl-2">
+                <div class="avatarHolder">
+                    <img class="avatar" v-if="avatarImg" :width="avatarWidth" :height="avatarHeight" :src="avatarImg"
+                         alt="Avatar Render">
+                </div>
             </div>
+
+            <!-- Controls -->
+            <div>
+                <div class="form-group">
+                    <label for="torso">Torso (Base)</label>
+                    <select class="form-control" id="torso" v-model="torso" @change="updateAndRefresh">
+                        <option :value="doll" v-for="doll in dolls">{{ doll }}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="head">Head</label>
+                    <select class="form-control" id="head" v-model="head" @change="updateAndRefresh">
+                        <option value="">(Same as base)</option>
+                        <option :value="doll" v-for="doll in dolls">{{ doll }}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="arms">Arms</label>
+                    <select class="form-control" id="arms" v-model="arms" @change="updateAndRefresh">
+                        <option value="">(Same as base)</option>
+                        <option :value="doll" v-for="doll in dolls">{{ doll }}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="legs">Legs</label>
+                    <select class="form-control" id="legs" v-model="legs" @change="updateAndRefresh">
+                        <option value="">(Same as base)</option>
+                        <option :value="doll" v-for="doll in dolls">{{ doll }}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="groin">Groin</label>
+                    <select class="form-control" id="groin" v-model="groin" @change="updateAndRefresh">
+                        <option value="">(Same as base)</option>
+                        <option :value="doll" v-for="doll in dolls">{{ doll }}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="ass">Ass</label>
+                    <select class="form-control" id="ass" v-model="ass" @change="updateAndRefresh">
+                        <option value="">(Same as base)</option>
+                        <option :value="doll" v-for="doll in dolls">{{ doll }}</option>
+                    </select>
+                </div>
+            </div>
+
         </div>
 
         <h3 class="mt-2">Technical:</h3>

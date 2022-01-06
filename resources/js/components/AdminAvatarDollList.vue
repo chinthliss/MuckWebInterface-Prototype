@@ -8,30 +8,36 @@
             </div>
         </div>
 
-        <div class="row">
-            <div class="col-12 col-xl-2 mb-2" v-for="doll in dolls">
-                <a :href="doll.edit">
-                    <div class="card">
-                        <div class="card-img-top">
-                            <img :src="doll.url" alt="Avatar Doll Thumbnail" class="d-block m-auto">
-                        </div>
-                        <div class="card-body">
-                            <div class="text-center small">{{ doll.name }}</div>
-                            <div class="text-center"><span class="badge badge-pill badge-info"
-                                  v-bind:class="[doll.usage.length ? 'badge-info' : 'badge-warning']">{{
-                                    doll.usage.length
-                                }}</span></div>
-                        </div>
+        <div>
+            <a :href="doll.edit" v-for="doll in dolls">
+                <div class="card doll-card">
+                    <div class="card-img-top">
+                        <img :src="doll.url" alt="Avatar Doll Thumbnail" class="d-block m-auto">
                     </div>
-                </a>
-            </div>
+                    <div class="card-body">
+                        <div class="text-center small">{{ doll.name }}</div>
+                        <div class="text-center"><span class="badge badge-pill badge-info"
+                                                       v-bind:class="[doll.usage.length ? 'badge-info' : 'badge-warning']">{{
+                                doll.usage.length
+                            }}</span></div>
+                    </div>
+                </div>
+            </a>
         </div>
 
         <h3>Usage Breakdown</h3>
-        <div v-for="doll in dolls" v-if="doll.usage.length > 0">
-            {{ doll.name }}: {{ doll.usage.join(', ') }}
-        </div>
-
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Doll</th>
+                <th>Used by</th>
+            </tr>
+            </thead>
+            <tr v-for="doll in dolls" v-if="doll.usage.length > 0">
+                <td>{{ doll.name }}</td>
+                <td>{{ doll.usage.join(', ') }}</td>
+            </tr>
+        </table>
     </div>
 </template>
 
@@ -48,5 +54,9 @@ export default {
 </script>
 
 <style scoped>
-
+.doll-card {
+    width: 185px;
+    height: 260px;
+    display: inline-block;
+}
 </style>
