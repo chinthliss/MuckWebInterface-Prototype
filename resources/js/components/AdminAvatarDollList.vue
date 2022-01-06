@@ -8,7 +8,8 @@
             </div>
         </div>
 
-        <div>The number after each avatar is a count of how many infections use it. The full breakdown of such is at the bottom of this page.</div>
+        <div>The number after each doll is a count of how many infections use it - the full breakdown of such is at the bottom of this page.</div>
+        <div>Clicking on a doll will start an instance of the tester using that doll as the base.</div>
         <div>
             <a :href="doll.edit" v-for="doll in dolls">
                 <div class="card doll-card">

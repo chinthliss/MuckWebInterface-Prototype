@@ -262,6 +262,18 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
         Route::post('newticket', [SupportTicketController::class, 'processAgentRaiseTicket']);
     });
 
+    //Avatar Doll testing
+    Route::prefix('admin/avatar/')->group(function () {
+        Route::get('dolllist', [AvatarController::class, 'showAdminDollList'])
+            ->name('admin.avatar.dolllist');
+        Route::get('dolltest/{code?}', [AvatarController::class, 'showAdminDollTest'])
+            ->name('admin.avatar.dolltest');
+        Route::get('dolltest/{dollName}/thumbnail', [AvatarController::class, 'getThumbnailForDoll'])
+            ->name('admin.avatar.dollthumbnail');
+        Route::get('render/{code?}', [AvatarController::class, 'getAvatarFromCode'])
+            ->name('admin.avatar.render');
+    });
+
 });
 
 /*
@@ -307,15 +319,4 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
     Route::get('admin/logs', [AdminController::class, 'showLogViewer'])
         ->name('admin.logs');
     Route::get('admin/logs/{date}', [AdminController::class, 'getLogForDate']);
-
-    Route::get('admin/avatar/dolllist', [AvatarController::class, 'showAdminDollList'])
-        ->name('admin.avatar.dolllist');
-    Route::get('admin/avatar/dolltest/{code?}', [AvatarController::class, 'showAdminDollTest'])
-        ->name('admin.avatar.dolltest');
-    Route::get('/admin/avatar/dolltest/{dollName}/thumbnail', [AvatarController::class, 'getThumbnailForDoll'])
-        ->name('admin.avatar.dollthumbnail');
-    Route::get('/admin/avatar/render/{code?}', [AvatarController::class, 'getAvatarFromCode'])
-        ->name('admin.avatar.render');
-
-
 });
