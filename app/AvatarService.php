@@ -131,6 +131,7 @@ class AvatarService
     public function getDollLayerInformation(string $dollName): array
     {
         if (array_key_exists($dollName, $this->dollLayerInformationCache)) return $this->dollLayerInformationCache[$dollName];
+        Log::debug("Calculating doll layer information for " . $dollName);
         $array = [];
         $image = $this->getDoll($dollName);
 
@@ -166,6 +167,8 @@ class AvatarService
     public function getDrawingStepsForAvatar(AvatarInstance $avatar): array
     {
         if (array_key_exists($avatar->code, $this->avatarDrawingStepsCache)) return $this->avatarDrawingStepsCache[$avatar->code];
+        Log::debug("Calculating drawing steps for " . $avatar->code);
+
         $drawingSteps = [];
         // Get a collection of which doll to use for which part
         $dollNames = [
