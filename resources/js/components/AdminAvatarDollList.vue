@@ -8,6 +8,7 @@
             </div>
         </div>
 
+        <div>The number after each avatar is a count of how many infections use it. The full breakdown of such is at the bottom of this page.</div>
         <div>
             <a :href="doll.edit" v-for="doll in dolls">
                 <div class="card doll-card">
