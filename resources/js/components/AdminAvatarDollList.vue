@@ -11,15 +11,18 @@
         <div class="row">
             <div class="col-12 col-xl-2 mb-2" v-for="doll in dolls">
                 <a :href="doll.edit">
-                <div class="card">
-                    <div class="card-img-top">
-                        <img :src="doll.url" alt="Avatar Doll Thumbnail" class="d-block m-auto">
+                    <div class="card">
+                        <div class="card-img-top">
+                            <img :src="doll.url" alt="Avatar Doll Thumbnail" class="d-block m-auto">
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center small">{{ doll.name }}</div>
+                            <div class="text-center"><span class="badge badge-pill badge-info"
+                                  v-bind:class="[doll.usage.length ? 'badge-info' : 'badge-warning']">{{
+                                    doll.usage.length
+                                }}</span></div>
+                        </div>
                     </div>
-                    <div class="card-body m-auto">
-                        {{ doll.name }} <span class="badge badge-pill badge-info"
-                                              v-if="doll.usage.length > 0">{{ doll.usage.length }}</span>
-                    </div>
-                </div>
                 </a>
             </div>
         </div>

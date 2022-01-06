@@ -3,6 +3,7 @@
 namespace App;
 
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Holds the configuration for an avatar instance
@@ -62,7 +63,9 @@ class AvatarInstance
 
     public static function fromCode($code): AvatarInstance
     {
-        return self::fromArray(json_decode(base64_decode($code), true));
+        $array = json_decode(base64_decode($code), true);
+        if (!is_array($array)) Log::warning("The JSON used to create an AvatarInstance doesn't look like an array: " . base64_decode($code));
+        return self::fromArray($array);
     }
 
 }

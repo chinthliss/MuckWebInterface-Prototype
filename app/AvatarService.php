@@ -5,7 +5,6 @@ namespace App;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Imagick;
-use PhpParser\Node\Expr\Array_;
 
 class AvatarService
 {
@@ -32,6 +31,7 @@ class AvatarService
             ['leg2', 'legs'],
             ['arm2', 'arms'],
             ['ass', 'ass'],
+            ['torso', 'torso'],
             ['breasts', 'torso'],
             ['sheath', 'groin'],
             ['leg1', 'legs'],
@@ -123,7 +123,7 @@ class AvatarService
 
     /**
      * Calculates a breakdown of the layers in a doll
-     * Returns an array of subpart => [[layerIndex, colorChannel]..]
+     * Returns an array of subpart => array[layerIndex, colorChannel]..]
      * @param string $dollName
      * @return array
      * @throws \ImagickException
@@ -155,6 +155,14 @@ class AvatarService
         return $array;
     }
 
+    /**
+     * Return an array, in order of drawing, of:
+     * [ dollName, doll, subPart, layers ]
+     * Layers is an array of [ colorChannel, layerIndex ]
+     * @param AvatarInstance $avatar
+     * @return array
+     * @throws \ImagickException
+     */
     public function getDrawingStepsForAvatar(AvatarInstance $avatar): array
     {
         if (array_key_exists($avatar->code, $this->avatarDrawingStepsCache)) return $this->avatarDrawingStepsCache[$avatar->code];
@@ -204,7 +212,26 @@ class AvatarService
         $image->setImageFormat("png");
 
         foreach ($this->getDrawingStepsForAvatar($avatar) as $step) {
+            /** @var Imagick $doll */
+            $doll = $step['doll'];
+            foreach ($step['layers'] as $layer) {
+                $colorChannel = $layer['colorChannel'];
+                $doll->setIteratorIndex($layer['layerIndex']);
+                $extents = $doll->getImagePage(); // Returns width, height, x and y (offsets) for this layer
 
+                $gradient = new Imagick();
+                $gradient->newPseudoImage(1,100, 'gradient:navy-snow');
+
+                // Take a copy of that relevant layer and use the gradient as a color lookup table (clut) on it
+                $subPart = new Imagick();
+                $subPart->newImage($extents['width'], $extents['height'], 'transparent');
+                $subPart->compositeImage($doll, Imagick::COMPOSITE_OVER, 0, 0);
+                $subPart->clutImage($gradient, Imagick::CHANNEL_DEFAULT);
+
+                // Copy the subPage onto our final image, using its original offsets
+                $image->compositeImage($subPart, Imagick::COMPOSITE_OVER,
+                    $extents['x'], $extents['y']);
+            }
         }
         return $image;
     }

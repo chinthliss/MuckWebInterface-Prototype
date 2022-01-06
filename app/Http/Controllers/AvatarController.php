@@ -39,14 +39,14 @@ class AvatarController extends Controller
         ]);
     }
 
-    public function showAdminDollTest(AvatarService $service, MuckConnection $muckConnection, ?string $code = '')
+    public function showAdminDollTest(AvatarService $service, MuckConnection $muckConnection, string $code = '')
     {
         //Redirect to doll list if a code isn't specified
         if (!$code) return redirect()->route('admin.avatar.dolllist');
 
         $avatar = AvatarInstance::fromCode($code);
         $drawingSteps = $service->getDrawingStepsForAvatar($avatar);
-        //Remove 'doll' object from drawingsteps because it can't be transferred
+        //Remove 'doll' object from drawingsteps because it's just a reference to the Imagick object
         $drawingSteps = array_map(function($step) {
             unset($step['doll']);
             return $step;
