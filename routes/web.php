@@ -31,13 +31,11 @@ use App\Http\Controllers\SupportTicketController;
 Route::get('/', [HomeController::class, 'show'])
     ->name('home');
 
-// There's no security on these because they're just flattened thumbnails
-Route::get('/admin/avatar/doll/{dollName}', [AvatarController::class, 'getThumbnailForDoll'])
-    ->name('admin.avatar.dollthumbnail');
-
 //Character Profiles
 Route::get('c/{characterName}', [MultiplayerController::class, 'showCharacter'])
     ->name('multiplayer.character.view');
+
+//Character Avatar images
 
 //Multiplayer getting started - always available since it gives instructions on creating an account.
 Route::get('multiplayer/gettingstarted', [MultiplayerController::class, 'showGettingStarted'])
@@ -310,6 +308,14 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
         ->name('admin.logs');
     Route::get('admin/logs/{date}', [AdminController::class, 'getLogForDate']);
 
-    Route::get('admin/avatar/dolltest', [AvatarController::class, 'showAdminDollTest'])
+    Route::get('admin/avatar/dolllist', [AvatarController::class, 'showAdminDollList'])
+        ->name('admin.avatar.dolllist');
+    Route::get('admin/avatar/dolltest/{code?}', [AvatarController::class, 'showAdminDollTest'])
         ->name('admin.avatar.dolltest');
+    Route::get('/admin/avatar/dolltest/{dollName}/thumbnail', [AvatarController::class, 'getThumbnailForDoll'])
+        ->name('admin.avatar.dollthumbnail');
+    Route::get('/admin/avatar/render/{code?}', [AvatarController::class, 'getAvatarFromCode'])
+        ->name('admin.avatar.render');
+
+
 });
