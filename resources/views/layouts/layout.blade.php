@@ -123,13 +123,13 @@
                 @Staff
                 <h4 class="nav-link mt-2 pl-0"><a href="{{ route('admin.home') }}">Staff</a></h4>
                 <a class="nav-link" href="{{ route('support.agent.home') }}">Support / Request Agent</a>
+                <a class="nav-link" href="{{ route('admin.avatar.dolllist') }}">Avatar Doll Tester</a>
                 @endStaff
 
                 @Admin
                 <h4 class="nav-link mt-2 pl-0"><a href="{{ route('admin.home') }}">Admin</a></h4>
                 <a class="nav-link" href="{{ route('admin.accounts') }}">Account Browser</a>
                 <a class="nav-link" href="{{ route('admin.roles') }}">Account Roles List</a>
-                <a class="nav-link" href="{{ route('admin.avatar.dolllist') }}">Avatar Doll Tester</a>
                 @endAdmin
 
                 @SiteAdmin
