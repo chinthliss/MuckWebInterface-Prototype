@@ -36,6 +36,7 @@ Route::get('c/{characterName}', [MultiplayerController::class, 'showCharacter'])
     ->name('multiplayer.character.view');
 
 //Character Avatar images
+Route::get('avatar/gradient/{name}', [AvatarController::class, 'getGradient']);
 
 //Multiplayer getting started - always available since it gives instructions on creating an account.
 Route::get('multiplayer/gettingstarted', [MultiplayerController::class, 'showGettingStarted'])
@@ -52,12 +53,14 @@ Route::post('accountcurrency/paypal_webhook', [PayPalController::class, 'paypalW
 Route::get('/roadmap', [HomeController::class, 'showRoadmap'])
     ->name('roadmap');
 
+//Information page for locked accounts
 Route::get('/accountlocked', [AccountController::class, 'lockedAccount'])
     ->name('auth.account.locked');
 
+
 /*
 |--------------------------------------------------------------------------
-| Pages that are available when NOT logged in
+| Pages that are only available when NOT logged in
 |--------------------------------------------------------------------------
 */
 

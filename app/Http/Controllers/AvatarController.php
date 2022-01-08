@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\AvatarGradient;
 use App\AvatarInstance;
 use App\AvatarService;
 use App\Muck\MuckConnection;
@@ -33,7 +34,7 @@ class AvatarController extends Controller
             ];
         }, $service->getDollNames());
 
-        return view('multiplayer.avatar-doll-list')->with([
+        return view('admin.avatar-doll-list')->with([
             'dolls' => $dolls,
             'invalid' => $dollUsage
         ]);
@@ -54,10 +55,11 @@ class AvatarController extends Controller
 
         $dolls = $service->getDollNames();
 
-        return view('multiplayer.avatar-doll-test')->with([
+        return view('admin.avatar-doll-test')->with([
             'code' => $code,
             'drawingSteps' => $drawingSteps,
             'dolls' => $dolls,
+            'gradients' => AvatarGradient::names(),
             'avatarWidth' => $service->avatarWidth(),
             'avatarHeight' => $service->avatarHeight()
         ]);
@@ -76,6 +78,17 @@ class AvatarController extends Controller
         $image = $service->renderAvatarInstance($avatar);
         return response($image, 200)
             ->header('Content-Type', $image->getImageFormat());
+    }
+
+    public function getGradient(string $name)
+    {
+        $gradient = AvatarGradient::fromName($name);
+        if (!$gradient) abort(404);
+
+        $image = $gradient->getImage();
+        return response($image, 200)
+            ->header('Content-Type', $image->getImageFormat());
+
     }
 
 }

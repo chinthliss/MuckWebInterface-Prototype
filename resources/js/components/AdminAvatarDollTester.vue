@@ -5,15 +5,16 @@
         <div class="d-flex flex-column flex-xl-row">
 
             <!-- Avatar -->
-            <div class="mr-xl-2">
+            <div class="mr-xl-4">
                 <div class="avatarHolder">
                     <img class="avatar" v-if="avatarImg" :width="avatarWidth" :height="avatarHeight" :src="avatarImg"
                          alt="Avatar Render">
                 </div>
             </div>
 
-            <!-- Controls -->
-            <div>
+            <!-- Doll Controls -->
+            <div class="mr-xl-4">
+
                 <div class="form-group">
                     <label for="torso">Torso (Base)</label>
                     <select class="form-control" id="torso" v-model="torso" @change="updateAndRefresh">
@@ -60,6 +61,52 @@
                         <option :value="doll" v-for="doll in dolls">{{ doll }}</option>
                     </select>
                 </div>
+
+            </div>
+
+            <!-- Gradient Controls -->
+            <div>
+
+                <div class="form-group">
+                    <label for="torso">Fur / Skin 1</label>
+                    <select class="form-control" v-model="colors.skin1" @change="updateAndRefresh">
+                        <option value="">(Default)</option>
+                        <option :value="gradient" v-for="gradient in gradients">{{ gradient }}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="torso">Fur / Skin 2</label>
+                    <select class="form-control" v-model="colors.skin2" @change="updateAndRefresh">
+                        <option value="">(Default)</option>
+                        <option :value="gradient" v-for="gradient in gradients">{{ gradient }}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="torso">Bare Skin</label>
+                    <select class="form-control" v-model="colors.skin3" @change="updateAndRefresh">
+                        <option value="">(Default)</option>
+                        <option :value="gradient" v-for="gradient in gradients">{{ gradient }}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="torso">Hair</label>
+                    <select class="form-control" v-model="colors.hair" @change="updateAndRefresh">
+                        <option value="">(Default)</option>
+                        <option :value="gradient" v-for="gradient in gradients">{{ gradient }}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="torso">Eye</label>
+                    <select class="form-control" v-model="colors.eyes" @change="updateAndRefresh">
+                        <option value="">(Default)</option>
+                        <option :value="gradient" v-for="gradient in gradients">{{ gradient }}</option>
+                    </select>
+                </div>
+
             </div>
 
         </div>
@@ -94,6 +141,7 @@ export default {
     props: {
         drawingSteps: {Type: Array, required: true},
         dolls: {type: Array, required: true},
+        gradients: {type: Array, required: true},
         initialCode: {type: String, required: true},
         baseUrl: {type: String, required: true},
         renderUrl: {type: String, required: true},
@@ -110,7 +158,14 @@ export default {
             arms: "",
             legs: "",
             groin: "",
-            ass: ""
+            ass: "",
+            colors: {
+                skin1: '',
+                skin2: '',
+                skin3: '',
+                hair: '',
+                eyes: ''
+            }
         };
     },
     mounted: function () {
@@ -122,6 +177,13 @@ export default {
         this.legs = this.json.legs ?? '';
         this.groin = this.json.groin ?? '';
         this.ass = this.json.ass ?? '';
+        if (this.json.colors) {
+            this.colors.skin1 = this.json.colors.skin1 || '';
+            this.colors.skin2 = this.json.colors.skin2 || '';
+            this.colors.skin3 = this.json.colors.skin3 || '';
+            this.colors.hair = this.json.colors.hair || '';
+            this.colors.eyes = this.json.colors.eyes || '';
+        }
         this.avatarImg = this.renderUrl + '/' + this.code;
     },
     methods: {
@@ -134,6 +196,15 @@ export default {
             if (this.legs && this.legs !== this.torso) newJson.legs = this.legs;
             if (this.groin && this.groin !== this.torso) newJson.groin = this.groin;
             if (this.ass && this.ass !== this.torso) newJson.ass = this.ass;
+
+            let setColors = {};
+            if (this.colors.skin1) setColors.skin1 = this.colors.skin1;
+            if (this.colors.skin2) setColors.skin2 = this.colors.skin2;
+            if (this.colors.skin3) setColors.skin3 = this.colors.skin3;
+            if (this.colors.hair) setColors.hair = this.colors.hair;
+            if (this.colors.eyes) setColors.eyes = this.colors.eyes;
+            if (Object.keys(setColors).length > 0) newJson.colors = setColors;
+
             let newCode = btoa(JSON.stringify(newJson));
             window.location = this.baseUrl + '/' + newCode;
         },

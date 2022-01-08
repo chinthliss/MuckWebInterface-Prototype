@@ -215,6 +215,20 @@ class AvatarService
         $image->setImageFormat("png");
 
         foreach ($this->getDrawingStepsForAvatar($avatar) as $step) {
+            //Prepare gradients
+            $gradients = [ // Order is important here
+                // Fur/Skin 1
+                AvatarGradient::fromName($avatar->colors['skin1'] ?? 'Hot Pink')->getImage(),
+                // Fur/Skin 2
+                AvatarGradient::fromName($avatar->colors['skin2'] ?? 'Raspberry')->getImage(),
+                // Hair Color
+                AvatarGradient::fromName($avatar->colors['hair'] ?? 'Toxic Green')->getImage(),
+                // Bare Skin
+                AvatarGradient::fromName($avatar->colors['skin3'] ?? 'Psychedelic')->getImage(),
+                // Eye Color
+                AvatarGradient::fromName($avatar->colors['eyes'] ?? 'Sky Blue')->getImage()
+            ];
+
             /** @var Imagick $doll */
             $doll = $step['doll'];
             foreach ($step['layers'] as $layer) {
@@ -222,14 +236,11 @@ class AvatarService
                 $doll->setIteratorIndex($layer['layerIndex']);
                 $extents = $doll->getImagePage(); // Returns width, height, x and y (offsets) for this layer
 
-                $gradient = new Imagick();
-                $gradient->newPseudoImage(1,100, 'gradient:navy-snow');
-
                 // Take a copy of that relevant layer and use the gradient as a color lookup table (clut) on it
                 $subPart = new Imagick();
                 $subPart->newImage($extents['width'], $extents['height'], 'transparent');
                 $subPart->compositeImage($doll, Imagick::COMPOSITE_OVER, 0, 0);
-                $subPart->clutImage($gradient, Imagick::CHANNEL_DEFAULT);
+                $subPart->clutImage($gradients[$colorChannel - 1], Imagick::CHANNEL_DEFAULT);
 
                 // Copy the subPage onto our final image, using its original offsets
                 $image->compositeImage($subPart, Imagick::COMPOSITE_OVER,

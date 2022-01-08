@@ -19,6 +19,7 @@ class AvatarInstance
         public ?string $legs = null,
         public ?string $groin = null,
         public ?string $ass = null,
+        public array $colors = [],
         public ?string $background = null,
         public array   $items = []
     )
@@ -41,6 +42,8 @@ class AvatarInstance
         if ($this->groin) $array['groin'] = $this->groin;
         if ($this->ass) $array['ass'] = $this->ass;
         if ($this->background) $array['background'] = $this->background;
+
+        if (count($this->colors)) $array['colors'] = $this->colors;
         if (!empty($this->items)) {
             throw new Exception("Items not implemented yet.");
         }
@@ -56,6 +59,7 @@ class AvatarInstance
             $array['legs'] ?? null,
             $array['groin'] ?? null,
             $array['ass'] ?? null,
+            $array['colors'] ?? [],
             $array['background'] ?? null,
             $array['items'] ?? []
         );
