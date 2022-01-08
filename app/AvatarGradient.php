@@ -486,6 +486,8 @@ class AvatarGradient
 
     public function getImage(): Imagick
     {
+        Log::debug("Rendering Image for gradient {$this->name}");
+
         //Holding image
         $image = new Imagick();
 
@@ -511,7 +513,6 @@ class AvatarGradient
         }
         for ($i = 0; $i < $image->getNumberImages(); $i++) {
             $image->setIteratorIndex($i);
-            Log::debug("Step $i: " . json_encode($image->getImagePage()));
         }
         $image = $image->mergeImageLayers(Imagick::LAYERMETHOD_COALESCE);
         $image->setImageFormat('png');
