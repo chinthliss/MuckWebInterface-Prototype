@@ -232,7 +232,8 @@ class AvatarService
             /** @var Imagick $doll */
             $doll = $step['doll'];
             foreach ($step['layers'] as $layer) {
-                $colorChannel = $layer['colorChannel'];
+                $colorChannel = $layer['colorChannel'] - 1;
+                $colorChannel = max(0, $colorChannel); // Couple of avatars have 0 instead of 1
                 $doll->setIteratorIndex($layer['layerIndex']);
                 $extents = $doll->getImagePage(); // Returns width, height, x and y (offsets) for this layer
 
@@ -240,7 +241,7 @@ class AvatarService
                 $subPart = new Imagick();
                 $subPart->newImage($extents['width'], $extents['height'], 'transparent');
                 $subPart->compositeImage($doll, Imagick::COMPOSITE_OVER, 0, 0);
-                $subPart->clutImage($gradients[$colorChannel - 1], Imagick::CHANNEL_DEFAULT);
+                $subPart->clutImage($gradients[$colorChannel], Imagick::CHANNEL_DEFAULT);
 
                 // Copy the subPage onto our final image, using its original offsets
                 $image->compositeImage($subPart, Imagick::COMPOSITE_OVER,
