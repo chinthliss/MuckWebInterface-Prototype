@@ -206,7 +206,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     rpsys "infection/" array_get_propdirs
     foreach nip infection !
         rpsys "infection/" infection @ strcat "/avatar" strcat getpropstr 
-        ?dup not if "(default)" then doll !
+        ?dup not if "FS_Human1" then doll !
         dup doll @ array_getitem 
         ?dup not if { }list then
         infection @ swap array_appenditem
