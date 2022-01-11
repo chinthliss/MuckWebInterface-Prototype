@@ -8,10 +8,12 @@ use Imagick;
 
 class AvatarService
 {
+
     private string $dollFolder = 'app/avatar/doll/';
 
     private int $width = 384;
     private int $height = 640;
+    private int $gradientSize = 2048; // Aiming for 10-bit, since that's growing in usage
 
     private array $bodyParts = ['torso', 'head', 'arms', 'legs', 'ass', 'groin'];
 
@@ -218,15 +220,15 @@ class AvatarService
             //Prepare gradients
             $gradients = [ // Order is important here
                 // Fur/Skin 1
-                AvatarGradient::fromName($avatar->colors['skin1'] ?? 'Hot Pink')->getImage(),
+                $this->getGradientImageFromName($avatar->colors['skin1'] ?? 'Hot Pink'),
                 // Fur/Skin 2
-                AvatarGradient::fromName($avatar->colors['skin2'] ?? 'Raspberry')->getImage(),
+                $this->getGradientImageFromName($avatar->colors['skin2'] ?? 'Raspberry'),
                 // Hair Color
-                AvatarGradient::fromName($avatar->colors['hair'] ?? 'Toxic Green')->getImage(),
+                $this->getGradientImageFromName($avatar->colors['hair'] ?? 'Toxic Green'),
                 // Bare Skin
-                AvatarGradient::fromName($avatar->colors['skin3'] ?? 'Psychedelic')->getImage(),
+                $this->getGradientImageFromName($avatar->colors['skin3'] ?? 'Psychedelic'),
                 // Eye Color
-                AvatarGradient::fromName($avatar->colors['eyes'] ?? 'Sky Blue')->getImage()
+                $this->getGradientImageFromName($avatar->colors['eyes'] ?? 'Sky Blue')
             ];
 
             /** @var Imagick $doll */
@@ -251,4 +253,68 @@ class AvatarService
         return $image;
     }
 
+    #region Gradients
+
+    /**
+     * @return AvatarGradient[]
+     */
+    public function getGradients(): array
+    {
+        $gradients = AvatarGradient::getGradientData();
+        $result = [];
+
+        foreach($gradients as $gradientData) {
+            $result[] = AvatarGradient::fromArray($gradientData);
+        }
+        return $result;
+    }
+
+    public function getGradient(string $name): ?AvatarGradient
+    {
+        $gradients = AvatarGradient::getGradientData();
+        if (!array_key_exists($name, $gradients)) return null;
+        return AvatarGradient::fromArray($gradients[$name]);
+
+    }
+
+    public function getGradientImage(AvatarGradient $gradient): Imagick
+    {
+        Log::debug("Rendering Image for gradient {$gradient->name}");
+
+        //Holding image
+        $image = new Imagick();
+
+        $stepCount = count($gradient->steps); // Just for readability
+
+        //Starting from 1 because we want to render from the previous step to this one
+        for ($i = 1; $i < $stepCount; $i++) {
+            $fromStep = $gradient->steps[$i - 1];
+            $toStep = $gradient->steps[$i];
+            $fromPixel = (int)($fromStep[0] * $this->gradientSize);
+            $toPixel = (int)($toStep[0] * $this->gradientSize);
+            //Colors need to be percentages
+            $fromRed = $fromStep[1] * 100.0;
+            $fromGreen = $fromStep[2] * 100.0;
+            $fromBlue = $fromStep[3] * 100.0;
+            $toRed = $toStep[1] * 100.0;
+            $toGreen = $toStep[2] * 100.0;
+            $toBlue = $toStep[3] * 100.0;
+            $fromColor = "rgb($fromRed%, $fromGreen%, $fromBlue%)";
+            $toColor = "rgb($toRed%, $toGreen%, $toBlue%)";
+            $image->newPseudoImage(100, $toPixel - $fromPixel, "gradient:$fromColor-$toColor");
+            $image->setImagePage(100, $toPixel - $fromPixel, 0, $fromPixel);
+        }
+        for ($i = 0; $i < $image->getNumberImages(); $i++) {
+            $image->setIteratorIndex($i);
+        }
+        $image = $image->mergeImageLayers(Imagick::LAYERMETHOD_COALESCE);
+        $image->setImageFormat('png');
+        return $image;
+    }
+
+    public function getGradientImageFromName(string $name) : Imagick
+    {
+        return $this->getGradientImage($this->getGradient($name));
+    }
+    #endregion Gradients
 }

@@ -222,6 +222,8 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
 |--------------------------------------------------------------------------
 */
 Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'not.locked', 'character']], function () {
+    Route::get('multiplayer/avatargradients', [AvatarController::class, 'showUserAvatarGradients'])
+        ->name('multiplayer.avatar.gradients');
     Route::get('multiplayer/avatar', [AvatarController::class, 'showAvatarEditor'])
         ->name('multiplayer.avatar');
     Route::get('multiplayer/connect', [MultiplayerController::class, 'showConnect'])
@@ -276,6 +278,11 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
         Route::get('render/{code?}', [AvatarController::class, 'getAvatarFromCode'])
             ->name('admin.avatar.render');
     });
+
+    //Avatar Gradients
+    Route::get('admin/avatargradients', [AvatarController::class, 'showAdminAvatarGradients'])
+        ->name('admin.avatar.gradients');
+
 
 });
 

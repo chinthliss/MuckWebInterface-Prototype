@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\AvatarGradient;
 use App\AvatarInstance;
 use App\AvatarService;
 use App\Muck\MuckConnection;
@@ -54,12 +53,13 @@ class AvatarController extends Controller
         }, $drawingSteps);
 
         $dolls = $service->getDollNames();
+        $gradients = $service->getGradients();
 
         return view('admin.avatar-doll-test')->with([
             'code' => $code,
             'drawingSteps' => $drawingSteps,
             'dolls' => $dolls,
-            'gradients' => AvatarGradient::names(),
+            'gradients' => array_keys($gradients),
             'avatarWidth' => $service->avatarWidth(),
             'avatarHeight' => $service->avatarHeight()
         ]);
@@ -80,15 +80,27 @@ class AvatarController extends Controller
             ->header('Content-Type', $image->getImageFormat());
     }
 
-    public function getGradient(string $name)
+    #region Gradients
+
+    public function showUserAvatarGradients()
     {
-        $gradient = AvatarGradient::fromName($name);
+        return view('multiplayer.avatar-gradient');
+    }
+
+    public function showAdminAvatarGradients()
+    {
+        return view('admin.avatar-gradient');
+    }
+
+    public function getGradient(string $name, AvatarService $service)
+    {
+        $gradient = $service->getGradient($name);
         if (!$gradient) abort(404);
 
-        $image = $gradient->getImage();
+        $image = $service->getGradientImage($gradient);
         return response($image, 200)
             ->header('Content-Type', $image->getImageFormat());
 
     }
-
+    #endregion Gradients
 }

@@ -2,16 +2,11 @@
 
 namespace App;
 
-use Illuminate\Support\Facades\Log;
-use Imagick;
-use ImagickPixel;
-
 /**
  * Utility class to hold a gradient. Mostly made to keep the hardcoded list in one place.
  */
 class AvatarGradient
 {
-    private static int $gradientSize = 2048; // Aiming for 10-bit, since that's growing in usage
     /**
      * Steps -> 4 float array in the form stepPoint, red, green, blue. Values are normalized
      * @var array[]
@@ -471,53 +466,19 @@ class AvatarGradient
 
     }
 
-    public static function fromName(string $name): ?AvatarGradient
+    public static function fromArray(array $array) : AvatarGradient
     {
-        if (!array_key_exists($name, self::$gradients)) return null;
-        $config = self::$gradients[$name];
-
-        return new AvatarGradient($name, $config['desc'], $config['steps']);
+        return new AvatarGradient($array['name'], $array['desc'], $array['steps']);
     }
 
-    public static function names(): array
+    public static function getGradientData(): array
     {
-        return array_keys(self::$gradients);
-    }
-
-    public function getImage(): Imagick
-    {
-        Log::debug("Rendering Image for gradient {$this->name}");
-
-        //Holding image
-        $image = new Imagick();
-
-        $stepCount = count($this->steps); // Just for readability
-
-        //Starting from 1 because we want to render from the previous step to this one
-        for ($i = 1; $i < $stepCount; $i++) {
-            $fromStep = $this->steps[$i - 1];
-            $toStep = $this->steps[$i];
-            $fromPixel = (int)($fromStep[0] * self::$gradientSize);
-            $toPixel = (int)($toStep[0] * self::$gradientSize);
-            //Colors need to be percentages
-            $fromRed = $fromStep[1] * 100.0;
-            $fromGreen = $fromStep[2] * 100.0;
-            $fromBlue = $fromStep[3] * 100.0;
-            $toRed = $toStep[1] * 100.0;
-            $toGreen = $toStep[2] * 100.0;
-            $toBlue = $toStep[3] * 100.0;
-            $fromColor = "rgb($fromRed%, $fromGreen%, $fromBlue%)";
-            $toColor = "rgb($toRed%, $toGreen%, $toBlue%)";
-            $image->newPseudoImage(100, $toPixel - $fromPixel, "gradient:$fromColor-$toColor");
-            $image->setImagePage(100, $toPixel - $fromPixel, 0, $fromPixel);
+        //Temporary measure to emulate a row from a database
+        $gradients = self::$gradients;
+        foreach($gradients as $name => $gradient) {
+            $gradients[$name]['name'] = $name;
         }
-        for ($i = 0; $i < $image->getNumberImages(); $i++) {
-            $image->setIteratorIndex($i);
-        }
-        $image = $image->mergeImageLayers(Imagick::LAYERMETHOD_COALESCE);
-        $image->setImageFormat('png');
-        return $image;
+        return $gradients;
     }
-
 
 }
