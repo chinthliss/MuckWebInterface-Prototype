@@ -21,7 +21,7 @@ class HomeController extends Controller
         $roadmap = [
             [
                 'title' => 'Styling/Theming',
-                'description' => 'Build up a common set of styles to use throughout the site.',
+                'description' => 'Build up a common set of styles to use throughout the site. This includes looking at the page layout and how it breaks down on mobile/tablets.',
                 'progress' => 'Ongoing'
             ],
             [
@@ -47,7 +47,7 @@ class HomeController extends Controller
             [
                 'title' => 'Connect',
                 'description' => 'Allow a webpage to control the muck via websockets. Re-write of the existing system which uses Flash. Also want to tie into this framework so it logs in as the active character.',
-                'progress' => 'Pending'
+                'progress' => 'Pending writing a client for though a simple version is now in use on the existing website.'
             ],
             [
                 'title' => 'Websocket',
@@ -77,7 +77,7 @@ class HomeController extends Controller
             [
                 'title' => 'Avatar editing',
                 'description' => 'Allow the viewing and editing of unique avatars per character.',
-                'progress' => 'Investigating'
+                'progress' => 'In progress. Viewing largely done, need to look at editing including implementing some old functionality for user added gradients.'
             ]
         ];
         return view('roadmap')->with([
