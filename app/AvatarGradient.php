@@ -71,6 +71,7 @@ class AvatarGradient
         ],
         'Cotton Candy' => [
             'desc' => "Get lost in a pink cloud.",
+            'owner_aid' => 4004,
             'steps' => [
                 [0, 1, 0.588235294117647, 0.807843137254902],
                 [1, 1, 0.941176470588235, 1]
@@ -118,6 +119,7 @@ class AvatarGradient
         ],
         'Flour' => [
             'desc' => "Is that a ghost?",
+            'owner_aid' => 3639,
             'steps' => [
                 [0, 0.47843137254902, 0.47843137254902, 0.47843137254902],
                 [1, 1, 1, 1]
@@ -199,6 +201,7 @@ class AvatarGradient
         ],
         'Hunter Green' => [
             'desc' => "Deepest of greens.",
+            'owner_aid' => 3642,
             'steps' => [
                 [0, 0, 0, 0],
                 [1, 0.207843137254902, 0.368627450980392, 0.231372549019608]
@@ -213,6 +216,7 @@ class AvatarGradient
         ],
         'Infernal' => [
             'desc' => "Gloomy with tinges of red.",
+            'owner_aid' => 4900,
             'steps' => [
                 [0, 0, 0, 0],
                 [0.784313725490196, 0.0784313725490196, 0.0784313725490196, 0.0784313725490196],
@@ -236,6 +240,7 @@ class AvatarGradient
         ],
         'Light Tan' => [
             'desc' => "A hint of brown",
+            'owner_aid' => 3882,
             'steps' => [
                 [0, 0, 0, 0],
                 [1, 0.949019607843137, 0.674509803921569, 0.466666666666667]
@@ -243,6 +248,7 @@ class AvatarGradient
         ],
         'Lust' => [
             'desc' => "Feeling a little flushed?",
+            'owner_aid' => 3882,
             'steps' => [
                 [0, 0, 0, 0],
                 [1, 0.901960784313726, 0.125490196078431, 0.125490196078431]
@@ -272,6 +278,7 @@ class AvatarGradient
         ],
         'Mint Frosting' => [
             'desc' => "As tasty as it is tasteful.",
+            'owner_aid' => 4004,
             'steps' => [
                 [0, 0.243137254901961, 0.705882352941177, 0.537254901960784],
                 [1, 0.96078431372549, 1, 0.980392156862745]
@@ -326,6 +333,7 @@ class AvatarGradient
         ],
         'Pinky Pink' => [
             'desc' => "A rich pink.",
+            'owner_aid' => 4208,
             'steps' => [
                 [0, 1, 0.588235294117647, 0.807843137254902],
                 [1, 1, 0.392156862745098, 0.745098039215686],
@@ -361,6 +369,7 @@ class AvatarGradient
         ],
         'Royal Blue' => [
             'desc' => "Deep as the sea itself.",
+            'owner_aid' => 8308,
             'steps' => [
                 [0, 0.0392156862745098, 0.0392156862745098, 0.0392156862745098],
                 [1, 0, 0.137254901960784, 0.4]
@@ -376,6 +385,7 @@ class AvatarGradient
         ],
         'Sinister' => [
             'desc' => "Dark with red highlights.",
+            'owner_aid' => 4900,
             'steps' => [
                 [0, 0, 0, 0],
                 [0.196078431372549, 0.490196078431373, 0.196078431372549, 0.0196078431372549],
@@ -400,6 +410,7 @@ class AvatarGradient
         ],
         'Tanned' => [
             'desc' => "Just a bit tan.",
+            'owner_aid' => 4129,
             'steps' => [
                 [0, 0, 0, 0],
                 [1, 0.941176470588235, 0.556862745098039, 0.372549019607843]
@@ -407,6 +418,7 @@ class AvatarGradient
         ],
         'Tiger-Orange' => [
             'desc' => "Rawr!",
+            'owner_aid' => 3661,
             'steps' => [
                 [0, 0, 0, 0],
                 [0.156862745098039, 0.588235294117647, 0.235294117647059, 0.0784313725490196],
@@ -432,6 +444,7 @@ class AvatarGradient
         ],
         'Ultra Violet' => [
             'desc' => "So Violet, we had to get a special permit.",
+            'owner_aid' => 6958,
             'steps' => [
                 [0, 0, 0, 0],
                 [1, 0.607843137254902, 0, 0.988235294117647]
@@ -460,7 +473,9 @@ class AvatarGradient
     public function __construct(
         public string $name,
         public string $desc,
-        public array  $steps
+        public array  $steps,
+        public bool   $free,
+        public ?int   $owner_aid = null
     )
     {
 
@@ -468,7 +483,7 @@ class AvatarGradient
 
     public static function fromArray(array $array) : AvatarGradient
     {
-        return new AvatarGradient($array['name'], $array['desc'], $array['steps']);
+        return new AvatarGradient($array['name'], $array['desc'], $array['steps'], $array['free'] ?? false, $array['owner_aid'] ?? null);
     }
 
     public static function getGradientData(): array

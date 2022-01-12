@@ -15,6 +15,8 @@
 
 @section('content')
     <avatar-gradient-viewer
+        :admin="{{ 'true' }}"
+        :gradients="{{ json_encode($gradients) }}"
     >
     </avatar-gradient-viewer>
 @endsection

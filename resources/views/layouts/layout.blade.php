@@ -117,13 +117,15 @@
                 <a class="nav-link" href="{{ route('multiplayer.gettingstarted') }}">Getting Started</a>
                 <a class="nav-link" href="{{ route('multiplayer.character.select') }}">Character Select</a>
                 <a class="nav-link" href="{{ route('multiplayer.connect') }}">Connect</a>
-                <a class="nav-link" href="{{ route('multiplayer.avatar') }}">Avatar</a>
+                <a class="nav-link" href="{{ route('multiplayer.avatar') }}">Avatar - Edit</a>
+                <a class="nav-link" href="{{ route('multiplayer.avatar.gradients') }}">Avatar - Gradients</a>
                 <a class="nav-link" href="{{ route('accountcurrency') }}">Buy {{ Lex::get('accountcurrency') }}</a>
 
                 @Staff
                 <h4 class="nav-link mt-2 pl-0"><a href="{{ route('admin.home') }}">Staff</a></h4>
                 <a class="nav-link" href="{{ route('support.agent.home') }}">Support / Request Agent</a>
                 <a class="nav-link" href="{{ route('admin.avatar.dolllist') }}">Avatar Doll Tester</a>
+                <a class="nav-link" href="{{ route('admin.avatar.gradients') }}">Avatar Gradients</a>
                 @endStaff
 
                 @Admin

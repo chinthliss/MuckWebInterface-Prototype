@@ -36,7 +36,8 @@ Route::get('c/{characterName}', [MultiplayerController::class, 'showCharacter'])
     ->name('multiplayer.character.view');
 
 //Character Avatar images
-Route::get('avatar/gradient/{name}', [AvatarController::class, 'getGradient']);
+Route::get('avatar/gradient/{name}', [AvatarController::class, 'getGradient'])
+    ->name('avatar.gradient.image');
 
 //Multiplayer getting started - always available since it gives instructions on creating an account.
 Route::get('multiplayer/gettingstarted', [MultiplayerController::class, 'showGettingStarted'])

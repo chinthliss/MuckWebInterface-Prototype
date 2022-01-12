@@ -82,14 +82,38 @@ class AvatarController extends Controller
 
     #region Gradients
 
-    public function showUserAvatarGradients()
+    public function showUserAvatarGradients(AvatarService $service)
     {
-        return view('multiplayer.avatar-gradient');
+        $gradients = [];
+        foreach ($service->getGradients() as $gradient) {
+            $gradients[] = [
+                'name' => $gradient->name,
+                'desc' => $gradient->desc,
+                'free' => $gradient->free,
+                'url' => route('avatar.gradient.image', ['name' => $gradient->name])
+            ];
+        }
+        return view('multiplayer.avatar-gradient', [
+            'gradients' => $gradients
+        ]);
     }
 
-    public function showAdminAvatarGradients()
+    public function showAdminAvatarGradients(AvatarService $service)
     {
-        return view('admin.avatar-gradient');
+        $gradients = [];
+        foreach ($service->getGradients() as $gradient) {
+            $gradients[] = [
+                'name' => $gradient->name,
+                'desc' => $gradient->desc,
+                'free' => $gradient->free,
+                'owner_aid' => $gradient->owner_aid,
+                'owner_url' => $gradient->owner_aid ? route('admin.account', ['accountId' => $gradient->owner_aid]) : null,
+                'url' => route('avatar.gradient.image', ['name' => $gradient->name])
+            ];
+        }
+        return view('admin.avatar-gradient', [
+            'gradients' => $gradients
+        ]);
     }
 
     public function getGradient(string $name, AvatarService $service)
@@ -97,7 +121,7 @@ class AvatarController extends Controller
         $gradient = $service->getGradient($name);
         if (!$gradient) abort(404);
 
-        $image = $service->getGradientImage($gradient);
+        $image = $service->getGradientImage($gradient, true);
         return response($image, 200)
             ->header('Content-Type', $image->getImageFormat());
 

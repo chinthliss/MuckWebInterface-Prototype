@@ -85,7 +85,7 @@ class AvatarService
         return $doll;
     }
 
-    public function getBaseCodeForDoll(string $dollName)
+    public function getBaseCodeForDoll(string $dollName) : string
     {
         $avatar = new AvatarInstance($dollName);
         return $avatar->code;
@@ -277,7 +277,7 @@ class AvatarService
 
     }
 
-    public function getGradientImage(AvatarGradient $gradient): Imagick
+    public function getGradientImage(AvatarGradient $gradient, ?bool $horizontal = false): Imagick
     {
         Log::debug("Rendering Image for gradient {$gradient->name}");
 
@@ -301,14 +301,15 @@ class AvatarService
             $toBlue = $toStep[3] * 100.0;
             $fromColor = "rgb($fromRed%, $fromGreen%, $fromBlue%)";
             $toColor = "rgb($toRed%, $toGreen%, $toBlue%)";
-            $image->newPseudoImage(100, $toPixel - $fromPixel, "gradient:$fromColor-$toColor");
-            $image->setImagePage(100, $toPixel - $fromPixel, 0, $fromPixel);
+            $image->newPseudoImage(1, $toPixel - $fromPixel, "gradient:$fromColor-$toColor");
+            $image->setImagePage(1, $toPixel - $fromPixel, 0, $fromPixel);
         }
         for ($i = 0; $i < $image->getNumberImages(); $i++) {
             $image->setIteratorIndex($i);
         }
         $image = $image->mergeImageLayers(Imagick::LAYERMETHOD_COALESCE);
         $image->setImageFormat('png');
+        if ($horizontal) $image->rotateImage('transparent', -90);
         return $image;
     }
 
