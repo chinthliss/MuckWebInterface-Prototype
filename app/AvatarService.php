@@ -27,7 +27,9 @@ class AvatarService
     private array $dollLayerInformationCache = [];
     private array $avatarDrawingStepsCache = [];
 
-    public function __construct()
+    public function __construct(
+        private AvatarProvider $provider
+    )
     {
         $this->subParts = [
             ['leg2', 'legs'],
@@ -260,21 +262,12 @@ class AvatarService
      */
     public function getGradients(): array
     {
-        $gradients = AvatarGradient::getGradientData();
-        $result = [];
-
-        foreach($gradients as $gradientData) {
-            $result[] = AvatarGradient::fromArray($gradientData);
-        }
-        return $result;
+        return $this->provider->getGradients();
     }
 
     public function getGradient(string $name): ?AvatarGradient
     {
-        $gradients = AvatarGradient::getGradientData();
-        if (!array_key_exists($name, $gradients)) return null;
-        return AvatarGradient::fromArray($gradients[$name]);
-
+        return $this->provider->getGradient($name);
     }
 
     public function getGradientImage(AvatarGradient $gradient, ?bool $horizontal = false): Imagick
@@ -290,17 +283,11 @@ class AvatarService
         for ($i = 1; $i < $stepCount; $i++) {
             $fromStep = $gradient->steps[$i - 1];
             $toStep = $gradient->steps[$i];
-            $fromPixel = (int)($fromStep[0] * $this->gradientSize);
-            $toPixel = (int)($toStep[0] * $this->gradientSize);
-            //Colors need to be percentages
-            $fromRed = $fromStep[1] * 100.0;
-            $fromGreen = $fromStep[2] * 100.0;
-            $fromBlue = $fromStep[3] * 100.0;
-            $toRed = $toStep[1] * 100.0;
-            $toGreen = $toStep[2] * 100.0;
-            $toBlue = $toStep[3] * 100.0;
-            $fromColor = "rgb($fromRed%, $fromGreen%, $fromBlue%)";
-            $toColor = "rgb($toRed%, $toGreen%, $toBlue%)";
+            //Step values and colors are in the range 0..255
+            $fromPixel = (int)($fromStep[0] * $this->gradientSize / 255.0);
+            $toPixel = (int)($toStep[0] * $this->gradientSize  / 255.0);
+            $fromColor = "rgb($fromStep[1], $fromStep[2], $fromStep[3])";
+            $toColor = "rgb($toStep[1], $toStep[2], $toStep[3])";
             $image->newPseudoImage(1, $toPixel - $fromPixel, "gradient:$fromColor-$toColor");
             $image->setImagePage(1, $toPixel - $fromPixel, 0, $fromPixel);
         }

@@ -183,6 +183,7 @@ return [
         App\Providers\PatreonServiceProvider::class,
         App\Providers\AccountNotificationsServiceProvider::class,
         App\Providers\SupportTicketServiceProvider::class,
+        App\Providers\AvatarServiceProvider::class,
     ],
 
     /*

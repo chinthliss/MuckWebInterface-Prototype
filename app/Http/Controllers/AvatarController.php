@@ -47,7 +47,7 @@ class AvatarController extends Controller
         $avatar = AvatarInstance::fromCode($code);
         $drawingSteps = $service->getDrawingStepsForAvatar($avatar);
         //Remove 'doll' object from drawingsteps because it's just a reference to the Imagick object
-        $drawingSteps = array_map(function($step) {
+        $drawingSteps = array_map(function ($step) {
             unset($step['doll']);
             return $step;
         }, $drawingSteps);
@@ -106,8 +106,8 @@ class AvatarController extends Controller
                 'name' => $gradient->name,
                 'desc' => $gradient->desc,
                 'free' => $gradient->free,
-                'owner_aid' => $gradient->owner_aid,
-                'owner_url' => $gradient->owner_aid ? route('admin.account', ['accountId' => $gradient->owner_aid]) : null,
+                'owner_aid' => $gradient->owner?->getAid(),
+                'owner_url' => $gradient->owner?->getAdminUrl(),
                 'url' => route('avatar.gradient.image', ['name' => $gradient->name])
             ];
         }

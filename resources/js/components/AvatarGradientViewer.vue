@@ -9,7 +9,7 @@
                         <th scope="col">Name</th>
                         <th scope="col">Description</th>
                         <th scope="col" v-if="admin">Owner</th>
-                        <th scope="col">Cost / Status</th>
+                        <th scope="col">Ownership</th>
                         <th scope="col">Preview</th>
                     </tr>
                 </thead>

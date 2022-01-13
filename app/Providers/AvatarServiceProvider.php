@@ -2,10 +2,13 @@
 
 namespace App\Providers;
 
+use App\AvatarProvider;
+use App\AvatarProviderViaDatabase;
 use App\AvatarService;
+use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
 
-class AvatarServiceProvider extends ServiceProvider
+class AvatarServiceProvider extends ServiceProvider  implements DeferrableProvider
 {
     /**
      * Register services.
@@ -14,8 +17,9 @@ class AvatarServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->singleton(AvatarService::class, function($app) {
-            return new AvatarService();
+        $provider = new AvatarProviderViaDatabase();
+        $this->app->singleton(AvatarService::class, function($app) use ($provider) {
+            return new AvatarService($provider);
         });
     }
 
@@ -36,6 +40,6 @@ class AvatarServiceProvider extends ServiceProvider
      */
     public function provides()
     {
-        return [AvatarService::class];
+        return [AvatarService::class, AvatarProvider::class];
     }
 }
