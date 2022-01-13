@@ -29,9 +29,10 @@ Then from within the opened shell:
 ```  
 cd code  
 php artisan migrate --seed
+php artisan cache:clear
 php artisan config:clear
 php artisan route:clear
-php artisan cache:clear
+php artisan view:clear
 ```
 Then use one of the following scripts:  
 Single compile - `npm run dev`  
@@ -46,9 +47,10 @@ php artisan down
 git pull origin master
 php composer.phar install
 php artisan migrate
+php artisan cache:clear
 php artisan config:cache
 php artisan route:cache
-php artisan cache:clear
+php artisan view:clear
 // php artisan queue:restart
 npm install
 npm run production
