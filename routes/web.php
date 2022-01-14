@@ -35,7 +35,7 @@ Route::get('/', [HomeController::class, 'show'])
 Route::get('c/{characterName}', [MultiplayerController::class, 'showCharacter'])
     ->name('multiplayer.character.view');
 
-//Character Avatar images
+//Character Avatar images (Has an exception in LoadActiveCharacter for optimization)
 Route::get('avatar/gradient/{name}', [AvatarController::class, 'getGradient'])
     ->name('avatar.gradient.image');
 
@@ -65,7 +65,7 @@ Route::get('/accountlocked', [AccountController::class, 'lockedAccount'])
 |--------------------------------------------------------------------------
 */
 
-Route::group(['middleware' => ['web', 'guest']], function () {
+Route::group(['middleware' => ['guest']], function () {
     Route::get('login', [AccountController::class, 'showLoginForm'])
         ->name('login');
     Route::post('account/login', [AccountController::class, 'loginAccount'])
@@ -89,7 +89,7 @@ Route::group(['middleware' => ['web', 'guest']], function () {
 | Pages that require a login but doesn't need verification or the TOS to be agreed to.
 |--------------------------------------------------------------------------
 */
-Route::group(['middleware' => ['web', 'auth:account']], function () {
+Route::group(['middleware' => ['auth:account']], function () {
     Route::post('logout', [AccountController::class, 'logout'])->name('logout');
     Route::get('account/verifyemail', [AccountEmailController::class, 'show'])
         ->name('verification.notice'); // Name is required for Laravel's verification middleware
@@ -104,7 +104,7 @@ Route::group(['middleware' => ['web', 'auth:account']], function () {
 | Core pages that require a verified account and the TOS agreed to
 |--------------------------------------------------------------------------
 */
-Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']], function () {
+Route::group(['middleware' => ['auth:account', 'verified', 'tos.agreed']], function () {
 
     //Account
     Route::get('account', [AccountController::class, 'show'])->name('auth.account');
@@ -194,7 +194,7 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed']]
 | Multiplayer content that doesn't require a character
 |--------------------------------------------------------------------------
 */
-Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'not.locked']], function () {
+Route::group(['middleware' => ['auth:account', 'verified', 'tos.agreed', 'not.locked']], function () {
 
     Route::get('multiplayer', [MultiplayerController::class, 'showMultiplayerDashboard'])
         ->name('multiplayer.home');
@@ -222,7 +222,7 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
 | Multiplayer content that requires a character
 |--------------------------------------------------------------------------
 */
-Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'not.locked', 'character']], function () {
+Route::group(['middleware' => ['auth:account', 'verified', 'tos.agreed', 'not.locked', 'character']], function () {
     Route::get('multiplayer/avatargradients', [AvatarController::class, 'showUserAvatarGradients'])
         ->name('multiplayer.avatar.gradients');
     Route::get('multiplayer/avatar', [AvatarController::class, 'showAvatarEditor'])
@@ -238,7 +238,7 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
 */
 Route::prefix('singleplayer')->group(function () {
     //No additional middleware required
-    Route::group(['middleware' => ['web']], function () {
+    Route::group([], function () {
         Route::get('/', [SingleplayerController::class, 'showHome'])
             ->name('singleplayer.home');
     });
@@ -249,7 +249,7 @@ Route::prefix('singleplayer')->group(function () {
 | Staff pages
 |--------------------------------------------------------------------------
 */
-Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'role:staff']], function () {
+Route::group(['middleware' => ['auth:account', 'verified', 'tos.agreed', 'role:staff']], function () {
     Route::get('admin', [AdminController::class, 'show'])
         ->name('admin.home');
 
@@ -292,7 +292,7 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
 | Admin pages
 |--------------------------------------------------------------------------
 */
-Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'role:admin']], function () {
+Route::group(['middleware' => ['auth:account', 'verified', 'tos.agreed', 'role:admin']], function () {
 
     Route::get('admin/roles', [AdminController::class, 'showAccountRoles'])
         ->name('admin.roles');
@@ -311,7 +311,7 @@ Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 
 | Site Admin pages
 |--------------------------------------------------------------------------
 */
-Route::group(['middleware' => ['web', 'auth:account', 'verified', 'tos.agreed', 'role:siteadmin']], function () {
+Route::group(['middleware' => ['auth:account', 'verified', 'tos.agreed', 'role:siteadmin']], function () {
     Route::get('accountcurrency/subscriptions', [AccountCurrencyController::class, 'adminViewSubscriptions'])
         ->name('admin.subscriptions');
     Route::get('accountcurrency/subscriptions/api', [AccountCurrencyController::class, 'adminGetSubscriptions'])

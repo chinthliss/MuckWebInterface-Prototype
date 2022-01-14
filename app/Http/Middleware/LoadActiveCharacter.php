@@ -21,6 +21,16 @@ class LoadActiveCharacter
      */
     protected $muckObjectService;
 
+    /**
+     * Requests in this list won't attempt to load a character.
+     * This is intended to avoid the work if the request is just for a resource, such as an image
+     * @var array
+     */
+    private array $routesExempt = [
+        'avatar.gradient.image',
+        'admin.avatar.dollthumbnail'
+    ];
+
     public function __construct(MuckObjectService $muckObjectService)
     {
         $this->muckObjectService = $muckObjectService;
@@ -30,12 +40,15 @@ class LoadActiveCharacter
      * If a character dbref is specified, verifies and sets active character on the User object
      * Takes it from the header or cookie with the former getting precedence.
      *
-     * @param  Request  $request
-     * @param  Closure  $next
+     * @param Request $request
+     * @param Closure $next
      * @return mixed
      */
     public function handle(Request $request, Closure $next)
     {
+        //Allow bypass for pages that don't need a character
+        if (in_array($request->route()?->getName(), $this->routesExempt)) return $next($request);
+
         /** @var User $user */
         $user = $request->user('account');
         if ($user) {
@@ -54,8 +67,7 @@ class LoadActiveCharacter
                     $user->setCharacter($character);
                     // For the future? Add a context to all related log calls
                     // Log::withContext(['character' => $character->getName()];
-                }
-                else {
+                } else {
                     Log::debug("MultiplayerCharacter requested $characterDbref for $user - rejected, clearing cookie.");
                     Cookie::queue(Cookie::forget('character-dbref'));
                 }
