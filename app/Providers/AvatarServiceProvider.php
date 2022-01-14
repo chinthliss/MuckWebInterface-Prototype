@@ -2,9 +2,9 @@
 
 namespace App\Providers;
 
-use App\AvatarProvider;
-use App\AvatarProviderViaDatabase;
-use App\AvatarService;
+use App\Avatar\AvatarProvider;
+use App\Avatar\AvatarProviderViaDatabase;
+use App\Avatar\AvatarService;
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
 

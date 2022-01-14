@@ -1,7 +1,8 @@
 <?php
 
-namespace App;
+namespace App\Avatar;
 
+use App\User;
 use Illuminate\Support\Facades\DB;
 
 class AvatarProviderViaDatabase implements AvatarProvider

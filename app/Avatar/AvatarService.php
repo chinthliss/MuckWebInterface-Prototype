@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Avatar;
 
 use Exception;
 use Illuminate\Support\Facades\Log;

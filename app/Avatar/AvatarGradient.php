@@ -1,6 +1,8 @@
 <?php
 
-namespace App;
+namespace App\Avatar;
+
+use App\User;
 
 /**
  * Utility class to hold a gradient.

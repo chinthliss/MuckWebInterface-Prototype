@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\AvatarInstance;
-use App\AvatarService;
+use App\Avatar\AvatarInstance;
+use App\Avatar\AvatarService;
 use App\Muck\MuckConnection;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class AvatarController extends Controller
