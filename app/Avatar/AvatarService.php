@@ -270,7 +270,7 @@ class AvatarService
         return $this->provider->getGradient($name);
     }
 
-    public function getGradientImage(AvatarGradient $gradient, ?bool $horizontal = false): Imagick
+    public function renderGradientImage(AvatarGradient $gradient, ?bool $horizontal = false): Imagick
     {
         Log::debug("Rendering Image for gradient {$gradient->name}");
 
@@ -286,13 +286,12 @@ class AvatarService
             //Step values and colors are in the range 0..255
             $fromPixel = (int)($fromStep[0] * $this->gradientSize / 255.0);
             $toPixel = (int)($toStep[0] * $this->gradientSize  / 255.0);
-            $fromColor = "rgb($fromStep[1], $fromStep[2], $fromStep[3])";
-            $toColor = "rgb($toStep[1], $toStep[2], $toStep[3])";
-            $image->newPseudoImage(1, $toPixel - $fromPixel, "gradient:$fromColor-$toColor");
-            $image->setImagePage(1, $toPixel - $fromPixel, 0, $fromPixel);
-        }
-        for ($i = 0; $i < $image->getNumberImages(); $i++) {
-            $image->setIteratorIndex($i);
+            if ($toPixel > $fromPixel) { // Only render steps that are more than a pixel
+                $fromColor = "rgb($fromStep[1], $fromStep[2], $fromStep[3])";
+                $toColor = "rgb($toStep[1], $toStep[2], $toStep[3])";
+                $image->newPseudoImage(1, $toPixel - $fromPixel, "gradient:$fromColor-$toColor");
+                $image->setImagePage(1, $toPixel - $fromPixel, 0, $fromPixel);
+            }
         }
         $image = $image->mergeImageLayers(Imagick::LAYERMETHOD_COALESCE);
         $image->setImageFormat('png');
@@ -300,9 +299,77 @@ class AvatarService
         return $image;
     }
 
+    public function renderGradientPreview(AvatarGradient $gradient) : Imagick
+    {
+        $gradientImage = $this->renderGradientImage($gradient);
+        $avatar = new AvatarInstance('FS_Husky');
+
+        //Create a blank canvas
+        $image = new Imagick();
+        $image->newImage($this->width, $this->height, 'transparent');
+        $image->setImageFormat("png");
+
+        //Prepare gradients
+        $gradients = [ // Order is important here
+            // Fur/Skin 1
+            $gradientImage,
+            // Fur/Skin 2
+            $gradientImage,
+            // Hair Color
+            $gradientImage,
+            // Bare Skin
+            $this->getGradientImageFromName($avatar->colors['skin3'] ?? 'Greyscale'),
+            // Eye Color
+            $this->getGradientImageFromName($avatar->colors['eyes'] ?? 'Greyscale')
+        ];
+
+        //Create lookup list of which subparts we'll render
+        $part = 'head';
+        $subPartsToRender = [];
+        foreach ($this->subParts as $subPart) {
+            if ($subPart[1] === $part) $subPartsToRender[] = $subPart[0];
+        }
+
+        //Collect the closest bounds found so we can crop the result
+        $lowestX = $this->width;
+        $lowestY = $this->height;
+        $highestX = 0;
+        $highestY = 0;
+
+        foreach ($this->getDrawingStepsForAvatar($avatar) as $step) {
+            if (!in_array($step['subPart'], $subPartsToRender)) continue;
+            /** @var Imagick $doll */
+            $doll = $step['doll'];
+            foreach ($step['layers'] as $layer) {
+                $colorChannel = $layer['colorChannel'] - 1;
+                $colorChannel = max(0, $colorChannel); // Couple of avatars have 0 instead of 1
+                $doll->setIteratorIndex($layer['layerIndex']);
+                $extents = $doll->getImagePage(); // Returns width, height, x and y (offsets) for this layer
+
+                // Take a copy of that relevant layer and use the gradient as a color lookup table (clut) on it
+                $subPart = new Imagick();
+                $subPart->newImage($extents['width'], $extents['height'], 'transparent');
+                $subPart->compositeImage($doll, Imagick::COMPOSITE_OVER, 0, 0);
+                $subPart->clutImage($gradients[$colorChannel], Imagick::CHANNEL_DEFAULT);
+
+                // Copy the subPage onto our final image, using its original offsets
+                $image->compositeImage($subPart, Imagick::COMPOSITE_OVER,
+                    $extents['x'], $extents['y']);
+
+                $highestX = max($highestX, $extents['x'] + $extents['width']);
+                $highestY = max($highestY, $extents['y'] + $extents['height']);
+                if ($extents['x'] < $lowestX) $lowestX = $extents['x'];
+                if ($extents['y'] < $lowestY) $lowestY = $extents['y'];
+            }
+
+        }
+        $image->cropImage($highestX - $lowestX, $highestY - $lowestY, $lowestX, $lowestY);
+        return $image;
+    }
+
     public function getGradientImageFromName(string $name) : Imagick
     {
-        return $this->getGradientImage($this->getGradient($name));
+        return $this->renderGradientImage($this->getGradient($name));
     }
     #endregion Gradients
 }

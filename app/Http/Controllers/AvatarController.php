@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Avatar\AvatarGradient;
 use App\Avatar\AvatarInstance;
 use App\Avatar\AvatarService;
 use App\Muck\MuckConnection;
@@ -120,10 +121,23 @@ class AvatarController extends Controller
         $gradient = $service->getGradient($name);
         if (!$gradient) abort(404);
 
-        $image = $service->getGradientImage($gradient, true);
+        $image = $service->renderGradientImage($gradient, true);
         return response($image, 200)
             ->header('Content-Type', $image->getImageFormat());
 
+    }
+
+    public function getGradientPreview(string $code, AvatarService $service)
+    {
+        $config = json_decode(base64_decode($code), JSON_FORCE_OBJECT);
+
+        if (!array_key_exists('steps', $config)) abort(400);
+
+        $steps = $config['steps'];
+        $gradient = new AvatarGradient('_temporary', '_temporary', $steps, true, null);
+        $image = $service->renderGradientPreview($gradient);
+        return response($image, 200)
+            ->header('Content-Type', $image->getImageFormat());
     }
     #endregion Gradients
 }

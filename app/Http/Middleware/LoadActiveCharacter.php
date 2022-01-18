@@ -27,7 +27,8 @@ class LoadActiveCharacter
      * @var array
      */
     private array $routesExempt = [
-        'avatar.gradient.image'
+        'avatar.gradient.image',
+        'avatar.gradient.previewimage'
     ];
 
     public function __construct(MuckObjectService $muckObjectService)

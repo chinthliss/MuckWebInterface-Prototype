@@ -17,4 +17,7 @@
         :gradients="{{ json_encode($gradients) }}"
     >
     </avatar-gradient-viewer>
+    <avatar-gradient-creator
+        base-preview-url="{{ route('avatar.gradient.previewimage') }}"
+    ></avatar-gradient-creator>
 @endsection
