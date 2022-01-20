@@ -87,9 +87,13 @@
             </div>
         </div>
 
-        <div class="mt-2">
-            <button class="btn btn-primary" disabled>Submit</button>
-        </div>
+        <button disabled class="mt-4 btn btn-primary btn-with-img-icon">
+            <span class="btn-icon-accountcurrency btn-icon-left"></span>
+            Create Gradient
+            <span class="btn-second-line">20 {{ lex('accountcurrency') }}</span>
+        </button>
+        (Presently not available)
+
     </div>
 
 
