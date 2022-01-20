@@ -125,7 +125,7 @@
             <div class="value">
                 <ul>
                     <li v-for="step in this.drawingSteps">
-                        {{ step.subPart }} from {{ step.dollName }}, using: {{ layerListToString(step.layers) }}
+                        {{ step.part}}/{{ step.subPart }} from {{ step.dollName }}, using: {{ layerListToString(step.layers) }}
                     </li>
                 </ul>
             </div>

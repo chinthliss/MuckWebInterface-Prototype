@@ -45,21 +45,27 @@ class AvatarController extends Controller
         if (!$code) return redirect()->route('admin.avatar.dolllist');
 
         $avatar = AvatarInstance::fromCode($code);
-        $drawingSteps = $service->getDrawingStepsForAvatar($avatar);
-        //Remove 'doll' object from drawingsteps because it's just a reference to the Imagick object
+        $drawingSteps = $service->getDrawingPlanForAvatarInstance($avatar);
+        //Return simplified version without the doll object
         $drawingSteps = array_map(function ($step) {
-            unset($step['doll']);
-            return $step;
-        }, $drawingSteps);
+            return [
+                'dollName' => $step->dollName,
+                'part' => $step->part,
+                'subPart' => $step->subPart,
+                'layers' => $step->layers
+            ];
+        }, $drawingSteps->steps);
 
         $dolls = $service->getDollNames();
-        $gradients = $service->getGradients();
+        $gradients = array_map(function($gradient) {
+            return $gradient->name;
+        },$service->getGradients());
 
         return view('admin.avatar-doll-test')->with([
             'code' => $code,
             'drawingSteps' => $drawingSteps,
             'dolls' => $dolls,
-            'gradients' => array_keys($gradients),
+            'gradients' => $gradients,
             'avatarWidth' => $service->avatarWidth(),
             'avatarHeight' => $service->avatarHeight()
         ]);
@@ -135,7 +141,7 @@ class AvatarController extends Controller
 
         $steps = $config['steps'];
         $gradient = new AvatarGradient('_temporary', '_temporary', $steps, true, null);
-        $image = $service->renderGradientPreview($gradient);
+        $image = $service->renderGradientAvatarPreview($gradient);
         return response($image, 200)
             ->header('Content-Type', $image->getImageFormat());
     }

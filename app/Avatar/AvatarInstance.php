@@ -6,10 +6,19 @@ use Exception;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Holds the configuration for an avatar instance
+ * The manifest/configuration for an avatar instance
+ * At this stage everything is simple labels/values that a hash can be generated from.
  */
 class AvatarInstance
 {
+    const MODE_HEAD_ONLY = 'head_only';
+
+    const COLOR_PRIMARY = "skin1";
+    const COLOR_SECONDARY = "skin2";
+    const COLOR_NAUGHTY_BITS = 'skin3';
+    const COLOR_HAIR = 'hair';
+    const COLOR_EYES = 'eyes';
+
     public string $code;
 
     public function __construct(
@@ -19,9 +28,10 @@ class AvatarInstance
         public ?string $legs = null,
         public ?string $groin = null,
         public ?string $ass = null,
-        public array $colors = [],
+        public array   $colors = [],
         public ?string $background = null,
-        public array   $items = []
+        public array   $items = [],
+        public ?string $mode = null
     )
     {
         $this->code = base64_encode(json_encode($this->toArray()));
@@ -47,6 +57,8 @@ class AvatarInstance
         if (!empty($this->items)) {
             throw new Exception("Items not implemented yet.");
         }
+
+        if ($this->mode) $array['mode'] = $this->mode;
         return $array;
     }
 
@@ -61,7 +73,8 @@ class AvatarInstance
             $array['ass'] ?? null,
             $array['colors'] ?? [],
             $array['background'] ?? null,
-            $array['items'] ?? []
+            $array['items'] ?? [],
+            $array['mode'] ?? null
         );
     }
 
