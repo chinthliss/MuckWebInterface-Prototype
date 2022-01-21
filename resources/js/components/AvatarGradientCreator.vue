@@ -61,22 +61,22 @@
                             <div class="ml-1 stepValue">{{ step[3] }}</div>
                         </div>
 
-                        <div>
-                            <button class="btn btn-secondary mt-2 w-100" @click="deleteStep(index)">
+                        <div class="btn-group mt-2 w-100" role="group">
+                            <button class="btn btn-secondary" @click="deleteStep(index)">
                                 Delete Step {{ index +1 }}
+                            </button>
+                            <button v-if="steps.length < 16" class="btn btn-secondary" @click="addStepAfter(index)">
+                                Add new Step here
                             </button>
                         </div>
 
-                    </div>
-                    <div>
-                        <button class="btn btn-secondary mt-2 w-100" @click="addStep">Add New Step (Max 16)</button>
                     </div>
                 </div>
 
 
             </div>
             <div class="ml-xl-4">
-                <div v-if="this.steps.length < 2" class="alert alert-danger">A gradient requires at least two steps.</div>
+                <div v-if="steps.length < 2" class="alert alert-danger">A gradient requires at least two steps.</div>
                 <label>Entire Gradient</label>
                 <div>
                     <canvas width="256" height="24" id="GradientCanvas"></canvas>
@@ -139,9 +139,11 @@ export default {
             this.renderGradient();
 
         },
-        addStep: function (index) {
+        addStepAfter: function (index) {
             if (this.steps.length >= 16) return;
-            this.steps.push([255, 255, 255, 255]);
+
+            let previousStep = this.steps[index];
+            this.steps.splice(index, 0, [previousStep[0], previousStep[1], previousStep[2], previousStep[3]]);
             this.renderGradient();
         },
         renderGradient: function () {
