@@ -33,10 +33,21 @@
 </template>
 
 <script>
+/**
+ * @typedef {object} Gradient
+ * @property {string} name
+ * @property {string} desc
+ * @property {date} [created_at]
+ * @property {boolean} free
+ * @property {number} [owner_aid]
+ * @property {string} [owner_url]
+ * @property {string} url
+ */
 export default {
     name: "avatar-gradient-viewer",
     props: {
         admin: {Type: Boolean, required: false},
+        /** @type {Gradient[]} */
         gradients: {Type: Array, required: true}
     },
     data: function () {
