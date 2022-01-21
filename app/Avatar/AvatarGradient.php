@@ -4,6 +4,7 @@ namespace App\Avatar;
 
 use App\User;
 use Exception;
+use Illuminate\Support\Carbon;
 
 /**
  * Utility class to hold a gradient.
@@ -14,21 +15,24 @@ class AvatarGradient
      * @throws Exception
      */
     public function __construct(
-        public string $name,
-        public string $desc,
+        public string  $name,
+        public string  $desc,
 
         /**
          * @var array Each step is an array of [when, red, green, blue] with values between 0 and 255
          */
-        public array  $steps,
-        public bool   $free,
-        public ?User  $owner
+        public array   $steps,
+        public bool    $free,
+        public ?Carbon $created_at = null,
+        public ?User   $owner = null
     )
     {
+        if (!$this->created_at) $this->created_at = Carbon::now();
+
         if (!count($this->steps)) throw new Exception("A gradient requires at least one step.");
 
         //Validation, do by stepping through so we can report errors with an index.
-        for($i = 0; $i < count($this->steps); $i++) {
+        for ($i = 0; $i < count($this->steps); $i++) {
             $step = $this->steps[$i];
             if (count($step) != 4)
                 throw new Exception("Gradient step $i isn't in the form [When, R, G, B]");
@@ -65,6 +69,7 @@ class AvatarGradient
             $array['desc'],
             $array['steps'],
             $array['free'] ?? false,
+            $array['created_at'] ?? null,
             $array['owner_aid'] ?? null
         );
     }

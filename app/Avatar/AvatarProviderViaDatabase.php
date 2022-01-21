@@ -4,6 +4,7 @@ namespace App\Avatar;
 
 use App\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
 
 class AvatarProviderViaDatabase implements AvatarProvider
 {
@@ -13,7 +14,8 @@ class AvatarProviderViaDatabase implements AvatarProvider
             $row->name,
             $row->description,
             json_decode($row->steps_json),
-            $row->free ? $row->free : false,
+            $row->free ?: false,
+            $row->created_at ? new Carbon($row->created_at) : null,
             $row->owner_aid ? User::find($row->owner_aid) : null
         );
     }

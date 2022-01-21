@@ -8,6 +8,7 @@
                     <tr>
                         <th scope="col">Name</th>
                         <th scope="col">Description</th>
+                        <th scope="col" v-if="admin">Created</th>
                         <th scope="col" v-if="admin">Owner</th>
                         <th scope="col">Ownership</th>
                         <th scope="col">Preview</th>
@@ -16,6 +17,9 @@
                 <tr v-for="gradient in gradients">
                     <td class="text-wrap">{{ gradient.name }}</td>
                     <td>{{ gradient.desc }}</td>
+                    <td v-if="admin">
+                        {{ outputCarbonString(gradient.created_at) }}
+                    </td>
                     <td v-if="admin">
                         <a v-if="gradient.owner_url" :href="gradient.owner_url">Account #{{ gradient.owner_aid }}</a>
                         <span v-else-if="gradient.owner_aid">{{ gradient.owner_aid }} </span>

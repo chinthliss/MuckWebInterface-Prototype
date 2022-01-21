@@ -16,6 +16,7 @@ class CreateAvatarGradientsTable extends Migration
         Schema::create('avatar_gradients', function (Blueprint $table) {
             $table->string('name', 40)->primary();
             $table->string('description', 200);
+            $table->dateTime('created_at')->useCurrent();
             $table->bigInteger('owner_aid')->unsigned()->nullable()->index();
             $table->boolean('free')->nullable();
             $table->json('steps_json');

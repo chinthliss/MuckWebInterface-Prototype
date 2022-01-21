@@ -112,6 +112,7 @@ class AvatarController extends Controller
                 'name' => $gradient->name,
                 'desc' => $gradient->desc,
                 'free' => $gradient->free,
+                'created_at' => $gradient->created_at,
                 'owner_aid' => $gradient->owner?->getAid(),
                 'owner_url' => $gradient->owner?->getAdminUrl(),
                 'url' => route('avatar.gradient.image', ['name' => $gradient->name])
