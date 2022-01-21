@@ -14,12 +14,14 @@
                    id="newDescription" maxlength="200" placeholder="Enter a short description">
         </div>
 
+        <p class="text-muted">A submitted gradient's name and description may be changed if they're deemed inappropriate, unclear or misleading.</p>
+
         <div class="d-flex flex-column flex-xl-row justify-content-between">
             <div class="flex-grow-1">
 
                 <label>Steps</label>
 
-                <p class="text-muted">Note: Dragging a step above or below a neighbouring step will automatically cause this list to re-order.</p>
+                <p class="text-muted">If you change when a step occurs to be before or after another step then this list will automatically re-arrange itself.</p>
                 <div class="ml-4">
                     <div v-for="(step, index) in steps" class="mb-2">
 
