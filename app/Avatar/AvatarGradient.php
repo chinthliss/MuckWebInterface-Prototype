@@ -27,6 +27,25 @@ class AvatarGradient
     {
         if (!count($this->steps)) throw new Exception("A gradient requires at least one step.");
 
+        //Validation, do by stepping through so we can report errors with an index.
+        for($i = 0; $i < count($this->steps); $i++) {
+            $step = $this->steps[$i];
+            if (count($step) != 4)
+                throw new Exception("Gradient step $i isn't in the form [When, R, G, B]");
+
+            if ($step[0] < 0 || $step[0] > 255)
+                throw new Exception("When value of Gradient step $i isn't a integer between 0 and 255.");
+
+            if ($step[1] < 0 || $step[1] > 255)
+                throw new Exception("Red value of Gradient step $i isn't a integer between 0 and 255.");
+
+            if ($step[2] < 0 || $step[2] > 255)
+                throw new Exception("Green value of Gradient step $i isn't a integer between 0 and 255.");
+
+            if ($step[3] < 0 || $step[3] > 255)
+                throw new Exception("Blue value of Gradient step $i isn't a integer between 0 and 255.");
+        }
+
         // Ensure first step starts at 0, if not create a copy of the exising first step starting at such
         $first = $this->steps[0];
         if ($first[0] !== 0) array_unshift($this->steps, [0, $first[1], $first[2], $first[3]]);
