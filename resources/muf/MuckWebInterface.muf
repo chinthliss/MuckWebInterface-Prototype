@@ -205,12 +205,26 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     { }dict (Result)
     rpsys "infection/" array_get_propdirs
     foreach nip infection !
+        (Handle main body)
         rpsys "infection/" infection @ strcat "/avatar" strcat getpropstr 
         ?dup not if "FS_Human1" then doll !
         dup doll @ array_getitem 
         ?dup not if { }list then
         infection @ swap array_appenditem
         swap doll @ array_setitem
+        (Now do parts that may also have an avatar set)
+        { "arms" "ass" "head" "legs" "skin" "torso" "cock" }list foreach nip
+            rpsys "infection/" infection @ strcat "/" strcat rot strcat "/avatar" strcat getpropstr
+            ?dup if doll !
+                dup doll @ array_getitem
+                ?dup not if { }list then
+                (But this time it might already be in the list)
+                dup infection @ array_findval not if
+                    infection @ swap array_appenditem
+                    swap doll @ array_setitem
+                else pop then
+            then
+        repeat
     repeat
     startAcceptedResponse
     encodejson descr swap descrnotify
