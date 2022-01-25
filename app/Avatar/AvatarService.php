@@ -80,11 +80,16 @@ class AvatarService
         return $dolls;
     }
 
+    public function getDollFileName(string $dollName): string
+    {
+        return  storage_path($this->dollFolder . $dollName . '.psd');
+    }
+
     public function getDoll($dollName): Imagick
     {
         if (array_key_exists($dollName, $this->dollImageCache)) return $this->dollImageCache[$dollName];
-        $filePath = storage_path($this->dollFolder . $dollName . '.psd');
-        Log::debug("Loading doll file from " . $filePath);
+        $filePath = $this->getDollFileName($dollName);
+        Log::debug("getDoll loading PSD file from " . $filePath);
         if (!file_exists($filePath)) throw new Exception("Specified doll file not found");
         $doll = new Imagick($filePath);
         $this->dollImageCache[$dollName] = $doll;
@@ -127,6 +132,22 @@ class AvatarService
         $image->thumbnailImage(100, 0);
         $image->setImageFormat('png');
         return $image;
+    }
+
+    /**
+     * Rewrite of getDollLayerInformation since the default gradients requires us to load the PSD file ourselves
+     * @param string $dollName
+     * @return array
+     * @throws Exception
+     */
+    public function getDollLayerInformationFromPsd(string $dollName): array
+    {
+        $filePath = $this->getDollFileName($dollName);
+        Log::debug("getDollLayerInformation loading PSD file from " . $filePath);
+        if (!file_exists($filePath)) throw new Exception("Specified doll file not found");
+
+        $avatarLayerInformation = new AvatarLayerInformation($filePath);
+        return $avatarLayerInformation->toArray();
     }
 
     /**
