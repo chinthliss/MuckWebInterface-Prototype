@@ -5,14 +5,14 @@ namespace App\Avatar;
 use Exception;
 
 /**
- * Utility class to hold the layer information required to load an avatar from a PSD file
+ * Utility class to handle loading/holding the layer information required to render an avatar from a PSD file
  * Really not a complete class at all, since we only care about certain parts of a PSD.
  */
 class AvatarLayerInformation
 {
     private $file;
 
-    private $layers = [];
+    private array $layers = [];
 
     private function getString(int $length): string
     {
@@ -39,6 +39,16 @@ class AvatarLayerInformation
     private function getUnsignedInteger(): int
     {
         return unpack("Nvalue", fread($this->file, 4))['value'];
+    }
+
+    private function getPaddedUnicodeString(): string
+    {
+        //First 4 bytes are the length field in code units (2 per char), not bytes
+        $charLength = $this->getUnsignedInteger();
+        $encoded = fread($this->file, $charLength * 2);
+        //Should unencode it here but we don't actually need to in this project
+        return $encoded;
+
     }
 
     public function __construct($filePath)
@@ -112,21 +122,64 @@ class AvatarLayerInformation
 
                 $nextKey = $this->getString(4);
                 $nextLength = $this->getUnsignedInteger();
-                $nextData = fread($this->file, $nextLength);
-                $layer['extra'][$nextKey] = [$nextData];
+                // echo "Key $nextKey, Length $nextLength\n";
+                switch ($nextKey) { // Promote anything we're interested in
+                    case 'grdm': // Gradient Map
+                        // dd(fread($this->file, $nextLength));
+                        $gradientMap['version'] = $this->getUnsignedShort();
+                        $gradientMap['reversed'] = $this->getUnsignedByte();
+                        $gradientMap['dithered'] = $this->getUnsignedByte();
+                        $gradientMap['name'] = $this->getPaddedUnicodeString();
+
+                        //Color stops
+                        $colorStopLength = $this->getUnsignedShort();
+                        $colorStops = [];
+                        for ($colorStopi = 0; $colorStopi < $colorStopLength; $colorStopi++) {
+                            $colorStop = [];
+                            $colorStop['location'] = $this->getUnsignedInteger();
+                            $colorStop['midpoint'] = $this->getUnsignedInteger();
+                            $colorStop['mode'] = $this->getUnsignedShort();
+                            $colorStop['r'] = $this->getUnsignedShort() & 0xff;
+                            $colorStop['g'] = $this->getUnsignedShort() & 0xff;;
+                            $colorStop['b'] = $this->getUnsignedShort() & 0xff;;
+                            $colorStop['a'] = $this->getUnsignedShort() & 0xff;;
+                            fseek($this->file, 2, SEEK_CUR); // Unknown what this is
+                            $colorStops[] = $colorStop;
+                        }
+                        $gradientMap['colorStops'] = $colorStops;
+
+                        //Transparency stops
+                        $transparencyStopsLength = $this->getUnsignedShort();
+                        fseek($this->file, $transparencyStopsLength * 10, SEEK_CUR);
+
+                        //Rest of the gradient map that we don't care about
+                        fseek($this->file, 42, SEEK_CUR);
+
+                        $layer['gradientMap'] = $gradientMap;
+                        //dd(fread($this->file, 64));
+                        dd($gradientMap);
+                        break;
+
+                    default:
+                        // Place anything unrecognized in the extra array by its key
+                        $nextData = fread($this->file, $nextLength);
+                        $layer['extra'][$nextKey] = [$nextData];
+                        break;
+                }
 
                 //Remove length + 12 bytes for the signature, key and length values
                 $extraDataLengthRemaining -= 12 + $nextLength;
             }
             $this->layers[] = $layer;
-
         }
-        dd($this->layers);
 
+        // Not processing any further, we only want the layer information
+        fclose($this->file);
+        unset ($this->file);
     }
 
-    public function toArray()
+    public function toArray(): array
     {
-        return [];
+        return $this->layers;
     }
 }
