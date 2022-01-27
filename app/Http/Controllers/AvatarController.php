@@ -6,6 +6,7 @@ use App\Avatar\AvatarGradient;
 use App\Avatar\AvatarInstance;
 use App\Avatar\AvatarService;
 use App\Muck\MuckConnection;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class AvatarController extends Controller
@@ -39,7 +40,7 @@ class AvatarController extends Controller
         ]);
     }
 
-    public function showAdminDollTest(AvatarService $service, MuckConnection $muckConnection, string $code = '')
+    public function showAdminDollTest(AvatarService $service, string $code = ''): Mixed
     {
         //Redirect to doll list if a code isn't specified
         if (!$code) return redirect()->route('admin.avatar.dolllist');
@@ -57,28 +58,28 @@ class AvatarController extends Controller
         }, $drawingSteps->steps);
 
         $dolls = $service->getDollNames();
-        $gradients = array_map(function($gradient) {
+        $gradients = array_map(function ($gradient) {
             return $gradient->name;
-        },$service->getGradients());
+        }, $service->getGradients());
 
         return view('admin.avatar-doll-test')->with([
             'code' => $code,
             'drawingSteps' => $drawingSteps,
             'dolls' => $dolls,
             'gradients' => $gradients,
-            'avatarWidth' => $service->avatarWidth(),
-            'avatarHeight' => $service->avatarHeight()
+            'avatarWidth' => $service::DOLL_WIDTH,
+            'avatarHeight' => $service::DOLL_HEIGHT
         ]);
     }
 
-    public function getThumbnailForDoll(AvatarService $service, string $dollName)
+    public function getThumbnailForDoll(AvatarService $service, string $dollName): Response
     {
         $image = $service->getDollThumbnail($dollName);
         return response($image, 200)
             ->header('Content-Type', $image->getImageFormat());
     }
 
-    public function getAvatarFromCode(AvatarService $service, string $code)
+    public function getAvatarFromCode(AvatarService $service, string $code): Response
     {
         $avatar = AvatarInstance::fromCode($code);
         $image = $service->renderAvatarInstance($avatar);
@@ -88,7 +89,7 @@ class AvatarController extends Controller
 
     #region Gradients
 
-    public function showUserAvatarGradients(AvatarService $service)
+    public function showUserAvatarGradients(AvatarService $service): View
     {
         $gradients = [];
         foreach ($service->getGradients() as $gradient) {
@@ -104,7 +105,7 @@ class AvatarController extends Controller
         ]);
     }
 
-    public function showAdminAvatarGradients(AvatarService $service)
+    public function showAdminAvatarGradients(AvatarService $service): View
     {
         $gradients = [];
         foreach ($service->getGradients() as $gradient) {
@@ -123,7 +124,7 @@ class AvatarController extends Controller
         ]);
     }
 
-    public function getGradient(string $name, AvatarService $service)
+    public function getGradient(string $name, AvatarService $service): Response
     {
         $gradient = $service->getGradient($name);
         if (!$gradient) abort(404);
@@ -134,7 +135,7 @@ class AvatarController extends Controller
 
     }
 
-    public function getGradientPreview(string $code, AvatarService $service)
+    public function getGradientPreview(string $code, AvatarService $service): Response
     {
         $config = json_decode(base64_decode($code), JSON_FORCE_OBJECT);
 

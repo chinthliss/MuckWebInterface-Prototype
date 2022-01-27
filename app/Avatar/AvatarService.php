@@ -9,19 +9,46 @@ use Imagick;
 class AvatarService
 {
 
-    private string $dollFolder = 'app/avatar/doll/';
+    const DOLL_FILE_LOCATION = 'app/avatar/doll/';
 
-    private int $width = 384;
-    private int $height = 640;
-    private int $gradientSize = 2048; // Aiming for 10-bit, since that's growing in usage
+    const DOLL_WIDTH = 384;
+    const DOLL_HEIGHT = 640;
+    CONST GRADIENT_SIZE = 2048; // Aiming for 10-bit, since that's growing in usage
 
-    private array $bodyParts = ['torso', 'head', 'arms', 'legs', 'ass', 'groin'];
+    const MODE_HEAD_ONLY = 'head_only';
+
+    const COLOR_PRIMARY = "skin1";
+    const COLOR_SECONDARY = "skin2";
+    const COLOR_NAUGHTY_BITS = 'skin3';
+    const COLOR_HAIR = 'hair';
+    const COLOR_EYES = 'eyes';
 
     /**
-     * Array of [subpart, part] in drawing order
-     * @var array<array>
+     * @var string[] AVATARDOLL_BODYPARTS
      */
-    private array $subParts;
+    const AVATARDOLL_BODYPARTS = ['torso', 'head', 'arms', 'legs', 'ass', 'groin'];
+
+    /**
+     * @var array<array> AVATARDOLL_SUBPARTS Array of [subpart, bodypart] in drawing order
+     */
+    const AVATARDOLL_SUBPARTS = [
+        ['leg2', 'legs'],
+        ['arm2', 'arms'],
+        ['ass', 'ass'],
+        ['torso', 'torso'],
+        ['breasts', 'torso'],
+        ['sheath', 'groin'],
+        ['leg1', 'legs'],
+        ['nipples', 'torso'],
+        ['penis', 'groin'],
+        ['arm1', 'arms'],
+        ['ear1', 'head'],
+        ['hair1', 'head'],
+        ['head', 'head'],
+        ['expr', 'head'],
+        ['hair2', 'head'],
+        ['ear2', 'head']
+    ];
 
     private array $dollImageCache = [];
     private array $dollLayerInformationCache = [];
@@ -35,36 +62,7 @@ class AvatarService
         private AvatarProvider $provider
     )
     {
-        $this->subParts = [
-            ['leg2', 'legs'],
-            ['arm2', 'arms'],
-            ['ass', 'ass'],
-            ['torso', 'torso'],
-            ['breasts', 'torso'],
-            ['sheath', 'groin'],
-            ['leg1', 'legs'],
-            ['nipples', 'torso'],
-            ['penis', 'groin'],
-            ['arm1', 'arms'],
-            ['ear1', 'head'],
-            ['hair1', 'head'],
-            ['head', 'head'],
-            ['expr', 'head'],
-            ['hair2', 'head'],
-            ['ear2', 'head']
-        ];
     }
-
-    public function avatarWidth(): int
-    {
-        return $this->width;
-    }
-
-    public function avatarHeight(): int
-    {
-        return $this->height;
-    }
-
 
     /**
      * @return string[]
@@ -72,7 +70,7 @@ class AvatarService
     public function getDollNames(): array
     {
         $dolls = [];
-        $files = glob(storage_path($this->dollFolder . '*.psd'));
+        $files = glob(storage_path(self::DOLL_FILE_LOCATION . '*.psd'));
         foreach ($files as $file) {
             $fileName = basename($file);
             $dolls[] = substr($fileName, 0, -4); // Remove file extension
@@ -82,7 +80,7 @@ class AvatarService
 
     public function getDollFileName(string $dollName): string
     {
-        return  storage_path($this->dollFolder . $dollName . '.psd');
+        return storage_path(self::DOLL_FILE_LOCATION . $dollName . '.psd');
     }
 
     public function getDoll($dollName): Imagick
@@ -96,7 +94,7 @@ class AvatarService
         return $doll;
     }
 
-    public function getBaseCodeForDoll(string $dollName) : string
+    public function getBaseCodeForDoll(string $dollName): string
     {
         $avatar = new AvatarInstance($dollName);
         return $avatar->code;
@@ -170,12 +168,23 @@ class AvatarService
             $index = null; // Whether we found a place for this one to go
             echo $unprocessedGradient['layer'];
             switch ($unprocessedGradient['layer']) {
-                case 'Fur 1': $index = 0; break;
-                case 'Fur 2': $index = 1; break;
-                case 'Hair': $index = 2; break;
-                case 'Bare Skin': $index = 3; break;
-                case 'Eyes': $index = 4; break;
-                default: break;
+                case 'Fur 1':
+                    $index = 0;
+                    break;
+                case 'Fur 2':
+                    $index = 1;
+                    break;
+                case 'Hair':
+                    $index = 2;
+                    break;
+                case 'Bare Skin':
+                    $index = 3;
+                    break;
+                case 'Eyes':
+                    $index = 4;
+                    break;
+                default:
+                    break;
             }
             if ($index !== null) {
                 $steps = [];
@@ -261,8 +270,8 @@ class AvatarService
         // Get a collection of the required dolls and a collection of layer info.
         // Since these are cached we don't need to go out of our way to avoid duplicates
         $parts = [];
-        foreach ($this->bodyParts as $bodyPart) {
-            if ($avatar->mode == AvatarInstance::MODE_HEAD_ONLY && $bodyPart != 'head') continue;
+        foreach (self::AVATARDOLL_BODYPARTS as $bodyPart) {
+            if ($avatar->mode == self::MODE_HEAD_ONLY && $bodyPart != 'head') continue;
             $parts[$bodyPart] = [
                 'dollName' => $dollNames[$bodyPart],
                 'doll' => $this->getDoll($dollNames[$bodyPart]),
@@ -271,7 +280,7 @@ class AvatarService
         }
 
         // Build drawing plan based off of the subpart array since such is in drawing order
-        foreach ($this->subParts as $partInfo) {
+        foreach (self::AVATARDOLL_SUBPARTS as $partInfo) {
             [$subPart, $part] = $partInfo;
             if (!array_key_exists($part, $parts)) continue;
             $layerInfo = $parts[$part]['layerInfo'];
@@ -287,16 +296,16 @@ class AvatarService
 
         // Grab the default colors for each layer. Order isn't important at this stage
         $colors = [
-            (AvatarInstance::COLOR_PRIMARY) =>
-                $this->getGradientImageFromName($avatar->colors[AvatarInstance::COLOR_PRIMARY] ?? 'Earth'),
-            (AvatarInstance::COLOR_SECONDARY) =>
-                $this->getGradientImageFromName($avatar->colors[AvatarInstance::COLOR_SECONDARY] ?? 'Gold'),
-            (AvatarInstance::COLOR_NAUGHTY_BITS) =>
-                $this->getGradientImageFromName($avatar->colors[AvatarInstance::COLOR_NAUGHTY_BITS] ?? 'Hot Pink'),
-            (AvatarInstance::COLOR_HAIR) =>
-                $this->getGradientImageFromName($avatar->colors[AvatarInstance::COLOR_HAIR] ?? 'Blonde'),
-            (AvatarInstance::COLOR_EYES) =>
-                $this->getGradientImageFromName($avatar->colors[AvatarInstance::COLOR_EYES] ?? 'Sky Blue'),
+            (self::COLOR_PRIMARY) =>
+                $this->getGradientImageFromName($avatar->colors[self::COLOR_PRIMARY] ?? 'Earth'),
+            (self::COLOR_SECONDARY) =>
+                $this->getGradientImageFromName($avatar->colors[self::COLOR_SECONDARY] ?? 'Gold'),
+            (self::COLOR_NAUGHTY_BITS) =>
+                $this->getGradientImageFromName($avatar->colors[self::COLOR_NAUGHTY_BITS] ?? 'Hot Pink'),
+            (self::COLOR_HAIR) =>
+                $this->getGradientImageFromName($avatar->colors[self::COLOR_HAIR] ?? 'Blonde'),
+            (self::COLOR_EYES) =>
+                $this->getGradientImageFromName($avatar->colors[self::COLOR_EYES] ?? 'Sky Blue'),
 
         ];
         $drawingPlan = new AvatarDrawingPlan($drawingSteps, $colors);
@@ -310,17 +319,17 @@ class AvatarService
     {
         //Create a blank canvas
         $image = new Imagick();
-        $image->newImage($this->width, $this->height, 'transparent');
+        $image->newImage(self::DOLL_WIDTH, self::DOLL_HEIGHT, 'transparent');
         $image->setImageFormat("png");
 
         foreach ($drawingPlan->steps as $step) {
             //Prepare gradients
             $gradients = [ // Order is important here as the layers refer to them by index
-                $drawingPlan->colors[AvatarInstance::COLOR_PRIMARY],
-                $drawingPlan->colors[AvatarInstance::COLOR_SECONDARY],
-                $drawingPlan->colors[AvatarInstance::COLOR_HAIR],
-                $drawingPlan->colors[AvatarInstance::COLOR_NAUGHTY_BITS],
-                $drawingPlan->colors[AvatarInstance::COLOR_EYES]
+                $drawingPlan->colors[self::COLOR_PRIMARY],
+                $drawingPlan->colors[self::COLOR_SECONDARY],
+                $drawingPlan->colors[self::COLOR_HAIR],
+                $drawingPlan->colors[self::COLOR_NAUGHTY_BITS],
+                $drawingPlan->colors[self::COLOR_EYES]
             ];
 
             /** @var Imagick $doll */
@@ -379,8 +388,8 @@ class AvatarService
             $fromStep = $gradient->steps[$i - 1];
             $toStep = $gradient->steps[$i];
             //Step values and colors are in the range 0..255
-            $fromPixel = (int)($fromStep[0] * $this->gradientSize / 255.0);
-            $toPixel = (int)($toStep[0] * $this->gradientSize  / 255.0);
+            $fromPixel = (int)($fromStep[0] * self::GRADIENT_SIZE / 255.0);
+            $toPixel = (int)($toStep[0] *self::GRADIENT_SIZE / 255.0);
             if ($toPixel > $fromPixel) { // Only render steps that are more than a pixel
                 $fromColor = "rgb($fromStep[1], $fromStep[2], $fromStep[3])";
                 $toColor = "rgb($toStep[1], $toStep[2], $toStep[3])";
@@ -394,18 +403,18 @@ class AvatarService
         return $image;
     }
 
-    public function renderGradientAvatarPreview(AvatarGradient $gradient) : Imagick
+    public function renderGradientAvatarPreview(AvatarGradient $gradient): Imagick
     {
         $gradientImage = $this->renderGradientImage($gradient);
-        $avatar = new AvatarInstance('FS_Husky', mode: AvatarInstance::MODE_HEAD_ONLY);
+        $avatar = new AvatarInstance('FS_Husky', mode: self::MODE_HEAD_ONLY);
         $drawingPlan = $this->getDrawingPlanForAvatarInstance($avatar);
-        $drawingPlan->colors[AvatarInstance::COLOR_PRIMARY] = $gradientImage;
-        $drawingPlan->colors[AvatarInstance::COLOR_SECONDARY] = $gradientImage;
-        $drawingPlan->colors[AvatarInstance::COLOR_HAIR] = $gradientImage;
+        $drawingPlan->colors[self::COLOR_PRIMARY] = $gradientImage;
+        $drawingPlan->colors[self::COLOR_SECONDARY] = $gradientImage;
+        $drawingPlan->colors[self::COLOR_HAIR] = $gradientImage;
         return $this->renderAvatarFromPlan($drawingPlan);
     }
 
-    public function getGradientImageFromName(string $name) : Imagick
+    public function getGradientImageFromName(string $name): Imagick
     {
         return $this->renderGradientImage($this->getGradient($name));
     }

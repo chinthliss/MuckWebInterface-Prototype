@@ -11,14 +11,6 @@ use Illuminate\Support\Facades\Log;
  */
 class AvatarInstance
 {
-    const MODE_HEAD_ONLY = 'head_only';
-
-    const COLOR_PRIMARY = "skin1";
-    const COLOR_SECONDARY = "skin2";
-    const COLOR_NAUGHTY_BITS = 'skin3';
-    const COLOR_HAIR = 'hair';
-    const COLOR_EYES = 'eyes';
-
     public string $code;
 
     public function __construct(
@@ -62,7 +54,7 @@ class AvatarInstance
         return $array;
     }
 
-    public static function fromArray(Array $array): AvatarInstance
+    public static function fromArray(array $array): AvatarInstance
     {
         return new AvatarInstance(
             $array['base'],
