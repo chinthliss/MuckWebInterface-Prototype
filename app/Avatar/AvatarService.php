@@ -140,14 +140,64 @@ class AvatarService
      * @return array
      * @throws Exception
      */
-    public function getDollLayerInformationFromPsd(string $dollName): array
+    public function getDollProcessingInformationFromPsd(string $dollName): array
     {
         $filePath = $this->getDollFileName($dollName);
         Log::debug("getDollLayerInformation loading PSD file from " . $filePath);
         if (!file_exists($filePath)) throw new Exception("Specified doll file not found");
 
-        $avatarLayerInformation = new AvatarLayerInformation($filePath);
-        return $avatarLayerInformation->toArray();
+        $raw = AvatarDollPsdReader::loadFromFile($filePath);
+
+        //Process the result into the format we want for this
+        $result = [
+            'layers' => [],
+            'gradients' => [ // Order is important here
+                null, null, null, null, null
+            ]
+        ];
+
+        foreach ($raw['layers'] as $unprocessedLayer) {
+            $result['layers'][] = [
+                'x' => $unprocessedLayer['left'],
+                'y' => $unprocessedLayer['top'],
+                'width' => $unprocessedLayer['right'] - $unprocessedLayer['left'],
+                'height' => $unprocessedLayer['bottom'] - $unprocessedLayer['top'],
+                'name' => $unprocessedLayer['name']
+            ];
+        }
+
+        foreach ($raw['gradients'] as $unprocessedGradient) {
+            $index = null; // Whether we found a place for this one to go
+            echo $unprocessedGradient['layer'];
+            switch ($unprocessedGradient['layer']) {
+                case 'Fur 1': $index = 0; break;
+                case 'Fur 2': $index = 1; break;
+                case 'Hair': $index = 2; break;
+                case 'Bare Skin': $index = 3; break;
+                case 'Eyes': $index = 4; break;
+                default: break;
+            }
+            if ($index !== null) {
+                $steps = [];
+                foreach ($unprocessedGradient['colorStops'] as $stop) {
+                    $steps[] = [
+                        $stop['location'],
+                        $stop['r'],
+                        $stop['g'],
+                        $stop['b']
+                    ];
+                }
+                $gradient = new AvatarGradient(
+                    "_" . $dollName . "_" . $index,
+                    "Internally generated gradient",
+                    $steps,
+                    true
+                );
+                $result['gradients'][$index] = $gradient;
+            }
+        }
+
+        return $result;
     }
 
     /**

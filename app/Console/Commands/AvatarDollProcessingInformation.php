@@ -4,9 +4,8 @@ namespace App\Console\Commands;
 
 use App\Avatar\AvatarService;
 use Illuminate\Console\Command;
-use App\Helpers\Ansi;
 
-class AvatarDollLayerInformation extends Command
+class AvatarDollProcessingInformation extends Command
 {
     /**
      * The name and signature of the console command.
@@ -40,7 +39,7 @@ class AvatarDollLayerInformation extends Command
         $dollName = $this->argument('doll');
         $this->info("Looking up layer information for doll $dollName");
 
-        $layerInfo = $avatarService->getDollLayerInformationFromPsd($dollName);
-        dd($layerInfo);
+        $info = $avatarService->getDollProcessingInformationFromPsd($dollName);
+        dd($info);
     }
 }
