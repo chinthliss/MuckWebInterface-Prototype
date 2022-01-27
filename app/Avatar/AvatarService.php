@@ -13,7 +13,7 @@ class AvatarService
 
     const DOLL_WIDTH = 384;
     const DOLL_HEIGHT = 640;
-    CONST GRADIENT_SIZE = 2048; // Aiming for 10-bit, since that's growing in usage
+    const GRADIENT_SIZE = 2048; // Aiming for 10-bit, since that's growing in usage
 
     const MODE_HEAD_ONLY = 'head_only';
 
@@ -50,8 +50,14 @@ class AvatarService
         ['ear2', 'head']
     ];
 
+    //Image files
     private array $dollImageCache = [];
-    private array $dollLayerInformationCache = [];
+
+    //Drawing order, needs to be done through Imagick to ensure the layer index values match.
+    private array $dollLayerDrawingOrderCache = [];
+
+    //Loaded from PSD file requiring custom loader due to not being part of Imagick
+    private array $dollDefaultGradientsCache = [];
 
     /**
      * @var array<string, AvatarDrawingPlan>
@@ -133,13 +139,15 @@ class AvatarService
     }
 
     /**
-     * Rewrite of getDollLayerInformation since the default gradients requires us to load the PSD file ourselves
+     * Gets the default gradients for a doll (from the PSD file or cache)
      * @param string $dollName
-     * @return array
+     * @return array Array of 5 gradients with the indexes matching the ones referenced in the PSD
      * @throws Exception
      */
-    public function getDollProcessingInformationFromPsd(string $dollName): array
+    public function getDollDefaultGradientInformation(string $dollName): array
     {
+        if (array_key_exists($dollName, $this->dollDefaultGradientsCache)) return $this->dollDefaultGradientsCache[$dollName];
+
         $filePath = $this->getDollFileName($dollName);
         Log::debug("getDollLayerInformation loading PSD file from " . $filePath);
         if (!file_exists($filePath)) throw new Exception("Specified doll file not found");
@@ -147,26 +155,10 @@ class AvatarService
         $raw = AvatarDollPsdReader::loadFromFile($filePath);
 
         //Process the result into the format we want for this
-        $result = [
-            'layers' => [],
-            'gradients' => [ // Order is important here
-                null, null, null, null, null
-            ]
-        ];
-
-        foreach ($raw['layers'] as $unprocessedLayer) {
-            $result['layers'][] = [
-                'x' => $unprocessedLayer['left'],
-                'y' => $unprocessedLayer['top'],
-                'width' => $unprocessedLayer['right'] - $unprocessedLayer['left'],
-                'height' => $unprocessedLayer['bottom'] - $unprocessedLayer['top'],
-                'name' => $unprocessedLayer['name']
-            ];
-        }
+        $result = [null, null, null, null, null];
 
         foreach ($raw['gradients'] as $unprocessedGradient) {
             $index = null; // Whether we found a place for this one to go
-            echo $unprocessedGradient['layer'];
             switch ($unprocessedGradient['layer']) {
                 case 'Fur 1':
                     $index = 0;
@@ -202,23 +194,24 @@ class AvatarService
                     $steps,
                     true
                 );
-                $result['gradients'][$index] = $gradient;
+                $result[$index] = $gradient;
             }
         }
 
+        $this->dollDefaultGradientsCache[$dollName] = $result;
         return $result;
     }
 
     /**
-     * Calculates a breakdown of the layers in a doll
+     * Calculates a breakdown of the layers in a doll and the order they need to be drawn in
      * Returns an array of subpart => array[layerIndex, colorChannel]..]
      * @param string $dollName
      * @return array
      * @throws \ImagickException
      */
-    public function getDollLayerInformation(string $dollName): array
+    public function getDollLayerDrawingOrder(string $dollName): array
     {
-        if (array_key_exists($dollName, $this->dollLayerInformationCache)) return $this->dollLayerInformationCache[$dollName];
+        if (array_key_exists($dollName, $this->dollLayerDrawingOrderCache)) return $this->dollLayerDrawingOrderCache[$dollName];
         Log::debug("Calculating doll layer information for " . $dollName);
         $array = [];
         $image = $this->getDoll($dollName);
@@ -240,7 +233,7 @@ class AvatarService
             }
         }
 
-        $this->dollLayerInformationCache[$dollName] = $array;
+        $this->dollLayerDrawingOrderCache[$dollName] = $array;
         return $array;
     }
 
@@ -275,7 +268,7 @@ class AvatarService
             $parts[$bodyPart] = [
                 'dollName' => $dollNames[$bodyPart],
                 'doll' => $this->getDoll($dollNames[$bodyPart]),
-                'layerInfo' => $this->getDollLayerInformation($dollNames[$bodyPart])
+                'layerInfo' => $this->getDollLayerDrawingOrder($dollNames[$bodyPart])
             ];
         }
 
