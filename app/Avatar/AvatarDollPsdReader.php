@@ -150,9 +150,9 @@ class AvatarDollPsdReader
                             $colorStop['location'] = (self::getUnsignedInteger() / 4096.0) * 255;
                             $colorStop['midpoint'] = self::getUnsignedInteger();
                             $colorStop['mode'] = self::getUnsignedShort();
-                            $colorStop['r'] = self::getUnsignedShort() & 0xff;
-                            $colorStop['g'] = self::getUnsignedShort() & 0xff;
-                            $colorStop['b'] = self::getUnsignedShort() & 0xff;
+                            $colorStop['r'] = (self::getUnsignedShort() / 65535.0) * 255;
+                            $colorStop['g'] = (self::getUnsignedShort() / 65535.0) * 255;
+                            $colorStop['b'] = (self::getUnsignedShort() / 65535.0) * 255;
                             $colorStop['a'] = self::getUnsignedShort() & 0xff;
                             fseek(self::$file, 2, SEEK_CUR); // Unknown what this is
                             $gradientMap['colorStops'][] = $colorStop;
