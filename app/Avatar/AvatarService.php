@@ -401,13 +401,15 @@ class AvatarService
 
     public function renderGradientAvatarPreview(AvatarGradient $gradient): Imagick
     {
-        $colors = [
-            self::COLOR_PRIMARY => $gradient->name,
-            self::COLOR_SECONDARY => $gradient->name,
-            self::COLOR_HAIR => $gradient->name,
-        ];
-        $avatar = new AvatarInstance('FS_Husky', colors: $colors, mode: self::MODE_HEAD_ONLY);
+        $gradientImage = $this->renderGradientImage($gradient);
+        $avatar = new AvatarInstance('FS_Husky', mode: self::MODE_HEAD_ONLY);
         $drawingPlan = $this->getDrawingPlanForAvatarInstance($avatar);
+        // Now need to step through the plan and overwrite colors to our new temporary one
+        foreach($drawingPlan as $step) {
+            $step->colorChannels[self::COLOR_INDEX_VALUES[self::COLOR_PRIMARY]] = $gradientImage;
+            $step->colorChannels[self::COLOR_INDEX_VALUES[self::COLOR_SECONDARY]] = $gradientImage;
+            $step->colorChannels[self::COLOR_INDEX_VALUES[self::COLOR_HAIR]] = $gradientImage;
+        }
         return $this->renderAvatarFromPlan($drawingPlan);
     }
 
