@@ -8,6 +8,7 @@
             </div>
         </div>
 
+        <div>Dolls are rendered here without any colors applied and should appear in grayscale unless deliberate tinting is being used.</div>
         <div>The number after each doll is a count of how many infections use it - the full breakdown of such is at the bottom of this page.</div>
         <div>Clicking on a doll will start an instance of the tester using that doll as the base.</div>
         <div>
