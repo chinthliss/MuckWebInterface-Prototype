@@ -165,7 +165,7 @@ class AvatarDollPsdReader
                         //Rest of the gradient map that we don't care about
                         fseek(self::$file, 42, SEEK_CUR);
 
-                        //For the purpose of this, we want to collect them separently but still need the layer name
+                        //For the purpose of this, we want to collect them separately but still need the layer name
                         $gradientMap['layer'] = $layer['name'];
                         $result['gradients'][] = $gradientMap;
                         //dd(fread(self::$file, 64));
