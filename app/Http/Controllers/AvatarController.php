@@ -55,7 +55,7 @@ class AvatarController extends Controller
                 'subPart' => $step->subPart,
                 'layers' => $step->layers
             ];
-        }, $drawingSteps->steps);
+        }, $drawingSteps);
 
         $dolls = $service->getDollNames();
         $gradients = array_map(function ($gradient) {

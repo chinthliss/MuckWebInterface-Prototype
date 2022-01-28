@@ -39,6 +39,7 @@ class AvatarDollProcessingInformation extends Command
         $dollName = $this->argument('doll');
         $this->comment("Looking up layer information for doll $dollName");
 
+        dd($avatarService->getDollDefaultGradientInformation($dollName));
         $this->info("Gradients");
         foreach ($avatarService->getDollDefaultGradientInformation($dollName) as $gradient) {
             $this->line($gradient->name . "(" . count($gradient->steps) . " steps)");

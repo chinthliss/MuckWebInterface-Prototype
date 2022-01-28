@@ -20,10 +20,13 @@ class AvatarInstance
         public ?string $legs = null,
         public ?string $groin = null,
         public ?string $ass = null,
-        public array   $colors = [],
         public ?string $background = null,
         public array   $items = [],
-        public ?string $mode = null
+        public ?string $mode = null,
+        /**
+         * @var string[] Stored as colorName => gradientName (e.g. hair => blonde)
+         */
+        public array   $colors = []
     )
     {
         $this->code = base64_encode(json_encode($this->toArray()));
@@ -63,10 +66,10 @@ class AvatarInstance
             $array['legs'] ?? null,
             $array['groin'] ?? null,
             $array['ass'] ?? null,
-            $array['colors'] ?? [],
             $array['background'] ?? null,
             $array['items'] ?? [],
-            $array['mode'] ?? null
+            $array['mode'] ?? null,
+            $array['colors'] ?? []
         );
     }
 

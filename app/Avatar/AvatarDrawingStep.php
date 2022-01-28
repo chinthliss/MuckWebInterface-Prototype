@@ -18,7 +18,12 @@ class AvatarDrawingStep
         /**
          * @var array List of [colorChannel, layerIndex]
          */
-        public array $layers = []
+        public array $layers,
+
+        /**
+         * @var Imagick[] The gradient images to use for coloring
+         */
+        public array $colorChannels
     )
     {
     }
