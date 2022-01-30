@@ -206,6 +206,16 @@ class AvatarService
             }
         }
 
+        //Put something in for anything that we didn't find
+        for ($i = 0; $i < count($result); $i++) {
+            if (!$result[$i]) $result[$i] = new AvatarGradient(
+                "_identity",
+                "Internally generated gradient",
+                [[0,0,0,0], [255,255,255,255]],
+                true
+            );
+        }
+
         $this->dollDefaultGradientsCache[$dollName] = $result;
         return $result;
     }
