@@ -132,20 +132,23 @@ class AvatarDollPsdReader
 
                 $nextKey = self::getString(4);
                 $nextLength = self::getUnsignedInteger();
-                // echo "Key $nextKey, Length $nextLength\n";
+                // echo "Layer $i, Key $nextKey, Next length $nextLength\n";
                 switch ($nextKey) { // Promote anything we're interested in
                     case 'grdm': // Gradient Map
-                        // dd(fread(self::$file, $nextLength));
+                        //dd(fread(self::$file, $nextLength));
+                        $gradientLength = 0;
                         $gradientMap = [];
                         $gradientMap['version'] = self::getUnsignedShort();
                         $gradientMap['reversed'] = self::getUnsignedByte();
                         $gradientMap['dithered'] = self::getUnsignedByte();
+                        $gradientLength += 4;
                         $gradientMap['name'] = self::getPaddedUnicodeString();
+                        $gradientLength += 4 + strlen($gradientMap['name']);
 
                         //Color stops
                         $gradientMap['colorStops'] = [];
                         $colorStopLength = self::getUnsignedShort();
-                        for ($colorStopi = 0; $colorStopi < $colorStopLength; $colorStopi++) {
+                        for ($colorStopI = 0; $colorStopI < $colorStopLength; $colorStopI++) {
                             $colorStop = [];
                             $colorStop['location'] = (self::getUnsignedInteger() / 4096.0) * 255;
                             $colorStop['midpoint'] = self::getUnsignedInteger();
@@ -154,16 +157,43 @@ class AvatarDollPsdReader
                             $colorStop['g'] = (self::getUnsignedShort() / 65535.0) * 255;
                             $colorStop['b'] = (self::getUnsignedShort() / 65535.0) * 255;
                             $colorStop['a'] = self::getUnsignedShort() & 0xff;
-                            fseek(self::$file, 2, SEEK_CUR); // Unknown what this is
+                            $colorStop['_unknownShort'] = self::getUnsignedShort(); //Not in the spec!
                             $gradientMap['colorStops'][] = $colorStop;
                         }
+                        $gradientLength += 2 + ($colorStopLength * 20);
 
                         //Transparency stops
+                        $gradientMap['transparencyStops'] = [];
                         $transparencyStopsLength = self::getUnsignedShort();
-                        fseek(self::$file, $transparencyStopsLength * 10, SEEK_CUR);
+                        for ($transparencyI = 0; $transparencyI < $transparencyStopsLength; $transparencyI++) {
+                            $gradientMap['transparencyStops'][] = [
+                                'location' => (self::getUnsignedInteger() / 4096.0) * 255,
+                                'midpoint' => self::getUnsignedInteger(),
+                                'mode' => self::getUnsignedShort()
+                            ];
+                        }
+                        $gradientLength += 2 + $transparencyStopsLength * 10;
 
-                        //Rest of the gradient map that we don't care about
-                        fseek(self::$file, 42, SEEK_CUR);
+                        $gradientMap['expansionCount'] = self::getUnsignedShort();
+                        $gradientMap['interpolation'] = self::getUnsignedShort();
+                        $gradientMap['length'] = self::getUnsignedShort();
+                        $gradientMap['mode'] = self::getUnsignedShort();
+                        $gradientMap['seed'] = self::getUnsignedInteger();
+                        $gradientMap['transparency'] = self::getUnsignedShort();
+                        $gradientMap['vector'] = self::getUnsignedShort();
+                        $gradientMap['roughness'] = self::getUnsignedInteger();
+                        $gradientMap['colorModel'] = self::getUnsignedShort();
+                        $gradientMap['minR'] = (self::getUnsignedShort() / 65535.0) * 255;
+                        $gradientMap['minG'] = (self::getUnsignedShort() / 65535.0) * 255;
+                        $gradientMap['minB'] = (self::getUnsignedShort() / 65535.0) * 255;
+                        $gradientMap['minA'] = (self::getUnsignedShort() / 65535.0) * 255;
+                        $gradientMap['maxR'] = (self::getUnsignedShort() / 65535.0) * 255;
+                        $gradientMap['maxG'] = (self::getUnsignedShort() / 65535.0) * 255;
+                        $gradientMap['maxB'] = (self::getUnsignedShort() / 65535.0) * 255;
+                        $gradientMap['maxA'] = (self::getUnsignedShort() / 65535.0) * 255;
+                        $gradientLength += 38;
+                        // Now we need to skip the remainder. The spec says 2 but it seems to sometimes be 4 for an unknown reason!
+                        fseek(self::$file, $nextLength - $gradientLength, SEEK_CUR);
 
                         //For the purpose of this, we want to collect them separately but still need the layer name
                         $gradientMap['layer'] = $layer['name'];
@@ -177,9 +207,9 @@ class AvatarDollPsdReader
                         fseek(self::$file, $nextLength, SEEK_CUR);
                         break;
                 }
-
                 //Remove length + 12 bytes for the signature, key and length values
                 $extraDataLengthRemaining -= 12 + $nextLength;
+                //echo "After $i:$nextKey and a length of $nextLength, extraDataLengthRemaining is now $extraDataLengthRemaining\n";
             }
             $result['layers'][] = $layer;
         }
