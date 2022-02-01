@@ -37,16 +37,16 @@ class AvatarDollProcessingInformation extends Command
     public function handle(AvatarService $avatarService)
     {
         $dollName = $this->argument('doll');
-        $this->comment("Looking up layer information for doll $dollName");
+        $this->comment("Looking up information for doll $dollName");
 
-        dd($avatarService->getDollDefaultGradientInformation($dollName));
-        $this->info("Gradients");
-        foreach ($avatarService->getDollDefaultGradientInformation($dollName) as $gradient) {
-            $this->line($gradient->name . "(" . count($gradient->steps) . " steps)");
+        $doll = $avatarService->getDoll($dollName);
+        $this->info("Default gradients");
+        foreach ($doll->defaultGradients as $index => $gradient) {
+            $this->line($index . ": " . $gradient->name . "(" . count($gradient->steps) . " steps)");
         }
 
         $this->info("Drawing order");
-        foreach ($avatarService->getDollLayerDrawingOrder($dollName) as $subpart => $steps) {
+        foreach ($doll->drawingInformation as $subpart => $steps) {
             $this->line(str_pad($subpart, 10, ' ', STR_PAD_LEFT) . '>' . json_encode($steps));
         }
     }

@@ -5,6 +5,7 @@ namespace App\Avatar;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Imagick;
+use ImagickException;
 
 class AvatarService
 {
@@ -58,14 +59,10 @@ class AvatarService
         ['ear2', 'head']
     ];
 
-    //Image files
-    private array $dollImageCache = [];
-
-    //Drawing order, needs to be done through Imagick to ensure the layer index values match.
-    private array $dollLayerDrawingOrderCache = [];
-
-    //Loaded from PSD file requiring custom loader due to not being part of Imagick
-    private array $dollDefaultGradientsCache = [];
+    /**
+     * @var array<string, AvatarDoll>
+     */
+    private array $avatarDollCache = [];
 
     /**
      * @var array<string, AvatarDrawingStep[]>
@@ -77,6 +74,8 @@ class AvatarService
     )
     {
     }
+
+    #region AvatarDoll loading/processing
 
     /**
      * @return string[]
@@ -97,67 +96,63 @@ class AvatarService
         return storage_path(self::DOLL_FILE_LOCATION . $dollName . '.psd');
     }
 
-    public function getDoll($dollName): Imagick
+    /**
+     * Only for internal optimised route that don't require full processing of a doll (e.g. admin thumbnails)
+     * Everything else should use getDoll to load the full information in.
+     * @param $dollName
+     * @return Imagick
+     * @throws ImagickException
+     */
+    private function getDollImage($dollName): Imagick
     {
-        if (array_key_exists($dollName, $this->dollImageCache)) return $this->dollImageCache[$dollName];
         $filePath = $this->getDollFileName($dollName);
-        Log::debug("getDoll loading PSD file from " . $filePath);
+        Log::debug("(Avatar) getDollImage loading PSD file from " . $filePath);
         if (!file_exists($filePath)) throw new Exception("Specified doll file not found");
-        $doll = new Imagick($filePath);
-        $this->dollImageCache[$dollName] = $doll;
-        return $doll;
+        return new Imagick($filePath);
     }
 
-    public function getBaseCodeForDoll(string $dollName): string
+    /**
+     * Calculates a breakdown of the layers in a doll and the order they need to be drawn in
+     * Returns an array of [subpart => [layerIndex, colorChannel]]
+     * @param AvatarDoll $doll
+     * @return array<string, array>
+     * @throws ImagickException
+     */
+    private function getDollLayerDrawingOrder(AvatarDoll $doll): array
     {
-        $avatar = new AvatarInstance($dollName);
-        return $avatar->code;
-    }
-
-    public function getDollThumbnail($dollName): Imagick
-    {
-        $image = $this->getDoll($dollName);
-
-        // Image 0 is a cached flattened copy that might have things we don't want, such as a background
-        // However it holds the extent of the image, so we also need to add a transparent image of equal size
-        $image->setIteratorIndex(0);
-        $imageDimensions = $image->getImageGeometry();
-        $image->removeImage();
-        $image->newImage($imageDimensions['width'], $imageDimensions['height'], 'transparent');
-
-        //Iterating backwards since we're potentially removing layers
-        for ($i = $image->getNumberImages() - 1; $i >= 0; $i--) {
-            $image->setIteratorIndex($i);
-            $label = strtolower($image->getImageProperty('label'));
-            // Log::debug("File {$dollName}, {$i} label = " . $label);
-
-            // Some files have a separate background layer we don't want
-            if (str_starts_with($label, 'background')
-                || str_starts_with($label, 'layer')
-                || str_starts_with($label, 'bg')) $image->removeImage();
-            else
-                $image->setImageBackgroundColor('transparent');
+        Log::debug("(Avatar) Calculating layer drawing order for doll $doll->name");
+        $array = [];
+        for ($i = 1; $i < $doll->image->getNumberImages(); $i++) {
+            $doll->image->setIteratorIndex($i);
+            $layerName = strtolower($doll->image->getImageProperty('label'));
+            // If it's a managed layer it's in the form [subpart]_clr[color channel]_[order], e.g. arm_clr1_2
+            // Since we're loading the layers in drawing order, we don't actually use [order] anymore.
+            if ($start = strpos($layerName, '_clr')) {
+                $subPart = substr($layerName, 0, $start);
+                $details = substr($layerName, $start + 4);
+                [$channel, $order] = explode('_', $details, 2);
+                if (!array_key_exists($subPart, $array)) $array[$subPart] = [];
+                $array[$subPart][] = [
+                    'layerIndex' => $i,
+                    'colorChannel' => (int)$channel
+                ];
+            }
         }
 
-        // Flatten PSD file and create the actual thumbnail
-        $image = $image->mergeImageLayers(Imagick::LAYERMETHOD_COALESCE);
-        $image->thumbnailImage(100, 0);
-        $image->setImageFormat('png');
-        return $image;
+        return $array;
     }
 
     /**
      * Gets the default gradients for a doll (from the PSD file or cache)
-     * @param string $dollName
-     * @return array Array of 5 gradients with the indexes matching the ones referenced in the PSD
+     * @param AvatarDoll $doll
+     * @return AvatarGradient[] Array of 5 gradients with the indexes matching the ones referenced in the PSD
      * @throws Exception
      */
-    public function getDollDefaultGradientInformation(string $dollName): array
+    private function getDollDefaultGradientInformation(AvatarDoll $doll): array
     {
-        if (array_key_exists($dollName, $this->dollDefaultGradientsCache)) return $this->dollDefaultGradientsCache[$dollName];
+        Log::debug("(Avatar) getDollDefaultGradientInformation loading PSD file for $doll->name");
 
-        $filePath = $this->getDollFileName($dollName);
-        Log::debug("getDollLayerInformation loading PSD file from " . $filePath);
+        $filePath = $this->getDollFileName($doll->name);
         if (!file_exists($filePath)) throw new Exception("Specified doll file not found");
 
         $raw = AvatarDollPsdReader::loadFromFile($filePath);
@@ -197,7 +192,7 @@ class AvatarService
                     ];
                 }
                 $gradient = new AvatarGradient(
-                    "_" . $dollName . "_" . $index,
+                    "_" . $doll->name . "_" . $index,
                     "Internally generated gradient",
                     $steps,
                     true
@@ -211,49 +206,72 @@ class AvatarService
             if (!$result[$i]) $result[$i] = new AvatarGradient(
                 "_identity",
                 "Internally generated gradient",
-                [[0,0,0,0], [255,255,255,255]],
+                [[0, 0, 0, 0], [255, 255, 255, 255]],
                 true
             );
         }
 
-        $this->dollDefaultGradientsCache[$dollName] = $result;
         return $result;
     }
 
-    /**
-     * Calculates a breakdown of the layers in a doll and the order they need to be drawn in
-     * Returns an array of subpart => array[layerIndex, colorChannel]..]
-     * @param string $dollName
-     * @return array
-     * @throws \ImagickException
-     */
-    public function getDollLayerDrawingOrder(string $dollName): array
+    public function getDoll($dollName): AvatarDoll
     {
-        if (array_key_exists($dollName, $this->dollLayerDrawingOrderCache)) return $this->dollLayerDrawingOrderCache[$dollName];
-        Log::debug("Calculating doll layer information for " . $dollName);
-        $array = [];
-        $image = $this->getDoll($dollName);
+        if (array_key_exists($dollName, $this->avatarDollCache)) return $this->avatarDollCache[$dollName];
+        Log::debug("(Avatar) Loading and processing information for doll $dollName");
 
-        for ($i = 1; $i < $image->getNumberImages(); $i++) {
+        $image = $this->getDollImage($dollName);
+        $doll = new AvatarDoll($dollName, $image);
+        $doll->drawingInformation = $this->getDollLayerDrawingOrder($doll);
+        $doll->defaultGradients = $this->getDollDefaultGradientInformation($doll);
+        $this->avatarDollCache[$dollName] = $doll;
+        return $doll;
+    }
+
+    public function getBaseCodeForDoll(string $dollName): string
+    {
+        $avatar = new AvatarInstance($dollName);
+        return $avatar->code;
+    }
+
+    /**
+     * Intended to allow a deliberately unshaded thumbnail for a doll list. Does NOT cache!
+     * @param string $dollName
+     * @return Imagick
+     * @throws ImagickException
+     */
+    public function getDollThumbnail(string $dollName): Imagick
+    {
+        Log::debug("(Avatar) Getting Doll Thumbnail for $dollName");
+        $image = $this->getDollImage($dollName);
+
+        // Image 0 is a cached flattened copy that might have things we don't want, such as a background
+        // However it holds the extent of the image, so we also need to add a transparent image of equal size
+        $image->setIteratorIndex(0);
+        $imageDimensions = $image->getImageGeometry();
+        $image->removeImage();
+        $image->newImage($imageDimensions['width'], $imageDimensions['height'], 'transparent');
+
+        //Iterating backwards since we're potentially removing layers
+        for ($i = $image->getNumberImages() - 1; $i >= 0; $i--) {
             $image->setIteratorIndex($i);
-            $layerName = strtolower($image->getImageProperty('label'));
-            // If it's a managed layer it's in the form [subpart]_clr[color channel]_[order], e.g. arm_clr1_2
-            // Since we're loading the layers in drawing order, we don't actually use [order] anymore.
-            if ($start = strpos($layerName, '_clr')) {
-                $subPart = substr($layerName, 0, $start);
-                $details = substr($layerName, $start + 4);
-                [$channel, $order] = explode('_', $details, 2);
-                if (!array_key_exists($subPart, $array)) $array[$subPart] = [];
-                $array[$subPart][] = [
-                    'layerIndex' => $i,
-                    'colorChannel' => (int)$channel
-                ];
-            }
+            $label = strtolower($image->getImageProperty('label'));
+
+            // Some files have a separate background layer we don't want
+            if (str_starts_with($label, 'background')
+                || str_starts_with($label, 'layer')
+                || str_starts_with($label, 'bg')) $image->removeImage();
+            else
+                $image->setImageBackgroundColor('transparent');
         }
 
-        $this->dollLayerDrawingOrderCache[$dollName] = $array;
-        return $array;
+        // Flatten PSD file and create the actual thumbnail
+        $image = $image->mergeImageLayers(Imagick::LAYERMETHOD_COALESCE);
+        $image->thumbnailImage(100, 0);
+        $image->setImageFormat('png');
+        return $image;
     }
+
+    #endregion AvatarDoll loading/processing
 
     /**
      * Return an array, in order of drawing, of:
@@ -261,12 +279,11 @@ class AvatarService
      * Layers is an array of [ colorChannel, layerIndex ]
      * @param AvatarInstance $avatar
      * @return AvatarDrawingStep[]
-     * @throws \ImagickException
      */
     public function getDrawingPlanForAvatarInstance(AvatarInstance $avatar): array
     {
         if (array_key_exists($avatar->code, $this->avatarDrawingPlanCache)) return $this->avatarDrawingPlanCache[$avatar->code];
-        Log::debug("Calculating drawing plan for " . $avatar->code);
+        Log::debug("(Avatar) Calculating drawing plan for " . $avatar->code);
 
         $drawingSteps = [];
 
@@ -286,34 +303,28 @@ class AvatarService
             if (array_key_exists($color, $avatar->colors)) $colorOverrides[$index] = $this->getGradientImageFromName($avatar->colors[$color]);
         }
 
-        // Get a collection of the required dolls and a collection of layer info.
-        // Since these are cached we don't need to go out of our way to avoid duplicates
-        $parts = [];
+        // Get a collection of the required dolls (along with its processing information) for each bodypart
+        // Since these are cached we don't need to go out of our way to avoid duplicate loading
+        /** @var array<string, AvatarDoll> $dollsByBodyPart */
+        $dollsByBodyPart = [];
         foreach (self::AVATARDOLL_BODYPARTS as $bodyPart) {
             if ($avatar->mode == self::MODE_HEAD_ONLY && $bodyPart != 'head') continue;
-            $dollName = $dollNames[$bodyPart];
-            $parts[$bodyPart] = [
-                'dollName' => $dollName,
-                'doll' => $this->getDoll($dollName),
-                'layerInfo' => $this->getDollLayerDrawingOrder($dollNames[$bodyPart])
-            ];
+            $dollsByBodyPart[$bodyPart] = $this->getDoll($dollNames[$bodyPart]);
         }
 
         // Build drawing plan based off of the subpart array since such is in drawing order
         foreach (self::AVATARDOLL_SUBPARTS as $partInfo) {
             [$subPart, $part] = $partInfo;
-            if (!array_key_exists($part, $parts)) continue;
-            $layerInfo = $parts[$part]['layerInfo'];
-            if (array_key_exists($subPart, $layerInfo)) {
-                $defaults = $this->getDollDefaultGradientInformation($parts[$part]['dollName']);
+            if (!array_key_exists($part, $dollsByBodyPart)) continue;
+            if (array_key_exists($subPart, $dollsByBodyPart[$part]->drawingInformation)) {
                 $colors = [];
                 foreach (self::COLOR_INDEX_VALUES as $color => $index) {
-                    $colors[$index] = $colorOverrides[$index] ?: $this->renderGradientImage($defaults[$index]);
+                    $colors[$index] = $colorOverrides[$index] ?: $this->getDefaultGradient($dollsByBodyPart[$part], $index);
                 }
                 $drawingSteps[] = new AvatarDrawingStep(
-                    $parts[$part]['dollName'], $parts[$part]['doll'],
+                    $dollsByBodyPart[$part]->name, $dollsByBodyPart[$part]->image,
                     $part, $subPart,
-                    $layerInfo[$subPart], $colors
+                    $dollsByBodyPart[$part]->drawingInformation[$subPart], $colors
                 );
             }
         }
@@ -327,7 +338,7 @@ class AvatarService
      * Internal function to handle shared parts of rendering an avatar
      * @param AvatarDrawingStep[] $drawingPlan
      * @return Imagick
-     * @throws \ImagickException
+     * @throws ImagickException
      */
     private function renderAvatarFromPlan(array $drawingPlan): Imagick
     {
@@ -338,7 +349,6 @@ class AvatarService
 
         foreach ($drawingPlan as $step) {
 
-            /** @var Imagick $doll */
             $doll = $step->doll;
             foreach ($step->layers as $layer) {
                 $colorChannel = $layer['colorChannel'] - 1;
@@ -382,7 +392,7 @@ class AvatarService
 
     public function renderGradientImage(AvatarGradient $gradient, ?bool $horizontal = false): Imagick
     {
-        Log::debug("Rendering Image for gradient {$gradient->name}");
+        Log::debug("(Avatar) Rendering Image for gradient $gradient->name");
 
         //Holding image
         $image = new Imagick();
@@ -395,7 +405,7 @@ class AvatarService
             $toStep = $gradient->steps[$i];
             //Step values and colors are in the range 0..255
             $fromPixel = (int)($fromStep[0] * self::GRADIENT_SIZE / 255.0);
-            $toPixel = (int)($toStep[0] *self::GRADIENT_SIZE / 255.0);
+            $toPixel = (int)($toStep[0] * self::GRADIENT_SIZE / 255.0);
             if ($toPixel > $fromPixel) { // Only render steps that are more than a pixel
                 $fromColor = "rgb($fromStep[1], $fromStep[2], $fromStep[3])";
                 $toColor = "rgb($toStep[1], $toStep[2], $toStep[3])";
@@ -409,13 +419,23 @@ class AvatarService
         return $image;
     }
 
+    // Separate call because these are rendered on demand
+    public function getDefaultGradient(AvatarDoll $doll, int $index): Imagick
+    {
+        if ($doll->renderedGradients[$index]) return $doll->renderedGradients[$index];
+        Log::debug("(Avatar) Rendering default gradient for doll $doll->name, index $index");
+        $image = $this->renderGradientImage($doll->defaultGradients[$index]);
+        $doll->renderedGradients[$index] = $image;
+        return $image;
+    }
+
     public function renderGradientAvatarPreview(AvatarGradient $gradient): Imagick
     {
         $gradientImage = $this->renderGradientImage($gradient);
         $avatar = new AvatarInstance('FS_Husky', mode: self::MODE_HEAD_ONLY);
         $drawingPlan = $this->getDrawingPlanForAvatarInstance($avatar);
         // Now need to step through the plan and overwrite colors to our new temporary one
-        foreach($drawingPlan as $step) {
+        foreach ($drawingPlan as $step) {
             $step->colorChannels[self::COLOR_INDEX_VALUES[self::COLOR_PRIMARY]] = $gradientImage;
             $step->colorChannels[self::COLOR_INDEX_VALUES[self::COLOR_SECONDARY]] = $gradientImage;
             $step->colorChannels[self::COLOR_INDEX_VALUES[self::COLOR_HAIR]] = $gradientImage;

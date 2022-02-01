@@ -8,7 +8,7 @@ use Illuminate\Support\Carbon;
 
 class AvatarProviderViaDatabase implements AvatarProvider
 {
-    private function databaseRowToAvatarGradient($row) : AvatarGradient
+    private function databaseRowToAvatarGradient($row): AvatarGradient
     {
         return new AvatarGradient(
             $row->name,

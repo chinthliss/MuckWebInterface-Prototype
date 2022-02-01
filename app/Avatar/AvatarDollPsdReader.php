@@ -82,7 +82,7 @@ class AvatarDollPsdReader
         fseek(self::$file, 8, SEEK_CUR); // Skip section length and layer info length
         $layerCount = abs(self::getSignedShort());
 
-        for($i = 0; $i < $layerCount; $i++) {
+        for ($i = 0; $i < $layerCount; $i++) {
 
             $layer = [];
             $layer['top'] = self::getUnsignedInteger();
@@ -93,7 +93,7 @@ class AvatarDollPsdReader
             // Channels
             $channelCount = self::getUnsignedShort();
             $layer['channels'] = [];
-            for($channelIndex = 0; $channelIndex < $channelCount; $channelIndex++) {
+            for ($channelIndex = 0; $channelIndex < $channelCount; $channelIndex++) {
                 $layer['channels'][] = [
                     'id' => self::getSignedShort(),
                     'length' => self::getUnsignedInteger()
