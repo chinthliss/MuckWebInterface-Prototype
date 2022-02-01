@@ -151,6 +151,7 @@ class AvatarService
     private function getDollDefaultGradientInformation(AvatarDoll $doll): array
     {
         Log::debug("(Avatar) getDollDefaultGradientInformation loading PSD file for $doll->name");
+        $benchmark = -microtime(true);
 
         $filePath = $this->getDollFileName($doll->name);
         if (!file_exists($filePath)) throw new Exception("Specified doll file not found");
@@ -211,6 +212,9 @@ class AvatarService
             );
         }
 
+        $benchmark += microtime(true);
+        $benchmarkText = round($benchmark * 1000.0, 2);
+        Log::debug("(Avatar)   Time taken to load default gradients: {$benchmarkText}ms");
         return $result;
     }
 
@@ -342,6 +346,7 @@ class AvatarService
      */
     private function renderAvatarFromPlan(array $drawingPlan): Imagick
     {
+        $benchmark = -microtime(true);
         //Create a blank canvas
         $image = new Imagick();
         $image->newImage(self::DOLL_WIDTH, self::DOLL_HEIGHT, 'transparent');
@@ -367,6 +372,9 @@ class AvatarService
                     $extents['x'], $extents['y']);
             }
         }
+        $benchmark += microtime(true);
+        $benchmarkText = round($benchmark * 1000.0, 2);
+        Log::debug("(Avatar) Total time taken rendering an avatar: {$benchmarkText}ms");
         return $image;
     }
 
@@ -393,7 +401,7 @@ class AvatarService
     public function renderGradientImage(AvatarGradient $gradient, ?bool $horizontal = false): Imagick
     {
         Log::debug("(Avatar) Rendering Image for gradient $gradient->name");
-
+        $benchmark = -microtime(true);
         //Holding image
         $image = new Imagick();
 
@@ -416,6 +424,10 @@ class AvatarService
         $image = $image->mergeImageLayers(Imagick::LAYERMETHOD_COALESCE);
         $image->setImageFormat('png');
         if ($horizontal) $image->rotateImage('transparent', -90);
+
+        $benchmark += microtime(true);
+        $benchmarkText = round($benchmark * 1000.0, 2);
+        Log::debug("(Avatar)   Time taken to render gradient: {$benchmarkText}ms");
         return $image;
     }
 
