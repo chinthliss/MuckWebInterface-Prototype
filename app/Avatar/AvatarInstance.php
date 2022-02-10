@@ -20,6 +20,8 @@ class AvatarInstance
         public ?string $legs = null,
         public ?string $groin = null,
         public ?string $ass = null,
+        public bool $male = false,   // Whether to draw male parts
+        public bool $female = false, // Whether to draw female parts
         public ?string $background = null,
         public array   $items = [],
         public ?string $mode = null,
@@ -46,6 +48,10 @@ class AvatarInstance
         if ($this->legs) $array['legs'] = $this->legs;
         if ($this->groin) $array['groin'] = $this->groin;
         if ($this->ass) $array['ass'] = $this->ass;
+
+        if ($this->female) $array['female'] = true;
+        if ($this->male) $array['male'] = true;
+
         if ($this->background) $array['background'] = $this->background;
 
         if (count($this->colors)) $array['colors'] = $this->colors;
@@ -54,6 +60,25 @@ class AvatarInstance
         }
 
         if ($this->mode) $array['mode'] = $this->mode;
+        return $array;
+    }
+
+    /**
+     * Returns a version of the array where avatar doll details are stripped
+     * @return string[]
+     * @throws Exception
+     */
+    public function toCustomizationsOnlyArray(): array
+    {
+        $array = $this->toArray();
+        unset($array['base']);
+        unset($array['head']);
+        unset($array['arms']);
+        unset($array['legs']);
+        unset($array['groin']);
+        unset($array['ass']);
+        unset($array['male']);
+        unset($array['female']);
         return $array;
     }
 
@@ -66,6 +91,8 @@ class AvatarInstance
             $array['legs'] ?? null,
             $array['groin'] ?? null,
             $array['ass'] ?? null,
+            $array['male'] ?? false,
+            $array['female'] ?? false,
             $array['background'] ?? null,
             $array['items'] ?? [],
             $array['mode'] ?? null,

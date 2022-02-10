@@ -68,40 +68,40 @@
             <div>
 
                 <div class="form-group">
-                    <label for="torso">Fur / Skin 1</label>
-                    <select class="form-control" v-model="colors.skin1" @change="updateAndRefresh">
+                    <label for="skin1">Fur / Skin 1</label>
+                    <select class="form-control" id="skin1" v-model="colors.skin1" @change="updateAndRefresh">
                         <option value="">(Default)</option>
                         <option :value="gradient" v-for="gradient in gradients">{{ gradient }}</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="torso">Fur / Skin 2</label>
-                    <select class="form-control" v-model="colors.skin2" @change="updateAndRefresh">
+                    <label for="skin2">Fur / Skin 2</label>
+                    <select class="form-control" id="skin2" v-model="colors.skin2" @change="updateAndRefresh">
                         <option value="">(Default)</option>
                         <option :value="gradient" v-for="gradient in gradients">{{ gradient }}</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="torso">Bare Skin</label>
-                    <select class="form-control" v-model="colors.skin3" @change="updateAndRefresh">
+                    <label for="skin3">Bare Skin</label>
+                    <select class="form-control" id="skin3" v-model="colors.skin3" @change="updateAndRefresh">
                         <option value="">(Default)</option>
                         <option :value="gradient" v-for="gradient in gradients">{{ gradient }}</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="torso">Hair</label>
-                    <select class="form-control" v-model="colors.hair" @change="updateAndRefresh">
+                    <label for="hair">Hair</label>
+                    <select class="form-control" id="hair" v-model="colors.hair" @change="updateAndRefresh">
                         <option value="">(Default)</option>
                         <option :value="gradient" v-for="gradient in gradients">{{ gradient }}</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="torso">Eye</label>
-                    <select class="form-control" v-model="colors.eyes" @change="updateAndRefresh">
+                    <label for="eyes">Eye</label>
+                    <select class="form-control" id="eyes" v-model="colors.eyes" @change="updateAndRefresh">
                         <option value="">(Default)</option>
                         <option :value="gradient" v-for="gradient in gradients">{{ gradient }}</option>
                     </select>

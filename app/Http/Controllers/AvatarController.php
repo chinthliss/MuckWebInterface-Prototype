@@ -6,14 +6,29 @@ use App\Avatar\AvatarGradient;
 use App\Avatar\AvatarInstance;
 use App\Avatar\AvatarService;
 use App\Muck\MuckConnection;
+use App\User;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class AvatarController extends Controller
 {
-    public function showAvatarEditor(): View
+    public function showAvatarEditor(AvatarService $service): View
     {
-        return view('multiplayer.avatar');
+        /** @var User $user */
+        $user = auth()->user();
+        $character = $user->getCharacter();
+        $presentCustomizations = $service->getAvatarInstanceForCharacter($character)->toCustomizationsOnlyArray();
+
+        $gradients = array_map(function ($gradient) {
+            return $gradient->name;
+        }, $service->getGradients());
+
+        return view('multiplayer.avatar')->with([
+            'presentCustomizations' => $presentCustomizations,
+            'gradients' => $gradients,
+            'avatarWidth' => $service::DOLL_WIDTH,
+            'avatarHeight' => $service::DOLL_HEIGHT
+        ]);
     }
 
     public function showAdminDollList(AvatarService $service, MuckConnection $muckConnection): View
@@ -29,7 +44,7 @@ class AvatarController extends Controller
             return [
                 'name' => $doll,
                 'url' => route('admin.avatar.dollthumbnail', ['dollName' => $doll]),
-                'edit' => route('admin.avatar.dolltest', ['code' => $service->getBaseCodeForDoll($doll)]),
+                'edit' => route('admin.avatar.dolltest', ['code' => $service->getBaseCodeForDoll($doll, true, true)]),
                 'usage' => $usage
             ];
         }, $service->getDollNames());
@@ -79,13 +94,58 @@ class AvatarController extends Controller
             ->header('Content-Type', $image->getImageFormat());
     }
 
-    public function getAvatarFromCode(AvatarService $service, string $code): Response
+    /**
+     * Returns an avatar from a full specification
+     * @param AvatarService $service
+     * @param string $code
+     * @return Response
+     * @throws \ImagickException
+     */
+    public function getAvatarFromAdminCode(AvatarService $service, string $code): Response
     {
         $avatar = AvatarInstance::fromCode($code);
         $image = $service->renderAvatarInstance($avatar);
         return response($image, 200)
             ->header('Content-Type', $image->getImageFormat());
     }
+
+    /**
+     * For the avatar editor - returns an avatar where the avatar doll is always the user's active character
+     * @param AvatarService $service
+     * @param string $code
+     * @return Response
+     * @throws \ImagickException
+     */
+    public function getAvatarFromUserCode(AvatarService $service, string $code): Response
+    {
+        /** @var User $user */
+        $user = auth()->user();
+        $character = $user->getCharacter();
+        $config = $service->getAvatarInstanceForCharacter($character)->toArray();
+
+        //Overwrite colors with any specified by the editor
+        $colors = json_decode(base64_decode($code), true);
+        $config['colors'] = $colors ?? [];
+
+        //Remove items/background
+        unset($config['items']);
+        unset($config['background']);
+
+        $avatar = AvatarInstance::fromArray($config);
+        $image = $service->renderAvatarInstance($avatar);
+        return response($image, 200)
+            ->header('Content-Type', $image->getImageFormat());
+    }
+
+    public function getAvatarFromCharacterName(AvatarService $service, string $name): Response
+    {
+        //TODO : Default avatar to human for now
+        $avatar = new AvatarInstance('FS_Human1');
+        $image = $service->renderAvatarInstance($avatar);
+        return response($image, 200)
+            ->header('Content-Type', $image->getImageFormat());
+    }
+
 
     #region Gradients
 

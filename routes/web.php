@@ -40,6 +40,8 @@ Route::get('avatar/gradient/{name}', [AvatarController::class, 'getGradient'])
     ->name('avatar.gradient.image');
 Route::get('avatar/gradient/preview/{code?}', [AvatarController::class, 'getGradientPreview'])
     ->name('avatar.gradient.previewimage');
+Route::get('avatar/{name}', [AvatarController::class, 'getAvatarFromCharacterName'])
+    ->name('multiplayer.avatar.render');
 
 //Multiplayer getting started - always available since it gives instructions on creating an account.
 Route::get('multiplayer/gettingstarted', [MultiplayerController::class, 'showGettingStarted'])
@@ -231,6 +233,9 @@ Route::group(['middleware' => ['auth:account', 'verified', 'tos.agreed', 'not.lo
         ->name('multiplayer.avatar');
     Route::get('multiplayer/connect', [MultiplayerController::class, 'showConnect'])
         ->name('multiplayer.connect');
+    Route::get('avatar/edit/{code?}', [AvatarController::class, 'getAvatarFromUserCode'])
+        ->name('multiplayer.avatar.edit.render');
+
 });
 
 /*
@@ -278,7 +283,7 @@ Route::group(['middleware' => ['auth:account', 'verified', 'tos.agreed', 'role:s
             ->name('admin.avatar.dolltest');
         Route::get('dolltest/{dollName}/thumbnail', [AvatarController::class, 'getThumbnailForDoll'])
             ->name('admin.avatar.dollthumbnail');
-        Route::get('render/{code?}', [AvatarController::class, 'getAvatarFromCode'])
+        Route::get('render/{code?}', [AvatarController::class, 'getAvatarFromAdminCode'])
             ->name('admin.avatar.render');
     });
 

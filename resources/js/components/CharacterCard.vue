@@ -1,8 +1,8 @@
 <template>
     <div class="card character-card" :class="'mode-' + mode" @click="clicked">
         <div class="card-body">
-            <div class="avatar">
-                <i class="fas fa-user-alt fa-5x"></i>
+            <div class="avatar" v-bind:style="styleObject">
+                <!--<i class="fas fa-user-alt fa-5x"></i>-->
             </div>
             <div class="name">{{ character.name }}</div>
             <div v-if="!character.wizLevel" class="level">{{ character.level }}</div>
@@ -21,7 +21,11 @@ export default {
         mode: {type: String, default: 'tag'}
     },
     data: function () {
-        return {}
+        return {
+            styleObject: {
+                'backgroundImage': 'url(/avatar/' + this.character.name + '.png)'
+            }
+        }
     },
     methods: {
         clicked: function() {
@@ -40,6 +44,7 @@ export default {
 .avatar {
     position: relative;
     text-align: center;
+    background-position-x:-120px !important;
 }
 .avatar i {
     position:absolute;

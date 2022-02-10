@@ -16,7 +16,15 @@
     <div class="container">
         <div class="row">
             <div class="col text-center">
-                <h1><i class="fas fa-hammer"></i> To Be Completed <i class="fas fa-hammer fa-flip-horizontal"></i></h1>
+                <avatar-edit
+                    :present-customizations = "{{ json_encode($presentCustomizations) }}"
+                    :gradients="{{ json_encode($gradients) }}"
+                    render-url = "{{ route('multiplayer.avatar.edit.render') }}"
+                    :avatar-width = "{{ $avatarWidth }}"
+                    :avatar-height = "{{ $avatarHeight }}"
+                >
+                </avatar-edit>
+
             </div>
         </div>
     </div>

@@ -16,10 +16,7 @@ use Illuminate\Support\Facades\Log;
  */
 class LoadActiveCharacter
 {
-    /**
-     * @var MuckObjectService
-     */
-    protected $muckObjectService;
+    protected MuckObjectService $muckObjectService;
 
     /**
      * Requests in this list won't attempt to load a character.
@@ -28,7 +25,8 @@ class LoadActiveCharacter
      */
     private array $routesExempt = [
         'avatar.gradient.image',
-        'avatar.gradient.previewimage'
+        'avatar.gradient.previewimage',
+        'multiplayer.avatar.render'
     ];
 
     public function __construct(MuckObjectService $muckObjectService)

@@ -2,6 +2,7 @@
 
 namespace App\Avatar;
 
+use App\Muck\MuckCharacter;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Imagick;
@@ -17,6 +18,8 @@ class AvatarService
     const GRADIENT_SIZE = 2048; // Aiming for 10-bit, since that's growing in usage
 
     const MODE_HEAD_ONLY = 'head_only';
+    const MODE_EXPLICIT = 'explicit';
+    const MODE_SAFE = 'safe';
 
     const COLOR_PRIMARY = "skin1";
     const COLOR_SECONDARY = "skin2";
@@ -31,6 +34,9 @@ class AvatarService
         self::COLOR_HAIR => 2,
         self::COLOR_EYES => 4
     ];
+
+    const FEMALE_ONLY_SUBPARTS = [ 'breasts', 'nipples' ];
+    const MALE_ONLY_SUBPARTS = [ 'sheath', 'penis' ];
 
     /**
      * @var string[] AVATARDOLL_BODYPARTS
@@ -231,9 +237,9 @@ class AvatarService
         return $doll;
     }
 
-    public function getBaseCodeForDoll(string $dollName): string
+    public function getBaseCodeForDoll(string $dollName, bool $male = false, bool $female = false): string
     {
-        $avatar = new AvatarInstance($dollName);
+        $avatar = new AvatarInstance($dollName, male:$male, female:$female);
         return $avatar->code;
     }
 
@@ -277,6 +283,11 @@ class AvatarService
 
     #endregion AvatarDoll loading/processing
 
+    public function getAvatarInstanceForCharacter(MuckCharacter $character) : AvatarInstance
+    {
+        return new AvatarInstance('FS_Human1');
+    }
+
     /**
      * Return an array, in order of drawing, of:
      * [ dollName, doll, subPart, layers ]
@@ -312,13 +323,23 @@ class AvatarService
         /** @var array<string, AvatarDoll> $dollsByBodyPart */
         $dollsByBodyPart = [];
         foreach (self::AVATARDOLL_BODYPARTS as $bodyPart) {
+            // Head only mode, don't need to process other parts
             if ($avatar->mode == self::MODE_HEAD_ONLY && $bodyPart != 'head') continue;
+            // Safe mode - nothing explicit drawn, don't need to bring in the doll for such
+            if ($avatar->mode == self::MODE_SAFE && $bodyPart == 'groin') continue;
             $dollsByBodyPart[$bodyPart] = $this->getDoll($dollNames[$bodyPart]);
         }
 
         // Build drawing plan based off of the subpart array since such is in drawing order
         foreach (self::AVATARDOLL_SUBPARTS as $partInfo) {
             [$subPart, $part] = $partInfo;
+
+            // Explicit mode - If NOT in this mode, skip drawing the lewdest of parts!
+            if (!$avatar->mode == self::MODE_EXPLICIT && $subPart == 'penis') continue;
+            // Male/female parts only shown if enabled and safe mode isn't on
+            if ( (!$avatar->female || $avatar->mode == self::MODE_SAFE) && in_array($subPart, self::FEMALE_ONLY_SUBPARTS)) continue;
+            if ( (!$avatar->male || $avatar->mode == self::MODE_SAFE) && in_array($subPart, self::MALE_ONLY_SUBPARTS)) continue;
+
             if (!array_key_exists($part, $dollsByBodyPart)) continue;
             if (array_key_exists($subPart, $dollsByBodyPart[$part]->drawingInformation)) {
                 $colors = [];

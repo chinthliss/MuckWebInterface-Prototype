@@ -671,3 +671,4 @@ c
 q
 
 !! @qmuf $include $www/mwi "test" { }dict sendRequestToWebpage
+@qmuf #-1 "" "P" find_array FILTER_PROP_EXISTS "@rp/avatar/viewer rating" 0 array_filter_smart
