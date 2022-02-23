@@ -126,6 +126,7 @@
                 <a class="nav-link" href="{{ route('support.agent.home') }}">Support / Request Agent</a>
                 <a class="nav-link" href="{{ route('admin.avatar.dolllist') }}">Avatar Doll Tester</a>
                 <a class="nav-link" href="{{ route('admin.avatar.gradients') }}">Avatar Gradients</a>
+                <a class="nav-link" href="{{ route('admin.avatar.items') }}">Avatar Items</a>
                 @endStaff
 
                 @Admin
