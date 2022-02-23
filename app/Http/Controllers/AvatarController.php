@@ -208,4 +208,48 @@ class AvatarController extends Controller
             ->header('Content-Type', $image->getImageFormat());
     }
     #endregion Gradients
+
+    #region Items
+
+    public function getAvatarItem(AvatarService $service, string $name): Response
+    {
+        $item = $service->getAvatarItem($name);
+
+        if (!$item) abort(404, "Unrecognized Avatar Item - $name");
+        $image = $service->renderAvatarItem($item);
+        return response($image, 200)
+            ->header('Content-Type', $image->getImageFormat());
+    }
+
+    public function showAdminAvatarItems(AvatarService $service): View
+    {
+        $items = $service->getAvatarItems();
+
+        $items = array_map(function ($item) use ($service) {
+            return [
+                'name' => $item->name,
+                'type' => $item->type,
+                'filename' => $item->filename,
+                'requirement' => $item->requirement,
+                'created_at' => $item->createdAt,
+                'owner' => $item->owner?->serializeForAdmin(),
+                'cost' => $item->cost,
+                'x' => $item->x,
+                'y' => $item->y,
+                'rotate' => $item->rotate,
+                'scale' => $item->scale,
+                'url' => route('multiplayer.avatar.item', ['name' => $item->name])
+            ];
+        }, $service->getAvatarItems());
+
+        $usage = $service->getAvatarItemFileUsage();
+
+        return view('admin.avatar-item', [
+            'items' => $items,
+            'fileUsage' => $usage
+        ]);
+
+    }
+
+    #endregion Items
 }

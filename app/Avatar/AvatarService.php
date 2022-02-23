@@ -12,6 +12,8 @@ class AvatarService
 {
 
     const DOLL_FILE_LOCATION = 'app/avatar/doll/';
+    const ITEM_FILE_LOCATION = 'app/avatar/item/';
+    const BACKGROUND_FILE_LOCATION = 'app/avatar/background/';
 
     const DOLL_WIDTH = 384;
     const DOLL_HEIGHT = 640;
@@ -282,6 +284,77 @@ class AvatarService
     }
 
     #endregion AvatarDoll loading/processing
+
+    #region Avatar Items
+    /**
+     * @return AvatarItem[]
+     */
+    public function getAvatarItems(): array
+    {
+        return $this->provider->getItems();
+    }
+
+    public function getAvatarItemFilePath(AvatarItem $item): string
+    {
+        if ($item->type === 'background')
+            return storage_path(self::BACKGROUND_FILE_LOCATION . $item->filename);
+        else
+            return storage_path(self::ITEM_FILE_LOCATION . $item->filename);
+    }
+
+    /**
+     * @param string $itemName
+     * @return AvatarItem|null
+     */
+    public function getAvatarItem(string $itemName): ?AvatarItem
+    {
+        return $this->provider->getItem($itemName);
+    }
+
+    // Returns a list of every file in the avatar item directories and whether they're used or not
+    public function getAvatarItemFileUsage(): array
+    {
+        $filesInUse = array_map(function($item) {
+            return strtolower($item->filename);
+        }, $this->provider->getItems());
+
+        $files = array_merge(
+            glob(storage_path(self::ITEM_FILE_LOCATION . '*.png')),
+            glob(storage_path(self::BACKGROUND_FILE_LOCATION . '*.png'))
+        );
+
+        $usage = array_map(function($file) use ($filesInUse) {
+            return [
+                'filename' => $file,
+                'inUse' => in_array(strtolower(basename($file)), $filesInUse)
+            ];
+        }, $files);
+
+        return $usage;
+    }
+
+    /**
+     * @param AvatarItem $item
+     * @return Imagick
+     * @throws ImagickException
+     */
+    public function renderAvatarItem(AvatarItem $item): Imagick
+    {
+        Log::debug("(Avatar) Rendering preview Image for item $item->name");
+        $benchmark = -microtime(true);
+
+        //Items are only returned as a 64 x 64 preview image
+        $location = $this->getAvatarItemFilePath($item);
+        $image = new Imagick($location);
+        $image->thumbnailImage(64, 64, true);
+
+        $benchmark += microtime(true);
+        $benchmarkText = round($benchmark * 1000.0, 2);
+        Log::debug("(Avatar) Total time taken rendering an item from {$location}: {$benchmarkText}ms");
+
+        return $image;
+    }
+    #endregion Avatar Items
 
     public function getAvatarInstanceForCharacter(MuckCharacter $character) : AvatarInstance
     {

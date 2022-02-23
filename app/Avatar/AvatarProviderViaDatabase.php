@@ -8,6 +8,9 @@ use Illuminate\Support\Carbon;
 
 class AvatarProviderViaDatabase implements AvatarProvider
 {
+
+    #region Gradients
+
     private function databaseRowToAvatarGradient($row): AvatarGradient
     {
         return new AvatarGradient(
@@ -31,7 +34,7 @@ class AvatarProviderViaDatabase implements AvatarProvider
         return $gradients;
     }
 
-    public function getGradient(string $name): AvatarGradient
+    public function getGradient(string $name): ?AvatarGradient
     {
         $gradient = null;
         $row = DB::table('avatar_gradients')
@@ -42,4 +45,50 @@ class AvatarProviderViaDatabase implements AvatarProvider
         }
         return $gradient;
     }
+
+    #endregion Gradients
+
+    #region Items
+
+    private function databaseRowToAvatarItem($row): AvatarItem
+    {
+        return new AvatarItem(
+            $row->name,
+            $row->filename,
+            $row->type,
+            $row->requirement,
+            $row->created_at ? new Carbon($row->created_at) : null,
+            $row->owner_aid ? User::find($row->owner_aid) : null,
+            $row->cost,
+            $row->x,
+            $row->y,
+            $row->rotate,
+            $row->scale
+        );
+    }
+
+    public function getItems(): array
+    {
+        $items = [];
+        $rows = DB::table('avatar_items')
+            ->get();
+        foreach ($rows as $row) {
+            $items[] = $this->databaseRowToAvatarItem($row);
+        }
+        return $items;
+    }
+
+    public function getItem(string $itemName): ?AvatarItem
+    {
+        $item = null;
+        $row = DB::table('avatar_items')
+            ->where('name', '=', $itemName)
+            ->first();
+        if ($row) {
+            $item = $this->databaseRowToAvatarItem($row);
+        }
+        return $item;
+    }
+
+    #endregion Items
 }

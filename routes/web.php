@@ -42,6 +42,8 @@ Route::get('avatar/gradient/preview/{code?}', [AvatarController::class, 'getGrad
     ->name('avatar.gradient.previewimage');
 Route::get('avatar/{name}', [AvatarController::class, 'getAvatarFromCharacterName'])
     ->name('multiplayer.avatar.render');
+Route::get('avatar/item/{name}', [AvatarController::class, 'getAvatarItem'])
+    ->name('multiplayer.avatar.item');
 
 //Multiplayer getting started - always available since it gives instructions on creating an account.
 Route::get('multiplayer/gettingstarted', [MultiplayerController::class, 'showGettingStarted'])
@@ -290,6 +292,10 @@ Route::group(['middleware' => ['auth:account', 'verified', 'tos.agreed', 'role:s
     //Avatar Gradients
     Route::get('admin/avatargradients', [AvatarController::class, 'showAdminAvatarGradients'])
         ->name('admin.avatar.gradients');
+
+    //Avatar Items
+    Route::get('admin/avataritems', [AvatarController::class, 'showAdminAvatarItems'])
+        ->name('admin.avatar.items');
 
 
 });
