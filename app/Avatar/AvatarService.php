@@ -385,12 +385,6 @@ class AvatarService
             'ass' => $avatar->ass ?? $avatar->torso
         ];
 
-        // Get a collection of the overridden gradients. Order is important since they're referred by index
-        $colorOverrides = [null, null, null, null, null];
-        foreach (self::COLOR_INDEX_VALUES as $color => $index) {
-            if (array_key_exists($color, $avatar->colors)) $colorOverrides[$index] = $this->getGradientImageFromName($avatar->colors[$color]);
-        }
-
         // Get a collection of the required dolls (along with its processing information) for each bodypart
         // Since these are cached we don't need to go out of our way to avoid duplicate loading
         /** @var array<string, AvatarDoll> $dollsByBodyPart */
@@ -401,6 +395,14 @@ class AvatarService
             // Safe mode - nothing explicit drawn, don't need to bring in the doll for such
             if ($avatar->mode == self::MODE_SAFE && $bodyPart == 'groin') continue;
             $dollsByBodyPart[$bodyPart] = $this->getDoll($dollNames[$bodyPart]);
+        }
+
+        // Get a collection of the overridden gradients. Order is important since they're referred by index
+        $colorOverrides = [null, null, null, null, null];
+        $skinOverride = $avatar->skin ? $this->getDoll($avatar->skin) : null;
+        foreach (self::COLOR_INDEX_VALUES as $color => $index) {
+            if (array_key_exists($color, $avatar->colors)) $colorOverrides[$index] = $this->getGradientImageFromName($avatar->colors[$color]);
+            if (!$colorOverrides[$index] && $skinOverride) $colorOverrides[$index] = $this->getDefaultGradient($skinOverride, $index);
         }
 
         // Build drawing plan based off of the subpart array since such is in drawing order

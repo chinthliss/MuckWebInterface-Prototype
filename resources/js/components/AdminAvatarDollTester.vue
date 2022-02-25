@@ -62,6 +62,14 @@
                     </select>
                 </div>
 
+                <div class="form-group">
+                    <label for="skin">Skin</label>
+                    <select class="form-control" id="skin" v-model="skin" @change="updateAndRefresh">
+                        <option value="">(Same as base)</option>
+                        <option :value="doll" v-for="doll in dolls">{{ doll }}</option>
+                    </select>
+                </div>
+
             </div>
 
             <!-- Gradient Controls -->
@@ -159,6 +167,7 @@ export default {
             legs: "",
             groin: "",
             ass: "",
+            skin: "",
             colors: {
                 skin1: '',
                 skin2: '',
@@ -177,6 +186,7 @@ export default {
         this.legs = this.json.legs ?? '';
         this.groin = this.json.groin ?? '';
         this.ass = this.json.ass ?? '';
+        this.skin = this.json.skin ?? '';
         if (this.json.colors) {
             this.colors.skin1 = this.json.colors.skin1 || '';
             this.colors.skin2 = this.json.colors.skin2 || '';
@@ -196,6 +206,7 @@ export default {
             if (this.legs && this.legs !== this.torso) newJson.legs = this.legs;
             if (this.groin && this.groin !== this.torso) newJson.groin = this.groin;
             if (this.ass && this.ass !== this.torso) newJson.ass = this.ass;
+            if (this.skin && this.skin !== this.torso) newJson.skin = this.skin;
 
             let setColors = {};
             if (this.colors.skin1) setColors.skin1 = this.colors.skin1;

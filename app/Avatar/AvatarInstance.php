@@ -20,6 +20,7 @@ class AvatarInstance
         public ?string $legs = null,
         public ?string $groin = null,
         public ?string $ass = null,
+        public ?string $skin = null, // If set, its default colors replace all bodypart's default colors
         public bool $male = false,   // Whether to draw male parts
         public bool $female = false, // Whether to draw female parts
         public ?string $background = null,
@@ -48,6 +49,7 @@ class AvatarInstance
         if ($this->legs) $array['legs'] = $this->legs;
         if ($this->groin) $array['groin'] = $this->groin;
         if ($this->ass) $array['ass'] = $this->ass;
+        if ($this->skin) $array['skin'] = $this->skin;
 
         if ($this->female) $array['female'] = true;
         if ($this->male) $array['male'] = true;
@@ -77,6 +79,7 @@ class AvatarInstance
         unset($array['legs']);
         unset($array['groin']);
         unset($array['ass']);
+        unset($array['skin']);
         unset($array['male']);
         unset($array['female']);
         return $array;
@@ -91,6 +94,7 @@ class AvatarInstance
             $array['legs'] ?? null,
             $array['groin'] ?? null,
             $array['ass'] ?? null,
+            $array['skin'] ?? null,
             $array['male'] ?? false,
             $array['female'] ?? false,
             $array['background'] ?? null,
