@@ -51,6 +51,7 @@ class AvatarDollPsdReader
     {
         //First 4 bytes are the length field in code units (2 per char), not bytes
         $charLength = self::getUnsignedInteger();
+        if (!$charLength) return '';
         $encoded = fread(self::$file, $charLength * 2);
         //Should decode it here but we don't actually need to in this project
         return $encoded;
