@@ -44,6 +44,7 @@ $include $lib/rp
 $include $lib/accountpurchases
 $include $lib/notifications
 $include $lib/chargen
+$include $lib/avatar
 
 $def response400 descr "HTTP/1.1 400 Bad Request\r\n" descrnotify descr "\r\n" descrnotify
 $def response401 descr "HTTP/1.1 401 Unauthorized\r\n" descrnotify descr "\r\n" descrnotify
@@ -75,8 +76,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         pop "p,"
         object @ acct_any2aid intostr strcat "|" strcat
         object @ truelevel intostr strcat "|" strcat
-        "avatarstring" strcat (avatar TBC)
-        "|" strcat
+        object @ getAvatarInstanceStringFor strcat "|" strcat
         { }list
         object @ mlevel 5 > if (W3 and above are admin to the site)
             "admin" swap array_appenditem 
@@ -91,7 +91,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     object @ "zombie" flag? if
         pop "z,"
         object @ truelevel intostr strcat "|" strcat
-        "" strcat (avatar TBC)
+        object @ getAvatarInstanceStringFor strcat strcat
     then
     ?dup not if "t," then
     strcat "," strcat object @ name strcat
@@ -201,31 +201,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 
 (Returns an array of which infections use which avatar dolls, in the form: { dollName: [infection1.. infectionN] } )
 : handleRequest_avatarDollUsage[ arr:webcall -- ]
-    var infection var doll
-    { }dict (Result)
-    rpsys "infection/" array_get_propdirs
-    foreach nip infection !
-        (Handle main body)
-        rpsys "infection/" infection @ strcat "/avatar" strcat getpropstr 
-        ?dup not if "FS_Human1" then doll !
-        dup doll @ array_getitem 
-        ?dup not if { }list then
-        infection @ swap array_appenditem
-        swap doll @ array_setitem
-        (Now do parts that may also have an avatar set)
-        { "arms" "ass" "head" "legs" "skin" "torso" "cock" }list foreach nip
-            rpsys "infection/" infection @ strcat "/" strcat rot strcat "/avatar" strcat getpropstr
-            ?dup if doll !
-                dup doll @ array_getitem
-                ?dup not if { }list then
-                (But this time it might already be in the list)
-                dup infection @ array_findval not if
-                    infection @ swap array_appenditem
-                    swap doll @ array_setitem
-                else pop then
-            then
-        repeat
-    repeat
+    getAvatarDollUsage
     startAcceptedResponse
     encodejson descr swap descrnotify
 ; selfcall handleRequest_avatarDollUsage
@@ -671,4 +647,3 @@ c
 q
 
 !! @qmuf $include $www/mwi "test" { }dict sendRequestToWebpage
-@qmuf #-1 "" "P" find_array FILTER_PROP_EXISTS "@rp/avatar/viewer rating" 0 array_filter_smart
