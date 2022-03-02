@@ -87,11 +87,12 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         then
         object @ "approved?" getstatint not if "unapproved" swap array_appenditem then
         ":" array_join strcat
-    then
-    object @ "zombie" flag? if
-        pop "z,"
-        object @ truelevel intostr strcat "|" strcat
-        object @ getAvatarInstanceStringFor strcat strcat
+    else 
+        object @ "zombie" flag? if (Because players can have the zombie flag)
+            pop "z,"
+            object @ truelevel intostr strcat "|" strcat
+            object @ getAvatarInstanceStringFor strcat
+        then
     then
     ?dup not if "t," then
     strcat "," strcat object @ name strcat
