@@ -58,8 +58,11 @@ class AvatarInstance
         if ($this->background) $array['background'] = $this->background;
 
         if (count($this->colors)) $array['colors'] = $this->colors;
+
+
         if (!empty($this->items)) {
-            throw new Exception("Items not implemented yet.");
+            //throw new Exception("Items not implemented yet.");
+            //TODO: Implement items
         }
 
         if ($this->mode) $array['mode'] = $this->mode;
