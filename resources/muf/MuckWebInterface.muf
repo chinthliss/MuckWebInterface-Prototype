@@ -72,13 +72,13 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 : objectToString[ dbref:object -- str:representation ]
     object @ intostr "," strcat (Shared start - just the dbref)
     object @ timestamps pop pop pop intostr strcat ",\"" strcat
-    object @ name strcat "\"," strcat
+    object @ name "\\\"" "\"" subst strcat "\"," strcat
     "" (Typeflag and metadata)
     object @ player? if
         pop "p,\""
         object @ acct_any2aid intostr strcat "|" strcat
         object @ truelevel intostr strcat "|" strcat
-        object @ getAvatarInstanceStringFor strcat "|" strcat
+        object @ getAvatarInstanceStringFor "\\\"" "\"" subst strcat "|" strcat
         { }list
         object @ mlevel 5 > if (W3 and above are admin to the site)
             "admin" swap array_appenditem 
@@ -94,7 +94,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         object @ "zombie" flag? if 
             pop "z,\""
             object @ truelevel intostr strcat "|" strcat
-            object @ getAvatarInstanceStringFor strcat
+            object @ getAvatarInstanceStringFor "\\\"" "\"" subst strcat
             "\"" strcat
         then
     then
