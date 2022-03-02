@@ -427,11 +427,6 @@ class AvatarService
         }
         return $this->renderAvatarFromPlan($drawingPlan);
     }
-
-    public function getGradientImageFromName(string $name): Imagick
-    {
-        return $this->renderGradientImage($this->getGradient($name));
-    }
     #endregion Gradients
 
     #region Avatar Instances
@@ -564,7 +559,12 @@ class AvatarService
         $colorOverrides = [null, null, null, null, null];
         $skinOverride = $avatar->skin ? $this->getDoll($avatar->skin) : null;
         foreach (self::COLOR_INDEX_VALUES as $color => $index) {
-            if (array_key_exists($color, $avatar->colors)) $colorOverrides[$index] = $this->getGradientImageFromName($avatar->colors[$color]);
+            if (array_key_exists($color, $avatar->colors)) {
+                $gradient = $this->getGradient($avatar->colors[$color]);
+                if ($gradient) {
+                    $colorOverrides[$index] = $this->renderGradientImage($gradient);
+                }
+            }
             if (!$colorOverrides[$index] && $skinOverride) $colorOverrides[$index] = $this->getDefaultGradient($skinOverride, $index);
         }
 
