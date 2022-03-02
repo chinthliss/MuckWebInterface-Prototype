@@ -315,15 +315,14 @@ class HttpMuckConnection implements MuckConnection
         if (count($parts) != 5)
             throw new InvalidArgumentException("parseMuckObjectResponse: Response contains the wrong number of parts: $muckResponse");
 
-        list($dbref, $creationTimestamp, $name, $typeFlag, $metadata) = $parts;
+        list($dbref, $creationTimestamp, $name, $typeFlag, $metadataAsString) = $parts;
         $dbref = intval($dbref);
         $creationTimestamp = Carbon::createFromTimestamp($creationTimestamp);
-
+        $metadata = explode('|', $metadataAsString);
         switch ($typeFlag) {
             case 'p':
                 if (count($metadata) != 4)
-                    throw new InvalidArgumentException("parseMuckObjectResponse: Expected 4 items in metadata for a player: $metadata");
-                $metadata = explode('|', $metadata);
+                    throw new InvalidArgumentException("parseMuckObjectResponse: Expected 4 items in metadata for a player: $metadataAsString");
                 list($accountId, $level, $avatarString, $flagsAsString) = $metadata;
                 $avatarInstance = resolve(AvatarService::class)->muckAvatarStringToAvatarInstance($avatarString);
                 $flags = $flagsAsString ? explode(':', $flagsAsString) : [];
@@ -332,8 +331,7 @@ class HttpMuckConnection implements MuckConnection
                 break;
             case 'z':
                 if (count($metadata) != 2)
-                    throw new InvalidArgumentException("parseMuckObjectResponse: Expected 4 items in metadata for a player: $metadata");
-                $metadata = explode('|', $metadata);
+                    throw new InvalidArgumentException("parseMuckObjectResponse: Expected 4 items in metadata for a player: $metadataAsString");
                 list($level, $avatarString) = $metadata;
                 $avatarInstance = resolve(AvatarService::class)->muckAvatarStringToAvatarInstance($avatarString);
                 $muckObject = new MuckCharacter($dbref, $name, $creationTimestamp,
