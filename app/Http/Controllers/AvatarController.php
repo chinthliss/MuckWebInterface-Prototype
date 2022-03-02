@@ -150,7 +150,7 @@ class AvatarController extends Controller
             $mode = $request->get('mode');
             if ($mode == 'inline') {
                 $image->cropImage(170, 120, 110, 60);
-                $image->scaleImage(85, 60);
+                //$image->scaleImage(85, 60);
             }
         }
         return response($image, 200)
