@@ -14,7 +14,8 @@ class CreateAvatarItemsTable extends Migration
     public function up()
     {
         Schema::create('avatar_items', function (Blueprint $table) {
-            $table->string('name', 40)->primary();
+            $table->string('id', 40)->primary();
+            $table->string('name', 80);
             $table->enum('type', ['item', 'background']);
             $table->string('filename', 50);
             $table->string('requirement', 80)->nullable();

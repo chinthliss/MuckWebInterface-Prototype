@@ -13,9 +13,9 @@
 @endsection
 
 @section('content')
-    <avatar-item-viewer
+    <admin-avatar-item-viewer
         :items="{{ json_encode($items) }}"
         :file-usage="{{ json_encode($fileUsage) }}"
     >
-    </avatar-item-viewer>
+    </admin-avatar-item-viewer>
 @endsection

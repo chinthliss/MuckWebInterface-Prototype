@@ -11,6 +11,7 @@ use Illuminate\Support\Carbon;
 class AvatarItem
 {
     public function __construct(
+        public string $id,
         public string $name,
         public string $filename,
         public string $type,

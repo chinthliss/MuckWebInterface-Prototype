@@ -10,6 +10,7 @@
                 <thead>
                 <tr>
                     <th scope="col"></th>
+                    <th scope="col">Id</th>
                     <th scope="col">Name</th>
                     <th scope="col">Filename</th>
                     <th scope="col">Requirement</th>
@@ -24,6 +25,7 @@
                 </thead>
                 <tr v-for="item in items" v-if="item.type === category.type">
                     <td><img :src="item.url" alt="Image for an avatar item"></td>
+                    <td>{{ item.id }}</td>
                     <td class="text-wrap">{{ item.name }}</td>
                     <td>{{ item.filename }}</td>
                     <td>{{ item.requirement }}</td>
@@ -46,6 +48,7 @@
 <script>
 /**
  * @typedef {Object} AvatarItem
+ * @property {string} id
  * @property {string} name
  * @property {string} desc
  * @property {date} [created_at]
@@ -55,7 +58,7 @@
  * @property {string} url
  */
 export default {
-    name: "avatar-gradient-viewer",
+    name: "admin-avatar-item-viewer",
     props: {
         /** @type {AvatarItem[]} */
         items: {Type: Array, required: true},

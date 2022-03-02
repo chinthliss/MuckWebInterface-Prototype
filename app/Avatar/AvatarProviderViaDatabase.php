@@ -53,6 +53,7 @@ class AvatarProviderViaDatabase implements AvatarProvider
     private function databaseRowToAvatarItem($row): AvatarItem
     {
         return new AvatarItem(
+            $row->id,
             $row->name,
             $row->filename,
             $row->type,
