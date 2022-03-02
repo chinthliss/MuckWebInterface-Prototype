@@ -61,8 +61,7 @@ class AvatarProviderViaDatabase implements AvatarProvider
             $row->created_at ? new Carbon($row->created_at) : null,
             $row->owner_aid ? User::find($row->owner_aid) : null,
             $row->cost,
-            $row->x,
-            $row->y,
+            $row->x, $row->y, 1,
             $row->rotate,
             $row->scale
         );

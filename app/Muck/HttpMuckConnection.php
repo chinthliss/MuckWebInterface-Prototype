@@ -3,6 +3,7 @@
 
 namespace App\Muck;
 
+use App\Avatar\AvatarService;
 use App\Helpers\Ansi;
 use App\User;
 use GuzzleHttp\Exception\GuzzleException;
@@ -327,16 +328,16 @@ class HttpMuckConnection implements MuckConnection
                 if (count($metadata) != 4)
                     throw new InvalidArgumentException("parseMuckObjectResponse: Expected 4 items in metadata for a player: $muckResponse");
                 list($accountId, $level, $avatarString, $flagsAsString) = $metadata;
-                $avatar = null;
+                $avatarInstance = resolve(AvatarService::class)->muckAvatarStringToAvatarInstance($avatarString);
                 $flags = $flagsAsString ? explode(':', $flagsAsString) : [];
                 $muckObject = new MuckCharacter($dbref, $name, $creationTimestamp,
-                    $level, $avatar, $flags, $accountId);
+                    $level, $avatarInstance, $flags, $accountId);
                 break;
             case 'z':
                 list($level, $avatarString) = $metadata;
-                $avatar = null;
+                $avatarInstance = resolve(AvatarService::class)->muckAvatarStringToAvatarInstance($avatarString);
                 $muckObject = new MuckCharacter($dbref, $name, $creationTimestamp,
-                    $level, $avatar);
+                    $level, $avatarInstance);
                 break;
             case 'r':
                 $muckObject = new MuckDbref($dbref, $name, $typeFlag, $creationTimestamp);

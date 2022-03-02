@@ -37,8 +37,8 @@ class AvatarService
         self::COLOR_EYES => 4
     ];
 
-    const FEMALE_ONLY_SUBPARTS = [ 'breasts', 'nipples' ];
-    const MALE_ONLY_SUBPARTS = [ 'sheath', 'penis' ];
+    const FEMALE_ONLY_SUBPARTS = ['breasts', 'nipples'];
+    const MALE_ONLY_SUBPARTS = ['sheath', 'penis'];
 
     /**
      * @var string[] AVATARDOLL_BODYPARTS
@@ -115,7 +115,7 @@ class AvatarService
     {
         $filePath = $this->getDollFileName($dollName);
         Log::debug("(Avatar) getDollImage loading PSD file from " . $filePath);
-        if (!file_exists($filePath)) throw new Exception("Specified doll file not found");
+        if (!file_exists($filePath)) throw new Exception("Specified doll file not found - " . $dollName);
         return new Imagick($filePath);
     }
 
@@ -162,7 +162,7 @@ class AvatarService
         $benchmark = -microtime(true);
 
         $filePath = $this->getDollFileName($doll->name);
-        if (!file_exists($filePath)) throw new Exception("Specified doll file not found");
+        if (!file_exists($filePath)) throw new Exception("Specified doll file not found - " . $doll->name);
 
         $raw = AvatarDollPsdReader::loadFromFile($filePath);
 
@@ -241,7 +241,7 @@ class AvatarService
 
     public function getBaseCodeForDoll(string $dollName, bool $male = false, bool $female = false): string
     {
-        $avatar = new AvatarInstance($dollName, male:$male, female:$female);
+        $avatar = new AvatarInstance($dollName, male: $male, female: $female);
         return $avatar->code;
     }
 
@@ -314,7 +314,7 @@ class AvatarService
     // Returns a list of every file in the avatar item directories and whether they're used or not
     public function getAvatarItemFileUsage(): array
     {
-        $filesInUse = array_map(function($item) {
+        $filesInUse = array_map(function ($item) {
             return strtolower($item->filename);
         }, $this->provider->getItems());
 
@@ -323,7 +323,7 @@ class AvatarService
             glob(storage_path(self::BACKGROUND_FILE_LOCATION . '*.png'))
         );
 
-        $usage = array_map(function($file) use ($filesInUse) {
+        $usage = array_map(function ($file) use ($filesInUse) {
             return [
                 'filename' => $file,
                 'inUse' => in_array(strtolower(basename($file)), $filesInUse)
@@ -355,129 +355,6 @@ class AvatarService
         return $image;
     }
     #endregion Avatar Items
-
-    public function getAvatarInstanceForCharacter(MuckCharacter $character) : AvatarInstance
-    {
-        return new AvatarInstance('FS_Human1');
-    }
-
-    /**
-     * Return an array, in order of drawing, of:
-     * [ dollName, doll, subPart, layers ]
-     * Layers is an array of [ colorChannel, layerIndex ]
-     * @param AvatarInstance $avatar
-     * @return AvatarDrawingStep[]
-     */
-    public function getDrawingPlanForAvatarInstance(AvatarInstance $avatar): array
-    {
-        if (array_key_exists($avatar->code, $this->avatarDrawingPlanCache)) return $this->avatarDrawingPlanCache[$avatar->code];
-        Log::debug("(Avatar) Calculating drawing plan for " . $avatar->code);
-
-        $drawingSteps = [];
-
-        // Get a collection of which doll to use for which part
-        $dollNames = [
-            'torso' => $avatar->torso,
-            'head' => $avatar->head ?? $avatar->torso,
-            'arms' => $avatar->arms ?? $avatar->torso,
-            'legs' => $avatar->legs ?? $avatar->torso,
-            'groin' => $avatar->groin ?? $avatar->torso,
-            'ass' => $avatar->ass ?? $avatar->torso
-        ];
-
-        // Get a collection of the required dolls (along with its processing information) for each bodypart
-        // Since these are cached we don't need to go out of our way to avoid duplicate loading
-        /** @var array<string, AvatarDoll> $dollsByBodyPart */
-        $dollsByBodyPart = [];
-        foreach (self::AVATARDOLL_BODYPARTS as $bodyPart) {
-            // Head only mode, don't need to process other parts
-            if ($avatar->mode == self::MODE_HEAD_ONLY && $bodyPart != 'head') continue;
-            // Safe mode - nothing explicit drawn, don't need to bring in the doll for such
-            if ($avatar->mode == self::MODE_SAFE && $bodyPart == 'groin') continue;
-            $dollsByBodyPart[$bodyPart] = $this->getDoll($dollNames[$bodyPart]);
-        }
-
-        // Get a collection of the overridden gradients. Order is important since they're referred by index
-        $colorOverrides = [null, null, null, null, null];
-        $skinOverride = $avatar->skin ? $this->getDoll($avatar->skin) : null;
-        foreach (self::COLOR_INDEX_VALUES as $color => $index) {
-            if (array_key_exists($color, $avatar->colors)) $colorOverrides[$index] = $this->getGradientImageFromName($avatar->colors[$color]);
-            if (!$colorOverrides[$index] && $skinOverride) $colorOverrides[$index] = $this->getDefaultGradient($skinOverride, $index);
-        }
-
-        // Build drawing plan based off of the subpart array since such is in drawing order
-        foreach (self::AVATARDOLL_SUBPARTS as $partInfo) {
-            [$subPart, $part] = $partInfo;
-
-            // Explicit mode - If NOT in this mode, skip drawing the lewdest of parts!
-            if (!$avatar->mode == self::MODE_EXPLICIT && $subPart == 'penis') continue;
-            // Male/female parts only shown if enabled and safe mode isn't on
-            if ( (!$avatar->female || $avatar->mode == self::MODE_SAFE) && in_array($subPart, self::FEMALE_ONLY_SUBPARTS)) continue;
-            if ( (!$avatar->male || $avatar->mode == self::MODE_SAFE) && in_array($subPart, self::MALE_ONLY_SUBPARTS)) continue;
-
-            if (!array_key_exists($part, $dollsByBodyPart)) continue;
-            if (array_key_exists($subPart, $dollsByBodyPart[$part]->drawingInformation)) {
-                $colors = [];
-                foreach (self::COLOR_INDEX_VALUES as $color => $index) {
-                    $colors[$index] = $colorOverrides[$index] ?: $this->getDefaultGradient($dollsByBodyPart[$part], $index);
-                }
-                $drawingSteps[] = new AvatarDrawingStep(
-                    $dollsByBodyPart[$part]->name, $dollsByBodyPart[$part]->image,
-                    $part, $subPart,
-                    $dollsByBodyPart[$part]->drawingInformation[$subPart], $colors
-                );
-            }
-        }
-
-
-        $this->avatarDrawingPlanCache[$avatar->code] = $drawingSteps;
-        return $drawingSteps;
-    }
-
-    /**
-     * Internal function to handle shared parts of rendering an avatar
-     * @param AvatarDrawingStep[] $drawingPlan
-     * @return Imagick
-     * @throws ImagickException
-     */
-    private function renderAvatarFromPlan(array $drawingPlan): Imagick
-    {
-        $benchmark = -microtime(true);
-        //Create a blank canvas
-        $image = new Imagick();
-        $image->newImage(self::DOLL_WIDTH, self::DOLL_HEIGHT, 'transparent');
-        $image->setImageFormat("png");
-
-        foreach ($drawingPlan as $step) {
-
-            $doll = $step->doll;
-            foreach ($step->layers as $layer) {
-                $colorChannel = $layer['colorChannel'] - 1;
-                $colorChannel = max(0, $colorChannel); // Couple of avatars have 0 instead of 1
-                $doll->setIteratorIndex($layer['layerIndex']);
-                $extents = $doll->getImagePage(); // Returns width, height, x and y (offsets) for this layer
-
-                // Take a copy of that relevant layer and use the gradient as a color lookup table (clut) on it
-                $subPart = new Imagick();
-                $subPart->newImage($extents['width'], $extents['height'], 'transparent');
-                $subPart->compositeImage($doll, Imagick::COMPOSITE_OVER, 0, 0);
-                $subPart->clutImage($step->colorChannels[$colorChannel], Imagick::CHANNEL_DEFAULT);
-
-                // Copy the subPage onto our final image, using its original offsets
-                $image->compositeImage($subPart, Imagick::COMPOSITE_OVER,
-                    $extents['x'], $extents['y']);
-            }
-        }
-        $benchmark += microtime(true);
-        $benchmarkText = round($benchmark * 1000.0, 2);
-        Log::debug("(Avatar) Total time taken rendering an avatar: {$benchmarkText}ms");
-        return $image;
-    }
-
-    public function renderAvatarInstance(AvatarInstance $avatar): Imagick
-    {
-        return $this->renderAvatarFromPlan($this->getDrawingPlanForAvatarInstance($avatar));
-    }
 
     #region Gradients
 
@@ -556,4 +433,214 @@ class AvatarService
         return $this->renderGradientImage($this->getGradient($name));
     }
     #endregion Gradients
+
+    #region Avatar Instances
+
+    public function muckAvatarStringToAvatarInstance(string $string): AvatarInstance
+    {
+        Log::debug("Converting MuckAvatarString to AvatarInstance: " . $string);
+        //String is a ';' separated set of key=value entries
+        $array = [];
+        $colors = [];
+        $items = [];
+        foreach (explode(';', $string) as $entry) {
+            [$key, $value] = explode('=', $entry, 2);
+            switch ($key) {
+                //Bodyparts
+                case 'torso':
+                    $array['base'] = $value;
+                    break;
+                case 'head':
+                    $array['head'] = $value;
+                    break;
+                case 'arms':
+                    $array['arms'] = $value;
+                    break;
+                case 'legs':
+                    $array['legs'] = $value;
+                    break;
+                case 'ass':
+                    $array['ass'] = $value;
+                    break;
+                case 'cock':
+                    $array['groin'] = $value;
+                    break;
+                case 'skin':
+                    $array['skin'] = $value;
+                    break;
+                //Colors
+                case self::COLOR_PRIMARY:
+                    $colors[self::COLOR_PRIMARY] = $value;
+                    break;
+                case self::COLOR_SECONDARY:
+                    $colors[self::COLOR_SECONDARY] = $value;
+                    break;
+                case self::COLOR_NAUGHTY_BITS:
+                    $colors[self::COLOR_NAUGHTY_BITS] = $value;
+                    break;
+                case self::COLOR_HAIR:
+                    $colors[self::COLOR_HAIR] = $value;
+                    break;
+                case self::COLOR_EYES:
+                    $colors[self::COLOR_EYES] = $value;
+                    break;
+                //Items
+                case 'item':
+                    [$id, $x, $y, $z, $scale, $rotate] = explode('/', $value, 6);
+                    $item = $this->getAvatarItem($id);
+                    if ($item) {
+                        $item->x = $x;
+                        $item->y = $y;
+                        $item->z = $z;
+                        $item->scale = $scale;
+                        $item->rotate = $rotate;
+                        array_push($items, $item);
+                    }
+                    break;
+
+                //The Naughty Bits
+                case 'male':
+                    $array['male'] = $value;
+                    break;
+                case 'female':
+                    $array['female'] = $value;
+                    break;
+
+                default:
+                    Log::warning('Unknown key encountered in MuckAvatarString - ' . $key . "=" . $value);
+            }
+        }
+
+        if (count($colors)) $array['colors'] = $colors;
+        if (count($items)) $array['items'] = $items;
+        if (!array_key_exists('base', $array))
+            throw new Exception("fromMuckString was given a string that didn't contain an avatar base (torso)!");
+
+        return AvatarInstance::fromArray($array);
+    }
+
+    public function getAvatarInstanceForCharacter(MuckCharacter $character): AvatarInstance
+    {
+        return new AvatarInstance('FS_Human1');
+    }
+
+    /**
+     * Return an array, in order of drawing, of:
+     * [ dollName, doll, subPart, layers ]
+     * Layers is an array of [ colorChannel, layerIndex ]
+     * @param AvatarInstance $avatar
+     * @return AvatarDrawingStep[]
+     */
+    public function getDrawingPlanForAvatarInstance(AvatarInstance $avatar): array
+    {
+        if (array_key_exists($avatar->code, $this->avatarDrawingPlanCache)) return $this->avatarDrawingPlanCache[$avatar->code];
+        Log::debug("(Avatar) Calculating drawing plan for " . $avatar->code);
+
+        $drawingSteps = [];
+
+        // Get a collection of which doll to use for which part
+        $dollNames = [
+            'torso' => $avatar->torso,
+            'head' => $avatar->head ?? $avatar->torso,
+            'arms' => $avatar->arms ?? $avatar->torso,
+            'legs' => $avatar->legs ?? $avatar->torso,
+            'groin' => $avatar->groin ?? $avatar->torso,
+            'ass' => $avatar->ass ?? $avatar->torso
+        ];
+
+        // Get a collection of the required dolls (along with its processing information) for each bodypart
+        // Since these are cached we don't need to go out of our way to avoid duplicate loading
+        /** @var array<string, AvatarDoll> $dollsByBodyPart */
+        $dollsByBodyPart = [];
+        foreach (self::AVATARDOLL_BODYPARTS as $bodyPart) {
+            // Head only mode, don't need to process other parts
+            if ($avatar->mode == self::MODE_HEAD_ONLY && $bodyPart != 'head') continue;
+            // Safe mode - nothing explicit drawn, don't need to bring in the doll for such
+            if ($avatar->mode == self::MODE_SAFE && $bodyPart == 'groin') continue;
+            $dollsByBodyPart[$bodyPart] = $this->getDoll($dollNames[$bodyPart]);
+        }
+
+        // Get a collection of the overridden gradients. Order is important since they're referred by index
+        $colorOverrides = [null, null, null, null, null];
+        $skinOverride = $avatar->skin ? $this->getDoll($avatar->skin) : null;
+        foreach (self::COLOR_INDEX_VALUES as $color => $index) {
+            if (array_key_exists($color, $avatar->colors)) $colorOverrides[$index] = $this->getGradientImageFromName($avatar->colors[$color]);
+            if (!$colorOverrides[$index] && $skinOverride) $colorOverrides[$index] = $this->getDefaultGradient($skinOverride, $index);
+        }
+
+        // Build drawing plan based off of the subpart array since such is in drawing order
+        foreach (self::AVATARDOLL_SUBPARTS as $partInfo) {
+            [$subPart, $part] = $partInfo;
+
+            // Explicit mode - If NOT in this mode, skip drawing the lewdest of parts!
+            if (!$avatar->mode == self::MODE_EXPLICIT && $subPart == 'penis') continue;
+            // Male/female parts only shown if enabled and safe mode isn't on
+            if ((!$avatar->female || $avatar->mode == self::MODE_SAFE) && in_array($subPart, self::FEMALE_ONLY_SUBPARTS)) continue;
+            if ((!$avatar->male || $avatar->mode == self::MODE_SAFE) && in_array($subPart, self::MALE_ONLY_SUBPARTS)) continue;
+
+            if (!array_key_exists($part, $dollsByBodyPart)) continue;
+            if (array_key_exists($subPart, $dollsByBodyPart[$part]->drawingInformation)) {
+                $colors = [];
+                foreach (self::COLOR_INDEX_VALUES as $color => $index) {
+                    $colors[$index] = $colorOverrides[$index] ?: $this->getDefaultGradient($dollsByBodyPart[$part], $index);
+                }
+                $drawingSteps[] = new AvatarDrawingStep(
+                    $dollsByBodyPart[$part]->name, $dollsByBodyPart[$part]->image,
+                    $part, $subPart,
+                    $dollsByBodyPart[$part]->drawingInformation[$subPart], $colors
+                );
+            }
+        }
+
+
+        $this->avatarDrawingPlanCache[$avatar->code] = $drawingSteps;
+        return $drawingSteps;
+    }
+
+    /**
+     * Internal function to handle shared parts of rendering an avatar
+     * @param AvatarDrawingStep[] $drawingPlan
+     * @return Imagick
+     * @throws ImagickException
+     */
+    private function renderAvatarFromPlan(array $drawingPlan): Imagick
+    {
+        $benchmark = -microtime(true);
+        //Create a blank canvas
+        $image = new Imagick();
+        $image->newImage(self::DOLL_WIDTH, self::DOLL_HEIGHT, 'transparent');
+        $image->setImageFormat("png");
+
+        foreach ($drawingPlan as $step) {
+
+            $doll = $step->doll;
+            foreach ($step->layers as $layer) {
+                $colorChannel = $layer['colorChannel'] - 1;
+                $colorChannel = max(0, $colorChannel); // Couple of avatars have 0 instead of 1
+                $doll->setIteratorIndex($layer['layerIndex']);
+                $extents = $doll->getImagePage(); // Returns width, height, x and y (offsets) for this layer
+
+                // Take a copy of that relevant layer and use the gradient as a color lookup table (clut) on it
+                $subPart = new Imagick();
+                $subPart->newImage($extents['width'], $extents['height'], 'transparent');
+                $subPart->compositeImage($doll, Imagick::COMPOSITE_OVER, 0, 0);
+                $subPart->clutImage($step->colorChannels[$colorChannel], Imagick::CHANNEL_DEFAULT);
+
+                // Copy the subPage onto our final image, using its original offsets
+                $image->compositeImage($subPart, Imagick::COMPOSITE_OVER,
+                    $extents['x'], $extents['y']);
+            }
+        }
+        $benchmark += microtime(true);
+        $benchmarkText = round($benchmark * 1000.0, 2);
+        Log::debug("(Avatar) Total time taken rendering an avatar: {$benchmarkText}ms");
+        return $image;
+    }
+
+    public function renderAvatarInstance(AvatarInstance $avatar): Imagick
+    {
+        return $this->renderAvatarFromPlan($this->getDrawingPlanForAvatarInstance($avatar));
+    }
+
+    #endregion Avatar Instances
 }

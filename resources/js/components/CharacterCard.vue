@@ -45,6 +45,7 @@ export default {
     position: relative;
     text-align: center;
     background-position-x:-120px !important;
+    background-position-y: -70px !important;
 }
 .avatar i {
     position:absolute;

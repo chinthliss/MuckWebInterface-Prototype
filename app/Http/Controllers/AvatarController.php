@@ -6,7 +6,9 @@ use App\Avatar\AvatarGradient;
 use App\Avatar\AvatarInstance;
 use App\Avatar\AvatarService;
 use App\Muck\MuckConnection;
+use App\Muck\MuckObjectService;
 use App\User;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
 
@@ -137,11 +139,17 @@ class AvatarController extends Controller
             ->header('Content-Type', $image->getImageFormat());
     }
 
-    public function getAvatarFromCharacterName(AvatarService $service, string $name): Response
+    public function getAvatarFromCharacterName(AvatarService $service, MuckObjectService $muckObjectService,
+                                               Request $request, string $name): Response
     {
-        //TODO : Default avatar to human for now
-        $avatar = new AvatarInstance('FS_Human1');
-        $image = $service->renderAvatarInstance($avatar);
+        if (str_ends_with(strtolower($name), '.png')) $name = substr($name, 0, -4);
+        $character = $muckObjectService->getByPlayerName($name);
+        if (!$character) abort(404);
+        $image = $service->renderAvatarInstance($character->avatarInstance());
+        if ($request->has('crop')) {
+            $mode = $request->get('crop');
+            if ($mode == 'inline') $image->cropImage(170, 120, 110, 65);
+        }
         return response($image, 200)
             ->header('Content-Type', $image->getImageFormat());
     }
@@ -227,6 +235,7 @@ class AvatarController extends Controller
 
         $items = array_map(function ($item) use ($service) {
             return [
+                'id' => $item->id,
                 'name' => $item->name,
                 'type' => $item->type,
                 'filename' => $item->filename,

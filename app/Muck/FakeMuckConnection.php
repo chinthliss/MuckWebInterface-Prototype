@@ -3,6 +3,8 @@
 
 namespace App\Muck;
 
+use App\Avatar\AvatarInstance;
+use App\Avatar\AvatarService;
 use App\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -19,9 +21,11 @@ class FakeMuckConnection implements MuckConnection
     public function __construct(array $config)
     {
         $fixedTime = Carbon::create(2000,1,1, 0, 0, 0 );
+        $avatarService = resolve(AvatarService::class);
+        $avatarInstance = $avatarService->muckAvatarStringToAvatarInstance('ass=FS_Fox2;female=2;torso=FS_Fennec;eyes=Brown;female=8;hair=Silver;skin2=Silver;skin1=Greyscale;item=foxplush/110/30/16/0.4/0');
         $this->fakeDatabaseByDbref = [
             // Normal character
-            1234 => new MuckCharacter(1234, 'TestCharacter', $fixedTime, 100, null, [], 1),
+            1234 => new MuckCharacter(1234, 'TestCharacter', $fixedTime, 100, $avatarInstance, [], 1),
             // Character that grants the staff role
             2345 => new MuckCharacter(2345, 'StaffCharacter', $fixedTime, 14, null, ['staff'], 1),
             // Character that grants the admin role

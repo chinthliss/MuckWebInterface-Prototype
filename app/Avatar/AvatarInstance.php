@@ -2,6 +2,7 @@
 
 namespace App\Avatar;
 
+use App;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
@@ -21,8 +22,8 @@ class AvatarInstance
         public ?string $groin = null,
         public ?string $ass = null,
         public ?string $skin = null, // If set, its default colors replace all bodypart's default colors
-        public bool $male = false,   // Whether to draw male parts
-        public bool $female = false, // Whether to draw female parts
+        public bool    $male = false,   // Whether to draw male parts
+        public bool    $female = false, // Whether to draw female parts
         public ?string $background = null,
         public array   $items = [],
         public ?string $mode = null,
@@ -104,10 +105,10 @@ class AvatarInstance
         );
     }
 
-    public static function fromCode($code): AvatarInstance
+    public static function fromCode(string $code): AvatarInstance
     {
         $array = json_decode(base64_decode($code), true);
-        if (!is_array($array)) Log::warning("The JSON used to create an AvatarInstance doesn't look like an array: " . base64_decode($code));
+        if (!is_array($array)) throw new Exception("The JSON used to create an AvatarInstance wasn't an array: " . base64_decode($code));
         return self::fromArray($array);
     }
 

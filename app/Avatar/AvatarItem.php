@@ -21,6 +21,7 @@ class AvatarItem
         public ?int $cost,
         public ?int $x,
         public ?int $y,
+        public ?int $z,
         public ?int $rotate,
         public ?int $scale
     )
