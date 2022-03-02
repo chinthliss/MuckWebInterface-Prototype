@@ -305,28 +305,25 @@ class HttpMuckConnection implements MuckConnection
     private function parseMuckObjectResponse(string $muckResponse): MuckDbref
     {
         /*
-         * Expected format: dbref,creationTimestamp,typeFlag,metadata,name
-         * Name is at the end because it can contain commas.
-         * Metadata used:
+         * Expected format: dbref,creationTimestamp,"name",typeFlag,"metadata"
+         * Name and metadata are enclosed in double quotes
+         * Metadata varies depending on type:
          * Player - aid|level|avatar|colonSeparatedFlags
          * Zombie - level|avatar
          */
-        $parts = explode(',', $muckResponse);
-        if (count($parts) < 5)
+        $parts = str_getcsv($muckResponse, ',', '"', '\\');
+        if (count($parts) != 5)
             throw new InvalidArgumentException("parseMuckObjectResponse: Response contains the wrong number of parts: $muckResponse");
 
-        // The first four parts are fixed
-        list($dbref, $creationTimestamp, $typeFlag, $metadata) = $parts;
-        $metadata = explode('|', $metadata);
-        // The name itself can contain commas, so we reassemble any remaining parts
-        $name = join(',', array_slice($parts, 4));
+        list($dbref, $creationTimestamp, $name, $typeFlag, $metadata) = $parts;
         $dbref = intval($dbref);
         $creationTimestamp = Carbon::createFromTimestamp($creationTimestamp);
 
         switch ($typeFlag) {
             case 'p':
                 if (count($metadata) != 4)
-                    throw new InvalidArgumentException("parseMuckObjectResponse: Expected 4 items in metadata for a player: $muckResponse");
+                    throw new InvalidArgumentException("parseMuckObjectResponse: Expected 4 items in metadata for a player: $metadata");
+                $metadata = explode('|', $metadata);
                 list($accountId, $level, $avatarString, $flagsAsString) = $metadata;
                 $avatarInstance = resolve(AvatarService::class)->muckAvatarStringToAvatarInstance($avatarString);
                 $flags = $flagsAsString ? explode(':', $flagsAsString) : [];
@@ -334,6 +331,9 @@ class HttpMuckConnection implements MuckConnection
                     $level, $avatarInstance, $flags, $accountId);
                 break;
             case 'z':
+                if (count($metadata) != 2)
+                    throw new InvalidArgumentException("parseMuckObjectResponse: Expected 4 items in metadata for a player: $metadata");
+                $metadata = explode('|', $metadata);
                 list($level, $avatarString) = $metadata;
                 $avatarInstance = resolve(AvatarService::class)->muckAvatarStringToAvatarInstance($avatarString);
                 $muckObject = new MuckCharacter($dbref, $name, $creationTimestamp,

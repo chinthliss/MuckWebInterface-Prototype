@@ -64,16 +64,18 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     descr "\r\n" descrnotify    
 ;
 
-(Turns a muck object into a string representation in the form: dbref,creationTimestamp,typeFlag,metadata,name)
-(Metadata depends on the type of object and is presently:)
+(Turns a muck object into a string representation in the form: dbref,creationTimestamp,name,typeFlag,metadata)
+(Name and Metadata are sent enclosed in double-quotes )
+(Metadata depends on the type of object and is encased in double-quotes so it can be identified easier. Present combinations:)
 (   Player - aid|level|avatar|colonSeparatedFlags )
 (   Zombie - level|avatar )
 : objectToString[ dbref:object -- str:representation ]
     object @ intostr "," strcat (Shared start - just the dbref)
-    object @ timestamps pop pop pop intostr strcat "," strcat
+    object @ timestamps pop pop pop intostr strcat ",\"" strcat
+    object @ name strcat "\"," strcat
     "" (Typeflag and metadata)
     object @ player? if
-        pop "p,"
+        pop "p,\""
         object @ acct_any2aid intostr strcat "|" strcat
         object @ truelevel intostr strcat "|" strcat
         object @ getAvatarInstanceStringFor strcat "|" strcat
@@ -87,16 +89,18 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         then
         object @ "approved?" getstatint not if "unapproved" swap array_appenditem then
         ":" array_join strcat
-    else 
-        object @ "zombie" flag? if (Because players can have the zombie flag)
-            pop "z,"
+        "\"" strcat
+    else (Because players can have the zombie flag)
+        object @ "zombie" flag? if 
+            pop "z,\""
             object @ truelevel intostr strcat "|" strcat
             object @ getAvatarInstanceStringFor strcat
+            "\"" strcat
         then
     then
     ?dup not if "t," then
-    strcat "," strcat object @ name strcat
-; PUBLIC objectToString (for testing)
+    strcat
+; PUBLIC objectToString $libdef objectToString (for testing)
 
 ( -------------------------------------------------- )
 ( Handlers - Nonspecific )
