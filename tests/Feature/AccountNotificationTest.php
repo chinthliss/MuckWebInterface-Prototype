@@ -41,7 +41,7 @@ class AccountNotificationTest extends TestCase
     public function testNotifyingWithGameAndCharacterWorks()
     {
         $user = $this->loginAsValidatedUser();
-        $character = new MuckCharacter(1234, 'test', Carbon::now(), 0, '', []);
+        $character = new MuckCharacter(1234, 'test', Carbon::now(), 0, null, []);
         MuckWebInterfaceNotification::NotifyCharacter($user, $character, 'Test');
         $this->assertDatabaseHas('account_notifications', [
             'aid' => $user->getAid(),

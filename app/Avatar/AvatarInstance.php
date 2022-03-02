@@ -111,4 +111,9 @@ class AvatarInstance
         return self::fromArray($array);
     }
 
+    public static function default(): AvatarInstance
+    {
+        return new AvatarInstance('FS_Human1');
+    }
+
 }

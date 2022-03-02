@@ -326,13 +326,15 @@ class HttpMuckConnection implements MuckConnection
             case 'p':
                 if (count($metadata) != 4)
                     throw new InvalidArgumentException("parseMuckObjectResponse: Expected 4 items in metadata for a player: $muckResponse");
-                list($accountId, $level, $avatar, $flagsAsString) = $metadata;
+                list($accountId, $level, $avatarString, $flagsAsString) = $metadata;
+                $avatar = null;
                 $flags = $flagsAsString ? explode(':', $flagsAsString) : [];
                 $muckObject = new MuckCharacter($dbref, $name, $creationTimestamp,
                     $level, $avatar, $flags, $accountId);
                 break;
             case 'z':
-                list($level, $avatar) = $metadata;
+                list($level, $avatarString) = $metadata;
+                $avatar = null;
                 $muckObject = new MuckCharacter($dbref, $name, $creationTimestamp,
                     $level, $avatar);
                 break;

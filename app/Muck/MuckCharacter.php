@@ -3,6 +3,7 @@
 
 namespace App\Muck;
 
+use App\Avatar\AvatarInstance;
 use Illuminate\Support\Carbon;
 
 /**
@@ -28,15 +29,23 @@ class MuckCharacter extends MuckDbref
     // Null if zombie
     private ?int $accountId;
 
+    private AvatarInstance $avatarInstance;
+
     public function __construct(int $dbref, string $name, Carbon $createdTimestamp,
-                                int $level = null, string $avatar = null, array $flags = [], int $accountId = null)
+                                int $level = null, AvatarInstance $avatarInstance = null, array $flags = [], int $accountId = null)
     {
         parent::__construct($dbref, $name, $accountId ? 'p' : 'z', $createdTimestamp);
         $this->level = $level;
         $this->accountId = $accountId;
+        $this->avatarInstance = $avatarInstance ?? AvatarInstance::default();
         if (in_array('unapproved', $flags)) $this->approved = false;
         if (in_array('staff', $flags)) $this->wizLevel = 1;
         if (in_array('admin', $flags)) $this->wizLevel = 2;
+    }
+
+    public function avatarInstance(): AvatarInstance
+    {
+        return $this->avatarInstance;
     }
 
     public function aid(): ?int
