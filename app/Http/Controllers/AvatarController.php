@@ -146,9 +146,12 @@ class AvatarController extends Controller
         $character = $muckObjectService->getByPlayerName($name);
         if (!$character) abort(404);
         $image = $service->renderAvatarInstance($character->avatarInstance());
-        if ($request->has('crop')) {
-            $mode = $request->get('crop');
-            if ($mode == 'inline') $image->cropImage(170, 120, 110, 65);
+        if ($request->has('mode')) {
+            $mode = $request->get('mode');
+            if ($mode == 'inline') {
+                $image->cropImage(170, 120, 110, 65);
+                $image->scaleImage(85, 60);
+            }
         }
         return response($image, 200)
             ->header('Content-Type', $image->getImageFormat());
