@@ -21,8 +21,11 @@ class FakeMuckConnection implements MuckConnection
     public function __construct(array $config)
     {
         $fixedTime = Carbon::create(2000,1,1, 0, 0, 0 );
-        $avatarService = resolve(AvatarService::class);
-        $avatarInstance = $avatarService->muckAvatarStringToAvatarInstance('ass=FS_Fox2;female=2;torso=FS_Fennec;eyes=Brown;female=8;hair=Silver;skin2=Silver;skin1=Greyscale;item=foxplush/110/30/16/0.4/0');
+        $avatarInstance = AvatarInstance::default();
+        // For testing avatars - can't leave in default tests since someone might not have the files.
+        // $avatarService = resolve(AvatarService::class);
+        // $avatarInstance = $avatarService->muckAvatarStringToAvatarInstance('ass=FS_Fox2;female=2;torso=FS_Fennec;eyes=Brown;female=8;hair=Silver;skin2=Silver;skin1=Greyscale');
+        // $avatarInstance = $avatarService->muckAvatarStringToAvatarInstance('ass=FS_Fox2;female=2;torso=FS_Fennec;eyes=Brown;female=8;hair=Silver;skin2=Silver;skin1=Greyscale;item=foxplush/110/30/16/0.4/0');
         $this->fakeDatabaseByDbref = [
             // Normal character
             1234 => new MuckCharacter(1234, 'TestCharacter', $fixedTime, 100, $avatarInstance, [], 1),
