@@ -7,7 +7,7 @@ use Imagick;
 /**
  * Single step of an AvatarDrawingPlan
  */
-class AvatarDrawingStep
+class AvatarDollDrawingStep
 {
     public function __construct(
         public string  $dollName,

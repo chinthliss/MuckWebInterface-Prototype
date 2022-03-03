@@ -65,7 +65,7 @@
                 <div class="form-group">
                     <label for="skin">Skin</label>
                     <select class="form-control" id="skin" v-model="skin" @change="updateAndRefresh">
-                        <option value="">(Same as base)</option>
+                        <option value="">(Unset)</option>
                         <option :value="doll" v-for="doll in dolls">{{ doll }}</option>
                     </select>
                 </div>
@@ -206,7 +206,7 @@ export default {
             if (this.legs && this.legs !== this.torso) newJson.legs = this.legs;
             if (this.groin && this.groin !== this.torso) newJson.groin = this.groin;
             if (this.ass && this.ass !== this.torso) newJson.ass = this.ass;
-            if (this.skin && this.skin !== this.torso) newJson.skin = this.skin;
+            if (this.skin) newJson.skin = this.skin;
 
             let setColors = {};
             if (this.colors.skin1) setColors.skin1 = this.colors.skin1;

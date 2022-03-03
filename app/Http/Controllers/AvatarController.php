@@ -118,7 +118,7 @@ class AvatarController extends Controller
      * @return Response
      * @throws \ImagickException
      */
-    public function getAvatarFromUserCode(AvatarService $service, string $code): Response
+    public function getAvatarFromUserCode(AvatarService $service, string $code = null): Response
     {
         /** @var User $user */
         $user = auth()->user();
@@ -149,7 +149,7 @@ class AvatarController extends Controller
         if ($request->has('mode')) {
             $mode = $request->get('mode');
             if ($mode == 'inline') {
-                $image->cropImage(170, 120, 110, 60);
+                $image->cropImage(170, 120, 110, 52);
                 //$image->scaleImage(85, 60);
             }
         }

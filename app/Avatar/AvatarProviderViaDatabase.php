@@ -82,7 +82,7 @@ class AvatarProviderViaDatabase implements AvatarProvider
     {
         $item = null;
         $row = DB::table('avatar_items')
-            ->where('name', '=', $itemName)
+            ->where('id', '=', $itemName)
             ->first();
         if ($row) {
             $item = $this->databaseRowToAvatarItem($row);

@@ -4,7 +4,6 @@ namespace App\Avatar;
 
 use App;
 use Exception;
-use Illuminate\Support\Facades\Log;
 
 /**
  * The manifest/configuration for an avatar instance
@@ -25,12 +24,13 @@ class AvatarInstance
         public bool    $male = false,   // Whether to draw male parts
         public bool    $female = false, // Whether to draw female parts
         public ?string $background = null,
+        /** @var AvatarItem[] $items */
         public array   $items = [],
-        public ?string $mode = null,
         /**
-         * @var string[] Stored as colorName => gradientName (e.g. hair => blonde)
+         * @var string[] $colors Stored as colorName => gradientName (e.g. hair => blonde)
          */
-        public array   $colors = []
+        public array   $colors = [],
+        public ?string $mode = null
     )
     {
         $this->code = base64_encode(json_encode($this->toArray()));
@@ -59,10 +59,21 @@ class AvatarInstance
 
         if (count($this->colors)) $array['colors'] = $this->colors;
 
-
         if (!empty($this->items)) {
-            //throw new Exception("Items not implemented yet.");
-            //TODO: Implement items
+            $items = [];
+            /** @var AvatarItem $item */
+            foreach ($this->items as $item) {
+                //Only want the fields that a user could change that would require the avatar to be redrawn
+                $items[] = [
+                    "id" => $item->id,
+                    "x" => $item->x,
+                    "y" => $item->y,
+                    "z" => $item->z,
+                    "rotate" => $item->rotate,
+                    "scale" => $item->scale
+                ];
+            }
+            $array['items'] = $items;
         }
 
         if ($this->mode) $array['mode'] = $this->mode;
@@ -103,8 +114,8 @@ class AvatarInstance
             $array['female'] ?? false,
             $array['background'] ?? null,
             $array['items'] ?? [],
-            $array['mode'] ?? null,
-            $array['colors'] ?? []
+            $array['colors'] ?? [],
+            $array['mode'] ?? null
         );
     }
 

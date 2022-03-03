@@ -73,7 +73,7 @@ class AvatarService
     private array $avatarDollCache = [];
 
     /**
-     * @var array<string, AvatarDrawingStep[]>
+     * @var array<string, AvatarDollDrawingStep[]>
      */
     private array $avatarDrawingPlanCache = [];
 
@@ -303,12 +303,12 @@ class AvatarService
     }
 
     /**
-     * @param string $itemName
+     * @param string $id
      * @return AvatarItem|null
      */
-    public function getAvatarItem(string $itemName): ?AvatarItem
+    public function getAvatarItem(string $id): ?AvatarItem
     {
-        return $this->provider->getItem($itemName);
+        return $this->provider->getItem($id);
     }
 
     // Returns a list of every file in the avatar item directories and whether they're used or not
@@ -405,7 +405,7 @@ class AvatarService
     }
 
     // Separate call because these are rendered on demand
-    public function getDefaultGradient(AvatarDoll $doll, int $index): Imagick
+    public function getRenderedDefaultGradient(AvatarDoll $doll, int $index): Imagick
     {
         if ($doll->renderedGradients[$index]) return $doll->renderedGradients[$index];
         Log::debug("(Avatar) Rendering default gradient for doll $doll->name, index $index");
@@ -416,16 +416,11 @@ class AvatarService
 
     public function renderGradientAvatarPreview(AvatarGradient $gradient): Imagick
     {
-        $gradientImage = $this->renderGradientImage($gradient);
         $avatar = new AvatarInstance('FS_Husky', mode: self::MODE_HEAD_ONLY);
-        $drawingPlan = $this->getDrawingPlanForAvatarInstance($avatar);
-        // Now need to step through the plan and overwrite colors to our new temporary one
-        foreach ($drawingPlan as $step) {
-            $step->colorChannels[self::COLOR_INDEX_VALUES[self::COLOR_PRIMARY]] = $gradientImage;
-            $step->colorChannels[self::COLOR_INDEX_VALUES[self::COLOR_SECONDARY]] = $gradientImage;
-            $step->colorChannels[self::COLOR_INDEX_VALUES[self::COLOR_HAIR]] = $gradientImage;
-        }
-        return $this->renderAvatarFromPlan($drawingPlan);
+        $renderedGradient = $this->renderGradientImage($gradient);
+        $colorOverrides = [$renderedGradient, $renderedGradient, null, $renderedGradient, null];
+        $drawingPlan = $this->getDrawingPlanForAvatarInstance($avatar, colorOverrides: $colorOverrides);
+        return $this->renderAvatarDollFromDrawingPlan($drawingPlan);
     }
     #endregion Gradients
 
@@ -524,12 +519,13 @@ class AvatarService
      * [ dollName, doll, subPart, layers ]
      * Layers is an array of [ colorChannel, layerIndex ]
      * @param AvatarInstance $avatar
-     * @return AvatarDrawingStep[]
+     * @param null|array $colorOverrides Optional array of rendered gradients.
+     * @return AvatarDollDrawingStep[]
      */
-    public function getDrawingPlanForAvatarInstance(AvatarInstance $avatar): array
+    public function getDrawingPlanForAvatarInstance(AvatarInstance $avatar, array $colorOverrides = null): array
     {
         if (array_key_exists($avatar->code, $this->avatarDrawingPlanCache)) return $this->avatarDrawingPlanCache[$avatar->code];
-        Log::debug("(Avatar) Calculating drawing plan for " . $avatar->code);
+        Log::debug("(Avatar) Calculating drawing plan for " . json_encode($avatar->toArray()));
 
         $drawingSteps = [];
 
@@ -556,7 +552,7 @@ class AvatarService
         }
 
         // Get a collection of the overridden gradients. Order is important since they're referred by index
-        $colorOverrides = [null, null, null, null, null];
+        if (!$colorOverrides) $colorOverrides = [null, null, null, null, null];
         $skinOverride = $avatar->skin ? $this->getDoll($avatar->skin) : null;
         foreach (self::COLOR_INDEX_VALUES as $color => $index) {
             if (array_key_exists($color, $avatar->colors)) {
@@ -565,7 +561,7 @@ class AvatarService
                     $colorOverrides[$index] = $this->renderGradientImage($gradient);
                 }
             }
-            if (!$colorOverrides[$index] && $skinOverride) $colorOverrides[$index] = $this->getDefaultGradient($skinOverride, $index);
+            if (!$colorOverrides[$index] && $skinOverride) $colorOverrides[$index] = $this->getRenderedDefaultGradient($skinOverride, $index);
         }
 
         // Build drawing plan based off of the subpart array since such is in drawing order
@@ -582,9 +578,9 @@ class AvatarService
             if (array_key_exists($subPart, $dollsByBodyPart[$part]->drawingInformation)) {
                 $colors = [];
                 foreach (self::COLOR_INDEX_VALUES as $color => $index) {
-                    $colors[$index] = $colorOverrides[$index] ?: $this->getDefaultGradient($dollsByBodyPart[$part], $index);
+                    $colors[$index] = $colorOverrides[$index] ?: $this->getRenderedDefaultGradient($dollsByBodyPart[$part], $index);
                 }
-                $drawingSteps[] = new AvatarDrawingStep(
+                $drawingSteps[] = new AvatarDollDrawingStep(
                     $dollsByBodyPart[$part]->name, $dollsByBodyPart[$part]->image,
                     $part, $subPart,
                     $dollsByBodyPart[$part]->drawingInformation[$subPart], $colors
@@ -599,11 +595,11 @@ class AvatarService
 
     /**
      * Internal function to handle shared parts of rendering an avatar
-     * @param AvatarDrawingStep[] $drawingPlan
+     * @param AvatarDollDrawingStep[] $drawingPlan
      * @return Imagick
      * @throws ImagickException
      */
-    private function renderAvatarFromPlan(array $drawingPlan): Imagick
+    private function renderAvatarDollFromDrawingPlan(array $drawingPlan): Imagick
     {
         $benchmark = -microtime(true);
         //Create a blank canvas
@@ -639,7 +635,7 @@ class AvatarService
 
     public function renderAvatarInstance(AvatarInstance $avatar): Imagick
     {
-        return $this->renderAvatarFromPlan($this->getDrawingPlanForAvatarInstance($avatar));
+        return $this->renderAvatarDollFromDrawingPlan($this->getDrawingPlanForAvatarInstance($avatar));
     }
 
     #endregion Avatar Instances

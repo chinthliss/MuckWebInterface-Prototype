@@ -32,16 +32,16 @@ Route::get('/', [HomeController::class, 'show'])
     ->name('home');
 
 //Character Profiles
-Route::get('c/{characterName}', [MultiplayerController::class, 'showCharacter'])
+Route::get('c/{name}', [MultiplayerController::class, 'showCharacter'])
     ->name('multiplayer.character.view');
 
 //Character Avatar related images (Has exceptions in LoadActiveCharacter for optimization)
+Route::get('a/{name}', [AvatarController::class, 'getAvatarFromCharacterName'])
+    ->name('multiplayer.avatar.render');
 Route::get('avatar/gradient/{name}', [AvatarController::class, 'getGradient'])
     ->name('avatar.gradient.image');
 Route::get('avatar/gradient/preview/{code?}', [AvatarController::class, 'getGradientPreview'])
     ->name('avatar.gradient.previewimage');
-Route::get('avatar/{name}', [AvatarController::class, 'getAvatarFromCharacterName'])
-    ->name('multiplayer.avatar.render');
 Route::get('avatar/item/{name}', [AvatarController::class, 'getAvatarItem'])
     ->name('multiplayer.avatar.item');
 

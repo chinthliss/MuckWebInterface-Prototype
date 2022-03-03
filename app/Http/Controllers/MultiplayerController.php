@@ -38,10 +38,10 @@ class MultiplayerController extends Controller
         ]);
     }
 
-    public function showCharacter(MuckConnection $muck, string $characterName) : View
+    public function showCharacter(MuckConnection $muck, string $name) : View
     {
         return view('multiplayer.character')->with([
-            'characters' => $characterName
+            'character' => $name
         ]);
     }
 

@@ -14,7 +14,7 @@
             <div class="form-group" v-for="color in [
                 {id: 'skin1', label: 'Primary Fur / Skin'},
                 {id: 'skin2', label: 'Secondary Fur / Skin'},
-                {id: 'skin3', label: 'Bare Skin'},
+                {id: 'skin3', label: 'Naughty Bits'},
                 {id: 'hair', label: 'Hair'},
                 {id: 'eyes', label: 'Eyes'}
             ]">
