@@ -23,7 +23,7 @@ export default {
     data: function () {
         return {
             styleObject: {
-                'backgroundImage': 'url(/avatar/' + this.character.name + '.png)'
+                'backgroundImage': 'url(/a/' + this.character.name + '.png)'
             }
         }
     },
