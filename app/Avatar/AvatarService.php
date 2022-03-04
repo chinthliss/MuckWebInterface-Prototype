@@ -537,26 +537,26 @@ class AvatarService
      * Return an array, in order of drawing, of:
      * [ dollName, doll, subPart, layers ]
      * Layers is an array of [ colorChannel, layerIndex ]
-     * @param AvatarInstance $avatar
+     * @param AvatarInstance $avatarInstance
      * @param null|array $colorOverrides Optional array of rendered gradients.
      * @return AvatarDollDrawingStep[]
      */
-    public function getDrawingPlanForAvatarInstance(AvatarInstance $avatar, array $colorOverrides = null): array
+    public function getDrawingPlanForAvatarInstance(AvatarInstance $avatarInstance, array $colorOverrides = null): array
     {
-        if (array_key_exists($avatar->code, $this->avatarDrawingPlanCache)) return $this->avatarDrawingPlanCache[$avatar->code];
+        if (array_key_exists($avatarInstance->code, $this->avatarDrawingPlanCache)) return $this->avatarDrawingPlanCache[$avatarInstance->code];
         $benchmark = -microtime(true);
-        Log::debug("(Avatar) Calculating drawing plan for " . json_encode($avatar->toArray()));
+        Log::debug("(Avatar) Calculating drawing plan for " . json_encode($avatarInstance->toArray()));
 
         $drawingSteps = [];
 
         // Get a collection of which doll to use for which part
         $dollNames = [
-            'torso' => $avatar->torso,
-            'head' => $avatar->head ?? $avatar->torso,
-            'arms' => $avatar->arms ?? $avatar->torso,
-            'legs' => $avatar->legs ?? $avatar->torso,
-            'groin' => $avatar->groin ?? $avatar->torso,
-            'ass' => $avatar->ass ?? $avatar->torso
+            'torso' => $avatarInstance->torso,
+            'head' => $avatarInstance->head ?? $avatarInstance->torso,
+            'arms' => $avatarInstance->arms ?? $avatarInstance->torso,
+            'legs' => $avatarInstance->legs ?? $avatarInstance->torso,
+            'groin' => $avatarInstance->groin ?? $avatarInstance->torso,
+            'ass' => $avatarInstance->ass ?? $avatarInstance->torso
         ];
 
         // Get a collection of the required dolls (along with its processing information) for each bodypart
@@ -565,18 +565,18 @@ class AvatarService
         $dollsByBodyPart = [];
         foreach (self::AVATARDOLL_BODYPARTS as $bodyPart) {
             // Head only mode, don't need to process other parts
-            if ($avatar->mode == self::MODE_HEAD_ONLY && $bodyPart != 'head') continue;
+            if ($avatarInstance->mode == self::MODE_HEAD_ONLY && $bodyPart != 'head') continue;
             // Safe mode - nothing explicit drawn, don't need to bring in the doll for such
-            if ($avatar->mode == self::MODE_SAFE && $bodyPart == 'groin') continue;
+            if ($avatarInstance->mode == self::MODE_SAFE && $bodyPart == 'groin') continue;
             $dollsByBodyPart[$bodyPart] = $this->getDoll($dollNames[$bodyPart]);
         }
 
         // Get a collection of the overridden gradients. Order is important since they're referred by index
         if (!$colorOverrides) $colorOverrides = [null, null, null, null, null];
-        $skinOverride = $avatar->skin ? $this->getDoll($avatar->skin) : null;
+        $skinOverride = $avatarInstance->skin ? $this->getDoll($avatarInstance->skin) : null;
         foreach (self::COLOR_INDEX_VALUES as $color => $index) {
-            if (array_key_exists($color, $avatar->colors)) {
-                $gradient = $this->getGradient($avatar->colors[$color]);
+            if (array_key_exists($color, $avatarInstance->colors)) {
+                $gradient = $this->getGradient($avatarInstance->colors[$color]);
                 if ($gradient) {
                     $colorOverrides[$index] = $this->renderGradientImage($gradient);
                 }
@@ -589,10 +589,10 @@ class AvatarService
             [$subPart, $part] = $partInfo;
 
             // Explicit mode - If NOT in this mode, skip drawing the lewdest of parts!
-            if (!$avatar->mode == self::MODE_EXPLICIT && $subPart == 'penis') continue;
+            if (!$avatarInstance->mode == self::MODE_EXPLICIT && $subPart == 'penis') continue;
             // Male/female parts only shown if enabled and safe mode isn't on
-            if ((!$avatar->female || $avatar->mode == self::MODE_SAFE) && in_array($subPart, self::FEMALE_ONLY_SUBPARTS)) continue;
-            if ((!$avatar->male || $avatar->mode == self::MODE_SAFE) && in_array($subPart, self::MALE_ONLY_SUBPARTS)) continue;
+            if ((!$avatarInstance->female || $avatarInstance->mode == self::MODE_SAFE) && in_array($subPart, self::FEMALE_ONLY_SUBPARTS)) continue;
+            if ((!$avatarInstance->male || $avatarInstance->mode == self::MODE_SAFE) && in_array($subPart, self::MALE_ONLY_SUBPARTS)) continue;
 
             if (!array_key_exists($part, $dollsByBodyPart)) continue;
             if (array_key_exists($subPart, $dollsByBodyPart[$part]->drawingInformation)) {
@@ -607,7 +607,7 @@ class AvatarService
                 );
             }
         }
-        $this->avatarDrawingPlanCache[$avatar->code] = $drawingSteps;
+        $this->avatarDrawingPlanCache[$avatarInstance->code] = $drawingSteps;
         $benchmark += microtime(true);
         $benchmarkText = round($benchmark * 1000.0, 2);
         Log::debug("(Avatar) Total time taken to calculate drawing plan: {$benchmarkText}ms");
@@ -623,7 +623,7 @@ class AvatarService
     private function renderAvatarDollFromDrawingPlan(array $drawingPlan): Imagick
     {
         $benchmark = -microtime(true);
-        Log::debug("(Avatar) Starting to render an avatar from a drawing plan with " . count($drawingPlan) . " steps.");
+        Log::debug("(Avatar) Rendering an avatar doll from a drawing plan with " . count($drawingPlan) . " steps.");
         //Create a blank canvas
         $image = new Imagick();
         $image->newImage(self::DOLL_WIDTH, self::DOLL_HEIGHT, 'transparent');
@@ -655,9 +655,44 @@ class AvatarService
         return $image;
     }
 
-    public function renderAvatarInstance(AvatarInstance $avatar): Imagick
+    public function renderAvatarInstance(AvatarInstance $instance): Imagick
     {
-        return $this->renderAvatarDollFromDrawingPlan($this->getDrawingPlanForAvatarInstance($avatar));
+        $avatarDoll = $this->renderAvatarDollFromDrawingPlan($this->getDrawingPlanForAvatarInstance($instance));
+
+        //If there's no items, just return as is
+        if (!$instance->items) return $avatarDoll;
+
+        //Otherwise, we have some compositing to do
+        $benchmark = -microtime(true);
+        Log::debug("(Avatar) Compositing a final avatar with " . count($instance->items) . " item(s)");
+
+        $finalImage = new Imagick();
+        $finalImage->setFormat('png');
+        $finalImage->newImage(self::DOLL_WIDTH, self::DOLL_HEIGHT, 'transparent');
+
+        $beforeAvatar = [];
+        $afterAvatar = [];
+        foreach($instance->items as $item) {
+            if ($item->z < 0) $beforeAvatar[] = $item;
+            else $afterAvatar[] = $item;
+        }
+        
+
+        foreach($beforeAvatar as $item) {
+
+        }
+
+        $finalImage->addImage($avatarDoll);
+
+        foreach($afterAvatar as $item) {
+
+        }
+
+
+        $benchmark += microtime(true);
+        $benchmarkText = round($benchmark * 1000.0, 2);
+        Log::debug("(Avatar) Total time taken rendering a drawing plan: {$benchmarkText}ms");
+        return $finalImage;
     }
 
     #endregion Avatar Instances

@@ -37,7 +37,7 @@ class FakeMuckConnection implements MuckConnection
             5678 => new MuckCharacter(5678, 'AdminAccountCharacter', $fixedTime, 0, null, ['admin'], 7)
         ];
         // For testing avatars - can't leave enabled  since the files aren't in the repo and it'll cause tests to fail
-        $testingAvatars = false;
+        $testingAvatars = true;
         if ($testingAvatars) {
             $avatarService = resolve(AvatarService::class);
             // $avatarInstance = $avatarService->muckAvatarStringToAvatarInstance('ass=FS_Fox2;female=2;torso=FS_Fennec;eyes=Brown;female=8;hair=Silver;skin2=Silver;skin1=Greyscale');

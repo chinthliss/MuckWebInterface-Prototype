@@ -13,6 +13,22 @@ class AvatarInstance
 {
     public string $code;
 
+    /**
+     * @param string $torso
+     * @param string|null $head
+     * @param string|null $arms
+     * @param string|null $legs
+     * @param string|null $groin
+     * @param string|null $ass
+     * @param string|null $skin
+     * @param bool $male
+     * @param bool $female
+     * @param string|null $background
+     * @param AvatarItem[] $items Stored as colorName => gradientName (e.g. hair => blonde)
+     * @param string[] $colors
+     * @param string|null $mode
+     * @throws Exception
+     */
     public function __construct(
         public string  $torso,
         public ?string $head = null,
@@ -24,11 +40,7 @@ class AvatarInstance
         public bool    $male = false,   // Whether to draw male parts
         public bool    $female = false, // Whether to draw female parts
         public ?string $background = null,
-        /** @var AvatarItem[] $items */
         public array   $items = [],
-        /**
-         * @var string[] $colors Stored as colorName => gradientName (e.g. hair => blonde)
-         */
         public array   $colors = [],
         public ?string $mode = null
     )
