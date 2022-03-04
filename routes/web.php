@@ -287,6 +287,7 @@ Route::group(['middleware' => ['auth:account', 'verified', 'tos.agreed', 'role:s
             ->name('admin.avatar.dollthumbnail');
         Route::get('render/{code?}', [AvatarController::class, 'getAvatarFromAdminCode'])
             ->name('admin.avatar.render');
+        Route::get('testall', [AvatarController::class, 'getAllAvatarsAsAGif']);
     });
 
     //Avatar Gradients

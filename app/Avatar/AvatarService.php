@@ -283,6 +283,25 @@ class AvatarService
         return $image;
     }
 
+    // Intended to test how things line up
+    public function getAnimatedGifOfAllAvatarDolls(): Imagick
+    {
+        Log::debug("(Avatar) Creating an animated gif of all dolls!");
+        $finalImage = new Imagick();
+        $finalImage->setFormat('gif');
+        $finalImage->setBackgroundColor('transparent');
+
+        $avatarNames = $this->getDollNames();
+        foreach ($avatarNames as $avatarName) {
+            Log::debug("(Avatar) Adding to gif - " . $avatarName);
+            $image = $this->renderAvatarInstance(new AvatarInstance($avatarName));
+            $image->setImageDelay(10); // Specified in 1/100 of a second
+            $image->setImageDispose(IMAGICK::DISPOSE_BACKGROUND); //What the animation starts the next frame with
+            $finalImage->addImage($image);
+        }
+        return $finalImage->coalesceImages();
+    }
+
     #endregion AvatarDoll loading/processing
 
     #region Avatar Items
@@ -525,6 +544,7 @@ class AvatarService
     public function getDrawingPlanForAvatarInstance(AvatarInstance $avatar, array $colorOverrides = null): array
     {
         if (array_key_exists($avatar->code, $this->avatarDrawingPlanCache)) return $this->avatarDrawingPlanCache[$avatar->code];
+        $benchmark = -microtime(true);
         Log::debug("(Avatar) Calculating drawing plan for " . json_encode($avatar->toArray()));
 
         $drawingSteps = [];
@@ -587,9 +607,10 @@ class AvatarService
                 );
             }
         }
-
-
         $this->avatarDrawingPlanCache[$avatar->code] = $drawingSteps;
+        $benchmark += microtime(true);
+        $benchmarkText = round($benchmark * 1000.0, 2);
+        Log::debug("(Avatar) Total time taken to calculate drawing plan: {$benchmarkText}ms");
         return $drawingSteps;
     }
 
@@ -602,6 +623,7 @@ class AvatarService
     private function renderAvatarDollFromDrawingPlan(array $drawingPlan): Imagick
     {
         $benchmark = -microtime(true);
+        Log::debug("(Avatar) Starting to render an avatar from a drawing plan with " . count($drawingPlan) . " steps.");
         //Create a blank canvas
         $image = new Imagick();
         $image->newImage(self::DOLL_WIDTH, self::DOLL_HEIGHT, 'transparent');
@@ -629,7 +651,7 @@ class AvatarService
         }
         $benchmark += microtime(true);
         $benchmarkText = round($benchmark * 1000.0, 2);
-        Log::debug("(Avatar) Total time taken rendering an avatar: {$benchmarkText}ms");
+        Log::debug("(Avatar) Total time taken rendering a drawing plan: {$benchmarkText}ms");
         return $image;
     }
 

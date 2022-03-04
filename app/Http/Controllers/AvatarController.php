@@ -11,6 +11,7 @@ use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
+use Imagick;
 
 class AvatarController extends Controller
 {
@@ -89,6 +90,18 @@ class AvatarController extends Controller
         ]);
     }
 
+    private function applyOptionsToAvatarImage(Imagick &$avatarImage, Request $request)
+    {
+        if ($request->has('mode')) {
+            $mode = $request->get('mode');
+            if ($mode == 'inline') {
+                $avatarImage->cropImage(170, 120, 110, 52);
+                $avatarImage->setImagePage(170, 120, 0, 0);
+                //$avatarImage->scaleImage(85, 60);
+            }
+        }
+    }
+
     public function getThumbnailForDoll(AvatarService $service, string $dollName): Response
     {
         $image = $service->getDollThumbnail($dollName);
@@ -146,14 +159,21 @@ class AvatarController extends Controller
         $character = $muckObjectService->getByPlayerName($name);
         if (!$character) abort(404);
         $image = $service->renderAvatarInstance($character->avatarInstance());
-        if ($request->has('mode')) {
-            $mode = $request->get('mode');
-            if ($mode == 'inline') {
-                $image->cropImage(170, 120, 110, 52);
-                //$image->scaleImage(85, 60);
-            }
-        }
+        $this->applyOptionsToAvatarImage($image, $request);
         return response($image, 200)
+            ->header('Content-Type', $image->getImageFormat());
+    }
+
+    public function getAllAvatarsAsAGif(AvatarService $service, Request $request): Response
+    {
+        set_time_limit(300);
+        $image = $service->getAnimatedGifOfAllAvatarDolls();
+        //Need to apply the options to every frame!
+        for ($i = 0; $i < $image->getNumberImages(); $i++) {
+            $image->setIteratorIndex($i);
+            $this->applyOptionsToAvatarImage($image, $request);
+        }
+        return response($image->getImagesBlob(), 200)
             ->header('Content-Type', $image->getImageFormat());
     }
 
