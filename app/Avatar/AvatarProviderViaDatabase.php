@@ -78,11 +78,11 @@ class AvatarProviderViaDatabase implements AvatarProvider
         return $items;
     }
 
-    public function getItem(string $itemName): ?AvatarItem
+    public function getItem(string $itemId): ?AvatarItem
     {
         $item = null;
         $row = DB::table('avatar_items')
-            ->where('id', '=', $itemName)
+            ->where('id', '=', $itemId)
             ->first();
         if ($row) {
             $item = $this->databaseRowToAvatarItem($row);

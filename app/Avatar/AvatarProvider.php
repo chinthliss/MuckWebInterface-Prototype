@@ -27,10 +27,10 @@ interface AvatarProvider
     public function getItems(): array;
 
     /**
-     * @param string $itemName
+     * @param string $itemId
      * @return AvatarItem|null
      */
-    public function getItem(string $itemName): ?AvatarItem;
+    public function getItem(string $itemId): ?AvatarItem;
 
     #endregion Items
 }
