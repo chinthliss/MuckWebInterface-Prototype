@@ -330,6 +330,22 @@ class AvatarService
         return $this->provider->getItem($id);
     }
 
+    /**
+     * Only for internal optimised route that don't require full processing of a doll (e.g. admin thumbnails)
+     * Everything else should use getDoll to load the full information in.
+     * @param $dollName
+     * @return Imagick
+     * @throws ImagickException
+     */
+    private function getAvatarItemImage(AvatarItem $item): Imagick
+    {
+        $filePath = $this->getAvatarItemFilePath($item);
+        Log::debug("(Avatar) getAvatarItemImage loading PSD file from " . $filePath);
+        if (!file_exists($filePath)) throw new Exception("Specified item file not found - " . $filePath);
+        return new Imagick($filePath);
+    }
+
+
     // Returns a list of every file in the avatar item directories and whether they're used or not
     public function getAvatarItemFileUsage(): array
     {
@@ -357,20 +373,11 @@ class AvatarService
      * @return Imagick
      * @throws ImagickException
      */
-    public function renderAvatarItem(AvatarItem $item): Imagick
+    public function renderAvatarItemPreview(AvatarItem $item): Imagick
     {
-        Log::debug("(Avatar) Rendering preview Image for item $item->name");
-        $benchmark = -microtime(true);
-
+        $image = $this->getAvatarItemImage($item);
         //Items are only returned as a 64 x 64 preview image
-        $location = $this->getAvatarItemFilePath($item);
-        $image = new Imagick($location);
         $image->thumbnailImage(64, 64, true);
-
-        $benchmark += microtime(true);
-        $benchmarkText = round($benchmark * 1000.0, 2);
-        Log::debug("(Avatar) Total time taken rendering an item from {$location}: {$benchmarkText}ms");
-
         return $image;
     }
     #endregion Avatar Items
@@ -670,23 +677,24 @@ class AvatarService
         $finalImage->setFormat('png');
         $finalImage->newImage(self::DOLL_WIDTH, self::DOLL_HEIGHT, 'transparent');
 
-        $beforeAvatar = [];
-        $afterAvatar = [];
-        foreach($instance->items as $item) {
-            if ($item->z < 0) $beforeAvatar[] = $item;
-            else $afterAvatar[] = $item;
+        $drawnAvatar = false;
+        for ($i = 0; $i < count($instance->items); $i++) {
+            $item = $instance->items[$i];
+            if (!$drawnAvatar && $item->z > 0) {
+                $drawnAvatar = true;
+                $finalImage->compositeImage($avatarDoll, Imagick::COMPOSITE_OVER, 0, 0);
+            }
+            Log::debug("(Avatar)   Rendering item " . json_encode($item->toArray()));
+            $itemImage = $this->getAvatarItemImage($item);
+            $width = $itemImage->getImageWidth();
+            $height = $itemImage->getImageHeight();
+            if ($item->scale) $width = (int)max($width * $item->scale, 1);
+            if ($item->scale) $height = (int)max($height * $item->scale, 1);
+            if ($item->scale > 0.0) $itemImage->scaleImage($width, $height);
+            if ($item->rotate) $itemImage->rotateImage('transparent', $item->rotate);
+            $finalImage->compositeImage($itemImage, Imagick::COMPOSITE_OVER, $item->x, $item->y);
         }
-        
-
-        foreach($beforeAvatar as $item) {
-
-        }
-
-        $finalImage->addImage($avatarDoll);
-
-        foreach($afterAvatar as $item) {
-
-        }
+        if (!$drawnAvatar) $finalImage->addImage($avatarDoll);
 
 
         $benchmark += microtime(true);

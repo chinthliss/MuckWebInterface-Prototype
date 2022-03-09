@@ -247,7 +247,7 @@ class AvatarController extends Controller
         $item = $service->getAvatarItem($name);
 
         if (!$item) abort(404, "Unrecognized Avatar Item - $name");
-        $image = $service->renderAvatarItem($item);
+        $image = $service->renderAvatarItemPreview($item);
         return response($image, 200)
             ->header('Content-Type', $image->getImageFormat());
     }

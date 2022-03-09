@@ -45,6 +45,17 @@ class AvatarInstance
         public ?string $mode = null
     )
     {
+        //Ensure no background items are in the foreground (Shouldn't be possible going forward but legacy items)
+        foreach ($this->items as $item) {
+            if ($item->type === 'background' && $item->z > 1) $item->z = -1;
+        }
+        //Ensure item list is sorted by z level
+        usort($this->items, function($a, $b) {
+            if ($a->z < $b->z) return -1;
+            if ($a->z > $b->z) return 1;
+            return 0;
+        });
+
         $this->code = base64_encode(json_encode($this->toArray()));
     }
 
