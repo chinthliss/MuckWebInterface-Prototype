@@ -36,13 +36,16 @@ class FakeMuckConnection implements MuckConnection
             // Approved character on admin account
             5678 => new MuckCharacter(5678, 'AdminAccountCharacter', $fixedTime, 0, null, ['admin'], 7)
         ];
-        // For testing avatars - can't leave enabled  since the files aren't in the repo and it'll cause tests to fail
-        $testingAvatars = true;
-        if ($testingAvatars) {
+        // For testing avatars - Won't work whilst running tests since the files aren't in the repo.
+        try {
             $avatarService = resolve(AvatarService::class);
             // $avatarInstance = $avatarService->muckAvatarStringToAvatarInstance('ass=FS_Fox2;female=2;torso=FS_Fennec;eyes=Brown;female=8;hair=Silver;skin2=Silver;skin1=Greyscale');
-            $avatarInstance = $avatarService->muckAvatarStringToAvatarInstance('ass=FS_Fox2;female=2;torso=FS_Fennec;eyes=Brown;female=8;hair=Silver;skin2=Silver;skin1=Greyscale;item=foxplush/110/30/16/0.4/0');
+            $avatarInstance = $avatarService->muckAvatarStringToAvatarInstance('ass=FS_Fox2;female=2;torso=FS_Fennec;eyes=Brown;female=8;hair=Silver;skin2=Silver;skin1=Greyscale;item=foxplush/110/30/16/0.4/0;item=foxplush/0/0/2/0.8/90;item=ruinedcity/0/0/3/0/0');
             $this->fakeDatabaseByDbref[4321] = new MuckCharacter(4321, 'AvatarCharacter', $fixedTime, 1, $avatarInstance, [], 7);
+        }
+        catch (\Exception $e)
+        {
+            Log::debug("Couldn't load an avatar. This is only an issue in local development and fine during automatic testing.");
         }
 
         foreach ($this->fakeDatabaseByDbref as $entry) {
