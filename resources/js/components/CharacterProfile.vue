@@ -3,7 +3,7 @@
         <div class="row">
             <div class="col text-center">
                 <h1>{{ this.character.name }}</h1>
-                <img :src="this.character.avatar" alt="Character Avatar">
+                <img :src="this.avatar" alt="Character Avatar">
                 <h1><i class="fas fa-hammer"></i>To Be Completed <i class="fas fa-hammer fa-flip-horizontal"></i></h1>
             </div>
         </div>
@@ -22,7 +22,7 @@
         props: {
             /** @type {Character} */
             character: {Type: Object, required: true},
-            avatar: {Type: string, required: true}
+            avatar: {Type: String, required: true}
         }
     }
 </script>
