@@ -40,8 +40,12 @@ class MultiplayerController extends Controller
 
     public function showCharacter(MuckConnection $muck, string $name) : View
     {
+        $character = $muck->getByPlayerName($name);
+        if (!$character) abort(404);
+
         return view('multiplayer.character')->with([
-            'character' => $name
+            'character' => $character->toArray(),
+            'avatar' => route('multiplayer.avatar.render', ['name' => $character->name()])
         ]);
     }
 

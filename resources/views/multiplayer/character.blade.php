@@ -13,5 +13,8 @@
 @endsection
 
 @section('content')
-    <character-profile></character-profile>
+    <character-profile
+        character = "{{ json_encode($character) }}"
+        avatar = "{{ $avatar }}"
+    ></character-profile>
 @endsection

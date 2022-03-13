@@ -73,7 +73,7 @@ class MuckCharacter extends MuckDbref
         $array = [
             'dbref' => $this->dbref,
             'name' => $this->name,
-            'level' => $this->level,
+            'level' => $this->level
         ];
         if (!$this->approved) $array['unapproved'] = true;
         if ($this->wizLevel) $array['wizLevel'] = $this->wizLevel;
