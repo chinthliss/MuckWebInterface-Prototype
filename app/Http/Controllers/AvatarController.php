@@ -95,8 +95,8 @@ class AvatarController extends Controller
         if ($request->has('mode')) {
             $mode = $request->get('mode');
             if ($mode == 'inline') {
-                $avatarImage->cropImage(170, 120, 110, 52);
-                $avatarImage->setImagePage(170, 120, 0, 0);
+                $avatarImage->cropImage(150, 120, 130, 52);
+                $avatarImage->setImagePage(150, 120, 0, 0);
                 //$avatarImage->scaleImage(85, 60);
             }
         }
@@ -166,7 +166,7 @@ class AvatarController extends Controller
 
     public function getAllAvatarsAsAGif(AvatarService $service, Request $request): Response
     {
-        set_time_limit(300);
+        set_time_limit(500);
         $image = $service->getAnimatedGifOfAllAvatarDolls();
         //Need to apply the options to every frame!
         for ($i = 0; $i < $image->getNumberImages(); $i++) {
