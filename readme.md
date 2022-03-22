@@ -7,7 +7,7 @@ Rename .env.example to .env
 Fill out settings in .env  
 Run commands:  
 ```
-composer install --optimize-autoloader --no-dev  
+php composer.phar install --optimize-autoloader --no-dev  
 npm install
 php artisan key:generate
 ```
@@ -45,7 +45,7 @@ Live/HMR replacement - `npm run hot`
 ```
 php artisan down
 git pull origin master
-php composer.phar install
+php composer.phar install --optimize-autoloader --no-dev
 php artisan migrate
 php artisan cache:clear
 php artisan config:cache
