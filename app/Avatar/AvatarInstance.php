@@ -86,40 +86,12 @@ class AvatarInstance
             $items = [];
             /** @var AvatarItem $item */
             foreach ($this->items as $item) {
-                //Only want the fields that a user could change that would require the avatar to be redrawn
-                $items[] = [
-                    "id" => $item->id,
-                    "x" => $item->x,
-                    "y" => $item->y,
-                    "z" => $item->z,
-                    "rotate" => $item->rotate,
-                    "scale" => $item->scale
-                ];
+                $items[] = $item->toArray();
             }
             $array['items'] = $items;
         }
 
         if ($this->mode) $array['mode'] = $this->mode;
-        return $array;
-    }
-
-    /**
-     * Returns a version of the array where avatar doll details are stripped
-     * @return string[]
-     * @throws Exception
-     */
-    public function toCustomizationsOnlyArray(): array
-    {
-        $array = $this->toArray();
-        unset($array['base']);
-        unset($array['head']);
-        unset($array['arms']);
-        unset($array['legs']);
-        unset($array['groin']);
-        unset($array['ass']);
-        unset($array['skin']);
-        unset($array['male']);
-        unset($array['female']);
         return $array;
     }
 

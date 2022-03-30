@@ -120,6 +120,15 @@ main {
     bottom: 2px;
 }
 
+// Overrides for nav tabs
+
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-item.show .nav-link {
+    color: $primary;
+    background-color: $backgroundColor;
+}
+
+
 // Additional Bootstrap utilities
 
 .border-lg-right {

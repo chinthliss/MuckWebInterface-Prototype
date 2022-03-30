@@ -14,11 +14,14 @@
 
 @section('content')
     <avatar-edit
-        :present-customizations = "{{ json_encode($presentCustomizations) }}"
+        :items="{{ json_encode($items) }}"
+        :backgrounds="{{ json_encode($backgrounds) }}"
         :gradients="{{ json_encode($gradients) }}"
-        render-url = "{{ route('multiplayer.avatar.edit.render') }}"
-        :avatar-width = "{{ $avatarWidth }}"
-        :avatar-height = "{{ $avatarHeight }}"
+        render-url="{{ route('multiplayer.avatar.edit.render') }}"
+        :avatar-width="{{ $avatarWidth }}"
+        :avatar-height="{{ $avatarHeight }}"
+        :starting="{{ json_encode($starting) }}"
+
     >
     </avatar-edit>
 @endsection

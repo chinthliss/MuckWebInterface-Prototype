@@ -331,13 +331,11 @@ class AvatarService
     }
 
     /**
-     * Only for internal optimised route that don't require full processing of a doll (e.g. admin thumbnails)
-     * Everything else should use getDoll to load the full information in.
      * @param $dollName
      * @return Imagick
      * @throws ImagickException
      */
-    private function getAvatarItemImage(AvatarItem $item): Imagick
+    public function getAvatarItemImage(AvatarItem $item): Imagick
     {
         $filePath = $this->getAvatarItemFilePath($item);
         Log::debug("(Avatar) getAvatarItemImage loading PSD file from " . $filePath);
@@ -377,7 +375,7 @@ class AvatarService
     {
         $image = $this->getAvatarItemImage($item);
         //Items are only returned as a 64 x 64 preview image
-        $image->thumbnailImage(64, 64, true);
+        $image->thumbnailImage(128, 64, true);
         return $image;
     }
     #endregion Avatar Items
@@ -535,11 +533,6 @@ class AvatarService
         return AvatarInstance::fromArray($array);
     }
 
-    public function getAvatarInstanceForCharacter(MuckCharacter $character): AvatarInstance
-    {
-        return new AvatarInstance('FS_Human1');
-    }
-
     /**
      * Return an array, in order of drawing, of:
      * [ dollName, doll, subPart, layers ]
@@ -686,13 +679,19 @@ class AvatarService
             }
             Log::debug("(Avatar)   Rendering item " . json_encode($item->toArray()));
             $itemImage = $this->getAvatarItemImage($item);
-            $width = $itemImage->getImageWidth();
-            $height = $itemImage->getImageHeight();
-            if ($item->scale) $width = (int)max($width * $item->scale, 1);
-            if ($item->scale) $height = (int)max($height * $item->scale, 1);
-            if ($item->scale > 0.0) $itemImage->scaleImage($width, $height);
-            if ($item->rotate) $itemImage->rotateImage('transparent', $item->rotate);
-            $finalImage->compositeImage($itemImage, Imagick::COMPOSITE_OVER, $item->x, $item->y);
+            $itemImage->setGravity(Imagick::GRAVITY_CENTER);
+            $width = $itemImage->getImageWidth() * $item->scale;
+            $height = $itemImage->getImageHeight() * $item->scale;
+
+            if ($item->scale <> 1.0) $itemImage->scaleImage($width, $height);
+            if ($item->rotate <> 0) $itemImage->rotateImage('transparent', $item->rotate);
+
+            //Rotating and scaling will have changed the image size
+            $widthOffset = ($width - $itemImage->getImageWidth()) / 2;
+            $heightOffset = ($height - $itemImage->getImageHeight()) / 2;
+
+            $finalImage->compositeImage($itemImage, Imagick::COMPOSITE_OVER,
+                $item->x + $widthOffset, $item->y + $heightOffset);
         }
         if (!$drawnAvatar) $finalImage->addImage($avatarDoll);
 

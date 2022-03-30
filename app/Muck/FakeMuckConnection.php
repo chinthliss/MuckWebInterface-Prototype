@@ -40,7 +40,8 @@ class FakeMuckConnection implements MuckConnection
         try {
             $avatarService = resolve(AvatarService::class);
             // $avatarInstance = $avatarService->muckAvatarStringToAvatarInstance('ass=FS_Fox2;female=2;torso=FS_Fennec;eyes=Brown;female=8;hair=Silver;skin2=Silver;skin1=Greyscale');
-            $avatarInstance = $avatarService->muckAvatarStringToAvatarInstance('ass=FS_Fox2;female=2;torso=FS_Fennec;eyes=Brown;female=8;hair=Silver;skin2=Silver;skin1=Greyscale;item=foxplush/110/30/16/0.4/0;item=foxplush/0/0/2/0.8/90;item=ruinedcity/0/0/3/0/0');
+            $avatarInstance = $avatarService->muckAvatarStringToAvatarInstance('ass=FS_Fox2;female=2;torso=FS_Fennec;eyes=Brown;female=8;hair=Silver;skin2=Silver;skin1=Greyscale;item=foxplush/0/0/-2/0.8/90;item=foxplush/150/270/15/0.4/0;item=foxplush/150/270/16/0.4/30;item=foxplush/150/270/16/0.4/60;item=foxplush/150/270/16/0.4/90;item=ruinedcity/0/0/-3/1.0/0');
+            // $avatarInstance = $avatarService->muckAvatarStringToAvatarInstance('ass=FS_Fox2;female=2;torso=FS_Fennec;eyes=Brown;female=8;hair=Silver;skin2=Silver;skin1=Greyscale;item=foxplush/50/100/16/0.8/0;item=foxplush/50/100/16/0.8/45');
             $this->fakeDatabaseByDbref[4321] = new MuckCharacter(4321, 'AvatarCharacter', $fixedTime, 1, $avatarInstance, [], 7);
         }
         catch (\Exception $e)

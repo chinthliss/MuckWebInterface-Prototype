@@ -42,8 +42,10 @@ Route::get('avatar/gradient/{name}', [AvatarController::class, 'getGradient'])
     ->name('avatar.gradient.image');
 Route::get('avatar/gradient/preview/{code?}', [AvatarController::class, 'getGradientPreview'])
     ->name('avatar.gradient.previewimage');
-Route::get('avatar/item/{name}', [AvatarController::class, 'getAvatarItem'])
+Route::get('avatar/item/{id}', [AvatarController::class, 'getAvatarItem'])
     ->name('multiplayer.avatar.item');
+Route::get('avatar/itempreview/{id}', [AvatarController::class, 'getAvatarItemPreview'])
+    ->name('multiplayer.avatar.itempreview');
 
 //Multiplayer getting started - always available since it gives instructions on creating an account.
 Route::get('multiplayer/gettingstarted', [MultiplayerController::class, 'showGettingStarted'])

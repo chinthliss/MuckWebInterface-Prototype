@@ -32,35 +32,35 @@
                         </div>
 
                         <div class="d-flex align-items-center mt-2">
-                            <div class="stepLabel">When</div>
+                            <div class="sliderLabel">When</div>
                             <div class="ml-1 flex-fill"><input type="range" v-model.number="step[0]"
                                                                class="form-control-range" min="0" max="255"
                                                                @change="maybeReorderSteps"></div>
-                            <div class="ml-1 stepValue">{{ step[0] }}</div>
+                            <div class="ml-1 sliderValue">{{ step[0] }}</div>
                         </div>
 
                         <div class="d-flex align-items-center mt-2">
-                            <div class="stepLabel">Red</div>
+                            <div class="sliderLabel">Red</div>
                             <div class="ml-1 flex-fill"><input type="range" v-model.number="step[1]"
                                                                class="form-control-range" min="0" max="255"
                                                                @change="renderGradient"></div>
-                            <div class="ml-1 stepValue">{{ step[1] }}</div>
+                            <div class="ml-1 sliderValue">{{ step[1] }}</div>
                         </div>
 
                         <div class="d-flex align-items-center mt-2">
-                            <div class="stepLabel">Green</div>
+                            <div class="sliderLabel">Green</div>
                             <div class="ml-1 flex-fill"><input type="range" v-model.number="step[2]"
                                                                class="form-control-range" min="0" max="255"
                                                                @change="renderGradient"></div>
-                            <div class="ml-1 stepValue">{{ step[2] }}</div>
+                            <div class="ml-1 sliderValue">{{ step[2] }}</div>
                         </div>
 
                         <div class="d-flex align-items-center mt-2">
-                            <div class="stepLabel">Blue</div>
+                            <div class="sliderLabel">Blue</div>
                             <div class="ml-1 flex-fill"><input type="range" v-model.number="step[3]"
                                                                class="form-control-range" min="0" max="255"
                                                                @change="renderGradient"></div>
-                            <div class="ml-1 stepValue">{{ step[3] }}</div>
+                            <div class="ml-1 sliderValue">{{ step[3] }}</div>
                         </div>
 
                         <div class="btn-group mt-2 w-100" role="group">
@@ -183,11 +183,11 @@ export default {
 
 <style scoped>
 
-.stepLabel {
+.sliderLabel {
     min-width: 80px;
 }
 
-.stepValue {
+.sliderValue {
     min-width: 32px;
 }
 

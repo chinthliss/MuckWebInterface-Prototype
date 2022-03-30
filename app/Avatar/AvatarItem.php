@@ -19,11 +19,11 @@ class AvatarItem
         public Carbon $createdAt,
         public ?User $owner,
         public ?int $cost,
-        public ?int $x = 0,
-        public ?int $y = 0,
-        public ?int $z = 0,
-        public ?float $rotate = 0.0,
-        public ?float $scale = 0.0
+        public int $x = 0,
+        public int $y = 0,
+        public int $z = 0,
+        public int $rotate = 0,
+        public float $scale = 1.0
     )
     {
     }
@@ -32,15 +32,22 @@ class AvatarItem
     {
         return [
             'id' => $this->id,
-            'name' => $this->name,
-            'filename' => $this->filename,
-            'type' => $this->type,
-            'x' => $this->x,
-            'y' => $this->y,
-            'z' => $this->z,
-            'rotate' => $this->rotate,
-            'scale' => $this->scale
+            'x' => $this->x ?? 0,
+            'y' => $this->y ?? 0,
+            'z' => $this->z ?? 0,
+            'rotate' => $this->rotate ?? 0,
+            'scale' => $this->scale ?? 1.0
         ];
+    }
+
+    public function toCatalogArray()
+    {
+        $array = $this->toArray();
+        $array['name'] = $this->name;
+        $array['url'] = route('multiplayer.avatar.item', ['id' => $this->id]);
+        $array['preview_url'] = route('multiplayer.avatar.itempreview', ['id' => $this->id]);
+        if ($this->cost) $array['cost'] = $this->cost;
+        return $array;
     }
 
 }

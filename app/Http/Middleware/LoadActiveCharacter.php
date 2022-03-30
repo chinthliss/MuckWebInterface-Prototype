@@ -27,7 +27,8 @@ class LoadActiveCharacter
         'avatar.gradient.image',
         'avatar.gradient.previewimage',
         'multiplayer.avatar.render',
-        'multiplayer.avatar.item'
+        'multiplayer.avatar.item',
+        'multiplayer.avatar.itempreview'
     ];
 
     public function __construct(MuckObjectService $muckObjectService)

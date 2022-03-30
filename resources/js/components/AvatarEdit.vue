@@ -1,32 +1,161 @@
 <template>
     <div class="container">
+
         <h2>Avatar Editor</h2>
         <div id="DrawingHolder">
             <canvas :width="avatarWidth" :height="avatarHeight" id="Renderer"></canvas>
         </div>
-        <div id="Resources"> <!-- Images used in rendering, should all be invisible -->
-            <img id="AvatarImage" v-if="avatarImg" alt="Avatar image" :src="avatarImg" @load="redrawCanvas">
-        </div>
 
-        <!-- Gradient Controls -->
-        <div>
+        <nav class="mt-2">
+            <div class="nav nav-tabs nav-fill" id="avatar-edit-tab" role="tablist">
+                <a class="nav-link active" id="nav-colors-tab" data-toggle="tab" href="#nav-colors" role="tab"
+                   aria-controls="nav-colors" aria-selected="true">Select Colors</a>
+                <a class="nav-link" id="nav-background-tab" data-toggle="tab" href="#nav-background" role="tab"
+                   aria-controls="nav-background" aria-selected="false">Edit / Change Background</a>
+                <a class="nav-link" id="nav-items-edit-tab" data-toggle="tab" href="#nav-items-edit" role="tab"
+                   aria-controls="nav-items-edit" aria-selected="false">Edit Items</a>
+                <a class="nav-link" id="nav-items-add-tab" data-toggle="tab" href="#nav-items-add" role="tab"
+                   aria-controls="nav-items-add" aria-selected="false">Add Items</a>
+            </div>
+        </nav>
 
-            <div class="form-group" v-for="color in [
-                {id: 'skin1', label: 'Primary Fur / Skin'},
-                {id: 'skin2', label: 'Secondary Fur / Skin'},
-                {id: 'skin3', label: 'Naughty Bits'},
-                {id: 'hair', label: 'Hair'},
-                {id: 'eyes', label: 'Eyes'}
-            ]">
-                <label :for="color.id">{{ color.label }}</label>
-                <select class="form-control" :id="color.id" v-model="colors[color.id]" @change="updateDollImage">
-                    <option value="">(Default)</option>
-                    <option :value="gradient" v-for="gradient in gradients">{{ gradient }}</option>
-                </select>
+        <div class="tab-content border p-4" id="nav-tabContent">
+
+            <!-- Gradients -->
+            <div class="tab-pane show active" id="nav-colors" role="tabpanel" aria-labelledby="nav-colors-tab">
+                <div class="form-group" v-for="color in [
+                        {id: 'skin1', label: 'Primary Fur / Skin'},
+                        {id: 'skin2', label: 'Secondary Fur / Skin'},
+                        {id: 'skin3', label: 'Naughty Bits'},
+                        {id: 'hair', label: 'Hair'},
+                        {id: 'eyes', label: 'Eyes'}
+                    ]">
+                    <label :for="color.id">{{ color.label }}</label>
+                    <select class="form-control" :id="color.id" v-model="avatar.colors[color.id]"
+                            @change="updateDollImage">
+                        <option value="">(Default)</option>
+                        <option :value="gradient" v-for="gradient in gradients">{{ gradient }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Background -->
+            <div class="tab-pane" id="nav-background" role="tabpanel" aria-labelledby="nav-background-tab">
+                <div v-if="avatar.background">
+                    <div>Present background: {{ avatar.background.name }}</div>
+
+                    <div class="d-flex align-items-center mt-2">
+                        <div class="sliderLabel">Rotation</div>
+                        <div class="ml-1 flex-fill"><input type="range" v-model.number="avatar.background.rotate"
+                                                           class="form-control-range" min="0" max="359"
+                                                           @change="redrawCanvas"></div>
+                        <div class="ml-1 sliderValue">{{ avatar.background.rotate }}</div>
+                    </div>
+
+                    <div class="d-flex align-items-center mt-2">
+                        <div class="sliderLabel">Scale</div>
+                        <div class="ml-1 flex-fill"><input type="range" v-model.number="avatar.background.scale"
+                                                           class="form-control-range" min="0.1" max="2.0" step="0.01"
+                                                           @change="redrawCanvas"></div>
+                        <div class="ml-1 sliderValue">{{ avatar.background.scale }}</div>
+                    </div>
+
+                    <div class="d-flex align-items-center mt-2">
+                        <div class="sliderLabel">X Offset</div>
+                        <div class="ml-1 flex-fill"><input type="range" v-model.number="avatar.background.x"
+                                                           class="form-control-range" :min="this.background.minWidth"
+                                                           :max="background.maxWidth"
+                                                           @change="redrawCanvas"></div>
+                        <div class="ml-1 sliderValue">{{ avatar.background.x }}</div>
+                    </div>
+
+                    <div class="d-flex align-items-center mt-2">
+                        <div class="sliderLabel">Y Offset</div>
+                        <div class="ml-1 flex-fill"><input type="range" v-model.number="avatar.background.y"
+                                                           class="form-control-range" :min="background.minHeight"
+                                                           :max="background.maxHeight"
+                                                           @change="redrawCanvas"></div>
+                        <div class="ml-1 sliderValue">{{ avatar.background.y }}</div>
+                    </div>
+
+                </div>
+                <h4 class="mt-2">Change to a different background:</h4>
+                <div class="row">
+                    <div class="card item-card" v-for="background in backgrounds"
+                         v-bind:class="[avatar.background && background.id === avatar.background.id ? 'border' : '']"
+                         @click="changeBackground(background.id)">
+                        <div class="card-img-top position-relative">
+                            <img :src="background.preview_url" alt="Background Thumbnail">
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center small">{{ background.name }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items - Edit -->
+            <div class="tab-pane" id="nav-items-edit" role="tabpanel" aria-labelledby="nav-items-edit-tab">
+                <p>This list will re-order automatically as the drawing order is changed. Items with a negative Z value are drawn behind the character.</p>
+                <div class="mb-2" v-for="item in avatar.items">
+                    <span>{{ item.name }} @ X: {{ item.x }}, Y: {{ item.y }}, Z: {{ item.z }}</span>
+                    <button class="btn btn-secondary" @click="adjustZ(item, 1)">Move Forwards</button>
+                    <button class="btn btn-secondary" @click="adjustZ(item, -1)">Move Backwards</button>
+                    <button class="btn btn-secondary" @click="deleteItem(item)">Delete</button>
+
+                    <div class="d-flex align-items-center mt-2">
+                        <div class="sliderLabel">X</div>
+                        <div class="ml-1 flex-fill"><input type="range" v-model.number="item.x"
+                                                           class="form-control-range" min="0" :max="avatarWidth"
+                                                           @change="redrawCanvas"></div>
+                        <div class="ml-1 sliderValue">{{ item.scale }}</div>
+                    </div>
+
+                    <div class="d-flex align-items-center mt-2">
+                        <div class="sliderLabel">Y</div>
+                        <div class="ml-1 flex-fill"><input type="range" v-model.number="item.y"
+                                                           class="form-control-range" min="0" :max="avatarHeight"
+                                                           @change="redrawCanvas"></div>
+                        <div class="ml-1 sliderValue">{{ item.scale }}</div>
+                    </div>
+
+                    <div class="d-flex align-items-center mt-2">
+                        <div class="sliderLabel">Rotation</div>
+                        <div class="ml-1 flex-fill"><input type="range" v-model.number="item.rotate"
+                                                           class="form-control-range" min="0" max="359"
+                                                           @change="redrawCanvas"></div>
+                        <div class="ml-1 sliderValue">{{ item.rotate }}</div>
+                    </div>
+
+                    <div class="d-flex align-items-center mt-2">
+                        <div class="sliderLabel">Scale</div>
+                        <div class="ml-1 flex-fill"><input type="range" v-model.number="item.scale"
+                                                           class="form-control-range" min="0.1" max="2.0" step="0.01"
+                                                           @change="redrawCanvas"></div>
+                        <div class="ml-1 sliderValue">{{ item.scale }}</div>
+                    </div>
+
+
+                </div>
+            </div>
+
+            <!-- Items - Add -->
+            <div class="tab-pane" id="nav-items-add" role="tabpanel" aria-labelledby="nav-items-add-tab">
+                <div class="row">
+                    <div class="card item-card" v-for="item in items"
+                         @click="addItemAndGotoIt(item.id)">
+                        <div class="card-img-top position-relative">
+                            <img :src="item.preview_url" alt="Background Thumbnail">
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center small">{{ item.name }}</div>
+                            <div class="text-center small" v-if="item.cost">{{ item.cost }} Mako</div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
         </div>
-
     </div>
 </template>
 
@@ -34,7 +163,9 @@
 export default {
     name: "avatar-edit",
     props: {
-        presentCustomizations: {Type: Object, required: true},
+        items: {type: Array, required: true},
+        backgrounds: {type: Array, required: true},
+        starting: {type: Object, required: true},
         gradients: {type: Array, required: true},
         renderUrl: {type: String, required: true},
         avatarWidth: {type: Number, required: false, default: 384},
@@ -44,69 +175,234 @@ export default {
         return {
             avatarCanvasContext: null,
             avatarImg: '',
-            colors: {
-                skin1: null,
-                skin2: null,
-                skin3: null,
-                hair: null,
-                eyes: null
+            avatar: {
+                colors: {
+                    skin1: null,
+                    skin2: null,
+                    skin3: null,
+                    hair: null,
+                    eyes: null
+                },
+                background: null,
+                items: []
+            },
+            background: { // Used to limit the sliders for such
+                minWidth: -200,
+                maxWidth: 200,
+                minHeight: -200,
+                maxHeight: 200
             }
         };
     },
     mounted: function () {
         let canvasElement = document.getElementById('Renderer');
         this.avatarCanvasContext = canvasElement.getContext('2d');
-        this.colors.skin1 = this.presentCustomizations?.colors?.skin1 || '';
-        this.colors.skin2 = this.presentCustomizations?.colors?.skin2 || '';
-        this.colors.skin3 = this.presentCustomizations?.colors?.skin3 || '';
-        this.colors.hair = this.presentCustomizations?.colors?.hair || '';
-        this.colors.eyes = this.presentCustomizations?.colors?.eyes || '';
+        this.avatar.colors.skin1 = this.starting?.colors?.skin1 || '';
+        this.avatar.colors.skin2 = this.starting?.colors?.skin2 || '';
+        this.avatar.colors.skin3 = this.starting?.colors?.skin3 || '';
+        this.avatar.colors.hair = this.starting?.colors?.hair || '';
+        this.avatar.colors.eyes = this.starting?.colors?.eyes || '';
+
+        if (this.starting?.background) {
+            this.changeBackground(this.starting.background.id);
+            if (this.avatar.background) {
+                this.avatar.background.x = this.starting.background.x;
+                this.avatar.background.y = this.starting.background.y;
+                this.avatar.background.scale = this.starting.background.scale;
+                this.avatar.background.rotate = this.starting.background.rotate;
+            }
+        }
+
+        if (this.starting?.items) {
+            for (const startingItem of this.starting.items) {
+                const item = this.addItem(startingItem.id);
+                if (item) {
+                    item.x = startingItem.x;
+                    item.y = startingItem.y;
+                    item.z = startingItem.z;
+                    item.scale = startingItem.scale;
+                    item.rotate = startingItem.rotate;
+                }
+            }
+        }
+        this.sortItems(); // Because legacy avatars may be in the wrong order
         this.updateDollImage();
     },
     methods: {
-        updateDollImage: function() {
+        updateDollImage: function () {
+            console.log("Updating doll image");
             //For the editor the only thing on the doll loaded from the server is the coloring
             let setColors = {};
-            if (this.colors.skin1) setColors.skin1 = this.colors.skin1;
-            if (this.colors.skin2) setColors.skin2 = this.colors.skin2;
-            if (this.colors.skin3) setColors.skin3 = this.colors.skin3;
-            if (this.colors.hair) setColors.hair = this.colors.hair;
-            if (this.colors.eyes) setColors.eyes = this.colors.eyes;
+            if (this.avatar.colors.skin1) setColors.skin1 = this.avatar.colors.skin1;
+            if (this.avatar.colors.skin2) setColors.skin2 = this.avatar.colors.skin2;
+            if (this.avatar.colors.skin3) setColors.skin3 = this.avatar.colors.skin3;
+            if (this.avatar.colors.hair) setColors.hair = this.avatar.colors.hair;
+            if (this.avatar.colors.eyes) setColors.eyes = this.avatar.colors.eyes;
             this.avatarImg = this.renderUrl + '/' + (Object.values(setColors).length > 0 ? btoa(JSON.stringify(setColors)) : '');
         },
-        redrawCanvas: function() {
+        drawItemOnContext: function (ctx, item) {
+            const imageWidth = item.image.naturalWidth;
+            const imageHeight = item.image.naturalHeight;
+            ctx.translate(item.x, item.y);
+            ctx.scale(item.scale, item.scale);
+            // Ideally we wouldn't do the next line and we'd work from the centre
+            // However the existing framework works from the topleft, so we need to match
+            ctx.translate(imageWidth / 2, imageHeight / 2);
+            ctx.rotate(item.rotate * (Math.PI / 180.0));
+
+            ctx.drawImage(item.image, -imageWidth / 2, -imageHeight / 2);
+            //Reset translation/rotation
+            ctx.setTransform(1, 0, 0, 1, 0 ,0);
+        },
+        redrawCanvas: function () {
+            console.log("Redrawing canvas");
             const ctx = this.avatarCanvasContext;
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-            const avatarImage = document.getElementById('AvatarImage');
-            ctx.drawImage(avatarImage, 0, 0);
+            if (this.avatar.background) this.drawItemOnContext(ctx, this.avatar.background);
+
+            //Draw items behind avatar first
+            for (const item of this.avatar.items) {
+                if (item.z < 0) this.drawItemOnContext(ctx, item);
+            }
+
+            //Draw Avatar
+            //const avatarImage = document.getElementById('AvatarImage');
+            //ctx.drawImage(avatarImage, 0, 0);
+            //Draw items in front of avatar
+            for (const item of this.avatar.items) {
+                if (item.z >= 0) this.drawItemOnContext(ctx, item);
+            }
+        },
+        adjustZ: function (item, modifier) {
+            let oldZ = item.z;
+            let newZ = oldZ + modifier;
+
+            //Avoid using 0, since that represents the character doll
+            if (newZ === 0 && oldZ === -1) newZ = 1;
+            if (newZ === 0 && oldZ === 1) newZ = -1;
+            item.z = newZ;
+            this.sortItems();
+            this.redrawCanvas();
+        },
+        sortItems: function () {
+            this.avatar.items.sort((a, b) => {
+                if (a.z === b.z) return 0;
+                return a.z < b.z ? -1 : 1;
+            });
+        },
+        changeBackground: function (newId) {
+            console.log("Changing background to: " + newId);
+            for (const item of this.backgrounds) {
+                if (item.id === newId) {
+                    this.avatar.background = {...item};
+                }
+            }
+            if (!this.avatar.background) throw "Unable to find background '" + newId + "' in the background catalog.";
+            if (!this.avatar.background.url) throw "Background doesn't have an url to load an image from!";
+            this.avatar.background.image = new Image();
+            this.avatar.background.image.onload = () => {
+                this.background.minWidth = -this.avatar.background.image.naturalWidth;
+                this.background.minHeight = -this.avatar.background.image.naturalHeight;
+                this.background.maxWidth = this.avatar.background.image.naturalWidth;
+                this.background.maxHeight = this.avatar.background.image.naturalHeight;
+                this.redrawCanvas();
+            }
+            this.avatar.background.image.src = this.avatar.background.url;
+        },
+        addItem: function (newId) {
+            console.log("Adding item: " + newId);
+            let item = null;
+            for (const possibleItem of this.items) {
+                if (possibleItem.id === newId) {
+                    item = {...possibleItem};
+                }
+            }
+            if (!item) throw "Unable to find item '" + newId + "' in the item catalog.";
+            if (!item.url) throw "Item doesn't have an url to load an image from!";
+            // Find highest Z so far
+            for (const otherItem of this.avatar.items) {
+                item.z = Math.max(item.z, otherItem.z);
+            }
+            this.avatar.items.push(item);
+            item.image = new Image();
+            item.image.onload = () => {
+                console.log("Item loaded " + item.image.src);
+                this.redrawCanvas();
+            }
+            item.image.src = item.url;
+            return item;
+        },
+        addItemAndGotoIt: function(itemId) {
+            this.addItem(itemId);
+            let triggerEl = document.querySelector('#avatar-edit-tab a[href="#nav-items-edit"]')
+            triggerEl.click();
+        },
+        deleteItem: function(item) {
+            let index = this.avatar.items.indexOf(item);
+            if (index === -1) throw "Couldn't find an index to delete requested item!";
+            this.avatar.items.splice(index, 1);
+            this.sortItems();
+            this.redrawCanvas();
         }
     }
 }
 </script>
 
 <style scoped lang="scss">
-    @import '@/_variables.scss';
+@import '@/_variables.scss';
 
-    #AvatarImage {
-        display: none;
-    }
+.imgResource {
+    display: none;
+}
 
-    #Renderer {
-        position:absolute;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        right: 0;
-    }
+#Renderer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
 
-    #DrawingHolder {
-        border: 1px solid $primary;
-        position: relative;
-        display: inline-block;
-        width: 386px;
-        height: 642px;
-    }
+#DrawingHolder {
+    border: 1px solid $primary;
+    position: relative;
+    display: inline-block;
+    width: 386px;
+    height: 642px;
+}
+
+.item-card {
+    width: 160px;
+    height: 160px;
+    display: inline-block;
+}
+
+.item-card .card-img-top {
+    width: 160px;
+    height: 60px;
+}
+
+.item-card .card-img-top img {
+    max-height: 100%;
+    max-width: 100%;
+    width: auto;
+    height: auto;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+}
+
+.sliderLabel {
+    min-width: 80px;
+}
+
+.sliderValue {
+    min-width: 32px;
+}
 
 
 </style>

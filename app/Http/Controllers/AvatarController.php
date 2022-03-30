@@ -19,18 +19,46 @@ class AvatarController extends Controller
     {
         /** @var User $user */
         $user = auth()->user();
-        $character = $user->getCharacter();
-        $presentCustomizations = $service->getAvatarInstanceForCharacter($character)->toCustomizationsOnlyArray();
+        $avatar = $user->getCharacter()->avatarInstance();
 
+        // List of gradients to pick from
         $gradients = array_map(function ($gradient) {
             return $gradient->name;
         }, $service->getGradients());
 
+        // List of items and backgrounds to pick from
+        $items = [];
+        $backgrounds = [];
+        foreach($service->getAvatarItems() as $item) {
+            $array = $item->toCatalogArray();
+            if ($item->type === 'background')
+                $backgrounds[] = $array;
+            else
+                $items[] = $array;
+        }
+
+        // Items presently in use
+        $presentItems = [];
+        $presentBackground = null;
+        foreach($avatar->items as $item) {
+            $array = $item->toCatalogArray();
+            if ($item->type === 'background')
+                $presentBackground = $array;
+            else
+                $presentItems[] = $array;
+        }
+
         return view('multiplayer.avatar')->with([
-            'presentCustomizations' => $presentCustomizations,
             'gradients' => $gradients,
+            'items' => $items,
+            'backgrounds' => $backgrounds,
             'avatarWidth' => $service::DOLL_WIDTH,
-            'avatarHeight' => $service::DOLL_HEIGHT
+            'avatarHeight' => $service::DOLL_HEIGHT,
+            'starting' => [
+                'background' => $presentBackground,
+                'items' => $presentItems,
+                'colors' => $avatar->colors
+            ]
         ]);
     }
 
@@ -136,7 +164,7 @@ class AvatarController extends Controller
         /** @var User $user */
         $user = auth()->user();
         $character = $user->getCharacter();
-        $config = $service->getAvatarInstanceForCharacter($character)->toArray();
+        $config = $character->avatarInstance()->toArray();
 
         //Overwrite colors with any specified by the editor
         $colors = json_decode(base64_decode($code), true);
@@ -242,11 +270,21 @@ class AvatarController extends Controller
 
     #region Items
 
-    public function getAvatarItem(AvatarService $service, string $name): Response
+    public function getAvatarItem(AvatarService $service, string $id): Response
     {
-        $item = $service->getAvatarItem($name);
+        $item = $service->getAvatarItem($id);
 
-        if (!$item) abort(404, "Unrecognized Avatar Item - $name");
+        if (!$item) abort(404, "Unrecognized Avatar Item - $id");
+        $image = $service->getAvatarItemImage($item);
+        return response($image, 200)
+            ->header('Content-Type', $image->getImageFormat());
+    }
+
+    public function getAvatarItemPreview(AvatarService $service, string $id): Response
+    {
+        $item = $service->getAvatarItem($id);
+
+        if (!$item) abort(404, "Unrecognized Avatar Item - $id");
         $image = $service->renderAvatarItemPreview($item);
         return response($image, 200)
             ->header('Content-Type', $image->getImageFormat());
@@ -254,8 +292,6 @@ class AvatarController extends Controller
 
     public function showAdminAvatarItems(AvatarService $service): View
     {
-        $items = $service->getAvatarItems();
-
         $items = array_map(function ($item) use ($service) {
             return [
                 'id' => $item->id,
@@ -270,7 +306,7 @@ class AvatarController extends Controller
                 'y' => $item->y,
                 'rotate' => $item->rotate,
                 'scale' => $item->scale,
-                'url' => route('multiplayer.avatar.item', ['name' => $item->name])
+                'url' => route('multiplayer.avatar.itempreview', ['id' => $item->name])
             ];
         }, $service->getAvatarItems());
 
