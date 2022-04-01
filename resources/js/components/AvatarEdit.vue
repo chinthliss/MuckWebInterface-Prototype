@@ -108,7 +108,7 @@
                         <div class="ml-1 flex-fill"><input type="range" v-model.number="item.x"
                                                            class="form-control-range" min="0" :max="avatarWidth"
                                                            @change="redrawCanvas"></div>
-                        <div class="ml-1 sliderValue">{{ item.scale }}</div>
+                        <div class="ml-1 sliderValue">{{ item.x }}</div>
                     </div>
 
                     <div class="d-flex align-items-center mt-2">
@@ -116,7 +116,7 @@
                         <div class="ml-1 flex-fill"><input type="range" v-model.number="item.y"
                                                            class="form-control-range" min="0" :max="avatarHeight"
                                                            @change="redrawCanvas"></div>
-                        <div class="ml-1 sliderValue">{{ item.scale }}</div>
+                        <div class="ml-1 sliderValue">{{ item.y }}</div>
                     </div>
 
                     <div class="d-flex align-items-center mt-2">
