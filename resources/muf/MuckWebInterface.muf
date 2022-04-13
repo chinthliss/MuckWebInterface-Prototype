@@ -211,11 +211,11 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 ( -------------------------------------------------- )
 
 (Returns the startup details for the avatar editor. Because avatar items are external now, this actually gets passed items and their requirements so that the muck can validate them. )
-(Expects 'dbref' and 'items' set, with items being an object of {itemId: requirementString} )
+(Expects 'character' and 'items' set, with items being an object of {itemId: requirementString} )
 (Returns {gradients: [gradientName..], items: {itemId: itemStatus }} with itemStatus being 1 for met requirements, 2 for owned and 3 for both)
 : handleRequest_bootAvatarEditor[ arr:webcall -- ]
     #-1 var! character
-    webcall @ "dbref" array_getitem ?dup if
+    webcall @ "character" array_getitem ?dup if
         atoi dbref character !
     then
     character @ player? not if response400 exit then
