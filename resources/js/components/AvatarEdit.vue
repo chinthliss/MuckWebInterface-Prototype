@@ -98,6 +98,7 @@
             <!-- Items - Edit -->
             <div class="tab-pane" id="nav-items-edit" role="tabpanel" aria-labelledby="nav-items-edit-tab">
                 <p>This list will re-order automatically as the drawing order is changed. Items with a negative Z value are drawn behind the character.</p>
+                <p v-if="avatar.items.length === 0">No items added - use the 'Add Items' tab to add them.</p>
                 <div class="mb-2" v-for="item in avatar.items">
                     <span>{{ item.name }} @ X: {{ item.x }}, Y: {{ item.y }}, Z: {{ item.z }}</span>
                     <button class="btn btn-secondary" @click="adjustZ(item, 1)">Move Forwards</button>
