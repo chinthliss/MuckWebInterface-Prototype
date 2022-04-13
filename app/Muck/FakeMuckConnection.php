@@ -380,4 +380,23 @@ class FakeMuckConnection implements MuckConnection
             'NonExistent' => ['Broken']
         ];
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function bootAvatarEditor(MuckCharacter $character, array $itemRequirements): array
+    {
+        self::fakeMuckCall('bootAvatarEditor',
+            ['character' => $character->dbref(), 'requirements' => $itemRequirements]);
+        return [
+            'gradients' => [
+                'Blonde'
+            ],
+            'items' => [
+                'antennae02' => 1,
+                'ascot' => 2,
+                'assault_rifle' => 3
+            ]
+        ];
+    }
 }

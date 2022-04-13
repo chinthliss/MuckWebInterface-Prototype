@@ -3,6 +3,7 @@
 
 namespace App\Muck;
 
+use App\Avatar\AvatarService;
 use Illuminate\Support\Carbon;
 use App\User;
 
@@ -187,4 +188,16 @@ interface MuckConnection
      * @return array<string, array<string>>
      */
     public function avatarDollUsage(): array;
+
+    /**
+     * Fetches the data required for the avatar editor page
+     * This includes an array of [itemId:itemRequirementString] to pass to the muck
+     * It returns an array of [items: [itemId: status], gradients: [ownedGradient..]]
+     *   With status being either 1 for met requirements, 2 for owned and 3 for both
+     * @param MuckCharacter $character
+     * @param array<string, string> $itemRequirements
+     * @return array
+     */
+    public function bootAvatarEditor(MuckCharacter $character, array $itemRequirements): array;
+
 }

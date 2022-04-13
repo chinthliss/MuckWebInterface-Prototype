@@ -34,7 +34,7 @@
                     <select class="form-control" :id="color.id" v-model="avatar.colors[color.id]"
                             @change="updateDollImage">
                         <option value="">(Default)</option>
-                        <option :value="gradient" v-for="gradient in gradients">{{ gradient }}</option>
+                        <option :value="gradient" v-for="(owned, gradient) in gradients">{{ gradient + (owned ? '' : ' (Requires Purchase)') }}</option>
                     </select>
                 </div>
             </div>
@@ -81,14 +81,15 @@
                 </div>
                 <h4 class="mt-2">Change to a different background:</h4>
                 <div class="row">
-                    <div class="card item-card" v-for="background in backgrounds"
+                    <div role="button" class="card item-card " v-for="background in backgrounds"
                          v-bind:class="[avatar.background && background.id === avatar.background.id ? 'border' : '']"
                          @click="changeBackground(background.id)">
                         <div class="card-img-top position-relative">
                             <img :src="background.preview_url" alt="Background Thumbnail">
                         </div>
                         <div class="card-body">
-                            <div class="text-center small">{{ background.name }}</div>
+                            <div class="text-center">{{ background.name }}</div>
+                            <div class="text-center small">{{ itemCostOrStatus(background) }}</div>
                         </div>
                     </div>
                 </div>
@@ -142,14 +143,14 @@
             <!-- Items - Add -->
             <div class="tab-pane" id="nav-items-add" role="tabpanel" aria-labelledby="nav-items-add-tab">
                 <div class="row">
-                    <div class="card item-card" v-for="item in items"
+                    <div role="button" class="card item-card" v-for="item in items"
                          @click="addItemAndGotoIt(item.id)">
                         <div class="card-img-top position-relative">
                             <img :src="item.preview_url" alt="Background Thumbnail">
                         </div>
                         <div class="card-body">
-                            <div class="text-center small">{{ item.name }}</div>
-                            <div class="text-center small" v-if="item.cost">{{ item.cost }} Mako</div>
+                            <div class="text-center">{{ item.name }}</div>
+                            <div class="text-center small">{{ itemCostOrStatus(item) }}</div>
                         </div>
                     </div>
                 </div>
@@ -166,7 +167,7 @@ export default {
         items: {type: Array, required: true},
         backgrounds: {type: Array, required: true},
         starting: {type: Object, required: true},
-        gradients: {type: Array, required: true},
+        gradients: {type: Object, required: true},
         renderUrl: {type: String, required: true},
         avatarWidth: {type: Number, required: false, default: 384},
         avatarHeight: {type: Number, required: false, default: 640},
@@ -344,6 +345,13 @@ export default {
             this.avatar.items.splice(index, 1);
             this.sortItems();
             this.redrawCanvas();
+        },
+        itemCostOrStatus: function(item) {
+            if (item.owner) return 'Owner';
+            if (item.earned) return 'Earned';
+            if (item.cost) return item.cost + ' ' + lex('accountcurrency');
+            if (item.requirement) return 'Requirements unmet';
+            return '';
         }
     }
 }
@@ -374,7 +382,7 @@ export default {
 
 .item-card {
     width: 160px;
-    height: 160px;
+    height: 180px;
     display: inline-block;
 }
 

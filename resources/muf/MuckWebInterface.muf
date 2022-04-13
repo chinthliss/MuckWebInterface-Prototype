@@ -16,6 +16,8 @@ i
 (   The requests are signed by SHA1 which is considered compromised. If they were exposed externally it's assumed an attacker could get the key. )
 ( Outgoing requests to the website are presently disabled due to networking issues. )
 $pubdef :
+$libdef objectToString (for testing)
+$libdef sendRequestToWebpage
 
 $def salt prog "@salt" getpropstr (Stored on prop to avoid being in source. This program is committed to a public respository so do not copy into program!)
 $def allowCrossDomain 0           (Whether to allow cross-domain connections. This should only really be on during testing/development.)
@@ -100,7 +102,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     then
     ?dup not if "t," then
     strcat
-; PUBLIC objectToString $libdef objectToString (for testing)
+; PUBLIC objectToString
 
 ( -------------------------------------------------- )
 ( Handlers - Nonspecific )
@@ -204,8 +206,53 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     intostr descr swap descrnotify
 ; selfcall handleRequest_externalNotification
 
+( -------------------------------------------------- )
+( Avatars )
+( -------------------------------------------------- )
+
+(Returns the startup details for the avatar editor. Because avatar items are external now, this actually gets passed items and their requirements so that the muck can validate them. )
+(Expects 'dbref' and 'items' set, with items being an object of {itemId: requirementString} )
+(Returns {gradients: [gradientName..], items: {itemId: itemStatus }} with itemStatus being 1 for met requirements, 2 for owned and 3 for both)
+: handleRequest_bootAvatarEditor[ arr:webcall -- ]
+    #-1 var! character
+    webcall @ "dbref" array_getitem ?dup if
+        atoi dbref character !
+    then
+    character @ player? not if response400 exit then
+    
+    (Gradients are easy)
+    character @ getOwnedGradientsFor var! gradients
+    
+    (Items, less so!)
+    { }dict
+    (Pass 1 - requirements)
+    webcall @ "items" array_getitem ?dup if
+        foreach (S: Items Item Requirement)
+            swap var! item
+            character @ swap meetsRequirement? if 1 else 0 then
+            ?dup if swap item @ array_setitem then
+        repeat
+    then
+    (Pass 2 - owned items)
+    character @ getOwnedItemsFor foreach 
+        nip var! item
+        dup item @ array_getitem ?dup not if 0 then 2 +
+        swap item @ array_setitem
+    repeat
+    var! items
+    
+    character @ player? not if response400 exit then
+    { 
+        "gradients" gradients @ 
+        "items" items @
+    }dict
+    startAcceptedResponse
+    encodejson descr swap descrnotify
+; selfcall handleRequest_bootAvatarEditor
+
 (Returns an array of which infections use which avatar dolls, in the form: { dollName: [infection1.. infectionN] } )
 : handleRequest_avatarDollUsage[ arr:webcall -- ]
+
     getAvatarDollUsage
     startAcceptedResponse
     encodejson descr swap descrnotify
@@ -506,7 +553,9 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 ;
 
 : sendRequestToWebpage[ str:endPoint int|dbref:aidOrCharacter dict:data -- str:response int:statusCode ]
-    "Functionality disabled." abort
+    $ifndef is_dev
+        "Functionality disabled." abort
+    $endif
     data @ dictionary? not if "Data must be a dictionary" abort then
     aidOrCharacter @ ?dup if
         dbref? if
@@ -521,7 +570,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         "headerData" { "Signature: " signature @ strcat }list
     }dict 
     "" swap webBaseUrl endPoint @ strcat "POST" 5 httprequest_ch rot pop
-; PUBLIC sendRequestToWebpage $libdef sendRequestToWebpage
+; PUBLIC sendRequestToWebpage 
 
 ( -------------------------------------------------- )
 ( Incoming Routing )
@@ -651,4 +700,4 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 c
 q
 
-!! @qmuf $include $www/mwi "test" { }dict sendRequestToWebpage
+!! @qmuf $include $www/mwi "test" #21 { }dict sendRequestToWebpage
