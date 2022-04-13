@@ -176,7 +176,7 @@ export default {
     data: function () {
         return {
             avatarCanvasContext: null,
-            avatarImg: '',
+            avatarImg: null,
             avatar: {
                 colors: {
                     skin1: null,
@@ -240,7 +240,12 @@ export default {
             if (this.avatar.colors.skin3) setColors.skin3 = this.avatar.colors.skin3;
             if (this.avatar.colors.hair) setColors.hair = this.avatar.colors.hair;
             if (this.avatar.colors.eyes) setColors.eyes = this.avatar.colors.eyes;
-            this.avatarImg = this.renderUrl + '/' + (Object.values(setColors).length > 0 ? btoa(JSON.stringify(setColors)) : '');
+            this.avatarImg = new Image();
+            this.avatarImg.onload = () => {
+                console.log("Avatar Doll Loaded loaded " + this.avatarImg.src);
+                this.redrawCanvas();
+            }
+            this.avatarImg.src = this.renderUrl + '/' + (Object.values(setColors).length > 0 ? btoa(JSON.stringify(setColors)) : '');
         },
         drawItemOnContext: function (ctx, item) {
             const imageWidth = item.image.naturalWidth;
@@ -269,8 +274,8 @@ export default {
             }
 
             //Draw Avatar
-            //const avatarImage = document.getElementById('AvatarImage');
-            //ctx.drawImage(avatarImage, 0, 0);
+            ctx.drawImage(this.avatarImg, 0, 0);
+
             //Draw items in front of avatar
             for (const item of this.avatar.items) {
                 if (item.z >= 0) this.drawItemOnContext(ctx, item);
