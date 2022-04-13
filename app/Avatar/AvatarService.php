@@ -501,6 +501,7 @@ class AvatarService
                 //Items
                 case 'item':
                     [$id, $x, $y, $z, $scale, $rotate] = explode('/', $value, 6);
+                    if ($scale <= 0.0) $scale = 1.0;
                     $item = $this->getAvatarItem($id);
                     if ($item) {
                         $item->x = $x;
