@@ -6,11 +6,11 @@
 
 require('./bootstrap');
 
-window.Vue = require('vue');
+window.Vue = require('vue').default;
 
 // Bootstrap-Vue
 import BootstrapVue from 'bootstrap-vue';
-window.Vue.use(BootstrapVue);
+Vue.use(BootstrapVue);
 
 /**
  * The following block of code may be used to automatically register your
