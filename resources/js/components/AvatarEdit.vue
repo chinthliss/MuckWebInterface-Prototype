@@ -167,9 +167,9 @@ export default {
     props: {
         items: {type: Array, required: true},
         backgrounds: {type: Array, required: true},
-        starting: {type: Object, required: true},
         gradients: {type: Object, required: true},
         renderUrl: {type: String, required: true},
+        apiUrl: {type: String, required: true},
         avatarWidth: {type: Number, required: false, default: 384},
         avatarHeight: {type: Number, required: false, default: 640},
     },
@@ -199,38 +199,50 @@ export default {
     mounted: function () {
         let canvasElement = document.getElementById('Renderer');
         this.avatarCanvasContext = canvasElement.getContext('2d');
-        this.avatar.colors.skin1 = this.starting?.colors?.skin1 || '';
-        this.avatar.colors.skin2 = this.starting?.colors?.skin2 || '';
-        this.avatar.colors.skin3 = this.starting?.colors?.skin3 || '';
-        this.avatar.colors.hair = this.starting?.colors?.hair || '';
-        this.avatar.colors.eyes = this.starting?.colors?.eyes || '';
-
-        if (this.starting?.background) {
-            this.changeBackground(this.starting.background.id);
-            if (this.avatar.background) {
-                this.avatar.background.x = this.starting.background.x;
-                this.avatar.background.y = this.starting.background.y;
-                this.avatar.background.scale = this.starting.background.scale;
-                this.avatar.background.rotate = this.starting.background.rotate;
-            }
-        }
-
-        if (this.starting?.items) {
-            for (const startingItem of this.starting.items) {
-                const item = this.addItem(startingItem.id);
-                if (item) {
-                    item.x = startingItem.x;
-                    item.y = startingItem.y;
-                    item.z = startingItem.z;
-                    item.scale = startingItem.scale;
-                    item.rotate = startingItem.rotate;
-                }
-            }
-        }
-        this.sortItems(); // Because legacy avatars may be in the wrong order
-        this.updateDollImage();
+        this.loadAvatarState();
     },
     methods: {
+        loadAvatarState: function() {
+            console.log("Loading avatar state");
+            axios.get(this.apiUrl)
+                .then((response) => {
+                    console.log("Loaded avatar state:", response.data);
+                    let state = response.data;
+                    this.avatar.colors.skin1 = state.colors?.skin1 || '';
+                    this.avatar.colors.skin2 = state.colors?.skin2 || '';
+                    this.avatar.colors.skin3 = state.colors?.skin3 || '';
+                    this.avatar.colors.hair = state.colors?.hair || '';
+                    this.avatar.colors.eyes = state.colors?.eyes || '';
+
+                    if (state.background) {
+                        this.changeBackground(state.background.id);
+                        if (this.avatar.background) {
+                            this.avatar.background.x = state.background.x;
+                            this.avatar.background.y = state.background.y;
+                            this.avatar.background.scale = state.background.scale;
+                            this.avatar.background.rotate = state.background.rotate;
+                        }
+                    }
+
+                    if (state.items) {
+                        for (const startingItem of state.items) {
+                            const item = this.addItem(startingItem.id);
+                            if (item) {
+                                item.x = startingItem.x;
+                                item.y = startingItem.y;
+                                item.z = startingItem.z;
+                                item.scale = startingItem.scale;
+                                item.rotate = startingItem.rotate;
+                            }
+                        }
+                    }
+                    this.sortItems(); // Because legacy avatars may be in the wrong order
+                    this.updateDollImage();
+                })
+                .catch(function (error) {
+                    console.log("Attempt to load avatar state failed: ", error);
+                });
+        },
         updateDollImage: function () {
             console.log("Updating doll image");
             //For the editor the only thing on the doll loaded from the server is the coloring

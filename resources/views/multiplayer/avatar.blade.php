@@ -14,14 +14,13 @@
 
 @section('content')
     <avatar-edit
+        :avatar-width="{{ $avatarWidth }}"
+        :avatar-height="{{ $avatarHeight }}"
         :items="{{ json_encode($items) }}"
         :backgrounds="{{ json_encode($backgrounds) }}"
         :gradients="{{ json_encode($gradients) }}"
         render-url="{{ route('multiplayer.avatar.edit.render') }}"
-        :avatar-width="{{ $avatarWidth }}"
-        :avatar-height="{{ $avatarHeight }}"
-        :starting="{{ json_encode($starting) }}"
-
+        api-url="{{ route('multiplayer.avatar.api') }}"
     >
     </avatar-edit>
 @endsection

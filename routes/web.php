@@ -235,6 +235,9 @@ Route::group(['middleware' => ['auth:account', 'verified', 'tos.agreed', 'not.lo
         ->name('multiplayer.avatar.gradients');
     Route::get('multiplayer/avatar', [AvatarController::class, 'showAvatarEditor'])
         ->name('multiplayer.avatar');
+    Route::get('multiplayer/avatar/api', [AvatarController::class, 'getAvatarState'])
+        ->name('multiplayer.avatar.api');
+    Route::post('multiplayer/avatar/api', [AvatarController::class, 'setAvatarState']);
     Route::get('multiplayer/connect', [MultiplayerController::class, 'showConnect'])
         ->name('multiplayer.connect');
     Route::get('avatar/edit/{code?}', [AvatarController::class, 'getAvatarFromUserCode'])

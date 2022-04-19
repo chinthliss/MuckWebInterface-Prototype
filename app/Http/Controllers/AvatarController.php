@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
 use Imagick;
+use JetBrains\PhpStorm\ArrayShape;
 
 class AvatarController extends Controller
 {
@@ -20,12 +21,11 @@ class AvatarController extends Controller
         /** @var User $user */
         $user = auth()->user();
         $character = $user->getCharacter();
-        $avatar = $character->avatarInstance();
 
         // Need to pick up ownership and whether someone meets the requirements for things from the muck
         $itemCatalog = $service->getAvatarItems();
         $requirements = [];
-        foreach($itemCatalog as $item) {
+        foreach ($itemCatalog as $item) {
             if ($item->requirement) $requirements[$item->id] = $item->requirement;
         }
         $muckResponse = $muck->bootAvatarEditor($character, $requirements);
@@ -36,7 +36,7 @@ class AvatarController extends Controller
         // Gradients
         // Format is gradientName:Available
         $gradients = [];
-        foreach($service->getGradients() as $gradient) {
+        foreach ($service->getGradients() as $gradient) {
             $gradients[$gradient->name] =
                 $gradient->free
                 || ($gradient->owner && $gradient->owner === $character->aid())
@@ -47,7 +47,7 @@ class AvatarController extends Controller
         // Format is an array from the item itself but also included 'earned' and 'owner' flags
         $items = [];
         $backgrounds = [];
-        foreach($itemCatalog as $item) {
+        foreach ($itemCatalog as $item) {
             $array = $item->toCatalogArray();
             $earned = false;
             $owner = false;
@@ -64,10 +64,35 @@ class AvatarController extends Controller
                 $items[] = $array;
         }
 
+        return view('multiplayer.avatar')->with([
+            'gradients' => $gradients,
+            'items' => $items,
+            'backgrounds' => $backgrounds,
+            'avatarWidth' => $service::DOLL_WIDTH,
+            'avatarHeight' => $service::DOLL_HEIGHT
+        ]);
+    }
+
+
+    /**
+     * @return array
+     */
+    #[ArrayShape([
+        'background' => "array|null",
+        'items' => "array",
+        'colors' => "string[]"
+    ])]
+    public function getAvatarState(): array
+    {
+        /** @var User $user */
+        $user = auth()->user();
+        $character = $user->getCharacter();
+        $avatar = $character->avatarInstance();
+
         // Items presently in use
         $presentItems = [];
         $presentBackground = null;
-        foreach($avatar->items as $item) {
+        foreach ($avatar->items as $item) {
             $array = $item->toCatalogArray();
             if ($item->type === 'background')
                 $presentBackground = $array;
@@ -75,18 +100,17 @@ class AvatarController extends Controller
                 $presentItems[] = $array;
         }
 
-        return view('multiplayer.avatar')->with([
-            'gradients' => $gradients,
-            'items' => $items,
-            'backgrounds' => $backgrounds,
-            'avatarWidth' => $service::DOLL_WIDTH,
-            'avatarHeight' => $service::DOLL_HEIGHT,
-            'starting' => [
-                'background' => $presentBackground,
-                'items' => $presentItems,
-                'colors' => $avatar->colors
-            ]
-        ]);
+        return [
+            'background' => $presentBackground,
+            'items' => $presentItems,
+            'colors' => $avatar->colors
+        ];
+    }
+
+
+    public function setAvatarState(AvatarService $service, MuckConnection $muckConnection)
+    {
+
     }
 
     public function showAdminDollList(AvatarService $service, MuckConnection $muckConnection): View
@@ -208,7 +232,7 @@ class AvatarController extends Controller
     }
 
     public function getAvatarFromCharacterName(AvatarService $service, MuckObjectService $muckObjectService,
-                                               Request $request, string $name): Response
+                                               Request       $request, string $name): Response
     {
         if (str_ends_with(strtolower($name), '.png')) $name = substr($name, 0, -4);
         $character = $muckObjectService->getByPlayerName($name);
