@@ -404,9 +404,9 @@ class HttpMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function bootAvatarEditor(MuckCharacter $character, array $itemRequirements): array
+    public function getAvatarOptions(MuckCharacter $character, array $itemRequirements): array
     {
-        return json_decode($this->requestToMuck('bootAvatarEditor', [
+        return json_decode($this->requestToMuck('getAvatarOptions', [
             'character' => $character->dbref(), 'items' => $itemRequirements
         ]), true);
     }

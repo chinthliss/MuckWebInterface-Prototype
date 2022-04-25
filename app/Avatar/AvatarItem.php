@@ -28,7 +28,7 @@ class AvatarItem
     {
     }
 
-    public function toArray()
+    public function toArray(): array
     {
         return [
             'id' => $this->id,
@@ -40,13 +40,13 @@ class AvatarItem
         ];
     }
 
-    public function toCatalogArray()
+    public function toCatalogArray(): array
     {
         $array = $this->toArray();
         $array['name'] = $this->name;
         $array['url'] = route('multiplayer.avatar.item', ['id' => $this->id]);
         $array['preview_url'] = route('multiplayer.avatar.itempreview', ['id' => $this->id]);
-        if ($this->cost) $array['cost'] = $this->cost;
+        $array['cost'] = $this->cost ?? 0;
         return $array;
     }
 

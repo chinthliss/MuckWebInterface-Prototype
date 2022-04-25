@@ -3,6 +3,7 @@
 namespace App\Avatar;
 
 use App\Muck\MuckCharacter;
+use App\Muck\MuckConnection;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Imagick;
@@ -704,4 +705,69 @@ class AvatarService
     }
 
     #endregion Avatar Instances
+
+    /**
+     * Returns an array of [gradients, items, backgrounds] available to the given character
+     * @param MuckConnection $muck
+     * @param MuckCharacter $character
+     * @return array
+     * @throws Exception
+     */
+    public function getAvatarOptions(MuckConnection $muck, MuckCharacter $character): array
+    {
+        // Need to pick up ownership and whether someone meets the requirements for things from the muck
+        $itemCatalog = $this->getAvatarItems();
+        $requirements = [];
+        foreach ($itemCatalog as $item) {
+            if ($item->requirement) $requirements[$item->id] = $item->requirement;
+        }
+        $muckResponse = $muck->getAvatarOptions($character, $requirements);
+
+        if (!array_key_exists('gradients', $muckResponse) || !array_key_exists('items', $muckResponse))
+            throw new \Exception("Muck response was missing an expected part!");
+
+        // Gradients
+        // Format is gradientName:[availableBodyParts]
+        $gradients = [];
+        $ownedGradients = $muckResponse['gradients'];
+        foreach ($this->getGradients() as $gradient) {
+            $available = [];
+            foreach (["fur", "skin", "hair", "eyes"] as $color) {
+                if (
+                    $gradient->free
+                    || ($gradient->owner && $gradient->owner === $character->aid())
+                    || (array_key_exists($gradient->name, $ownedGradients) && in_array($color, $ownedGradients[$gradient->name]))
+                )
+                    $available[] = $color;
+            }
+            $gradients[$gradient->name] = $available;
+        }
+
+        // Items (And backgrounds)
+        // Format is an array from the item itself but also included 'earned' and 'owner' flags
+        $items = [];
+        $backgrounds = [];
+        foreach ($itemCatalog as $item) {
+            $array = $item->toCatalogArray();
+            $earned = false;
+            $owner = false;
+            if (array_key_exists($item->id, $muckResponse['items'])) {
+                if ($muckResponse['items'][$item->id] & 1) $earned = true;
+                if ($muckResponse['items'][$item->id] & 2) $owner = true;
+            }
+            $array['requirement'] = $item->requirement ? true : false;
+            $array['earned'] = $earned;
+            $array['owner'] = $owner;
+            if ($item->type === 'background')
+                $backgrounds[] = $array;
+            else
+                $items[] = $array;
+        }
+
+        return [
+            'gradients' => $gradients,
+            'items' => $items,
+            'backgrounds' => $backgrounds
+        ];
+    }
 }

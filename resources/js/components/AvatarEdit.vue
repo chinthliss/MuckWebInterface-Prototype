@@ -24,17 +24,17 @@
             <!-- Gradients -->
             <div class="tab-pane show active" id="nav-colors" role="tabpanel" aria-labelledby="nav-colors-tab">
                 <div class="form-group" v-for="color in [
-                        {id: 'skin1', label: 'Primary Fur / Skin'},
-                        {id: 'skin2', label: 'Secondary Fur / Skin'},
-                        {id: 'skin3', label: 'Naughty Bits'},
-                        {id: 'hair', label: 'Hair'},
-                        {id: 'eyes', label: 'Eyes'}
+                        {id: 'skin1', slot: 'fur', label: 'Primary Fur / Skin'},
+                        {id: 'skin2', slot: 'fur', label: 'Secondary Fur / Skin'},
+                        {id: 'skin3', slot: 'skin', label: 'Naughty Bits'},
+                        {id: 'hair', slot: 'hair', label: 'Hair'},
+                        {id: 'eyes', slot: 'eyes', label: 'Eyes'}
                     ]">
                     <label :for="color.id">{{ color.label }}</label>
                     <select class="form-control" :id="color.id" v-model="avatar.colors[color.id]"
                             @change="updateDollImage">
                         <option value="">(Default)</option>
-                        <option :value="gradient" v-for="(owned, gradient) in gradients">{{ gradient + (owned ? '' : ' (Requires Purchase)') }}</option>
+                        <option :value="gradient" v-for="(owned, gradient) in gradients">{{ gradient + (owned.indexOf(color.slot) !== -1 ? '' : ' (Requires Purchase)') }}</option>
                     </select>
                 </div>
             </div>
@@ -158,6 +158,9 @@
             </div>
 
         </div>
+
+        <button class="mt-2 btn btn-primary" @click="saveAvatarState(false)">Save Changes</button>
+
     </div>
 </template>
 
@@ -241,6 +244,16 @@ export default {
                 })
                 .catch(function (error) {
                     console.log("Attempt to load avatar state failed: ", error);
+                });
+        },
+        saveAvatarState(costsAccepted) {
+            console.log("Saving avatar state");
+            axios.post(this.apiUrl, {avatar: this.avatar, costsAccepted: costsAccepted})
+                .then((response) => {
+                    console.log("Saved avatar state.");
+                })
+                .catch(function (error) {
+                    console.log("Attempt to save avatar state failed: ", error);
                 });
         },
         updateDollImage: function () {

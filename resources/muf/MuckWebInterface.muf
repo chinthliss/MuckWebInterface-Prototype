@@ -210,10 +210,10 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 ( Avatars )
 ( -------------------------------------------------- )
 
-(Returns the startup details for the avatar editor. Because avatar items are external now, this actually gets passed items and their requirements so that the muck can validate them. )
+(Returns a list of what a given character owns and can access for Avatars. Because avatar items are external now, this gets passed items and their requirements so that the muck can validate them. )
 (Expects 'character' and 'items' set, with items being an object of {itemId: requirementString} )
-(Returns {gradients: [gradientName..], items: {itemId: itemStatus }} with itemStatus being 1 for met requirements, 2 for owned and 3 for both)
-: handleRequest_bootAvatarEditor[ arr:webcall -- ]
+(Returns {gradients: [gradientName:[part..]..], items: {itemId: itemStatus }} with itemStatus being 1 for met requirements, 2 for owned and 3 for both)
+: handleRequest_getAvatarOptionsFor[ arr:webcall -- ]
     #-1 var! character
     webcall @ "character" array_getitem ?dup if
         atoi dbref character !
@@ -248,7 +248,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     }dict
     startAcceptedResponse
     encodejson descr swap descrnotify
-; selfcall handleRequest_bootAvatarEditor
+; selfcall handleRequest_getAvatarOptionsFor
 
 (Returns an array of which infections use which avatar dolls, in the form: { dollName: [infection1.. infectionN] } )
 : handleRequest_avatarDollUsage[ arr:webcall -- ]

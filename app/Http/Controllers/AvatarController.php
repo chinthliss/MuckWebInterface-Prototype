@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Avatar\AvatarGradient;
 use App\Avatar\AvatarInstance;
 use App\Avatar\AvatarService;
+use App\Muck\MuckCharacter;
 use App\Muck\MuckConnection;
 use App\Muck\MuckObjectService;
 use App\User;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
@@ -22,57 +24,16 @@ class AvatarController extends Controller
         $user = auth()->user();
         $character = $user->getCharacter();
 
-        // Need to pick up ownership and whether someone meets the requirements for things from the muck
-        $itemCatalog = $service->getAvatarItems();
-        $requirements = [];
-        foreach ($itemCatalog as $item) {
-            if ($item->requirement) $requirements[$item->id] = $item->requirement;
-        }
-        $muckResponse = $muck->bootAvatarEditor($character, $requirements);
-
-        if (!array_key_exists('gradients', $muckResponse) || !array_key_exists('items', $muckResponse))
-            throw new \Exception("Muck response was missing an expected part!");
-
-        // Gradients
-        // Format is gradientName:Available
-        $gradients = [];
-        foreach ($service->getGradients() as $gradient) {
-            $gradients[$gradient->name] =
-                $gradient->free
-                || ($gradient->owner && $gradient->owner === $character->aid())
-                || in_array($gradient->name, $muckResponse['gradients']);
-        }
-
-        // Items (And backgrounds)
-        // Format is an array from the item itself but also included 'earned' and 'owner' flags
-        $items = [];
-        $backgrounds = [];
-        foreach ($itemCatalog as $item) {
-            $array = $item->toCatalogArray();
-            $earned = false;
-            $owner = false;
-            if (array_key_exists($item->id, $muckResponse['items'])) {
-                if ($muckResponse['items'][$item->id] & 1) $earned = true;
-                if ($muckResponse['items'][$item->id] & 2) $owner = true;
-            }
-            $array['requirement'] = $item->requirement ? true : false;
-            $array['earned'] = $earned;
-            $array['owner'] = $owner;
-            if ($item->type === 'background')
-                $backgrounds[] = $array;
-            else
-                $items[] = $array;
-        }
+        $options = $service->getAvatarOptions($muck,$character);
 
         return view('multiplayer.avatar')->with([
-            'gradients' => $gradients,
-            'items' => $items,
-            'backgrounds' => $backgrounds,
+            'gradients' => $options['gradients'],
+            'items' => $options['items'],
+            'backgrounds' => $options['backgrounds'],
             'avatarWidth' => $service::DOLL_WIDTH,
             'avatarHeight' => $service::DOLL_HEIGHT
         ]);
     }
-
 
     /**
      * @return array
@@ -107,10 +68,65 @@ class AvatarController extends Controller
         ];
     }
 
-
-    public function setAvatarState(AvatarService $service, MuckConnection $muckConnection)
+    /**
+     * Attempts to set the present avatar state
+     * @param AvatarService $service
+     * @param MuckConnection $muck
+     * @param Request $request
+     * @return void
+     */
+    public function setAvatarState(AvatarService $service, MuckConnection $muck, Request $request)
     {
+        if (!$request->has('avatar')) abort(400);
+        $state = $request->get('avatar');
 
+        /** @var User $user */
+        $user = auth()->user();
+        $character = $user->getCharacter();
+
+        //We need to validate things first to make sure they're available and owned/earned.
+        $options = $service->getAvatarOptions($muck, $character);
+
+
+        //Gradients
+        if (array_key_exists('colors', $state)) {
+            foreach($state['colors'] as $slot => $gradientId) {
+                if (!$gradientId) continue;
+                if (!array_key_exists($gradientId, $options['gradients'])) abort(400, "The gradient '$gradientId' isn't available.");
+                $correctedSlot = $slot;
+                if ($slot === 'skin1') $correctedSlot = 'fur';
+                if ($slot === 'skin2') $correctedSlot = 'fur';
+                if ($slot === 'skin3') $correctedSlot = 'skin';
+                if (!in_array($correctedSlot, $options['gradients'][$gradientId])) abort(400, "Gradient '$gradientId' isn't available for the color slot '$correctedSlot'.");
+            }
+        }
+
+        //Background
+        if (array_key_exists('background', $state)) {
+            $backgroundWanted = $state['background'];
+            $backgroundDetails = null;
+            foreach ($options['backgrounds'] as $background) {
+                if ($background['id'] == $backgroundWanted['id']) $backgroundDetails = $background;
+            }
+            if (!$backgroundDetails) abort (400, "The requested background '" . $backgroundWanted['name'] . "' wasn't an option.");
+            if ($backgroundDetails['cost'] && !$backgroundDetails['earned'] && !$backgroundDetails['owner']) {
+                abort (400, "The requested background '" . $backgroundWanted['name'] . "' isn't owned/earned.");
+            }
+        }
+
+        //Items
+        if (array_key_exists('items', $state)) {
+            foreach ($state['items'] as $itemWanted) {
+                $itemDetails = null;
+                foreach ($options['items'] as $item) {
+                    if ($item['id'] == $itemWanted['id']) $itemDetails = $item;
+                }
+                if (!$itemDetails) abort(400, "The requested item '" . $itemWanted['name'] . "' wasn't an option.");
+                if ($itemDetails['cost'] && !$itemDetails['earned'] && !$itemDetails['owner']) {
+                    if (!$itemDetails) abort(400, "The requested item '" . $itemWanted['name'] . "' isn't owned/earned.");
+                }
+            }
+        }
     }
 
     public function showAdminDollList(AvatarService $service, MuckConnection $muckConnection): View
@@ -169,7 +185,7 @@ class AvatarController extends Controller
         ]);
     }
 
-    private function applyOptionsToAvatarImage(Imagick &$avatarImage, Request $request)
+    private function applyOptionsToAvatarImage(Imagick $avatarImage, Request $request)
     {
         if ($request->has('mode')) {
             $mode = $request->get('mode');
