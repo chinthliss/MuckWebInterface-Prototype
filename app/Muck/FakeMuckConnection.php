@@ -400,4 +400,13 @@ class FakeMuckConnection implements MuckConnection
             ]
         ];
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function saveAvatarCustomizations(MuckCharacter $character, array $colors, array $items): void
+    {
+        self::fakeMuckCall('saveAvatarCustomizations',
+            ['character' => $character->dbref(), 'colors' => $colors, 'items' => $items]);
+    }
 }

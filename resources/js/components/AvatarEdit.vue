@@ -159,12 +159,17 @@
 
         </div>
 
-        <button class="mt-2 btn btn-primary" @click="saveAvatarState(false)">Save Changes</button>
+        <button class="mt-2 btn btn-primary" @click="saveAvatarState">Save Changes</button>
 
+        <dialog-message id="DialogMessage" :title="messageDialogHeader">
+            {{ messageDialogContent }}
+        </dialog-message>
     </div>
 </template>
 
 <script>
+import DialogMessage from "./DialogMessage";
+
 export default {
     name: "avatar-edit",
     props: {
@@ -196,7 +201,9 @@ export default {
                 maxWidth: 200,
                 minHeight: -200,
                 maxHeight: 200
-            }
+            },
+            messageDialogHeader:'',
+            messageDialogContent:''
         };
     },
     mounted: function () {
@@ -246,14 +253,17 @@ export default {
                     console.log("Attempt to load avatar state failed: ", error);
                 });
         },
-        saveAvatarState(costsAccepted) {
+        saveAvatarState() {
             console.log("Saving avatar state");
-            axios.post(this.apiUrl, {avatar: this.avatar, costsAccepted: costsAccepted})
+            axios.post(this.apiUrl, this.avatar)
                 .then((response) => {
                     console.log("Saved avatar state.");
                 })
-                .catch(function (error) {
-                    console.log("Attempt to save avatar state failed: ", error);
+                .catch((error) => {
+                    console.log("Attempt to save avatar state failed: ", error?.response?.data || error);
+                    this.messageDialogHeader = "An error occurred..";
+                    this.messageDialogContent = "The save request was rejected:\n" + error.response.data.message;
+                    $('#DialogMessage').modal();
                 });
         },
         updateDollImage: function () {

@@ -77,9 +77,6 @@ class AvatarController extends Controller
      */
     public function setAvatarState(AvatarService $service, MuckConnection $muck, Request $request)
     {
-        if (!$request->has('avatar')) abort(400);
-        $state = $request->get('avatar');
-
         /** @var User $user */
         $user = auth()->user();
         $character = $user->getCharacter();
@@ -87,10 +84,9 @@ class AvatarController extends Controller
         //We need to validate things first to make sure they're available and owned/earned.
         $options = $service->getAvatarOptions($muck, $character);
 
-
-        //Gradients
-        if (array_key_exists('colors', $state)) {
-            foreach($state['colors'] as $slot => $gradientId) {
+        //Colors
+        if ($request->has('colors')) {
+            foreach($request->get('colors') as $slot => $gradientId) {
                 if (!$gradientId) continue;
                 if (!array_key_exists($gradientId, $options['gradients'])) abort(400, "The gradient '$gradientId' isn't available.");
                 $correctedSlot = $slot;
@@ -102,8 +98,8 @@ class AvatarController extends Controller
         }
 
         //Background
-        if (array_key_exists('background', $state)) {
-            $backgroundWanted = $state['background'];
+        if ($request->has('background')) {
+            $backgroundWanted = $request->get('background');
             $backgroundDetails = null;
             foreach ($options['backgrounds'] as $background) {
                 if ($background['id'] == $backgroundWanted['id']) $backgroundDetails = $background;
@@ -115,8 +111,8 @@ class AvatarController extends Controller
         }
 
         //Items
-        if (array_key_exists('items', $state)) {
-            foreach ($state['items'] as $itemWanted) {
+        if ($request->has('items')) {
+            foreach ($request->get('items') as $itemWanted) {
                 $itemDetails = null;
                 foreach ($options['items'] as $item) {
                     if ($item['id'] == $itemWanted['id']) $itemDetails = $item;
@@ -127,6 +123,26 @@ class AvatarController extends Controller
                 }
             }
         }
+
+        //Pass to muck to save.
+        // The colors array is fine, but we need to process just the key details from the items
+        $items = $request->get('items') ?? [];
+        if ($request->has('background')) $items[] = $request->get('background');
+        $items = array_map(function($item) {
+            return [
+                'id' => $item['id'],
+                'x' => $item['x'],
+                'y' => $item['y'],
+                'z' => $item['z'],
+                'rotate' => $item['rotate'],
+                'scale' => $item['scale']
+            ];
+        }, $items);
+        $muck->saveAvatarCustomizations(
+            $character,
+            $request->get('colors'),
+            $items
+        );
     }
 
     public function showAdminDollList(AvatarService $service, MuckConnection $muckConnection): View

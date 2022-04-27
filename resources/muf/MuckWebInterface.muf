@@ -252,11 +252,23 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 
 (Returns an array of which infections use which avatar dolls, in the form: { dollName: [infection1.. infectionN] } )
 : handleRequest_avatarDollUsage[ arr:webcall -- ]
-
     getAvatarDollUsage
     startAcceptedResponse
     encodejson descr swap descrnotify
 ; selfcall handleRequest_avatarDollUsage
+
+(Expects an array with 'character', 'items' and 'colors' which is what to save. Returns nothing. )
+: handleRequest_saveAvatarCustomizations[ arr:webcall -- ]
+    #-1 var! character
+    webcall @ "character" array_getitem ?dup if
+        atoi dbref character !
+    then
+    character @ player? not if response400 exit then
+    
+    webcall @ "colors" array_getitem ?dup if character @ swap setAvatarColors then
+    webcall @ "items" array_getitem ?dup if character @ swap setAvatarItems then
+; selfcall handleRequest_saveAvatarCustomizations
+
 
 ( -------------------------------------------------- )
 ( Handlers - Character Selection and Chargen )

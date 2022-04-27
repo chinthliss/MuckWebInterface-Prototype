@@ -3,7 +3,6 @@
 
 namespace App\Muck;
 
-use App\Avatar\AvatarService;
 use Illuminate\Support\Carbon;
 use App\User;
 
@@ -199,5 +198,13 @@ interface MuckConnection
      * @return array
      */
     public function getAvatarOptions(MuckCharacter $character, array $itemRequirements): array;
+
+    /**
+     * @param MuckCharacter $character
+     * @param array $colors
+     * @param array $items
+     * @return void
+     */
+    public function saveAvatarCustomizations(MuckCharacter $character, array $colors, array $items): void;
 
 }
