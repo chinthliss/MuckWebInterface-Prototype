@@ -227,6 +227,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     { }dict
     (Pass 1 - requirements)
     webcall @ "items" array_getitem ?dup if
+        decodeJson
         foreach (S: Items Item Requirement)
             swap var! item
             character @ swap meetsRequirement? if 1 else 0 then
@@ -265,8 +266,8 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     then
     character @ player? not if response400 exit then
     
-    webcall @ "colors" array_getitem ?dup if character @ swap setAvatarColors then
-    webcall @ "items" array_getitem ?dup if character @ swap setAvatarItems then
+    webcall @ "colors" array_getitem ?dup if decodeJson character @ swap setAvatarColors then
+    webcall @ "items" array_getitem ?dup if decodeJson character @ swap setAvatarItems then
 ; selfcall handleRequest_saveAvatarCustomizations
 
 
