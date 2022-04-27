@@ -416,7 +416,11 @@ class HttpMuckConnection implements MuckConnection
      */
     public function saveAvatarCustomizations(MuckCharacter $character, array $colors, array $items): void
     {
-        $this->requestToMuck('saveAvatarCustomizations', ['colors' => $colors, 'items' => $items]);
+        $this->requestToMuck('saveAvatarCustomizations', [
+            'character' => $character->dbref(),
+            'colors' => $colors,
+            'items' => $items
+        ]);
     }
 
 
