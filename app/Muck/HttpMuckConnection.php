@@ -156,7 +156,7 @@ class HttpMuckConnection implements MuckConnection
             throw new Exception(array_key_exists(1, $response) ? $response[1] : 'Connection error with game');
         }
         return [
-            "character" => $this->parseMuckObjectResponse( join('|', array_slice($response,2))),
+            "character" => $this->parseMuckObjectResponse(join('|', array_slice($response, 2))),
             "initialPassword" => $response[1]
         ];
     }
@@ -410,5 +410,14 @@ class HttpMuckConnection implements MuckConnection
             'character' => $character->dbref(), 'items' => $itemRequirements
         ]), true);
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function saveAvatarCustomizations(MuckCharacter $character, array $colors, array $items): void
+    {
+        $this->requestToMuck('getAvatarOptions', ['colors' => $colors, 'items' => $items]);
+    }
+
 
 }
