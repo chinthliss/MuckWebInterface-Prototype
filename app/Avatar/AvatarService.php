@@ -721,7 +721,7 @@ class AvatarService
         foreach ($itemCatalog as $item) {
             if ($item->requirement) $requirements[$item->id] = $item->requirement;
         }
-        $muckResponse = $muck->getAvatarOptions($character, $requirements);
+        $muckResponse = $muck->getAvatarOptionsFor($character, $requirements);
 
         if (!array_key_exists('gradients', $muckResponse) || !array_key_exists('items', $muckResponse))
             throw new \Exception("Muck response was missing an expected part!");

@@ -197,7 +197,7 @@ interface MuckConnection
      * @param array<string, string> $itemRequirements
      * @return array
      */
-    public function getAvatarOptions(MuckCharacter $character, array $itemRequirements): array;
+    public function getAvatarOptionsFor(MuckCharacter $character, array $itemRequirements): array;
 
     /**
      * @param MuckCharacter $character

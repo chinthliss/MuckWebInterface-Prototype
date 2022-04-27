@@ -384,9 +384,9 @@ class FakeMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function getAvatarOptions(MuckCharacter $character, array $itemRequirements): array
+    public function getAvatarOptionsFor(MuckCharacter $character, array $itemRequirements): array
     {
-        self::fakeMuckCall('getAvatarOptions',
+        self::fakeMuckCall('getAvatarOptionsFor',
             ['character' => $character->dbref(), 'requirements' => $itemRequirements]);
         return [
             'gradients' => [

@@ -404,7 +404,7 @@ class HttpMuckConnection implements MuckConnection
     /**
      * @inheritDoc
      */
-    public function getAvatarOptions(MuckCharacter $character, array $itemRequirements): array
+    public function getAvatarOptionsFor(MuckCharacter $character, array $itemRequirements): array
     {
         return json_decode($this->requestToMuck('getAvatarOptions', [
             'character' => $character->dbref(), 'items' => $itemRequirements
@@ -416,7 +416,7 @@ class HttpMuckConnection implements MuckConnection
      */
     public function saveAvatarCustomizations(MuckCharacter $character, array $colors, array $items): void
     {
-        $this->requestToMuck('getAvatarOptions', ['colors' => $colors, 'items' => $items]);
+        $this->requestToMuck('getAvatarOptionsFor', ['colors' => $colors, 'items' => $items]);
     }
 
 
