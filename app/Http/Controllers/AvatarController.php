@@ -81,6 +81,9 @@ class AvatarController extends Controller
     {
         Log::Debug('Avatar - setAvatarState called with: ' . json_encode($request->all()));
 
+        if (!$request->has('colors') || !$request->has('items') || !$request->has('background'))
+            abort (400, 'Missing fields in request.');
+        
         /** @var User $user */
         $user = auth()->user();
         $character = $user->getCharacter();
@@ -89,21 +92,19 @@ class AvatarController extends Controller
         $options = $service->getAvatarOptions($muck, $character);
 
         //Colors
-        if ($request->has('colors')) {
-            foreach($request->get('colors') as $slot => $gradientId) {
-                if (!$gradientId) continue;
-                if (!array_key_exists($gradientId, $options['gradients'])) abort(400, "The gradient '$gradientId' isn't available.");
-                $correctedSlot = $slot;
-                if ($slot === 'skin1') $correctedSlot = 'fur';
-                if ($slot === 'skin2') $correctedSlot = 'fur';
-                if ($slot === 'skin3') $correctedSlot = 'skin';
-                if (!in_array($correctedSlot, $options['gradients'][$gradientId])) abort(400, "Gradient '$gradientId' isn't available for the color slot '$correctedSlot'.");
-            }
+        foreach($request->get('colors') as $slot => $gradientId) {
+            if (!$gradientId) continue;
+            if (!array_key_exists($gradientId, $options['gradients'])) abort(400, "The gradient '$gradientId' isn't available.");
+            $correctedSlot = $slot;
+            if ($slot === 'skin1') $correctedSlot = 'fur';
+            if ($slot === 'skin2') $correctedSlot = 'fur';
+            if ($slot === 'skin3') $correctedSlot = 'skin';
+            if (!in_array($correctedSlot, $options['gradients'][$gradientId])) abort(400, "Gradient '$gradientId' isn't available for the color slot '$correctedSlot'.");
         }
 
         //Background
-        if ($request->has('background')) {
-            $backgroundWanted = $request->get('background');
+        $backgroundWanted = $request->get('background');
+        if ($backgroundWanted) {
             $backgroundDetails = null;
             foreach ($options['backgrounds'] as $background) {
                 if ($background['id'] == $backgroundWanted['id']) $backgroundDetails = $background;
@@ -115,16 +116,14 @@ class AvatarController extends Controller
         }
 
         //Items
-        if ($request->has('items')) {
-            foreach ($request->get('items') as $itemWanted) {
-                $itemDetails = null;
-                foreach ($options['items'] as $item) {
-                    if ($item['id'] == $itemWanted['id']) $itemDetails = $item;
-                }
-                if (!$itemDetails) abort(400, "The requested item '" . $itemWanted['name'] . "' wasn't an option.");
-                if ($itemDetails['cost'] && !$itemDetails['earned'] && !$itemDetails['owner']) {
-                    if (!$itemDetails) abort(400, "The requested item '" . $itemWanted['name'] . "' isn't owned/earned.");
-                }
+        foreach ($request->get('items') as $itemWanted) {
+            $itemDetails = null;
+            foreach ($options['items'] as $item) {
+                if ($item['id'] == $itemWanted['id']) $itemDetails = $item;
+            }
+            if (!$itemDetails) abort(400, "The requested item '" . $itemWanted['name'] . "' wasn't an option.");
+            if ($itemDetails['cost'] && !$itemDetails['earned'] && !$itemDetails['owner']) {
+                if (!$itemDetails) abort(400, "The requested item '" . $itemWanted['name'] . "' isn't owned/earned.");
             }
         }
 
