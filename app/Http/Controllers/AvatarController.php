@@ -12,6 +12,7 @@ use App\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Imagick;
@@ -78,6 +79,8 @@ class AvatarController extends Controller
      */
     public function setAvatarState(AvatarService $service, MuckConnection $muck, Request $request)
     {
+        Log::Debug('Avatar - setAvatarState called with: ' . json_encode($request->all()));
+
         /** @var User $user */
         $user = auth()->user();
         $character = $user->getCharacter();
