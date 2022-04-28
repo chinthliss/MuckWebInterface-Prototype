@@ -12,6 +12,7 @@ use App\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Imagick;
 use JetBrains\PhpStorm\ArrayShape;
@@ -135,7 +136,10 @@ class AvatarController extends Controller
                 'y' => $item['y'],
                 'z' => $item['z'],
                 'rotate' => $item['rotate'],
-                'scale' => $item['scale']
+                'scale' => $item['scale'],
+                //The old system needs to know the name of the actual image
+                //TODO : Remove setting the picture attribute on avatar items after changeover to the new system
+                'picture' => Str::afterLast($item['url'], '/')
             ];
         }, $items);
         $muck->saveAvatarCustomizations(

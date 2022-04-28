@@ -258,7 +258,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     encodejson descr swap descrnotify
 ; selfcall handleRequest_avatarDollUsage
 
-(Expects an array with 'character', 'items' and 'colors' which is what to save. Returns nothing. )
+(Expects an array with 'character', 'items' and 'colors' which is what to save. Returns 'OK'. )
 : handleRequest_saveAvatarCustomizations[ arr:webcall -- ]
     #-1 var! character
     webcall @ "character" array_getitem ?dup if
@@ -268,6 +268,9 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     
     webcall @ "colors" array_getitem ?dup if decodeJson character @ swap setAvatarColors then
     webcall @ "items" array_getitem ?dup if decodeJson character @ swap setAvatarItems then
+    
+    startAcceptedResponse
+    "OK" descr swap descrnotify
 ; selfcall handleRequest_saveAvatarCustomizations
 
 
