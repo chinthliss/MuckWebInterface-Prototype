@@ -2,7 +2,12 @@
     <div class="container">
 
         <h2>Avatar Editor</h2>
+
         <div id="DrawingHolder">
+            <div v-if="loading" class="text-center">
+                <div class="spinner-border" role="status"></div>
+                <div>Loading...</div>
+            </div>
             <canvas :width="avatarWidth" :height="avatarHeight" id="Renderer"></canvas>
         </div>
 
@@ -34,7 +39,9 @@
                     <select class="form-control" :id="color.id" v-model="avatar.colors[color.id]"
                             @change="updateDollImage">
                         <option value="">(Default)</option>
-                        <option :value="gradient" v-for="(owned, gradient) in gradients">{{ gradient + (owned.indexOf(color.slot) !== -1 ? '' : ' (Requires Purchase)') }}</option>
+                        <option :value="gradient" v-for="(owned, gradient) in gradients">
+                            {{ gradient + (owned.indexOf(color.slot) !== -1 ? '' : ' (Requires Purchase)') }}
+                        </option>
                     </select>
                 </div>
             </div>
@@ -97,7 +104,8 @@
 
             <!-- Items - Edit -->
             <div class="tab-pane" id="nav-items-edit" role="tabpanel" aria-labelledby="nav-items-edit-tab">
-                <p>This list will re-order automatically as the drawing order is changed. Items with a negative Z value are drawn behind the character.</p>
+                <p>This list will re-order automatically as the drawing order is changed. Items with a negative Z value
+                    are drawn behind the character.</p>
                 <p v-if="avatar.items.length === 0">No items added - use the 'Add Items' tab to add them.</p>
                 <div class="mb-2" v-for="item in avatar.items">
                     <span>{{ item.name }} @ X: {{ item.x }}, Y: {{ item.y }}, Z: {{ item.z }}</span>
@@ -159,7 +167,9 @@
 
         </div>
 
-        <button class="mt-2 btn btn-primary" @click="saveAvatarState">Save Changes</button>
+        <button :disabled="saving" class="mt-2 btn btn-primary" @click="saveAvatarState">Save Changes
+            <span v-if="saving" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        </button>
 
         <dialog-message id="DialogMessage" :title="messageDialogHeader">
             {{ messageDialogContent }}
@@ -202,8 +212,10 @@ export default {
                 minHeight: -200,
                 maxHeight: 200
             },
-            messageDialogHeader:'',
-            messageDialogContent:''
+            loading: true,
+            saving: false,
+            messageDialogHeader: '',
+            messageDialogContent: ''
         };
     },
     mounted: function () {
@@ -212,8 +224,9 @@ export default {
         this.loadAvatarState();
     },
     methods: {
-        loadAvatarState: function() {
+        loadAvatarState: function () {
             console.log("Loading avatar state");
+            this.loading = true;
             axios.get(this.apiUrl)
                 .then((response) => {
                     console.log("Loaded avatar state:", response.data);
@@ -248,13 +261,18 @@ export default {
                     }
                     this.sortItems(); // Because legacy avatars may be in the wrong order
                     this.updateDollImage();
+                    this.loading = false;
                 })
                 .catch(function (error) {
                     console.log("Attempt to load avatar state failed: ", error);
+                    this.messageDialogHeader = "An error occurred..";
+                    this.messageDialogContent = "Unable to load avatar:\n" + error.response.data.message || error;
+                    $('#DialogMessage').modal();
                 });
         },
         saveAvatarState() {
             console.log("Saving avatar state");
+            this.saving = true;
             axios.post(this.apiUrl, this.avatar)
                 .then((response) => {
                     console.log("Saved avatar state.");
@@ -264,6 +282,9 @@ export default {
                     this.messageDialogHeader = "An error occurred..";
                     this.messageDialogContent = "The save request was rejected:\n" + error.response.data.message;
                     $('#DialogMessage').modal();
+                })
+                .then(() => {
+                    this.saving = false;
                 });
         },
         updateDollImage: function () {
@@ -294,7 +315,7 @@ export default {
 
             ctx.drawImage(item.image, -imageWidth / 2, -imageHeight / 2);
             //Reset translation/rotation
-            ctx.setTransform(1, 0, 0, 1, 0 ,0);
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
         },
         redrawCanvas: function () {
             console.log("Redrawing canvas");
@@ -375,19 +396,19 @@ export default {
             item.image.src = item.url;
             return item;
         },
-        addItemAndGotoIt: function(itemId) {
+        addItemAndGotoIt: function (itemId) {
             this.addItem(itemId);
             let triggerEl = document.querySelector('#avatar-edit-tab a[href="#nav-items-edit"]')
             triggerEl.click();
         },
-        deleteItem: function(item) {
+        deleteItem: function (item) {
             let index = this.avatar.items.indexOf(item);
             if (index === -1) throw "Couldn't find an index to delete requested item!";
             this.avatar.items.splice(index, 1);
             this.sortItems();
             this.redrawCanvas();
         },
-        itemCostOrStatus: function(item) {
+        itemCostOrStatus: function (item) {
             if (item.owner) return 'Owner';
             if (item.earned) return 'Earned';
             if (item.cost) return item.cost + ' ' + lex('accountcurrency');
