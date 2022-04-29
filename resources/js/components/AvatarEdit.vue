@@ -89,7 +89,10 @@
                 <h4 class="mt-2">Change to a different background:</h4>
                 <div class="row">
                     <div role="button" class="card item-card " v-for="background in backgrounds"
-                         v-bind:class="[avatar.background && background.id === avatar.background.id ? 'border' : '']"
+                         :class="[{
+                             border: avatar.background && background.id === avatar.background.id,
+                             unavailable: !background.earned && !background.owner && !background.cost && background.requirement
+                         }]"
                          @click="changeBackground(background.id)">
                         <div class="card-img-top position-relative">
                             <img :src="background.preview_url" alt="Background Thumbnail">
@@ -153,6 +156,9 @@
             <div class="tab-pane" id="nav-items-add" role="tabpanel" aria-labelledby="nav-items-add-tab">
                 <div class="row">
                     <div role="button" class="card item-card" v-for="item in items"
+                         :class="[{
+                             unavailable: !item.earned && !item.owner && !item.cost && item.requirement
+                         }]"
                          @click="addItemAndGotoIt(item.id)">
                         <div class="card-img-top position-relative">
                             <img :src="item.preview_url" alt="Background Thumbnail">
@@ -356,13 +362,17 @@ export default {
         },
         changeBackground: function (newId) {
             console.log("Changing background to: " + newId);
+            let newBackground = null;
             for (const item of this.backgrounds) {
                 if (item.id === newId) {
-                    this.avatar.background = {...item};
+                    newBackground = {...item};
                 }
             }
-            if (!this.avatar.background) throw "Unable to find background '" + newId + "' in the background catalog.";
-            if (!this.avatar.background.url) throw "Background doesn't have an url to load an image from!";
+            if (!newBackground) throw "Unable to find background '" + newId + "' in the background catalog.";
+            if (!newBackground.url) throw "Background doesn't have an url to load an image from!";
+            if (!newBackground.owner && !newBackground.earned && !newBackground.cost && newBackground.requirement)
+                throw "Couldn't switch to new background because it has an unmet requirement.";
+            this.avatar.background = newBackground;
             this.avatar.background.image = new Image();
             this.avatar.background.image.onload = () => {
                 this.background.minWidth = -this.avatar.background.image.naturalWidth;
@@ -383,6 +393,8 @@ export default {
             }
             if (!item) throw "Unable to find item '" + newId + "' in the item catalog.";
             if (!item.url) throw "Item doesn't have an url to load an image from!";
+            if (!item.owner && !item.earned && !item.cost && item.requirement)
+                throw "Couldn't switch to new item because it has an unmet requirement.";
             // Find highest Z so far
             for (const otherItem of this.avatar.items) {
                 item.z = Math.max(item.z, otherItem.z);
@@ -446,6 +458,11 @@ export default {
     width: 160px;
     height: 180px;
     display: inline-block;
+}
+
+.item-card.unavailable {
+    cursor: not-allowed;
+    filter: grayscale(100%);
 }
 
 .item-card .card-img-top {
