@@ -28,13 +28,7 @@
 
             <!-- Gradients -->
             <div class="tab-pane show active" id="nav-colors" role="tabpanel" aria-labelledby="nav-colors-tab">
-                <div class="form-group" v-for="color in [
-                        {id: 'skin1', slot: 'fur', label: 'Primary Fur / Skin'},
-                        {id: 'skin2', slot: 'fur', label: 'Secondary Fur / Skin'},
-                        {id: 'skin3', slot: 'skin', label: 'Naughty Bits'},
-                        {id: 'hair', slot: 'hair', label: 'Hair'},
-                        {id: 'eyes', slot: 'eyes', label: 'Eyes'}
-                    ]">
+                <div class="form-group" v-for="color in colorSlots">
                     <label :for="color.id">{{ color.label }}</label>
                     <select class="form-control" :id="color.id" v-model="avatar.colors[color.id]"
                             @change="updateDollImage">
@@ -170,10 +164,37 @@
                     </div>
                 </div>
             </div>
-
         </div>
 
-        <button :disabled="saving" class="mt-2 btn btn-primary" @click="saveAvatarState">Save Changes
+        <!-- Any pending purchases -->
+        <div v-if="Object.keys(purchases.items).length || Object.keys(purchases.gradients).length">
+            <h4>Purchases Required</h4>
+            <div v-for="(slots, gradient) in purchases.gradients">
+                Color '{{ gradient }}'
+                <button :disabled="slots.length > 1" class="mt-2 ml-2 btn btn-primary btn-with-img-icon">
+                    <span class="btn-icon-accountcurrency btn-icon-left"></span>
+                    Buy for a single slot
+                    <span class="btn-second-line">5 {{ lex('accountcurrency') }}</span>
+                </button>
+                <button class="mt-2 ml-2 btn btn-primary btn-with-img-icon">
+                    <span class="btn-icon-accountcurrency btn-icon-left"></span>
+                    Buy for all slots
+                    <span class="btn-second-line">10 {{ lex('accountcurrency') }}</span>
+                </button>
+            </div>
+            <div v-for="(item, id) in purchases.items">
+                Accessory '{{ item.name }}'
+                <button class="mt-2 ml-2 btn btn-primary btn-with-img-icon">
+                    <span class="btn-icon-accountcurrency btn-icon-left"></span>
+                    Buy
+                    <span class="btn-second-line">{{ item.cost }} {{ lex('accountcurrency') }}</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Save -->
+        <button :disabled="saving || Object.keys(purchases.items).length || Object.keys(purchases.gradients).length"
+                class="mt-2 btn btn-primary" @click="saveAvatarState">Save Changes
             <span v-if="saving" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
         </button>
 
@@ -195,10 +216,17 @@ export default {
         renderUrl: {type: String, required: true},
         apiUrl: {type: String, required: true},
         avatarWidth: {type: Number, required: false, default: 384},
-        avatarHeight: {type: Number, required: false, default: 640},
+        avatarHeight: {type: Number, required: false, default: 640}
     },
     data: function () {
         return {
+            colorSlots: [
+                {id: 'skin1', slot: 'fur', label: 'Primary Fur / Skin'},
+                {id: 'skin2', slot: 'fur', label: 'Secondary Fur / Skin'},
+                {id: 'skin3', slot: 'skin', label: 'Naughty Bits'},
+                {id: 'hair', slot: 'hair', label: 'Hair'},
+                {id: 'eyes', slot: 'eyes', label: 'Eyes'}
+            ],
             avatarCanvasContext: null,
             avatarImg: null,
             avatar: {
@@ -221,7 +249,11 @@ export default {
             loading: true,
             saving: false,
             messageDialogHeader: '',
-            messageDialogContent: ''
+            messageDialogContent: '',
+            purchases: {
+                gradients: {},
+                items: {}
+            }
         };
     },
     mounted: function () {
@@ -269,10 +301,10 @@ export default {
                     this.updateDollImage();
                     this.loading = false;
                 })
-                .catch(function (error) {
+                .catch((error) => {
                     console.log("Attempt to load avatar state failed: ", error);
                     this.messageDialogHeader = "An error occurred..";
-                    this.messageDialogContent = "Unable to load avatar:\n" + error.response.data.message || error;
+                    this.messageDialogContent = "Unable to load avatar:\n" + error?.response?.data?.message || error;
                     $('#DialogMessage').modal();
                 });
         },
@@ -308,6 +340,7 @@ export default {
                 this.redrawCanvas();
             }
             this.avatarImg.src = this.renderUrl + '/' + (Object.values(setColors).length > 0 ? btoa(JSON.stringify(setColors)) : '');
+            this.refreshPurchases();
         },
         drawItemOnContext: function (ctx, item) {
             const imageWidth = item.image.naturalWidth;
@@ -336,7 +369,7 @@ export default {
             }
 
             //Draw Avatar
-            ctx.drawImage(this.avatarImg, 0, 0);
+            if (this.avatarImg) ctx.drawImage(this.avatarImg, 0, 0);
 
             //Draw items in front of avatar
             for (const item of this.avatar.items) {
@@ -382,6 +415,7 @@ export default {
                 this.redrawCanvas();
             }
             this.avatar.background.image.src = this.avatar.background.url;
+            this.refreshPurchases();
         },
         addItem: function (newId) {
             console.log("Adding item: " + newId);
@@ -406,6 +440,7 @@ export default {
                 this.redrawCanvas();
             }
             item.image.src = item.url;
+            this.refreshPurchases();
             return item;
         },
         addItemAndGotoIt: function (itemId) {
@@ -419,6 +454,7 @@ export default {
             this.avatar.items.splice(index, 1);
             this.sortItems();
             this.redrawCanvas();
+            this.refreshPurchases();
         },
         itemCostOrStatus: function (item) {
             if (item.owner) return 'Owner';
@@ -426,6 +462,38 @@ export default {
             if (item.cost) return item.cost + ' ' + lex('accountcurrency');
             if (item.requirement) return 'Requirements unmet';
             return '';
+        },
+        refreshPurchases: function () {
+            console.log("Refresh purchase list");
+            // Collect a list of anything that requires purchasing
+            this.purchases.gradients = {};
+            for (const color of this.colorSlots) {
+                let gradientId = this.avatar.colors[color.id];
+                let gradient = gradientId && this.gradients[gradientId];
+                if (gradient) {
+                    console.log("Checking ", gradient, " for ", color.slot);
+                    if (gradient.indexOf(color.slot) === -1) {
+                        if (!this.purchases.gradients[gradientId])
+                            this.purchases.gradients[gradientId] = [];
+                        this.purchases.gradients[gradientId].push(color.slot);
+                    }
+                }
+            }
+
+            this.purchases.items = {};
+            for (const item of this.avatar.items) {
+                if (item.cost && !item.earned && !item.owner) {
+                    this.purchases.items[item.id] = {
+                        name: item.name,
+                        cost: item.cost
+                    };
+                }
+            }
+            if (this.avatar.background && this.avatar.background.cost && !this.avatar.background.earned && !this.avatar.background.owner)
+                this.purchases.items[this.avatar.background.id] = {
+                    name: this.avatar.background.name,
+                    cost: this.avatar.background.cost
+                };
         }
     }
 }
