@@ -83,7 +83,7 @@ class AvatarController extends Controller
 
         if (!$request->has('colors') || !$request->has('items') || !$request->has('background'))
             abort (400, 'Missing fields in request.');
-        
+
         /** @var User $user */
         $user = auth()->user();
         $character = $user->getCharacter();
@@ -355,6 +355,10 @@ class AvatarController extends Controller
         return response($image, 200)
             ->header('Content-Type', $image->getImageFormat());
     }
+
+    public function buyGradient(Request $request) {
+        abort(501);
+    }
     #endregion Gradients
 
     #region Items
@@ -406,6 +410,11 @@ class AvatarController extends Controller
             'fileUsage' => $usage
         ]);
 
+    }
+
+    public function buyItem(Request $request) {
+        // TODO : Implement BuyItem
+        abort(501);
     }
 
     #endregion Items

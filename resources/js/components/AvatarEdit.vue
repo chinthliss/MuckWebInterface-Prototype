@@ -171,12 +171,12 @@
             <h4>Purchases Required</h4>
             <div v-for="(slots, gradient) in purchases.gradients">
                 Color '{{ gradient }}'
-                <button :disabled="slots.length > 1" class="mt-2 ml-2 btn btn-primary btn-with-img-icon">
+                <button :disabled="slots.length > 1" class="mt-2 ml-2 btn btn-primary btn-with-img-icon" @click="purchaseGradient(gradient, slots[0])">
                     <span class="btn-icon-accountcurrency btn-icon-left"></span>
                     Buy for a single slot
                     <span class="btn-second-line">5 {{ lex('accountcurrency') }}</span>
                 </button>
-                <button class="mt-2 ml-2 btn btn-primary btn-with-img-icon">
+                <button class="mt-2 ml-2 btn btn-primary btn-with-img-icon" @click="purchaseGradient(gradient, 'all')">
                     <span class="btn-icon-accountcurrency btn-icon-left"></span>
                     Buy for all slots
                     <span class="btn-second-line">10 {{ lex('accountcurrency') }}</span>
@@ -184,7 +184,7 @@
             </div>
             <div v-for="(item, id) in purchases.items">
                 Accessory '{{ item.name }}'
-                <button class="mt-2 ml-2 btn btn-primary btn-with-img-icon">
+                <button class="mt-2 ml-2 btn btn-primary btn-with-img-icon" @click="purchaseItem(id)">
                     <span class="btn-icon-accountcurrency btn-icon-left"></span>
                     Buy
                     <span class="btn-second-line">{{ item.cost }} {{ lex('accountcurrency') }}</span>
@@ -214,7 +214,9 @@ export default {
         backgrounds: {type: Array, required: true},
         gradients: {type: Object, required: true},
         renderUrl: {type: String, required: true},
-        apiUrl: {type: String, required: true},
+        stateUrl: {type: String, required: true},
+        gradientUrl: {type: String, required: true},
+        itemUrl: {type: String, required: true},
         avatarWidth: {type: Number, required: false, default: 384},
         avatarHeight: {type: Number, required: false, default: 640}
     },
@@ -265,7 +267,7 @@ export default {
         loadAvatarState: function () {
             console.log("Loading avatar state");
             this.loading = true;
-            axios.get(this.apiUrl)
+            axios.get(this.stateUrl)
                 .then((response) => {
                     console.log("Loaded avatar state:", response.data);
                     let state = response.data;
@@ -311,7 +313,7 @@ export default {
         saveAvatarState() {
             console.log("Saving avatar state");
             this.saving = true;
-            axios.post(this.apiUrl, this.avatar)
+            axios.post(this.stateUrl, this.avatar)
                 .then((response) => {
                     console.log("Saved avatar state.");
                 })
@@ -494,6 +496,26 @@ export default {
                     name: this.avatar.background.name,
                     cost: this.avatar.background.cost
                 };
+        },
+        purchaseGradient: function(gradientId, slot) {
+            console.log("Purchasing gradient: ", gradientId, " for slot ", slot);
+            axios.post(this.gradientUrl, {gradient: gradientId, slot: slot})
+                .then((response) => {
+                    console.log("Response: ", response);
+                })
+                .catch((error) => {
+                    console.log("Error: ", error);
+                });
+        },
+        purchaseItem: function(itemId) {
+            console.log("Purchasing item: ", itemId);
+            axios.post(this.itemUrl, {item: itemId})
+                .then((response) => {
+                    console.log("Response: ", response);
+                })
+                .catch((error) => {
+                    console.log("Error: ", error);
+                });
         }
     }
 }

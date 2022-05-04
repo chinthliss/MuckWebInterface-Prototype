@@ -20,7 +20,9 @@
         :backgrounds="{{ json_encode($backgrounds) }}"
         :gradients="{{ json_encode($gradients) }}"
         render-url="{{ route('multiplayer.avatar.edit.render') }}"
-        api-url="{{ route('multiplayer.avatar.api') }}"
+        state-url="{{ route('multiplayer.avatar.state') }}"
+        gradient-url="{{ route('multiplayer.avatar.buygradient') }}"
+        item-url="{{ route('multiplayer.avatar.buyitem') }}"
     >
     </avatar-edit>
 @endsection
