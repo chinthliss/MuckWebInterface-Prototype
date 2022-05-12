@@ -428,7 +428,7 @@ class HttpMuckConnection implements MuckConnection
     {
         $response = $this->requestToMuck('buyAvatarGradient', [
             'character' => $character->dbref(),
-            'gradient' => $gradient, 'items' => $slot
+            'gradient' => $gradient, 'slot' => $slot
         ]);
         return $response;
     }
