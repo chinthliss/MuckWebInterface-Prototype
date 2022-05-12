@@ -273,6 +273,42 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     "OK" descr swap descrnotify
 ; selfcall handleRequest_saveAvatarCustomizations
 
+(Expects an array with 'character', 'gradient', 'slot'. Returns 'OK' or an error )
+: handleRequest_buyAvatarGradient[ arr:webcall -- ]
+    #-1 var! character
+    webcall @ "character" array_getitem ?dup if
+        atoi dbref character !
+    then
+    character @ player? not if response400 exit then
+    
+    webcall @ "gradient" array_getitem ?dup not if
+        response400 exit
+    then var! gradient
+
+    webcall @ "slot" array_getitem ?dup not if
+        response400 exit
+    then var! slot
+    
+    startAcceptedResponse
+    "Not Implemented Yet" descr swap descrnotify
+; selfcall handleRequest_buyAvatarGradient
+
+(Expects an array with ''character' and 'itemId'. Returns 'OK' or an error )
+: handleRequest_buyAvatarItem[ arr:webcall -- ]
+    #-1 var! character
+    webcall @ "character" array_getitem ?dup if
+        atoi dbref character !
+    then
+    character @ player? not if response400 exit then
+
+    webcall @ "itemId" array_getitem ?dup not if
+        response400 exit
+    then var! itemId
+    
+    startAcceptedResponse
+    "Not Implemented Yet" descr swap descrnotify
+; selfcall handleRequest_buyAvatarItem
+
 
 ( -------------------------------------------------- )
 ( Handlers - Character Selection and Chargen )
