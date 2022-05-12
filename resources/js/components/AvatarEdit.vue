@@ -196,8 +196,9 @@
         </div>
 
         <!-- Save -->
-        <button :disabled="saving || Object.keys(purchases.items).length > 0 || Object.keys(purchases.gradients).length > 0"
-                class="mt-2 btn btn-primary" @click="saveAvatarState">Save Changes
+        <button
+            :disabled="saving || Object.keys(purchases.items).length > 0 || Object.keys(purchases.gradients).length > 0"
+            class="mt-2 btn btn-primary" @click="saveAvatarState">Save Changes
             <span v-if="saving" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
         </button>
 
@@ -531,17 +532,17 @@ export default {
 
             this.purchases.items = {};
             for (const item of this.avatar.items) {
-                if (item.cost && !item.earned && !item.owner) {
-                    this.purchases.items[item.id] = {
-                        name: item.name,
-                        cost: item.cost
+                if (item.base.cost && !item.base.earned && !item.base.owner) {
+                    this.purchases.items[item.base.id] = {
+                        name: item.base.name,
+                        cost: item.base.cost
                     };
                 }
             }
-            if (this.avatar.background && this.avatar.background.cost && !this.avatar.background.earned && !this.avatar.background.owner)
-                this.purchases.items[this.avatar.background.id] = {
-                    name: this.avatar.background.name,
-                    cost: this.avatar.background.cost
+            if (this.avatar.background && this.avatar.background.base.cost && !this.avatar.background.base.earned && !this.avatar.background.base.owner)
+                this.purchases.items[this.avatar.background.base.id] = {
+                    name: this.avatar.background.base.name,
+                    cost: this.avatar.background.base.cost
                 };
         },
         purchaseGradient: function (gradientId, slot, event) {
@@ -579,7 +580,11 @@ export default {
                 .then((response) => {
                     if (response.data === 'OK') {
                         console.log("Purchasing item successful.");
+                        // Might be a background or item
                         for (const item of this.items) {
+                            if (item.id === itemId) item.earned = true;
+                        }
+                        for (const item of this.backgrounds) {
                             if (item.id === itemId) item.earned = true;
                         }
                         this.refreshPurchases();
