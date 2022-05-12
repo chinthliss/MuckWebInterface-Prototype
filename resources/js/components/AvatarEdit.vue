@@ -33,8 +33,8 @@
                     <select class="form-control" :id="color.id" v-model="avatar.colors[color.id]"
                             @change="updateDollImage">
                         <option value="">(Default)</option>
-                        <option :value="gradient" v-for="(owned, gradient) in gradients">
-                            {{ gradient + (owned.indexOf(color.slot) !== -1 ? '' : ' (Requires Purchase)') }}
+                        <option :value="gradient" v-for="(slots, gradient) in gradients">
+                            {{ gradient + (slots.indexOf(color.slot) !== -1 ? '' : ' (Requires Purchase)') }}
                         </option>
                     </select>
                 </div>
@@ -43,7 +43,7 @@
             <!-- Background -->
             <div class="tab-pane" id="nav-background" role="tabpanel" aria-labelledby="nav-background-tab">
                 <div v-if="avatar.background">
-                    <div>Present background: {{ avatar.background.name }}</div>
+                    <div>Present background: {{ avatar.background.base.name }}</div>
 
                     <div class="d-flex align-items-center mt-2">
                         <div class="sliderLabel">Rotation</div>
@@ -105,7 +105,7 @@
                     are drawn behind the character.</p>
                 <p v-if="avatar.items.length === 0">No items added - use the 'Add Items' tab to add them.</p>
                 <div class="mb-2" v-for="item in avatar.items">
-                    <span>{{ item.name }} @ X: {{ item.x }}, Y: {{ item.y }}, Z: {{ item.z }}</span>
+                    <span>{{ item.base.name }} @ X: {{ item.x }}, Y: {{ item.y }}, Z: {{ item.z }}</span>
                     <button class="btn btn-secondary" @click="adjustZ(item, 1)">Move Forwards</button>
                     <button class="btn btn-secondary" @click="adjustZ(item, -1)">Move Backwards</button>
                     <button class="btn btn-secondary" @click="deleteItem(item)">Delete</button>
@@ -171,12 +171,15 @@
             <h4>Purchases Required</h4>
             <div v-for="(slots, gradient) in purchases.gradients">
                 Color '{{ gradient }}'
-                <button :disabled="slots.length > 1" class="mt-2 ml-2 btn btn-primary btn-with-img-icon" @click="purchaseGradient(gradient, slots[0])">
+                <button :data-gradient="gradient" :disabled="slots.length > 1"
+                        class="mt-2 ml-2 btn btn-primary btn-with-img-icon"
+                        @click="purchaseGradient(gradient, slots[0])">
                     <span class="btn-icon-accountcurrency btn-icon-left"></span>
                     Buy for a single slot
                     <span class="btn-second-line">5 {{ lex('accountcurrency') }}</span>
                 </button>
-                <button class="mt-2 ml-2 btn btn-primary btn-with-img-icon" @click="purchaseGradient(gradient, 'all')">
+                <button :data-gradient="gradient" class="mt-2 ml-2 btn btn-primary btn-with-img-icon"
+                        @click="purchaseGradient(gradient, 'all')">
                     <span class="btn-icon-accountcurrency btn-icon-left"></span>
                     Buy for all slots
                     <span class="btn-second-line">10 {{ lex('accountcurrency') }}</span>
@@ -184,7 +187,7 @@
             </div>
             <div v-for="(item, id) in purchases.items">
                 Accessory '{{ item.name }}'
-                <button class="mt-2 ml-2 btn btn-primary btn-with-img-icon" @click="purchaseItem(id)">
+                <button :data-item="id" class="mt-2 ml-2 btn btn-primary btn-with-img-icon" @click="purchaseItem(id)">
                     <span class="btn-icon-accountcurrency btn-icon-left"></span>
                     Buy
                     <span class="btn-second-line">{{ item.cost }} {{ lex('accountcurrency') }}</span>
@@ -193,7 +196,7 @@
         </div>
 
         <!-- Save -->
-        <button :disabled="saving || Object.keys(purchases.items).length || Object.keys(purchases.gradients).length"
+        <button :disabled="saving || Object.keys(purchases.items).length > 0 || Object.keys(purchases.gradients).length > 0"
                 class="mt-2 btn btn-primary" @click="saveAvatarState">Save Changes
             <span v-if="saving" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
         </button>
@@ -210,9 +213,9 @@ import DialogMessage from "./DialogMessage";
 export default {
     name: "avatar-edit",
     props: {
-        items: {type: Array, required: true},
-        backgrounds: {type: Array, required: true},
-        gradients: {type: Object, required: true},
+        itemsIn: {type: Array, required: true},
+        backgroundsIn: {type: Array, required: true},
+        gradientsIn: {type: Object, required: true},
         renderUrl: {type: String, required: true},
         stateUrl: {type: String, required: true},
         gradientUrl: {type: String, required: true},
@@ -229,6 +232,9 @@ export default {
                 {id: 'hair', slot: 'hair', label: 'Hair'},
                 {id: 'eyes', slot: 'eyes', label: 'Eyes'}
             ],
+            items: null,
+            backgrounds: null,
+            gradients: null,
             avatarCanvasContext: null,
             avatarImg: null,
             avatar: {
@@ -261,6 +267,9 @@ export default {
     mounted: function () {
         let canvasElement = document.getElementById('Renderer');
         this.avatarCanvasContext = canvasElement.getContext('2d');
+        this.items = this.itemsIn;
+        this.backgrounds = this.backgroundsIn;
+        this.gradients = this.gradientsIn;
         this.loadAvatarState();
     },
     methods: {
@@ -313,7 +322,30 @@ export default {
         saveAvatarState() {
             console.log("Saving avatar state");
             this.saving = true;
-            axios.post(this.stateUrl, this.avatar)
+            let avatarState = {
+                'colors': this.avatar.colors,
+                'items': this.avatar.items.map((item) => {
+                    return {
+                        'id': item.base.id,
+                        'name': item.base.name,
+                        'rotate': item.rotate,
+                        'scale': item.scale,
+                        'x': item.x,
+                        'y': item.y,
+                        'z': item.z
+                    };
+                }),
+                'background': {
+                    'id': this.avatar.background.base.id,
+                    'name': this.avatar.background.base.name,
+                    'rotate': this.avatar.background.rotate,
+                    'scale': this.avatar.background.scale,
+                    'x': this.avatar.background.x,
+                    'y': this.avatar.background.y,
+                    'z': this.avatar.background.z
+                }
+            };
+            axios.post(this.stateUrl, avatarState)
                 .then((response) => {
                     console.log("Saved avatar state.");
                 })
@@ -397,17 +429,25 @@ export default {
         },
         changeBackground: function (newId) {
             console.log("Changing background to: " + newId);
-            let newBackground = null;
+            let template = null;
             for (const item of this.backgrounds) {
                 if (item.id === newId) {
-                    newBackground = {...item};
+                    template = item;
                 }
             }
-            if (!newBackground) throw "Unable to find background '" + newId + "' in the background catalog.";
-            if (!newBackground.url) throw "Background doesn't have an url to load an image from!";
-            if (!newBackground.owner && !newBackground.earned && !newBackground.cost && newBackground.requirement)
+            if (!template) throw "Unable to find background '" + newId + "' in the background catalog.";
+            if (!template.url) throw "Background doesn't have an url to load an image from!";
+            if (!template.owner && !template.earned && !template.cost && template.requirement)
                 throw "Couldn't switch to new background because it has an unmet requirement.";
-            this.avatar.background = newBackground;
+
+            this.avatar.background = {
+                base: template,
+                rotate: template.rotate,
+                scale: template.scale,
+                x: template.x,
+                y: template.y,
+                z: template.z
+            };
             this.avatar.background.image = new Image();
             this.avatar.background.image.onload = () => {
                 this.background.minWidth = -this.avatar.background.image.naturalWidth;
@@ -416,24 +456,33 @@ export default {
                 this.background.maxHeight = this.avatar.background.image.naturalHeight;
                 this.redrawCanvas();
             }
-            this.avatar.background.image.src = this.avatar.background.url;
+            this.avatar.background.image.src = template.url;
             this.refreshPurchases();
         },
         addItem: function (newId) {
             console.log("Adding item: " + newId);
-            let item = null;
+            let template = null;
+            // Find and make a new instanced version
             for (const possibleItem of this.items) {
                 if (possibleItem.id === newId) {
-                    item = {...possibleItem};
+                    template = possibleItem;
                 }
             }
-            if (!item) throw "Unable to find item '" + newId + "' in the item catalog.";
-            if (!item.url) throw "Item doesn't have an url to load an image from!";
-            if (!item.owner && !item.earned && !item.cost && item.requirement)
+            if (!template) throw "Unable to find item '" + newId + "' in the item catalog.";
+            if (!template.url) throw "Item doesn't have an url to load an image from!";
+            if (!template.owner && !template.earned && !template.cost && template.requirement)
                 throw "Couldn't switch to new item because it has an unmet requirement.";
+            let item = {
+                base: template,
+                rotate: template.rotate,
+                scale: template.scale,
+                x: template.x,
+                y: template.y,
+                z: 1
+            };
             // Find highest Z so far
             for (const otherItem of this.avatar.items) {
-                item.z = Math.max(item.z, otherItem.z);
+                item.z = Math.max(item.z, otherItem.z + 1);
             }
             this.avatar.items.push(item);
             item.image = new Image();
@@ -441,7 +490,7 @@ export default {
                 console.log("Item loaded " + item.image.src);
                 this.redrawCanvas();
             }
-            item.image.src = item.url;
+            item.image.src = template.url;
             this.refreshPurchases();
             return item;
         },
@@ -466,14 +515,12 @@ export default {
             return '';
         },
         refreshPurchases: function () {
-            console.log("Refresh purchase list");
             // Collect a list of anything that requires purchasing
             this.purchases.gradients = {};
             for (const color of this.colorSlots) {
                 let gradientId = this.avatar.colors[color.id];
                 let gradient = gradientId && this.gradients[gradientId];
                 if (gradient) {
-                    console.log("Checking ", gradient, " for ", color.slot);
                     if (gradient.indexOf(color.slot) === -1) {
                         if (!this.purchases.gradients[gradientId])
                             this.purchases.gradients[gradientId] = [];
@@ -497,24 +544,60 @@ export default {
                     cost: this.avatar.background.cost
                 };
         },
-        purchaseGradient: function(gradientId, slot) {
+        purchaseGradient: function (gradientId, slot, event) {
+            $(`button[data-gradient="${gradientId}"]`).prop('disabled', true);
             console.log("Purchasing gradient: ", gradientId, " for slot ", slot);
             axios.post(this.gradientUrl, {gradient: gradientId, slot: slot})
                 .then((response) => {
-                    console.log("Response: ", response);
+                    if (response.data === 'OK') {
+                        console.log("Purchasing gradient successful.");
+                        if (slot === 'all') {
+                            this.gradients[gradientId] = ["fur", "skin", "hair", "eyes"];
+                        } else this.gradients[gradientId].push(slot);
+                        this.refreshPurchases();
+                    } else {
+                        console.log("Purchasing gradient refused: " + response.data);
+                        this.messageDialogHeader = "Purchase failed";
+                        this.messageDialogContent = "Something went wrong with the purchase:\n" + response.data;
+                        $('#DialogMessage').modal();
+                    }
                 })
                 .catch((error) => {
-                    console.log("Error: ", error);
+                    console.log("Error with purchasing gradient: ", error);
+                    this.messageDialogHeader = "An error occurred";
+                    this.messageDialogContent = "Unable to purchase gradient:\n" + error?.response?.data?.message || error;
+                    $('#DialogMessage').modal();
+                })
+                .then(() => {
+                    $(`button[data-gradient="${gradientId}"]`).prop('disabled', false);
                 });
         },
-        purchaseItem: function(itemId) {
+        purchaseItem: function (itemId, event) {
+            $(`button[data-item="${itemId}"]`).prop('disabled', true);
             console.log("Purchasing item: ", itemId);
             axios.post(this.itemUrl, {item: itemId})
                 .then((response) => {
-                    console.log("Response: ", response);
+                    if (response.data === 'OK') {
+                        console.log("Purchasing item successful.");
+                        for (const item of this.items) {
+                            if (item.id === itemId) item.earned = true;
+                        }
+                        this.refreshPurchases();
+                    } else {
+                        console.log("Purchasing item refused: " + response.data);
+                        this.messageDialogHeader = "Purchase failed";
+                        this.messageDialogContent = "Something went wrong with the purchase:\n" + response.data;
+                        $('#DialogMessage').modal();
+                    }
                 })
                 .catch((error) => {
-                    console.log("Error: ", error);
+                    console.log("Error with purchasing item: ", error);
+                    this.messageDialogHeader = "An error occurred..";
+                    this.messageDialogContent = "Unable to purchase item:\n" + error?.response?.data?.message || error;
+                    $('#DialogMessage').modal();
+                })
+                .then(() => {
+                    $(`button[data-item="${itemId}"]`).prop('disabled', false);
                 });
         }
     }

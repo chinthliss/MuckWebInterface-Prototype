@@ -123,7 +123,7 @@ class AvatarController extends Controller
             }
             if (!$itemDetails) abort(400, "The requested item '" . $itemWanted['name'] . "' wasn't an option.");
             if ($itemDetails['cost'] && !$itemDetails['earned'] && !$itemDetails['owner']) {
-                if (!$itemDetails) abort(400, "The requested item '" . $itemWanted['name'] . "' isn't owned/earned.");
+                abort(400, "The requested item '" . $itemWanted['name'] . "' isn't owned/earned.");
             }
         }
 
@@ -139,9 +139,9 @@ class AvatarController extends Controller
                 'z' => $item['z'],
                 'rotate' => $item['rotate'],
                 'scale' => $item['scale'],
-                //The old system needs to know the name of the actual image
+                //The old system needs to know the name of the actual image, which is the id
                 //TODO : Remove setting the picture attribute on avatar items after changeover to the new system
-                'picture' => Str::afterLast($item['url'], '/')
+                'picture' => $item['id']
             ];
         }, $items);
         $muck->saveAvatarCustomizations(
@@ -356,8 +356,23 @@ class AvatarController extends Controller
             ->header('Content-Type', $image->getImageFormat());
     }
 
-    public function buyGradient(Request $request) {
-        abort(501);
+    public function buyGradient(Request $request, MuckConnection $muckConnection) {
+        if (!$request->has('gradient')) abort(400, "Gradient not specified.");
+        $gradient = $request->get('gradient');
+
+        if (!$request->has('slot')) abort(400, "Slot not specified.");
+        $slot = $request->get('slot');
+
+        /** @var User $user */
+        $user = auth()->user();
+        if (!$user) abort(403);
+
+        $character = $user->getCharacter();
+        if (!$character) abort(400, "A character isn't set.");
+
+        Log::info("Avatar - Gradient Purchase - {$user}, {$character} buying {$gradient} for slot {$slot}.");
+
+        return $muckConnection->buyAvatarGradient($character, $gradient, $slot);
     }
     #endregion Gradients
 
@@ -412,9 +427,20 @@ class AvatarController extends Controller
 
     }
 
-    public function buyItem(Request $request) {
-        // TODO : Implement BuyItem
-        abort(501);
+    public function buyItem(Request $request, MuckConnection $muckConnection) {
+        if (!$request->has('item')) abort(400, "Item not specified.");
+        $itemId = $request->get('item');
+
+        /** @var User $user */
+        $user = auth()->user();
+        if (!$user) abort(403);
+
+        $character = $user->getCharacter();
+        if (!$character) abort(400, "A character isn't set.");
+
+        Log::info("Avatar - Item Purchase - {$user}, {$character} buying {$itemId}.");
+        return $muckConnection->buyAvatarItem($character, $itemId);
+
     }
 
     #endregion Items

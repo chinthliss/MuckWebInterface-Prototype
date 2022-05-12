@@ -207,4 +207,19 @@ interface MuckConnection
      */
     public function saveAvatarCustomizations(MuckCharacter $character, array $colors, array $items): void;
 
+    /**
+     * @param MuckCharacter $character
+     * @param string $gradient
+     * @param string $slot
+     * @return string Either 'OK' for success or an error message
+     */
+    public function buyAvatarGradient(MuckCharacter $character, string $gradient, string $slot): string;
+
+    /**
+     * @param MuckCharacter $character
+     * @param string $itemId
+     * @return string Either 'OK' for success or an error message
+     */
+    public function buyAvatarItem(MuckCharacter $character, string $itemId): string;
+
 }

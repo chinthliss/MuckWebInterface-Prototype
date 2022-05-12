@@ -424,4 +424,20 @@ class HttpMuckConnection implements MuckConnection
     }
 
 
+    public function buyAvatarGradient(MuckCharacter $character, string $gradient, string $slot): string
+    {
+        $response = $this->requestToMuck('buyAvatarGradient', [
+            'character' => $character->dbref(),
+            'gradient' => $gradient, 'items' => $slot
+        ]);
+        return $response;
+    }
+
+    public function buyAvatarItem(MuckCharacter $character, string $itemId): string
+    {
+        $response = $this->requestToMuck('buyAvatarItem', [
+            'itemId' => $itemId
+        ]);
+        return $response;
+    }
 }

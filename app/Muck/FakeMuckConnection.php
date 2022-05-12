@@ -409,4 +409,20 @@ class FakeMuckConnection implements MuckConnection
         self::fakeMuckCall('saveAvatarCustomizations',
             ['character' => $character->dbref(), 'colors' => $colors, 'items' => $items]);
     }
+
+    public function buyAvatarGradient(MuckCharacter $character, string $gradient, string $slot): string
+    {
+        self::fakeMuckCall('buyAvatarGradient',
+            ['character' => $character->dbref(), 'gradient' => $gradient, 'items' => $slot]);
+        if ($gradient == 'Blonde') return "Refused for testing purposes";
+        return "OK";
+    }
+
+    public function buyAvatarItem(MuckCharacter $character, string $itemId): string
+    {
+        self::fakeMuckCall('buyAvatarItem',
+            ['character' => $character->dbref(), 'itemId' => $itemId]);
+        if ($itemId == 'batwings') return "Refused for testing purposes";
+        return "OK";
+    }
 }
