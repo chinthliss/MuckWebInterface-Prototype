@@ -742,7 +742,6 @@ class AvatarService
             }
             $gradients[$gradient->name] = $available;
         }
-        Log::debug("Avatar gradient ownership for $character: " . json_encode($gradients));
 
         // Items (And backgrounds)
         // Format is an array from the item itself but also included 'earned' and 'owner' flags
@@ -764,8 +763,6 @@ class AvatarService
             else
                 $items[] = $array;
         }
-        Log::debug("Avatar item ownership for $character: " . json_encode($items));
-        Log::debug("Avatar background ownership for $character: " . json_encode($backgrounds));
 
         return [
             'gradients' => $gradients,

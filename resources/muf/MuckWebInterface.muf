@@ -320,7 +320,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     
     webcall @ "itemCost" array_getitem ?dup not if
         response400 exit
-    then var! itemCost
+    then atoi var! itemCost
     
     startAcceptedResponse
     
@@ -328,6 +328,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         "Purchase failed - possibly from insufficient mako?" descr swap descrnotify exit
     then
     itemCost @ -1 * "Avatar" "Avatar Item" makolog
+    character @ itemId @ addItemTo
 
     "OK" descr swap descrnotify
 ; selfcall handleRequest_buyAvatarItem
