@@ -274,7 +274,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     "OK" descr swap descrnotify
 ; selfcall handleRequest_saveAvatarCustomizations
 
-(Expects an array with 'character', 'gradient', 'slot'. Returns 'OK' or an error )
+(Expects {character, gradient, slot, [owner]}. Returns 'OK' or an error )
 : handleRequest_buyAvatarGradient[ arr:webcall -- ]
     #-1 var! character
     webcall @ "character" array_getitem ?dup if
@@ -289,20 +289,31 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     webcall @ "slot" array_getitem ?dup not if
         response400 exit
     then var! slot
+
+    webcall @ "owner" array_getitem ?dup not if 0 else atoi then var! owner
     
     startAcceptedResponse
     
     slot @ "all" stringcmp not if 10 else 5 then var! cost
-    character @ cost @ "Purchased avatar gradient '" gradient @ strcat "' for " strcat slot @ "all" stringcmp not if "all slots" strcat else "slot '" strcat slot @ strcat "'" strcat then makospend not if
+    character @ cost @ "Purchased avatar gradient '" gradient @ strcat "' for " strcat 
+    slot @ "all" stringcmp not if "all slots" strcat else "slot '" strcat slot @ strcat "'" strcat then 
+    ", for character " strcat character @ name strcat
+    makospend not if
         "Purchase failed - possibly from insufficient mako?" descr swap descrnotify exit
     then
     cost @ -1 * "Avatar" "Avatar Gradient" makolog
     character @ gradient @ slot @ addGradientTo
+    
+    owner @ ?dup if
+        slot @ "all" stringcmp not if 2 else 1 then var! reward
+        character @ reward @ -1 * "Royalties for purchase of avatar gradient '" gradient @ strcat "'" strcat makospend
+        reward @ "Avatar" "Avatar Gradient" makolog
+    then
 
     "OK" descr swap descrnotify
 ; selfcall handleRequest_buyAvatarGradient
 
-(Expects an array with 'character' and 'id', 'name', 'cost'. Returns 'OK' or an error )
+(Expects {character, id, name, cost, [owner]}. Returns 'OK' or an error )
 : handleRequest_buyAvatarItem[ arr:webcall -- ]
     #-1 var! character
     webcall @ "character" array_getitem ?dup if
@@ -322,13 +333,21 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         response400 exit
     then atoi var! itemCost
     
+    webcall @ "owner" array_getitem ?dup not if 0 else atoi then var! owner
+    
     startAcceptedResponse
     
-    character @ itemCost @ "Purchased avatar item '" itemName @ strcat "'." strcat makospend not if
+    character @ itemCost @ "Purchased avatar item '" itemName @ strcat "' for character " strcat character @ name strcat makospend not if
         "Purchase failed - possibly from insufficient mako?" descr swap descrnotify exit
     then
     itemCost @ -1 * "Avatar" "Avatar Item" makolog
     character @ itemId @ addItemTo
+    
+    owner @ ?dup if
+        character @ -1 "Royalties for purchase of avatar item '" itemName @ strcat "'" strcat makospend
+        1 "Avatar" "Avatar Gradient" makolog
+    then
+
 
     "OK" descr swap descrnotify
 ; selfcall handleRequest_buyAvatarItem

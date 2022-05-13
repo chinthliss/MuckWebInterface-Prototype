@@ -3,7 +3,9 @@
 
 namespace App\Muck;
 
+use App\Avatar\AvatarGradient;
 use App\Avatar\AvatarInstance;
+use App\Avatar\AvatarItem;
 use App\Avatar\AvatarService;
 use App\User;
 use Illuminate\Support\Carbon;
@@ -408,23 +410,28 @@ class FakeMuckConnection implements MuckConnection
             ['character' => $character->dbref(), 'colors' => $colors, 'items' => $items]);
     }
 
-    public function buyAvatarGradient(MuckCharacter $character, string $gradient, string $slot): string
+    public function buyAvatarGradient(MuckCharacter $character, AvatarGradient $gradient, string $slot): string
     {
-        self::fakeMuckCall('buyAvatarGradient',
-            ['character' => $character->dbref(), 'gradient' => $gradient, 'items' => $slot]);
+        self::fakeMuckCall('buyAvatarGradient', [
+            'character' => $character->dbref(),
+            'gradient' => $gradient->name,
+            'slot' => $slot,
+            'owner' => $gradient->owner
+        ]);
         if ($gradient == 'Blonde') return "Refused for testing purposes";
         return "OK";
     }
 
-    public function buyAvatarItem(MuckCharacter $character, string $itemId, string $itemName, int $itemCost): string
+    public function buyAvatarItem(MuckCharacter $character, AvatarItem $item): string
     {
         self::fakeMuckCall('buyAvatarItem', [
             'character' => $character->dbref(),
-            'itemId' => $itemId,
-            'itemName' => $itemName,
-            'itemCost' => $itemCost
+            'itemId' => $item->id,
+            'itemName' => $item->name,
+            'itemCost' => $item->cost,
+            'owner' => $item->owner
         ]);
-        if ($itemId == 'batwings') return "Refused for testing purposes";
+        if ($item->id == 'batwings') return "Refused for testing purposes";
         return "OK";
     }
 }

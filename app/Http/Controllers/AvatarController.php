@@ -356,9 +356,10 @@ class AvatarController extends Controller
             ->header('Content-Type', $image->getImageFormat());
     }
 
-    public function buyGradient(Request $request, MuckConnection $muckConnection) {
+    public function buyGradient(Request $request, AvatarService $avatarService, MuckConnection $muckConnection) {
         if (!$request->has('gradient')) abort(400, "Gradient not specified.");
-        $gradient = $request->get('gradient');
+        $gradient = $avatarService->getGradient($request->get('gradient'));
+        if (!$gradient) abort(400, "No gradient found with the id of:" . $request->get('gradient'));
 
         if (!$request->has('slot')) abort(400, "Slot not specified.");
         $slot = $request->get('slot');
@@ -370,7 +371,7 @@ class AvatarController extends Controller
         $character = $user->getCharacter();
         if (!$character) abort(400, "A character isn't set.");
 
-        Log::info("Avatar - Gradient Purchase - {$user}, {$character} buying {$gradient} for slot {$slot}.");
+        Log::info("Avatar - Gradient Purchase - {$user}, {$character} buying {$gradient->name} for slot {$slot}.");
 
         return $muckConnection->buyAvatarGradient($character, $gradient, $slot);
     }
@@ -429,10 +430,9 @@ class AvatarController extends Controller
 
     public function buyItem(Request $request, AvatarService $avatarService, MuckConnection $muckConnection) {
         if (!$request->has('item')) abort(400, "Item not specified.");
-        $itemId = $request->get('item');
-        $item = $avatarService->getAvatarItem($itemId);
-        if (!$item) abort(400, "No item found with the id of '$itemId'.");
-        
+        $item = $avatarService->getAvatarItem($request->get('item'));
+        if (!$item) abort(400, "No item found with the id of:" . $request->get('item'));
+
         /** @var User $user */
         $user = auth()->user();
         if (!$user) abort(403);
@@ -440,8 +440,8 @@ class AvatarController extends Controller
         $character = $user->getCharacter();
         if (!$character) abort(400, "A character isn't set.");
 
-        Log::info("Avatar - Item Purchase - {$user}, {$character} buying {$itemId}.");
-        return $muckConnection->buyAvatarItem($character, $itemId, $item->name, $item->cost);
+        Log::info("Avatar - Item Purchase - {$user}, {$character} buying {$item->id}.");
+        return $muckConnection->buyAvatarItem($character, $item);
 
     }
 

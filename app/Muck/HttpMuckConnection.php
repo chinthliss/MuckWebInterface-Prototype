@@ -3,6 +3,8 @@
 
 namespace App\Muck;
 
+use App\Avatar\AvatarGradient;
+use App\Avatar\AvatarItem;
 use App\Avatar\AvatarService;
 use App\Helpers\Ansi;
 use App\User;
@@ -424,23 +426,24 @@ class HttpMuckConnection implements MuckConnection
     }
 
 
-    public function buyAvatarGradient(MuckCharacter $character, string $gradient, string $slot): string
+    public function buyAvatarGradient(MuckCharacter $character, AvatarGradient $gradient, string $slot): string
     {
-        $response = $this->requestToMuck('buyAvatarGradient', [
+        return $this->requestToMuck('buyAvatarGradient', [
             'character' => $character->dbref(),
-            'gradient' => $gradient, 'slot' => $slot
+            'gradient' => $gradient->name,
+            'slot' => $slot,
+            'owner' => $gradient->owner
         ]);
-        return $response;
     }
 
-    public function buyAvatarItem(MuckCharacter $character, string $itemId, string $itemName, int $itemCost): string
+    public function buyAvatarItem(MuckCharacter $character, AvatarItem $item): string
     {
-        $response = $this->requestToMuck('buyAvatarItem', [
+        return $this->requestToMuck('buyAvatarItem', [
             'character' => $character->dbref(),
-            'itemId' => $itemId,
-            'itemName' => $itemName,
-            'itemCost' => $itemCost
+            'itemId' => $item->id,
+            'itemName' => $item->name,
+            'itemCost' => $item->cost,
+            'owner' => $item->owner
         ]);
-        return $response;
     }
 }

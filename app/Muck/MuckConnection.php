@@ -3,6 +3,8 @@
 
 namespace App\Muck;
 
+use App\Avatar\AvatarGradient;
+use App\Avatar\AvatarItem;
 use Illuminate\Support\Carbon;
 use App\User;
 
@@ -209,19 +211,17 @@ interface MuckConnection
 
     /**
      * @param MuckCharacter $character
-     * @param string $gradient
+     * @param AvatarGradient $gradient
      * @param string $slot
      * @return string Either 'OK' for success or an error message
      */
-    public function buyAvatarGradient(MuckCharacter $character, string $gradient, string $slot): string;
+    public function buyAvatarGradient(MuckCharacter $character, AvatarGradient $gradient, string $slot): string;
 
     /**
      * @param MuckCharacter $character
-     * @param string $itemId
-     * @param string $itemName
-     * @param int $itemCost
+     * @param AvatarItem $item
      * @return string Either 'OK' for success or an error message
      */
-    public function buyAvatarItem(MuckCharacter $character, string $itemId, string $itemName, int $itemCost): string;
+    public function buyAvatarItem(MuckCharacter $character, AvatarItem $item): string;
 
 }
