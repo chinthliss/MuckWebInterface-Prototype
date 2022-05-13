@@ -306,7 +306,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     
     owner @ ?dup if
         slot @ "all" stringcmp not if 2 else 1 then var! reward
-        character @ reward @ -1 * "Royalties for purchase of avatar gradient '" gradient @ strcat "'" strcat makospend
+        reward @ -1 * "Royalties for purchase of avatar gradient '" gradient @ strcat "'" strcat makospend pop
         reward @ "Avatar" "Avatar Gradient" makolog
     then
 
@@ -344,7 +344,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     character @ itemId @ addItemTo
     
     owner @ ?dup if
-        character @ -1 "Royalties for purchase of avatar item '" itemName @ strcat "'" strcat makospend
+        -1 "Royalties for purchase of avatar item '" itemName @ strcat "'" strcat makospend pop
         1 "Avatar" "Avatar Gradient" makolog
     then
 
