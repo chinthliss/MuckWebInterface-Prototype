@@ -290,10 +290,17 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     then var! slot
     
     startAcceptedResponse
-    "Not Implemented Yet" descr swap descrnotify
+    
+    slot @ "all" stringcmp not if 10 else 5 then var! cost
+    character @ cost @ "Purchased avatar gradient '" gradient @ strcat "' for " strcat slot @ "all" stringcmp not if "all slots" strcat else "slot '" strcat slot @ strcat "'" strcat then makospend not if
+        "Purchase failed - possibly from insufficient mako?" descr swap descrnotify exit
+    then
+    cost @ -1 * "Avatar" "Avatar Gradient" makolog
+
+    "OK" descr swap descrnotify
 ; selfcall handleRequest_buyAvatarGradient
 
-(Expects an array with ''character' and 'itemId'. Returns 'OK' or an error )
+(Expects an array with 'character' and 'id', 'name', 'cost'. Returns 'OK' or an error )
 : handleRequest_buyAvatarItem[ arr:webcall -- ]
     #-1 var! character
     webcall @ "character" array_getitem ?dup if
@@ -304,9 +311,23 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     webcall @ "itemId" array_getitem ?dup not if
         response400 exit
     then var! itemId
+
+    webcall @ "itemName" array_getitem ?dup not if
+        response400 exit
+    then var! itemName
+    
+    webcall @ "itemCost" array_getitem ?dup not if
+        response400 exit
+    then var! itemCost
     
     startAcceptedResponse
-    "Not Implemented Yet" descr swap descrnotify
+    
+    character @ itemCost @ "Purchased avatar item '" itemName @ strcat "'." strcat makospend not if
+        "Purchase failed - possibly from insufficient mako?" descr swap descrnotify exit
+    then
+    cost @ -1 * "Avatar" "Avatar Item" makolog
+
+    "OK" descr swap descrnotify
 ; selfcall handleRequest_buyAvatarItem
 
 
@@ -343,7 +364,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         then
         
         account @ "Character Slots" getaccountstat toint 1 + account @ "Character Slots" rot setaccountstat
-        cost @ -1 * "Spent" "Character Slot" makolog
+        cost @ -1 * "Account" "Character Slot" makolog
         
         "OK,"
         account @ acct_characterSlots intostr strcat "," strcat

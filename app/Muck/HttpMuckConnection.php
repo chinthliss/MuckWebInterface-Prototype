@@ -433,11 +433,13 @@ class HttpMuckConnection implements MuckConnection
         return $response;
     }
 
-    public function buyAvatarItem(MuckCharacter $character, string $itemId): string
+    public function buyAvatarItem(MuckCharacter $character, string $itemId, string $itemName, int $itemCost): string
     {
         $response = $this->requestToMuck('buyAvatarItem', [
             'character' => $character->dbref(),
-            'itemId' => $itemId
+            'itemId' => $itemId,
+            'itemName' => $itemName,
+            'itemCost' => $itemCost
         ]);
         return $response;
     }

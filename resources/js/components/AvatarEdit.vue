@@ -496,6 +496,7 @@ export default {
             return item;
         },
         addItemAndGotoIt: function (itemId) {
+            if (this.avatar.items.length >= 10) return;
             this.addItem(itemId);
             let triggerEl = document.querySelector('#avatar-edit-tab a[href="#nav-items-edit"]')
             triggerEl.click();

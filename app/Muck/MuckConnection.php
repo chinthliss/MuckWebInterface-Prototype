@@ -218,8 +218,10 @@ interface MuckConnection
     /**
      * @param MuckCharacter $character
      * @param string $itemId
+     * @param string $itemName
+     * @param int $itemCost
      * @return string Either 'OK' for success or an error message
      */
-    public function buyAvatarItem(MuckCharacter $character, string $itemId): string;
+    public function buyAvatarItem(MuckCharacter $character, string $itemId, string $itemName, int $itemCost): string;
 
 }

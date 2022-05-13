@@ -20,7 +20,7 @@ class FakeMuckConnection implements MuckConnection
 
     public function __construct(array $config)
     {
-        $fixedTime = Carbon::create(2000,1,1, 0, 0, 0 );
+        $fixedTime = Carbon::create(2000, 1, 1, 0, 0, 0);
         AvatarInstance::default();
         $this->fakeDatabaseByDbref = [
             // Normal character
@@ -43,9 +43,7 @@ class FakeMuckConnection implements MuckConnection
             $avatarInstance = $avatarService->muckAvatarStringToAvatarInstance('ass=FS_Fox2;female=2;torso=FS_Fennec;eyes=Brown;female=8;hair=Silver;skin2=Silver;skin1=Greyscale;item=foxplush/0/0/-2/0.8/90;item=foxplush/150/270/15/0.4/0;item=foxplush/150/270/16/0.4/30;item=foxplush/150/270/16/0.4/60;item=foxplush/150/270/16/0.4/90;item=ruinedcity/0/0/-3/1.0/0');
             // $avatarInstance = $avatarService->muckAvatarStringToAvatarInstance('ass=FS_Fox2;female=2;torso=FS_Fennec;eyes=Brown;female=8;hair=Silver;skin2=Silver;skin1=Greyscale;item=foxplush/50/100/16/0.8/0;item=foxplush/50/100/16/0.8/45');
             $this->fakeDatabaseByDbref[4321] = new MuckCharacter(4321, 'AvatarCharacter', $fixedTime, 1, $avatarInstance, [], 7);
-        }
-        catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             Log::debug("Couldn't load an avatar. This is only an issue in local development and fine during automatic testing.");
         }
 
@@ -418,10 +416,14 @@ class FakeMuckConnection implements MuckConnection
         return "OK";
     }
 
-    public function buyAvatarItem(MuckCharacter $character, string $itemId): string
+    public function buyAvatarItem(MuckCharacter $character, string $itemId, string $itemName, int $itemCost): string
     {
-        self::fakeMuckCall('buyAvatarItem',
-            ['character' => $character->dbref(), 'itemId' => $itemId]);
+        self::fakeMuckCall('buyAvatarItem', [
+            'character' => $character->dbref(),
+            'itemId' => $itemId,
+            'itemName' => $itemName,
+            'itemCost' => $itemCost
+        ]);
         if ($itemId == 'batwings') return "Refused for testing purposes";
         return "OK";
     }
