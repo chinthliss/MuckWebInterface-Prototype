@@ -427,10 +427,12 @@ class AvatarController extends Controller
 
     }
 
-    public function buyItem(Request $request, MuckConnection $muckConnection) {
+    public function buyItem(Request $request, AvatarService $avatarService, MuckConnection $muckConnection) {
         if (!$request->has('item')) abort(400, "Item not specified.");
         $itemId = $request->get('item');
-
+        $item = $avatarService->getAvatarItem($itemId);
+        if (!$item) abort(400, "No item found with the id of '$itemId'.");
+        
         /** @var User $user */
         $user = auth()->user();
         if (!$user) abort(403);
@@ -439,7 +441,7 @@ class AvatarController extends Controller
         if (!$character) abort(400, "A character isn't set.");
 
         Log::info("Avatar - Item Purchase - {$user}, {$character} buying {$itemId}.");
-        return $muckConnection->buyAvatarItem($character, $itemId);
+        return $muckConnection->buyAvatarItem($character, $itemId, $item->name, $item->cost);
 
     }
 
