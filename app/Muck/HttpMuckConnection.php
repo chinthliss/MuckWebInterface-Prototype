@@ -432,7 +432,7 @@ class HttpMuckConnection implements MuckConnection
             'character' => $character->dbref(),
             'gradient' => $gradient->name,
             'slot' => $slot,
-            'owner' => $gradient->owner
+            'owner' => $gradient->owner?->getAid()
         ]);
     }
 
@@ -443,7 +443,7 @@ class HttpMuckConnection implements MuckConnection
             'itemId' => $item->id,
             'itemName' => $item->name,
             'itemCost' => $item->cost,
-            'owner' => $item->owner
+            'owner' => $item->owner?->getAid()
         ]);
     }
 }
