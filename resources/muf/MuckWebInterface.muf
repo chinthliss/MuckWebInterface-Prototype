@@ -243,11 +243,12 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     var! items
     
     character @ player? not if response400 exit then
+
+    startAcceptedResponse
     { 
         "gradients" gradients @ 
         "items" items @
     }dict
-    startAcceptedResponse
     encodejson descr swap descrnotify
 ; selfcall handleRequest_getAvatarOptionsFor
 
@@ -296,6 +297,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
         "Purchase failed - possibly from insufficient mako?" descr swap descrnotify exit
     then
     cost @ -1 * "Avatar" "Avatar Gradient" makolog
+    character @ gradient @ slot @ addGradientTo
 
     "OK" descr swap descrnotify
 ; selfcall handleRequest_buyAvatarGradient
@@ -325,7 +327,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     character @ itemCost @ "Purchased avatar item '" itemName @ strcat "'." strcat makospend not if
         "Purchase failed - possibly from insufficient mako?" descr swap descrnotify exit
     then
-    cost @ -1 * "Avatar" "Avatar Item" makolog
+    itemCost @ -1 * "Avatar" "Avatar Item" makolog
 
     "OK" descr swap descrnotify
 ; selfcall handleRequest_buyAvatarItem
