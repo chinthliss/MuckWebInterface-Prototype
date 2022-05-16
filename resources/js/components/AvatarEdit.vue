@@ -1,6 +1,15 @@
 <template>
     <div class="container">
 
+        <div class="row">
+            <div class="col">
+                <div class="bg-secondary text-primary p-2 mb-4 text-center rounded">
+                    <div>If you're using the latest version of the BeipMU client, it's possible to see avatars ingame!</div>
+                    <div>Type 'avatars #help' whilst connected for more information.</div>
+                </div>
+            </div>
+        </div>
+
         <h2>Avatar Editor</h2>
 
         <div id="DrawingHolder">
