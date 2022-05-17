@@ -130,7 +130,10 @@ class AvatarController extends Controller
         //Pass to muck to save.
         // The colors array is fine, but we need to process just the key details from the items
         $items = $request->get('items') ?? [];
-        if ($backgroundWanted) $items[] = $backgroundWanted;
+        if ($backgroundWanted) {
+            $backgroundWanted['z'] = 0; // This is so the previous system at least draws it behind foreground objects
+            $items[] = $backgroundWanted;
+        }
         $items = array_map(function($item) {
             return [
                 'id' => $item['id'],
