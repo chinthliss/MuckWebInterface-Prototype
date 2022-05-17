@@ -77,7 +77,7 @@ class HomeController extends Controller
             [
                 'title' => 'Avatar editing',
                 'description' => 'Allow the viewing and editing of unique avatars per character.',
-                'progress' => 'In progress. Viewing largely done, need to look at editing including implementing some old functionality for user added gradients.'
+                'progress' => 'Done. Editor badly needs a second pass but is feature complete. Also needs a caching mechanism.'
             ]
         ];
         return view('roadmap')->with([
