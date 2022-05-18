@@ -1,7 +1,6 @@
 The bulk of this has moved to the roadmap page. This is largely just internal reminders.
 
 ### Revisit
-* Re-add webNoAvatars functionality (Preference already exists on Accounts page)
 * Account passwords don't need to have MUCK text limitations
 * When someone is over their character slot limit, characters got locked out. Could highlight/show on web.
 
@@ -10,4 +9,4 @@ The bulk of this has moved to the roadmap page. This is largely just internal re
 * drop billing_sessions
 * drop patreon_claims
 * Rewrite muck notifications to account notifications
-* Remove fullwidth preference setting, code and preference on Accounts page since new structure makes it redundant
+* Wipe account prop values for 'webnoavatars' and 'webusefullwidth' because they're no longer relevant
