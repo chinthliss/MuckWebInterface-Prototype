@@ -131,7 +131,8 @@ Route::group(['middleware' => ['auth:account', 'verified', 'tos.agreed']], funct
     Route::post('account/changeemail', [AccountEmailController::class, 'changeEmail']);
 
     //Preference change
-    Route::post('account/updatePreference', [AccountController::class, 'updatePreference']);
+    Route::post('account/updateAvatarPreference', [AccountController::class, 'updateAvatarPreference'])
+        ->name('account.avatar.preference');
 
     //Card Management
     Route::get('account/cardmanagement', [CardManagementController::class, 'show'])

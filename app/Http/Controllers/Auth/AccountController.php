@@ -135,27 +135,14 @@ class AccountController extends Controller
         return view('auth.account-locked');
     }
 
-    /**
-     * Update and save a preference
-     */
-    public function updatePreference(Request $request)
+    public function updateAvatarPreference(Request $request)
     {
+        /** @var User $user */
         $user = $this->guard()->user();
-        if ($user) {
-            foreach ($request->all() as $preferenceName => $preferenceValue) {
-                switch ($preferenceName) {
-                    case 'hideAvatars':
-                        $user->setPrefersNoAvatars($preferenceValue);
-                        break;
-                    case 'useFullWidth':
-                        $user->setPrefersFullWidth($preferenceValue);
-                        break;
-                    default:
-                        Log::warning('Unrecognized preference to update ' . $preferenceName
-                            . ' for user ' . $user->getAid());
-                }
-            }
-        }
+
+        $value = $request->get('value');
+        if (!in_array($value, ['hidden', 'clean', 'default', 'explicit'])) abort(400);
+        $user->setAvatarPreference($value);
     }
 
     /**
@@ -163,6 +150,7 @@ class AccountController extends Controller
      */
     public function show(PaymentSubscriptionManager $subscriptionManager)
     {
+        /** @var User $user */
         $user = $this->guard()->user();
 
         $subscriptionsUnparsed = $subscriptionManager->getSubscriptionsFor($user->getAid());
@@ -186,7 +174,8 @@ class AccountController extends Controller
             'subscriptions' => $subscriptions,
             'subscriptionActive' => $subscriptionActive,
             'subscriptionRenewing' => $subscriptionRenewing,
-            'subscriptionExpires' => $subscriptionExpires
+            'subscriptionExpires' => $subscriptionExpires,
+            'avatarPreference' => $user->getAvatarPreference()
         ]);
     }
 }

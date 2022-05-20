@@ -29,10 +29,10 @@ class TermsOfServiceController extends Controller
         ]);
     }
 
-    public function accept(Request $request, TermsOfService $termsOfService)
+    public function accept(Request $request)
     {
         $user = auth()->user();
-        $user->storeTermsOfServiceAgreement($request['_hash']);
+        $user->setAgreedToTermsOfService($request['_hash']);
         return redirect()->intended(route('home'));
     }
 

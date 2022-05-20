@@ -85,17 +85,28 @@
 
         <!-- Session settings -->
         <div>
-            <h5 class="mt-2">Preferences</h5>
+            <h5 class="mt-2">Avatar Viewing Preferences</h5>
             <div class="form-check">
-                <input type="checkbox" class="form-check-input" id="hideAvatars"
-                       v-model="hideAvatars" @change="hideAvatarsChanged">
+                <input type="radio" class="form-check-input" id="hideAvatars" value="hidden"
+                       v-model="avatarPreference" @change="updateAvatarPreference">
                 <label class="form-check-label" for="hideAvatars">Hide Avatars</label>
             </div>
             <div class="form-check">
-                <input type="checkbox" class="form-check-input" id="useFullWidth"
-                       v-model="useFullWidth" @change="useFullWidthChanged">
-                <label class="form-check-label" for="useFullWidth">Use Full Screen Width for all pages</label>
+                <input type="radio" class="form-check-input" id="cleanAvatars" value="clean"
+                       v-model="avatarPreference" @change="updateAvatarPreference">
+                <label class="form-check-label" for="cleanAvatars">Clean (No explicit parts)</label>
             </div>
+            <div class="form-check">
+                <input type="radio" class="form-check-input" id="defaultAvatars" value="default"
+                       v-model="avatarPreference" @change="updateAvatarPreference">
+                <label class="form-check-label" for="defaultAvatars">Default (Nipples only)</label>
+            </div>
+            <div class="form-check">
+                <input type="radio" class="form-check-input" id="explicitAvatars" value="explicit"
+                       v-model="avatarPreference" @change="updateAvatarPreference">
+                <label class="form-check-label" for="explicitAvatars">Explicit (All the explicit parts)</label>
+            </div>
+
         </div>
 
         <!-- Change Email Modal -->
@@ -143,7 +154,7 @@ export default {
     props: [
         'accountCreated', 'primaryEmail', 'emails', 'errors',
         'subscriptions', 'subscriptionActive', 'subscriptionRenewing', 'subscriptionExpires',
-        'initialUseFullWidth', 'initialHideAvatars'
+        'initialAvatarPreference', 'avatarPreferenceUrl'
     ],
     data: function () {
         return {
@@ -151,8 +162,7 @@ export default {
             changeEmailTo: '',
             message_dialog_header: '',
             message_dialog_content: '',
-            useFullWidth: this.initialUseFullWidth,
-            hideAvatars: this.initialHideAvatars
+            avatarPreference: this.initialAvatarPreference
         }
     },
     methods: {
@@ -202,28 +212,12 @@ export default {
             if (this.subscriptionRenewing) return 'Active, renews sometime before ' + this.subscriptionExpires;
             return 'Active, expires sometime before ' + this.subscriptionExpires;
         },
-        useFullWidthChanged: function () {
+        updateAvatarPreference: function () {
             axios({
                 method: 'post',
-                url: '/account/updatePreference',
+                url: this.avatarPreferenceUrl,
                 data: {
-                    'useFullWidth': this.useFullWidth
-                }
-            }).then(response => {
-                //Reload to see change
-                window.location.reload();
-            }).catch(error => {
-                this.message_dialog_header = 'Preference update failed';
-                this.message_dialog_content = `An error occurred. The error was:<br/> ${error}`;
-                $('#messageModal').modal();
-            });
-        },
-        hideAvatarsChanged: function () {
-            axios({
-                method: 'post',
-                url: '/account/updatePreference',
-                data: {
-                    'hideAvatars': this.hideAvatars
+                    'value': this.avatarPreference
                 }
             }).then(response => {
                 //Reload to see change

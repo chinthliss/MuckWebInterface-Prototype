@@ -20,7 +20,7 @@
         subscription-active = "{{ $subscriptionActive }}"
         subscription-renewing = "{{ $subscriptionRenewing }}"
         subscription-expires = "{{ $subscriptionExpires }}"
-        :initial-use-full-width="{{ json_encode($user->getPrefersFullWidth()) }}"
-        :initial-hide-avatars="{{ json_encode($user->getPrefersNoAvatars()) }}"
+        initial-avatar-preference = "{{ $avatarPreference }}"
+        avatar-preference-url = "{{ route('account.avatar.preference') }}"
     ></auth-account>
 @endsection

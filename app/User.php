@@ -64,7 +64,7 @@ class User implements Authenticatable, MustVerifyEmail
 
     /**
      * Checks whether two user objects share the same accountId
-     * @param User $otherUser
+     * @param User|null $otherUser
      * @return bool
      */
     public function is(?User $otherUser): bool
@@ -198,7 +198,7 @@ class User implements Authenticatable, MustVerifyEmail
      * @param string $value
      * @return void
      */
-    public function setRememberToken($value)
+    public function setRememberToken($value): void
     {
         $this->rememberToken = $value;
     }
@@ -225,14 +225,12 @@ class User implements Authenticatable, MustVerifyEmail
 
     public function getCharacterDbref(): ?int
     {
-        if (!$this->character) return null;
-        return $this->character->dbref();
+        return $this->character?->dbref();
     }
 
     public function getCharacterName(): ?string
     {
-        if (!$this->character) return null;
-        return $this->character->name();
+        return $this->character?->name();
     }
 
     public function setCharacter(MuckCharacter $character)
@@ -278,7 +276,7 @@ class User implements Authenticatable, MustVerifyEmail
      *
      * @return void
      */
-    public function sendEmailVerificationNotification()
+    public function sendEmailVerificationNotification(): void
     {
         $this->notify(new Notifications\VerifyEmail);
         //TODO - look at introducing work queue to handle notifications?
@@ -395,7 +393,7 @@ class User implements Authenticatable, MustVerifyEmail
     {
         $characters = [];
         foreach ($this->getCharacters() as $character) {
-            array_push($characters, $character->toArray());
+            $characters[] = $character->toArray();
         }
 
         $this->loadRolesIfRequired();
@@ -416,64 +414,54 @@ class User implements Authenticatable, MustVerifyEmail
     }
     #endregion Admin functionality
 
-    #region Late Loading Properties
-    // These are loaded late because they're not required for api calls.
-    protected bool $latePropertiesLoaded = false;
-    protected bool $agreedToTermsOfService = false;
-    protected bool $prefersNoAvatars = false;
-    protected bool $prefersFullWidth = false;
+    #region Avatar viewing preference
 
-    public function ensureLatePropertiesAreLoaded()
+    const AVATAR_PREFERENCE_HIDDEN   = 'hidden';   // Not used
+    const AVATAR_PREFERENCE_CLEAN    = 'clean';    // No naughty bits
+    const AVATAR_PREFERENCE_DEFAULT  = 'default';  // Female naughty bits
+    const AVATAR_PREFERENCE_EXPLICIT = 'explicit'; // All the naughty bits
+
+    protected ?string $avatarPreference = null; // Loaded on demand
+
+    public function getAvatarPreference(): string
     {
-        if (!$this->latePropertiesLoaded) {
-            $this->getProvider()->loadLatePropertiesFor($this);
-            $this->latePropertiesLoaded = true;
+        if ($this->avatarPreference === null) {
+            $preference = $this->getAccountProperty('webAvatarPreference');
+            $this->avatarPreference = $preference ?: self::AVATAR_PREFERENCE_DEFAULT;
         }
+
+        return $this->avatarPreference;
     }
+
+    public function setAvatarPreference(string $value): void
+    {
+        $this->avatarPreference = $value;
+        $this->setAccountProperty( 'webAvatarPreference', $value);
+    }
+
+    #endregion Avatar viewing preference
+
+    #region Terms of service
+    protected ?bool $agreedToTermsOfService = null; // Loaded on demand
 
     public function getAgreedToTermsOfService(): bool
     {
-        $this->ensureLatePropertiesAreLoaded();
+        if ($this->agreedToTermsOfService === null) {
+            $hash = $this->getAccountProperty('tos-hash-viewed');
+            $this->agreedToTermsOfService = ($hash == TermsOfService::getTermsOfServiceHash());
+        }
         return $this->agreedToTermsOfService;
     }
 
-    public function setAgreedToTermsOfService($value)
+    public function setAgreedToTermsOfService(string $hash): void
     {
-        $this->agreedToTermsOfService = $value;
+        $this->setAccountProperty('tos-hash-viewed', $hash);
     }
 
-    public function getPrefersNoAvatars(): bool
-    {
-        $this->ensureLatePropertiesAreLoaded();
-        return $this->prefersNoAvatars;
-    }
-
-    public function setPrefersNoAvatars($value)
-    {
-        $this->prefersNoAvatars = $value;
-        if ($this->latePropertiesLoaded) $this->getProvider()->updatePrefersNoAvatars($this, $value);
-    }
-
-    public function getPrefersFullWidth(): bool
-    {
-        $this->ensureLatePropertiesAreLoaded();
-        return $this->prefersFullWidth;
-    }
-
-    public function setPrefersFullWidth($value)
-    {
-        $this->prefersFullWidth = $value;
-        if ($this->latePropertiesLoaded) $this->getProvider()->updatePrefersFullWidth($this, $value);
-    }
-
-    public function storeTermsOfServiceAgreement($hash)
-    {
-        $this->getProvider()->updateTermsOfServiceAgreement($this, $hash);
-    }
-    #endregion Late Loading Properties
+    #endregion Terms of service
 
     #region Account Properties
-    public function getAccountProperty(string $property)
+    public function getAccountProperty(string $property): mixed
     {
         return self::getProvider()->getAccountProperty($this, $property);
     }
