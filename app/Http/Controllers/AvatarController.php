@@ -210,6 +210,19 @@ class AvatarController extends Controller
         ]);
     }
 
+    private function applyPreferencesToAvatarInstance(AvatarInstance $avatarInstance, User $user)
+    {
+        // Hidden is treated as clean for instances where it needs to be displayed, such as the editor
+        switch ($user->getAvatarPreference()) {
+            case $user::AVATAR_PREFERENCE_HIDDEN:
+            case $user::AVATAR_PREFERENCE_CLEAN:
+                $avatarInstance->mode = AvatarService::MODE_CLEAN;
+                break;
+            case $user::AVATAR_PREFERENCE_EXPLICIT:
+                $avatarInstance->mode = AvatarService::MODE_EXPLICIT;
+        }
+    }
+
     private function applyOptionsToAvatarImage(Imagick $avatarImage, Request $request)
     {
         if ($request->has('mode')) {
@@ -256,18 +269,18 @@ class AvatarController extends Controller
         /** @var User $user */
         $user = auth()->user();
         $character = $user->getCharacter();
-        $config = $character->avatarInstance()->toArray();
+        $avatarInstance = $character->avatarInstance();
+        $this->applyPreferencesToAvatarInstance($avatarInstance, $user);
 
         //Overwrite colors with any specified by the editor
         $colors = json_decode(base64_decode($code), true);
-        $config['colors'] = $colors ?? [];
+        $avatarInstance->colors = $colors ?? [];
 
         //Remove items/background
-        unset($config['items']);
-        unset($config['background']);
+        $avatarInstance->items = [];
+        $avatarInstance->background = null;
 
-        $avatar = AvatarInstance::fromArray($config);
-        $image = $service->renderAvatarInstance($avatar);
+        $image = $service->renderAvatarInstance($avatarInstance);
         return response($image, 200)
             ->header('Content-Type', $image->getImageFormat());
     }
@@ -275,9 +288,17 @@ class AvatarController extends Controller
     public function getAvatarFromCharacterName(AvatarService $service, MuckObjectService $muckObjectService,
                                                Request       $request, string $name): Response
     {
+        /** @var User $user Optional*/
+        $user = auth()->user();
+
+        if ($user && $user->getAvatarPreference() == User::AVATAR_PREFERENCE_HIDDEN) abort(204);
+
         if (str_ends_with(strtolower($name), '.png')) $name = substr($name, 0, -4);
         $character = $muckObjectService->getByPlayerName($name);
         if (!$character) abort(404);
+        $avatarInstance = $character->avatarInstance();
+        // Apply any preferences for the present user if there is one
+        if ($user) $this->applyPreferencesToAvatarInstance($avatarInstance, $user);
         $image = $service->renderAvatarInstance($character->avatarInstance());
         $this->applyOptionsToAvatarImage($image, $request);
         return response($image, 200)

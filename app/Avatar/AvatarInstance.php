@@ -11,8 +11,6 @@ use Exception;
  */
 class AvatarInstance
 {
-    public string $code;
-
     /**
      * @param string $torso
      * @param string|null $head
@@ -55,8 +53,6 @@ class AvatarInstance
             if ($a->z > $b->z) return 1;
             return 0;
         });
-
-        $this->code = base64_encode(json_encode($this->toArray()));
     }
 
     /**
@@ -119,6 +115,11 @@ class AvatarInstance
         $array = json_decode(base64_decode($code), true);
         if (!is_array($array)) throw new Exception("The JSON used to create an AvatarInstance wasn't an array: " . base64_decode($code));
         return self::fromArray($array);
+    }
+
+    public function toCode(): string
+    {
+        return base64_encode(json_encode($this->toArray()));
     }
 
     public static function default(): AvatarInstance

@@ -22,7 +22,7 @@ class AvatarService
 
     const MODE_HEAD_ONLY = 'head_only';
     const MODE_EXPLICIT = 'explicit';
-    const MODE_SAFE = 'safe';
+    const MODE_CLEAN = 'clean';
 
     const COLOR_PRIMARY = "skin1";
     const COLOR_SECONDARY = "skin2";
@@ -243,7 +243,7 @@ class AvatarService
     public function getBaseCodeForDoll(string $dollName, bool $male = false, bool $female = false): string
     {
         $avatar = new AvatarInstance($dollName, male: $male, female: $female);
-        return $avatar->code;
+        return $avatar->toCode();
     }
 
     /**
@@ -545,7 +545,7 @@ class AvatarService
      */
     public function getDrawingPlanForAvatarInstance(AvatarInstance $avatarInstance, array $colorOverrides = null): array
     {
-        if (array_key_exists($avatarInstance->code, $this->avatarDrawingPlanCache)) return $this->avatarDrawingPlanCache[$avatarInstance->code];
+        if (array_key_exists($avatarInstance->toCode(), $this->avatarDrawingPlanCache)) return $this->avatarDrawingPlanCache[$avatarInstance->toCode()];
         $benchmark = -microtime(true);
         Log::debug("(Avatar) Calculating drawing plan for " . json_encode($avatarInstance->toArray()));
 
@@ -568,8 +568,8 @@ class AvatarService
         foreach (self::AVATARDOLL_BODYPARTS as $bodyPart) {
             // Head only mode, don't need to process other parts
             if ($avatarInstance->mode == self::MODE_HEAD_ONLY && $bodyPart != 'head') continue;
-            // Safe mode - nothing explicit drawn, don't need to bring in the doll for such
-            if ($avatarInstance->mode == self::MODE_SAFE && $bodyPart == 'groin') continue;
+            // Clean mode - nothing explicit drawn, don't need to bring in the doll for such
+            if ($avatarInstance->mode == self::MODE_CLEAN && $bodyPart == 'groin') continue;
             $dollsByBodyPart[$bodyPart] = $this->getDoll($dollNames[$bodyPart]);
         }
 
@@ -593,8 +593,8 @@ class AvatarService
             // Explicit mode - If NOT in this mode, skip drawing the lewdest of parts!
             if (!$avatarInstance->mode == self::MODE_EXPLICIT && $subPart == 'penis') continue;
             // Male/female parts only shown if enabled and safe mode isn't on
-            if ((!$avatarInstance->female || $avatarInstance->mode == self::MODE_SAFE) && in_array($subPart, self::FEMALE_ONLY_SUBPARTS)) continue;
-            if ((!$avatarInstance->male || $avatarInstance->mode == self::MODE_SAFE) && in_array($subPart, self::MALE_ONLY_SUBPARTS)) continue;
+            if ((!$avatarInstance->female || $avatarInstance->mode == self::MODE_CLEAN) && in_array($subPart, self::FEMALE_ONLY_SUBPARTS)) continue;
+            if ((!$avatarInstance->male || $avatarInstance->mode == self::MODE_CLEAN) && in_array($subPart, self::MALE_ONLY_SUBPARTS)) continue;
 
             if (!array_key_exists($part, $dollsByBodyPart)) continue;
             if (array_key_exists($subPart, $dollsByBodyPart[$part]->drawingInformation)) {
@@ -609,7 +609,7 @@ class AvatarService
                 );
             }
         }
-        $this->avatarDrawingPlanCache[$avatarInstance->code] = $drawingSteps;
+        $this->avatarDrawingPlanCache[$avatarInstance->toCode()] = $drawingSteps;
         $benchmark += microtime(true);
         $benchmarkText = round($benchmark * 1000.0, 2);
         Log::debug("(Avatar) Total time taken to calculate drawing plan: {$benchmarkText}ms");
