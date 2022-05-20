@@ -10,6 +10,15 @@
             </div>
         </div>
 
+        <div class="row">
+            <div class="col">
+                <div class="bg-secondary text-primary p-2 mb-4 text-center rounded">
+                    <div>You can set how explicit avatars appear (or whether they appear at all) from the account screen.</div>
+                </div>
+            </div>
+        </div>
+
+
         <h2>Avatar Editor</h2>
 
         <div id="DrawingHolder">
