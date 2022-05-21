@@ -439,7 +439,7 @@ class AvatarController extends Controller
                 'y' => $item->y,
                 'rotate' => $item->rotate,
                 'scale' => $item->scale,
-                'url' => route('multiplayer.avatar.itempreview', ['id' => $item->name])
+                'url' => route('multiplayer.avatar.itempreview', ['id' => $item->id])
             ];
         }, $service->getAvatarItems());
 
