@@ -62,6 +62,7 @@
             <div class="tab-pane" id="nav-background" role="tabpanel" aria-labelledby="nav-background-tab">
                 <div v-if="avatar.background">
                     <div>Present background: {{ avatar.background.base.name }}</div>
+                    <button class="btn btn-secondary" @click="removeBackground">Remove Background</button>
 
                     <div class="d-flex align-items-center mt-2">
                         <div class="sliderLabel">Rotation</div>
@@ -477,6 +478,11 @@ export default {
             }
             this.avatar.background.image.src = template.url;
             this.refreshPurchases();
+        },
+        removeBackground: function() {
+            this.avatar.background = null;
+            this.refreshPurchases();
+            this.redrawCanvas();
         },
         addItem: function (newId) {
             console.log("Adding item: " + newId);
