@@ -52,20 +52,11 @@ class AvatarController extends Controller
         $character = $user->getCharacter();
         $avatar = $character->avatarInstance();
 
-        // Items presently in use
-        $presentItems = [];
-        $presentBackground = null;
-        foreach ($avatar->items as $item) {
-            $array = $item->toCatalogArray();
-            if ($item->type === 'background')
-                $presentBackground = $array;
-            else
-                $presentItems[] = $array;
-        }
-
         return [
-            'background' => $presentBackground,
-            'items' => $presentItems,
+            'background' => $avatar->background?->toCatalogArray(),
+            'items' => array_map(function($item) {
+                return $item->toCatalogArray();
+            }, $avatar->items),
             'colors' => $avatar->colors
         ];
     }

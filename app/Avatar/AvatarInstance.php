@@ -7,7 +7,7 @@ use Exception;
 
 /**
  * The manifest/configuration for an avatar instance
- * At this stage everything is simple labels/values that a hash can be generated from.
+ * At this stage no image resources have been loaded/processed
  */
 class AvatarInstance
 {
@@ -21,26 +21,26 @@ class AvatarInstance
      * @param string|null $skin
      * @param bool $male
      * @param bool $female
-     * @param string|null $background
+     * @param AvatarItem|null $background
      * @param AvatarItem[] $items Stored as colorName => gradientName (e.g. hair => blonde)
      * @param string[] $colors
      * @param string|null $mode
      * @throws Exception
      */
     public function __construct(
-        public string  $torso,
-        public ?string $head = null,
-        public ?string $arms = null,
-        public ?string $legs = null,
-        public ?string $groin = null,
-        public ?string $ass = null,
-        public ?string $skin = null, // If set, its default colors replace all bodypart's default colors
-        public bool    $male = false,   // Whether to draw male parts
-        public bool    $female = false, // Whether to draw female parts
-        public ?string $background = null,
-        public array   $items = [],
-        public array   $colors = [],
-        public ?string $mode = null
+        public string      $torso,
+        public ?string     $head = null,
+        public ?string     $arms = null,
+        public ?string     $legs = null,
+        public ?string     $groin = null,
+        public ?string     $ass = null,
+        public ?string     $skin = null, // If set, its default colors replace all bodypart's default colors
+        public bool        $male = false,   // Whether to draw male parts
+        public bool        $female = false, // Whether to draw female parts
+        public ?AvatarItem $background = null,
+        public array       $items = [],
+        public array       $colors = [],
+        public ?string     $mode = null
     )
     {
         //Ensure no background items are in the foreground (Shouldn't be possible going forward but legacy items)
@@ -48,7 +48,7 @@ class AvatarInstance
             if ($item->type === 'background' && $item->z > 1) $item->z = -1;
         }
         //Ensure item list is sorted by z level
-        usort($this->items, function($a, $b) {
+        usort($this->items, function ($a, $b) {
             if ($a->z < $b->z) return -1;
             if ($a->z > $b->z) return 1;
             return 0;

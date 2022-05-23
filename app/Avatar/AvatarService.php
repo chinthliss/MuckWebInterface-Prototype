@@ -458,6 +458,7 @@ class AvatarService
         $array = [];
         $colors = [];
         $items = [];
+        $background = null;
         foreach (explode(';', $string) as $entry) {
             [$key, $value] = explode('=', $entry, 2);
             switch ($key) {
@@ -507,10 +508,17 @@ class AvatarService
                     if ($item) {
                         $item->x = $x;
                         $item->y = $y;
-                        $item->z = $z;
+
                         $item->scale = $scale;
                         $item->rotate = $rotate;
-                        array_push($items, $item);
+                        if ($item->type == 'background') {
+                            $item->z = 0;
+                            $background = $item;
+                        }
+                        else {
+                            $item->z = $z;
+                            array_push($items, $item);
+                        }
                     }
                     break;
 
@@ -529,6 +537,8 @@ class AvatarService
 
         if (count($colors)) $array['colors'] = $colors;
         if (count($items)) $array['items'] = $items;
+        if ($background) $array['background'] = $background;
+
         if (!array_key_exists('base', $array))
             throw new Exception("fromMuckString was given a string that didn't contain an avatar base (torso)!");
 
@@ -661,20 +671,24 @@ class AvatarService
     {
         $avatarDoll = $this->renderAvatarDollFromDrawingPlan($this->getDrawingPlanForAvatarInstance($instance));
 
+        $itemsToRender = $instance->items;
+        if ($instance->background) array_unshift($itemsToRender, $instance->background);
+
         //If there's no items, just return as is
-        if (!$instance->items) return $avatarDoll;
+        if (!count($itemsToRender)) return $avatarDoll;
 
         //Otherwise, we have some compositing to do
         $benchmark = -microtime(true);
-        Log::debug("(Avatar) Compositing a final avatar with " . count($instance->items) . " item(s)");
+        Log::debug("(Avatar) Compositing final avatar for code " . json_encode($instance->toArray()));
 
         $finalImage = new Imagick();
         $finalImage->setFormat('png');
         $finalImage->newImage(self::DOLL_WIDTH, self::DOLL_HEIGHT, 'transparent');
 
         $drawnAvatar = false;
-        for ($i = 0; $i < count($instance->items); $i++) {
-            $item = $instance->items[$i];
+        for ($i = 0; $i < count($itemsToRender); $i++) {
+            $item = $itemsToRender[$i];
+            // Draw the avatar before we draw any item in the foreground
             if (!$drawnAvatar && $item->z > 0) {
                 $drawnAvatar = true;
                 $finalImage->compositeImage($avatarDoll, Imagick::COMPOSITE_OVER, 0, 0);
@@ -695,7 +709,7 @@ class AvatarService
             $finalImage->compositeImage($itemImage, Imagick::COMPOSITE_OVER,
                 $item->x + $widthOffset, $item->y + $heightOffset);
         }
-        if (!$drawnAvatar) $finalImage->addImage($avatarDoll);
+        if (!$drawnAvatar) $finalImage->compositeImage($avatarDoll, Imagick::COMPOSITE_OVER, 0, 0);
 
 
         $benchmark += microtime(true);
