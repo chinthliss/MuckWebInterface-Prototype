@@ -102,7 +102,7 @@
                 <div class="row">
                     <div role="button" class="card item-card " v-for="background in backgrounds"
                          :class="[{
-                             border: avatar.background && background.id === avatar.background.id,
+                             border: avatar.background && background.id === avatar.background.base.id,
                              unavailable: !background.earned && !background.owner && !background.cost && background.requirement
                          }]"
                          @click="changeBackground(background.id)">
