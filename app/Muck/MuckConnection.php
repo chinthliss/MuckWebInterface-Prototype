@@ -184,6 +184,8 @@ interface MuckConnection
      */
     public function externalNotification(User $user, ?MuckCharacter $character, string $message): int;
 
+    #region Avatar Related
+
     /**
      * Fetches an array of each avatar doll and what infections use it
      * @return array<string, array<string>>
@@ -224,4 +226,11 @@ interface MuckConnection
      */
     public function buyAvatarItem(MuckCharacter $character, AvatarItem $item): string;
 
+    #endregion Avatar related
+
+    /**
+     * @param string $characterName Name of the character - this is a string to save looking up the dbref since it's called after the page is loaded
+     * @return array
+     */
+    public function getProfileInformationForCharacterName(string $characterName): array;
 }

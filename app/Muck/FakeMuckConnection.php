@@ -368,6 +368,8 @@ class FakeMuckConnection implements MuckConnection
         if ($character && array_key_exists($character->dbref(), $this->fakeDatabaseByDbref)) return 1; else return 0;
     }
 
+    #region Avatar Related
+
     /**
      * @inheritDoc
      */
@@ -410,6 +412,9 @@ class FakeMuckConnection implements MuckConnection
             ['character' => $character->dbref(), 'colors' => $colors, 'items' => $items]);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function buyAvatarGradient(MuckCharacter $character, AvatarGradient $gradient, string $slot): string
     {
         self::fakeMuckCall('buyAvatarGradient', [
@@ -422,6 +427,9 @@ class FakeMuckConnection implements MuckConnection
         return "OK";
     }
 
+    /**
+     * @inheritDoc
+     */
     public function buyAvatarItem(MuckCharacter $character, AvatarItem $item): string
     {
         self::fakeMuckCall('buyAvatarItem', [
@@ -434,4 +442,46 @@ class FakeMuckConnection implements MuckConnection
         if ($item->id == 'batwings') return "Refused for testing purposes";
         return "OK";
     }
+
+    #endregion Avatar Related
+
+    /**
+     * @inheritDoc
+     */
+    public function getProfileInformationForCharacterName(string $characterName): array
+    {
+        self::fakeMuckCall('getProfileInformationForCharacterName', [
+            'characterName' => $characterName
+        ]);
+        $result = [
+            'sex' => '',
+            'species' => '',
+            'height' => '',
+            'shortDescription' => '',
+            'faction' => '',
+            'group' => null,
+            'whatIs' => '',
+            'badges' => [],
+            'equipment' => [],
+            'views' => [],
+            'pinfo' => []
+        ];
+        if ($characterName === 'AvatarCharacter') {
+            $result['sex'] = 'neuter';
+            $result['species'] = 'unknown';
+            $result['height'] = '2\'3"';
+            $result['faction'] = "Factionless";
+            $result['group'] = "Legion of those without a group.";
+            $result['whatIs'] = "Impressionable";
+            $result['views']['Test'] = 'This is a custom view.';
+            $result['pinfo']['Test'] = 'This is a custom pinfo field.';
+            $result['badges'][] = [
+                'name' => 'Test Badge',
+                'description' => 'Basic description test',
+                'awarded' => Carbon::now()
+            ];
+        }
+        return $result;
+    }
+
 }

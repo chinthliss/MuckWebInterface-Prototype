@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Avatar\AvatarService;
 use App\Muck\MuckCharacter;
 use App\Muck\MuckConnection;
 use App\Muck\MuckObjectService;
@@ -40,13 +41,24 @@ class MultiplayerController extends Controller
 
     public function showCharacter(MuckConnection $muck, string $name) : View
     {
+        /** @var User $user */
+        $user = auth()->user();
+
         $character = $muck->getByPlayerName($name);
         if (!$character) abort(404);
 
         return view('multiplayer.character')->with([
-            'character' => $character->toArray(),
-            'avatar' => route('multiplayer.avatar.render', ['name' => $character->name()])
+            'character' => $character,
+            'controls' => $character->aid() === $user->getAid() ? 'true' : 'false',
+            'avatarWidth' => AvatarService::DOLL_WIDTH,
+            'avatarHeight' => AvatarService::DOLL_HEIGHT
         ]);
+    }
+
+    public function getCharacterDetails(MuckConnection $muck, string $name)
+    {
+        $response = $muck->getProfileInformationForCharacterName($name);
+        return $response;
     }
 
     #region Character Selection

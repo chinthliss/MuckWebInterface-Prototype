@@ -395,6 +395,8 @@ class HttpMuckConnection implements MuckConnection
         return (int)$count;
     }
 
+    #region Avatar Related
+
     /**
      * @inheritDoc
      */
@@ -425,7 +427,9 @@ class HttpMuckConnection implements MuckConnection
         ]);
     }
 
-
+    /**
+     * @inheritDoc
+     */
     public function buyAvatarGradient(MuckCharacter $character, AvatarGradient $gradient, string $slot): string
     {
         return $this->requestToMuck('buyAvatarGradient', [
@@ -436,6 +440,9 @@ class HttpMuckConnection implements MuckConnection
         ]);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function buyAvatarItem(MuckCharacter $character, AvatarItem $item): string
     {
         return $this->requestToMuck('buyAvatarItem', [
@@ -445,5 +452,16 @@ class HttpMuckConnection implements MuckConnection
             'itemCost' => $item->cost,
             'owner' => $item->owner?->getAid()
         ]);
+    }
+
+    #endregion Avatar Related
+
+    /**
+     * @inheritDoc
+     */
+    public function getProfileInformationForCharacterName(string $characterName): array
+    {
+        // TODO: Implement getProfileInformationForCharacterName() method.
+        return [];
     }
 }

@@ -14,7 +14,12 @@
 
 @section('content')
     <character-profile
-        :character = "{{ json_encode($character) }}"
-        avatar = "{{ $avatar }}"
+        :character="{{ json_encode($character->toArray()) }}"
+        :controls="{{ $controls }}"
+        profile-url="{{ route('multiplayer.character.api', ['name' => $character->name()]) }}"
+        avatar-url="{{ route('multiplayer.avatar.render', ['name' => $character->name()]) }}"
+        avatar-edit-url="{{ route('multiplayer.avatar') }}"
+        :avatar-width="{{ $avatarWidth }}"
+        :avatar-height="{{ $avatarHeight }}"
     ></character-profile>
 @endsection

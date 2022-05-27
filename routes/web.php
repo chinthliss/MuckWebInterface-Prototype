@@ -34,6 +34,8 @@ Route::get('/', [HomeController::class, 'show'])
 //Character Profiles
 Route::get('c/{name}', [MultiplayerController::class, 'showCharacter'])
     ->name('multiplayer.character.view');
+Route::get('c/{name}/api', [MultiplayerController::class, 'getCharacterDetails'])
+    ->name('multiplayer.character.api');
 
 //Character Avatar related images (Has exceptions in LoadActiveCharacter for optimization)
 Route::get('a/{name}', [AvatarController::class, 'getAvatarFromCharacterName'])

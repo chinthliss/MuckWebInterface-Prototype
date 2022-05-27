@@ -561,6 +561,29 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 ; selfcall handleRequest_validateCredentials
 
 ( -------------------------------------------------- )
+( Handlers - Character profile related                       )
+( -------------------------------------------------- )
+
+(Expects 'dbref' and returns {sex, species, height, shortdescription, faction, group, whatIs, badges:[], equipment:[], views:{view:description}, pinfo:{field:value}})
+(Badges are a list of {name, description, customdescription, awarded})
+: handleRequest_getCharacterProfile[ arr:webcall -- ]
+    webcall @ "dbref" array_getitem ?dup if
+        pmatch dup player? if
+            var who !
+            startAcceptedResponse
+            {
+                "sex" ""
+                "species" ""
+                "group" ""
+            }dict encodeJson
+             descr swap descrnotify
+        else
+            response404
+        then
+    else response400 then
+; selfcall handleRequest_getCharacterProfile
+
+( -------------------------------------------------- )
 ( Handlers - Payment related                         )
 ( -------------------------------------------------- )
 
