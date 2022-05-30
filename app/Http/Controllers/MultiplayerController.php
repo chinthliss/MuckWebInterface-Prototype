@@ -49,7 +49,7 @@ class MultiplayerController extends Controller
 
         return view('multiplayer.character')->with([
             'character' => $character,
-            'controls' => $character->aid() === $user->getAid() ? 'true' : 'false',
+            'controls' => $character->aid() === $user?->getAid() ? 'true' : 'false',
             'avatarWidth' => AvatarService::DOLL_WIDTH,
             'avatarHeight' => AvatarService::DOLL_HEIGHT
         ]);
