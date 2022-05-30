@@ -466,7 +466,7 @@ class HttpMuckConnection implements MuckConnection
         ]), true);
 
         if (array_key_exists('whatIs', $response))
-            $response['description'] = Ansi::unparsedToHtml($response['description']);
+            $response['whatIs'] = Ansi::unparsedToHtml($response['description']);
 
         return $response;
     }
