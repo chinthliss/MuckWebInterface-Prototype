@@ -596,21 +596,30 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
             (Role)
             who @ "role" getstatnullstr var! role
             role @ if RPSYS "Role" array_get_propdirs role @ array_findval not if "" role ! then then
-            role @ not if "Suvivor" then swap "role" array_setitem
+            role @ ?dup not if "Suvivor" then swap "role" array_setitem
 
             (WhatIs)
             who @ getSimpleWI translateFlags swap "whatIs" array_setitem
             
             (Badges)
-            { }list who @ getBadges foreach nip var! badge
-                {
-                    "name" badge @
-                    "description" badge @ getBadgeDescription
-                    "customdescription" who @ badge @ "desc" getBadgeProperty ?dup not if "" then
-                    "awarded" who @ badge @ "createdAt" getBadgeproperty ?dup not if "" then
-                }dict
-                swap array_appenditem
-            repeat
+            { }list 
+			who @ "_prefs/Badgelock" getprop if
+				{
+					"name" "Private"
+					"description" { "This player has opted to not show their badges publically." }list
+				}dict
+				swap array_appenditem
+			else
+				who @ getBadges foreach nip var! badge
+					{
+						"name" badge @
+						"description" badge @ getBadgeDescription
+						"customdescription" who @ badge @ "desc" getBadgeProperty ?dup not if "" then
+						"awarded" who @ badge @ "createdAt" getBadgeproperty ?dup not if "" then
+					}dict
+					swap array_appenditem
+				repeat
+			then
             swap "badges" array_setitem
             
             (Equipment)
