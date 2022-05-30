@@ -614,14 +614,34 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
             swap "badges" array_setitem
             
             (Equipment)
-            { }list swap "equipment" array_setitem
+            { }list who @ "@rp/equipment/" array_get_propdirs foreach nip "equipment/" swap strcat "/" strcat var! equipment
+				{
+					"name" who @ equipment @ "name" strcat getstatnullstr ?dup not if "[Name Missing]" then
+					"description" who @ equipment @ "desc" strcat getstatnullstr ?dup not if "--" then
+				}dict
+				swap array_appenditem
+			repeat
+			swap "equipment" array_setitem
             
             (Views)
-            { }list swap "views" array_setitem
+            { }list who @ "view/" array_get_propvals foreach (name description) var! content var! name
+				{
+					"view" name @
+					"content" content @
+				}dict
+				swap array_appenditem
+			repeat
+			swap "views" array_setitem
             
             (Pinfo)
-            { }list swap "pinfo" array_setitem
-
+            { }list who @ "_finger/" array_get_propvals foreach (name description) var! content var! name
+				{
+					"field" name @
+					"value" content @
+				}dict
+				swap array_appenditem
+			repeat
+			swap "pinfo" array_setitem
             encodeJson descr swap descrnotify
         else
             response404
