@@ -21,14 +21,14 @@
                     <div>Profile Loading...</div>
                 </div>
                 <div v-else>
-                    <!-- Sex, Species and Height -->
+                    <!-- Gender, Species and Height -->
                     <div class="d-flex">
                         <div>
                             <div class="label">Height</div>
                             <div class="value">{{ profile.height || '--' }}</div>
                         </div>
                         <div class="ml-4">
-                            <div class="label">Sex</div>
+                            <div class="label">Gender</div>
                             <div class="value">{{ profile.sex || '--' }}</div>
                         </div>
                         <div class="flex-grow-1 ml-4">
@@ -43,7 +43,7 @@
                             <div class="label">Level</div>
                             <div class="value">{{ character.level  || '--' }}</div>
                         </div>
-                        <div class="flex-grow-1 ml-xl-4">
+                        <div class="flex-grow-1 ml-4">
                             <div class="label">Role</div>
                             <div class="value">{{ profile.role || '--' }}</div>
                         </div>
@@ -55,7 +55,7 @@
                             <div class="label">Faction</div>
                             <div class="value">{{ profile.faction || '--' }}</div>
                         </div>
-                        <div class="flex-grow-1 ml-xl-4">
+                        <div class="flex-grow-1 ml-4">
                             <div class="label">Group</div>
                             <div class="value">{{ profile.group || '--' }}</div>
                         </div>
