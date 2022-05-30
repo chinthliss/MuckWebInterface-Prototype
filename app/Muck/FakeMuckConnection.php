@@ -486,7 +486,7 @@ class FakeMuckConnection implements MuckConnection
             ];
             $result['badges'][] = [
                 'name' => 'Test Badge',
-                'description' => 'Basic description test',
+                'description' => ['Basic description test'],
                 'awarded' => Carbon::now()
             ];
             $result['equipment'][] = [

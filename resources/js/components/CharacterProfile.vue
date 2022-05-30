@@ -143,7 +143,7 @@ export default {
             fields: {
                 badges: [
                     {key: 'name', label: 'Badge', sortable: true},
-                    {key: 'description', label: 'Description', sortable: false},
+                    {key: 'description', label: 'Description', sortable: false, formatter: 'outputArray'},
                     {key: 'awarded', label: 'Awarded', sortable: true, formatter: 'outputCarbonString'}
                 ],
                 pinfo: [
@@ -173,6 +173,12 @@ export default {
         }).then(() => {
             this.profileLoading = false;
         });
+    },
+    methods: {
+        outputArray: function (arrayToOutput) {
+            if (!Array.isArray(arrayToOutput) || arrayToOutput.length === 0) return '--';
+            return arrayToOutput.join('\n');
+        }
     }
 }
 </script>

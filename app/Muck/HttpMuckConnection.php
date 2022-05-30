@@ -465,9 +465,16 @@ class HttpMuckConnection implements MuckConnection
             'characterName' => $characterName
         ]), true);
 
+        //Replace ANSI codes with HTML colouring
         if (array_key_exists('whatIs', $response))
             $response['whatIs'] = Ansi::unparsedToHtml($response['whatIs']);
 
+        //Replace timestamps with Carbon objects
+        if (array_key_exists('badges', $response)) {
+            foreach ($response['badges'] as $badge) {
+                $badge['awarded'] = Carbon::createFromTimestamp($badge['awarded']);
+            }
+        }
         return $response;
     }
 }
