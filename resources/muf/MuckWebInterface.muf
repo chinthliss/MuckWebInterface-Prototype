@@ -569,7 +569,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 ( -------------------------------------------------- )
 
 (Expects 'characterName' and returns {sex, species, height, shortdescription, role, faction, group, whatIs, badges:[], equipment:[], views:[], pinfo:[]})
-(Badges are a list of {name, description, customdescription, awarded})
+(Badges are a list of {name, description, awarded})
 : handleRequest_getProfileInformationForCharacterName[ arr:webcall -- ]
     webcall @ "characterName" array_getitem ?dup if
         pmatch dup player? if
@@ -613,8 +613,9 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 				who @ getBadges foreach nip var! badge
 					{
 						"name" badge @
-						"description" badge @ getBadgeDescription
-						"customdescription" who @ badge @ "desc" getBadgeProperty ?dup not if "" then
+						"description" 
+							badge @ getBadgeDescription
+							who @ badge @ "desc" getBadgeProperty ?dup if swap array_appenditem then
 						"awarded" who @ badge @ "createdAt" getBadgeproperty ?dup not if "" then
 					}dict
 					swap array_appenditem
@@ -623,9 +624,13 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
             swap "badges" array_setitem
             
             (Equipment)
-            { }list who @ "@rp/equipment/" array_get_propdirs foreach nip "equipment/" swap strcat "/" strcat var! equipment
+            { }list who @ "@rp/equipment/" array_get_propdirs foreach nip 
+				dup "accessory" instring not if pop continue then
+				"equipment/" swap strcat "/" strcat var! equipment
 				{
-					"name" who @ equipment @ "name" strcat getstatnullstr ?dup not if "[Name Missing]" then
+					"name"
+						who @ equipment @ "name" strcat getstatnullstr ?dup not if "[Name Missing]" then
+						who @ equipment @ "engraved name" strcat getstatnullstr ?dup if swap " (" swap ")" strcat strcat strcat then
 					"description" who @ equipment @ "desc" strcat getstatnullstr ?dup not if "--" then
 				}dict
 				swap array_appenditem
