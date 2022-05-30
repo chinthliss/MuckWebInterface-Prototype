@@ -471,8 +471,8 @@ class HttpMuckConnection implements MuckConnection
 
         //Replace timestamps with Carbon objects
         if (array_key_exists('badges', $response)) {
-            foreach ($response['badges'] as $badge) {
-                $badge['awarded'] = Carbon::createFromTimestamp($badge['awarded']);
+            foreach ($response['badges'] as $key => $badge) {
+                $response['badges'][$key]['awarded'] = Carbon::createFromTimestamp($badge['awarded']);
             }
         }
         return $response;
