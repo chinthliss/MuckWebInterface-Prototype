@@ -457,6 +457,7 @@ class FakeMuckConnection implements MuckConnection
             'sex' => '',
             'species' => '',
             'height' => '',
+            'role' => '',
             'shortDescription' => '',
             'faction' => '',
             'group' => null,
@@ -470,15 +471,26 @@ class FakeMuckConnection implements MuckConnection
             $result['sex'] = 'neuter';
             $result['species'] = 'unknown';
             $result['height'] = '2\'3"';
+            $result['role'] = 'Tester';
             $result['faction'] = "Factionless";
             $result['group'] = "Legion of those without a group.";
             $result['whatIs'] = "Impressionable";
-            $result['views']['Test'] = 'This is a custom view.';
-            $result['pinfo']['Test'] = 'This is a custom pinfo field.';
+            $result['views'][] = [
+                'view' => 'Test',
+                'content' => 'This is a custom view.'
+            ];
+            $result['pinfo'][] = [
+                'field' => 'Test',
+                'value' => 'This is a custom pinfo field.'
+            ];
             $result['badges'][] = [
                 'name' => 'Test Badge',
                 'description' => 'Basic description test',
                 'awarded' => Carbon::now()
+            ];
+            $result['equipment'][] = [
+                'name' => 'Test Equipment',
+                'description' => 'This is a piece of test equipment'
             ];
         }
         return $result;

@@ -564,19 +564,28 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 ( Handlers - Character profile related                       )
 ( -------------------------------------------------- )
 
-(Expects 'dbref' and returns {sex, species, height, shortdescription, faction, group, whatIs, badges:[], equipment:[], views:{view:description}, pinfo:{field:value}})
+(Expects 'characterName' and returns {sex, species, height, shortdescription, role, faction, group, whatIs, badges:[], equipment:[], views:[], pinfo:[]})
 (Badges are a list of {name, description, customdescription, awarded})
 : handleRequest_getCharacterProfile[ arr:webcall -- ]
-    webcall @ "dbref" array_getitem ?dup if
+    webcall @ "characterName" array_getitem ?dup if
         pmatch dup player? if
             var who !
             startAcceptedResponse
             {
                 "sex" ""
                 "species" ""
+                "height" ""
+                "role" ""
+                "shortDescription" ""
+                "faction" ""
                 "group" ""
+                "whatIs" ""
+                "badges" { }list
+                "equipment" { }list
+                "views" { }list
+                "pinfo" { }list
             }dict encodeJson
-             descr swap descrnotify
+            descr swap descrnotify
         else
             response404
         then

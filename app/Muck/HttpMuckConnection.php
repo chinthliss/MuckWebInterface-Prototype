@@ -461,7 +461,9 @@ class HttpMuckConnection implements MuckConnection
      */
     public function getProfileInformationForCharacterName(string $characterName): array
     {
-        // TODO: Implement getProfileInformationForCharacterName() method.
-        return [];
+        $response = $this->requestToMuck('getProfileInformationForCharacterName', [
+            'characterName' => $characterName
+        ]);
+        return $response ? json_decode($response, true) : [];
     }
 }

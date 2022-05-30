@@ -12,13 +12,10 @@
                         <div class="spinner-border" role="status"></div>
                         <div>Avatar Loading...</div>
                     </div>
-                    <img v-if="avatar" src="" alt="Character Avatar">
+                    <img v-if="avatar" src="" alt="Character Avatar" id="AvatarImg">
                     <div v-if="!avatar && !avatarLoading" class="text-center">
                         No Avatar to Display
                     </div>
-                </div>
-                <div v-if="controls && avatarEditUrl">
-                    <a class="btn btn-primary w-100" :href="avatarEditUrl">Edit Avatar</a>
                 </div>
             </div>
 
@@ -44,6 +41,18 @@
                         </div>
                     </div>
 
+                    <!-- Level and Role -->
+                    <div class="mt-2 d-flex">
+                        <div>
+                            <div class="label">Level</div>
+                            <div class="value">{{ character.level  || '--' }}</div>
+                        </div>
+                        <div class="flex-grow-1 ml-xl-4">
+                            <div class="label">Role</div>
+                            <div class="value">{{ profile.role || '--' }}</div>
+                        </div>
+                    </div>
+
                     <!-- Faction and Group -->
                     <div class="mt-2 d-flex">
                         <div>
@@ -56,79 +65,43 @@
                         </div>
                     </div>
 
-                    <!-- WhatIs -->
-                    <div class="mt-2">
-                        <div class="label">Preferences (WhatIs)</div>
-                        <div class="value">{{ profile.whatIs || '--' }}</div>
-                    </div>
-
                     <!-- Short Description -->
                     <div class="mt-2">
                         <div class="label">Short Description</div>
                         <div class="value">{{ profile.shortDescription || '--' }}</div>
                     </div>
 
-                    <!-- Views -->
-                    <h3 class="mt-2">Views</h3>
-                    <div v-if="!Object.keys(profile.views).length">None configured</div>
-                    <table v-else class="table table-borderless table-sm">
-                        <thead>
-                        <tr>
-                            <th>View</th>
-                            <th>Detail</th>
-                        </tr>
-                        </thead>
-                        <tr v-for="(detail, view) in profile.views">
-                            <td>{{ view }}</td>
-                            <td>{{ detail }}</td>
-                        </tr>
-                    </table>
-
-                    <!-- Pinfo -->
-                    <h3 class="mt-2">Pinfo</h3>
-                    <div v-if="!Object.keys(profile.pinfo).length">No custom fields</div>
-                    <table v-else class="table table-borderless table-sm">
-                        <thead>
-                        <tr>
-                            <th>Field</th>
-                            <th>Detail</th>
-                        </tr>
-                        </thead>
-                        <tr v-for="(detail, field) in profile.pinfo">
-                            <td>{{ field }}</td>
-                            <td>{{ detail }}</td>
-                        </tr>
-                    </table>
+                    <!-- WhatIs -->
+                    <div class="mt-2">
+                        <div class="label">What Is (wi)</div>
+                        <div class="value">{{ profile.whatIs || '--' }}</div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Lower Pane -->
         <div v-if="!profileLoading">
+
+            <!-- Views -->
+            <h3 class="mt-2">Views</h3>
+            <div v-if="!Object.keys(profile.views).length">None configured</div>
+            <b-table v-else dark small striped :items="profile.views" :fields="fields.views"></b-table>
+
+            <!-- Pinfo -->
+            <h3 class="mt-2">Pinfo</h3>
+            <div v-if="!Object.keys(profile.pinfo).length">No custom fields</div>
+            <b-table v-else dark small striped :items="profile.pinfo" :fields="fields.pinfo"></b-table>
+
             <!-- Badges -->
             <h3 class="mt-2">Badges</h3>
             <div v-if="!profile.badges.length">No badges</div>
-            <table v-else class="table table-sm">
-                <thead>
-                <tr>
-                    <th>Badge</th>
-                    <th>Awarded</th>
-                    <th>Description</th>
-                </tr>
-                </thead>
-                <tr v-for="badge in profile.badges">
-                    <td>{{ badge.name }}</td>
-                    <td>{{ outputCarbonString(badge.awarded) }}</td>
-                    <td>{{ badge.description }}</td>
-                </tr>
-            </table>
+            <b-table v-else dark small striped :items="profile.badges" :fields="fields.badges"></b-table>
 
             <!-- Equipment -->
             <h3 class="mt-2">Equipment</h3>
             <div v-if="!profile.equipment.length">Nothing equipped</div>
-            <div v-else>
-                !! Equipment !!
-            </div>
+            <b-table v-else dark small striped :items="profile.equipment" :fields="fields.equipment"></b-table>
         </div>
     </div>
 </template>
@@ -144,6 +117,7 @@
  * @property {string} sex
  * @property {string} species
  * @property {string} height
+ * @property {string} role
  * @property {string} shortDescription
  * @property {string} faction
  * @property {string} group
@@ -172,11 +146,31 @@ export default {
             avatarLoading: true,
             /** @type {Profile} */
             profile: null,
-            profileLoading: true
+            profileLoading: true,
+            fields: {
+                badges: [
+                    {key: 'name', label: 'Badge', sortable: true},
+                    {key: 'description', label: 'Description', sortable: false},
+                    {key: 'awarded', label: 'Awarded', sortable: true, formatter: 'outputCarbonString'}
+                ],
+                pinfo: [
+                    {key: 'field', label: 'Field', sortable: true},
+                    {key: 'value', label: 'Value', sortable: false},
+                ],
+                views: [
+                    {key: 'view', label: 'View', sortable: true},
+                    {key: 'content', label: 'Content', sortable: false},
+                ],
+                equipment: [
+                    {key: 'name', label: 'Name', sortable: true},
+                    {key: 'description', label: 'Description', sortable: false},
+                ]
+            }
         }
     },
     mounted: function () {
         $('#AvatarContainer').css('width', this.avatarWidth).css('height', this.avatarHeight);
+        $('#AvatarImg').css('width', this.avatarWidth).css('height', this.avatarHeight);
         this.avatar = new Image();
         this.avatar.onload = () => {
             this.avatarLoading = false;

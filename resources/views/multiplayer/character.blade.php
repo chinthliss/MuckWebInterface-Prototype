@@ -19,7 +19,7 @@
         profile-url="{{ route('multiplayer.character.api', ['name' => $character->name()]) }}"
         avatar-url="{{ route('multiplayer.avatar.render', ['name' => $character->name()]) }}"
         avatar-edit-url="{{ route('multiplayer.avatar') }}"
-        :avatar-width="{{ $avatarWidth }}"
-        :avatar-height="{{ $avatarHeight }}"
+        :avatar-width="{{ $avatarWidth / 2 }}"
+        :avatar-height="{{ $avatarHeight / 2 }}"
     ></character-profile>
 @endsection
