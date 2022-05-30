@@ -47,6 +47,10 @@ $include $lib/accountpurchases
 $include $lib/notifications
 $include $lib/chargen
 $include $lib/avatar
+$include $lib/badge          (For badges in profile)
+$include $lib/bodyparts      (For height in profile)
+$include $lib/format/units   (For height in profile)
+$include $cmd/protowhatis    (For preferences in profile)
 
 $def response400 descr "HTTP/1.1 400 Bad Request\r\n" descrnotify descr "\r\n" descrnotify
 $def response401 descr "HTTP/1.1 401 Unauthorized\r\n" descrnotify descr "\r\n" descrnotify
@@ -569,23 +573,56 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 : handleRequest_getProfileInformationForCharacterName[ arr:webcall -- ]
     webcall @ "characterName" array_getitem ?dup if
         pmatch dup player? if
-            var who !
+            var! who
             startAcceptedResponse
+            (Easy things first)
             {
-                "sex" ""
-                "species" ""
-                "height" ""
-                "role" ""
-                "shortDescription" ""
-                "faction" ""
-                "group" ""
-                "whatIs" ""
-                "badges" { }list
-                "equipment" { }list
-                "views" { }list
-                "pinfo" { }list
-            }dict encodeJson
-            descr swap descrnotify
+                "sex" who @ "sex" getpropstr ?dup not if who @ "gender" getpropstr then
+
+                "species" who @ "species" getpropstr
+
+                "shortDescription" who @ "sdesc" getpropstr
+
+                "faction" who @ "faction" getstatnullstr
+                
+                "group" who @ "adventuring group" getstatnullstr
+            }dict
+
+            (Height)
+            (TODO For later fixing - format_length assumes 'me' for metric/imperial preferences AND puts color codes in)
+            who @ get_visible_height "height" who @ format_length 1 unparse_ansi capital
+            swap "height" array_setitem
+            
+            (Role)
+            who @ "role" getstatnullstr var! role
+            role @ if RPSYS "Role" array_get_propdirs role @ array_findval not if "" role ! then then
+            role @ not if "Suvivor" then swap "role" array_setitem
+
+            (WhatIs)
+            who @ getSimpleWI translateFlags swap "whatIs" array_setitem
+            
+            (Badges)
+            { }list who @ getBadges foreach nip var! badge
+                {
+                    "name" badge @
+                    "description" badge @ getBadgeDescription
+                    "customdescription" who @ badge @ "desc" getBadgeProperty ?dup not if "" then
+                    "awarded" who @ badge @ "createdAt" getBadgeproperty ?dup not if "" then
+                }dict
+                swap array_appenditem
+            repeat
+            swap "badges" array_setitem
+            
+            (Equipment)
+            { }list swap "equipment" array_setitem
+            
+            (Views)
+            { }list swap "views" array_setitem
+            
+            (Pinfo)
+            { }list swap "pinfo" array_setitem
+
+            encodeJson descr swap descrnotify
         else
             response404
         then

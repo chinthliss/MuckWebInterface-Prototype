@@ -7,6 +7,7 @@ use App\Avatar\AvatarGradient;
 use App\Avatar\AvatarInstance;
 use App\Avatar\AvatarItem;
 use App\Avatar\AvatarService;
+use App\Helpers\Ansi;
 use App\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -474,7 +475,7 @@ class FakeMuckConnection implements MuckConnection
             $result['role'] = 'Tester';
             $result['faction'] = "Factionless";
             $result['group'] = "Legion of those without a group.";
-            $result['whatIs'] = "I<b>mp</b>ressionable";
+            $result['whatIs'] = Ansi::unparsedToHtml("^GREEN^Impressionable");
             $result['views'][] = [
                 'view' => 'Test',
                 'content' => 'This is a custom view.'
