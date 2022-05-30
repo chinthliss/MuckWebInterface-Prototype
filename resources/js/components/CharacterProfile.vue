@@ -8,13 +8,9 @@
         <div class="d-flex flex-column flex-xl-row">
             <div class="mx-auto">
                 <div id="AvatarContainer" class="border border-primary">
-                    <div v-if="avatarLoading" class="text-center">
-                        <div class="spinner-border" role="status"></div>
-                        <div>Avatar Loading...</div>
-                    </div>
-                    <img v-if="avatar" src="" alt="Character Avatar" id="AvatarImg">
-                    <div v-if="!avatar && !avatarLoading" class="text-center">
-                        No Avatar to Display
+                    <img v-if="avatarUrl" :src="avatarUrl" alt="Character Avatar" id="AvatarImg">
+                    <div v-if="!avatarUrl" class="mt-4 text-center">
+                        Avatars are disabled
                     </div>
                 </div>
             </div>
@@ -135,15 +131,12 @@ export default {
         character: {Type: Object, required: true},
         controls: {Type: Boolean, required: false, default: false},
         avatarUrl: {Type: String, required: true},
-        avatarEditUrl: {Type: String, required: false},
         profileUrl: {Type: String, required: true},
         avatarWidth: {Type: Number, required: true},
         avatarHeight: {Type: Number, required: true}
     },
     data: function () {
         return {
-            avatar: null,
-            avatarLoading: true,
             /** @type {Profile} */
             profile: null,
             profileLoading: true,
@@ -171,16 +164,6 @@ export default {
     mounted: function () {
         $('#AvatarContainer').css('width', this.avatarWidth).css('height', this.avatarHeight);
         $('#AvatarImg').css('width', this.avatarWidth).css('height', this.avatarHeight);
-        this.avatar = new Image();
-        this.avatar.onload = () => {
-            this.avatarLoading = false;
-        }
-        this.avatar.onerror = (e) => {
-            console.log("Avatar didn't load (this could be expected if they're disabled): ", e);
-            this.avatar = null;
-            this.avatarLoading = false;
-        }
-        this.avatar.src = this.avatarUrl;
 
         axios.get(this.profileUrl).then((response) => {
             console.log("Character profile received.");

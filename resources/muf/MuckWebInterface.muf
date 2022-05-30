@@ -566,7 +566,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 
 (Expects 'characterName' and returns {sex, species, height, shortdescription, role, faction, group, whatIs, badges:[], equipment:[], views:[], pinfo:[]})
 (Badges are a list of {name, description, customdescription, awarded})
-: handleRequest_getCharacterProfile[ arr:webcall -- ]
+: handleRequest_getProfileInformationForCharacterName[ arr:webcall -- ]
     webcall @ "characterName" array_getitem ?dup if
         pmatch dup player? if
             var who !
@@ -590,7 +590,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
             response404
         then
     else response400 then
-; selfcall handleRequest_getCharacterProfile
+; selfcall handleRequest_getProfileInformationForCharacterName
 
 ( -------------------------------------------------- )
 ( Handlers - Payment related                         )

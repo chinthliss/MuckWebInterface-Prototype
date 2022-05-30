@@ -16,9 +16,8 @@
     <character-profile
         :character="{{ json_encode($character->toArray()) }}"
         :controls="{{ $controls }}"
-        profile-url="{{ route('multiplayer.character.api', ['name' => $character->name()]) }}"
-        avatar-url="{{ route('multiplayer.avatar.render', ['name' => $character->name()]) }}"
-        avatar-edit-url="{{ route('multiplayer.avatar') }}"
+        profile-url="{{ $profileUrl }}"
+        avatar-url="{{ $avatarUrl }}"
         :avatar-width="{{ $avatarWidth / 2 }}"
         :avatar-height="{{ $avatarHeight / 2 }}"
     ></character-profile>

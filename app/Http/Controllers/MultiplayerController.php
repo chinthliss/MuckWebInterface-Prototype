@@ -47,8 +47,15 @@ class MultiplayerController extends Controller
         $character = $muck->getByPlayerName($name);
         if (!$character) abort(404);
 
+        $avatarUrl = route('multiplayer.avatar.render', ['name' => $character->name()]);
+        if ($user && $user->getAvatarPreference() === $user::AVATAR_PREFERENCE_HIDDEN) $avatarUrl = '';
+
+        $profileUrl = route('multiplayer.character.api', ['name' => $character->name()]);
+
         return view('multiplayer.character')->with([
             'character' => $character,
+            'avatarUrl' => $avatarUrl,
+            'profileUrl' => $profileUrl,
             'controls' => $character->aid() === $user?->getAid() ? 'true' : 'false',
             'avatarWidth' => AvatarService::DOLL_WIDTH,
             'avatarHeight' => AvatarService::DOLL_HEIGHT
