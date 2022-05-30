@@ -474,7 +474,7 @@ class FakeMuckConnection implements MuckConnection
             $result['role'] = 'Tester';
             $result['faction'] = "Factionless";
             $result['group'] = "Legion of those without a group.";
-            $result['whatIs'] = "Impressionable";
+            $result['whatIs'] = "I<b>mp</b>ressionable";
             $result['views'][] = [
                 'view' => 'Test',
                 'content' => 'This is a custom view.'

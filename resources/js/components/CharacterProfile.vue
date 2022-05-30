@@ -70,7 +70,7 @@
                     <!-- WhatIs -->
                     <div class="mt-2">
                         <div class="label">What Is (wi)</div>
-                        <div class="value">{{ profile.whatIs || '--' }}</div>
+                        <div v-html="profile.whatIs || '--'" class="value"></div>
                     </div>
                 </div>
             </div>
