@@ -63,13 +63,13 @@
 
                     <!-- Short Description -->
                     <div class="mt-2">
-                        <div class="label">Short Description (+glance)</div>
+                        <div class="label">Short Description <span class="text-muted">(+glance)</span></div>
                         <div class="value">{{ profile.shortDescription || '--' }}</div>
                     </div>
 
                     <!-- WhatIs -->
                     <div class="mt-2">
-                        <div class="label">What Is (wi)</div>
+                        <div class="label">What Is <span class="text-muted">(wi)</span></div>
                         <div v-html="profile.whatIs || '--'" class="value"></div>
                     </div>
                 </div>
@@ -80,22 +80,22 @@
         <div v-if="!profileLoading">
 
             <!-- Views -->
-            <h3 class="mt-2">Views (+view)</h3>
+            <h3 class="mt-2">Views <span class="text-muted">(+view)</span></h3>
             <div v-if="!Object.keys(profile.views).length">None configured</div>
             <b-table v-else dark small striped :items="profile.views" :fields="fields.views"></b-table>
 
             <!-- Pinfo -->
-            <h3 class="mt-2">Custom Information (+finger)</h3>
+            <h3 class="mt-2">Custom Information <span class="text-muted">(+finger)</span></h3>
             <div v-if="!Object.keys(profile.pinfo).length">No custom fields</div>
             <b-table v-else dark small striped :items="profile.pinfo" :fields="fields.pinfo"></b-table>
 
             <!-- Equipment -->
-            <h3 class="mt-2">Equipment (+equip)</h3>
+            <h3 class="mt-2">Equipment <span class="text-muted">(+equip)</span></h3>
             <div v-if="!profile.equipment.length">Nothing equipped</div>
             <b-table v-else dark small striped :items="profile.equipment" :fields="fields.equipment"></b-table>
 
             <!-- Badges -->
-            <h3 class="mt-2">Badges (+badge)</h3>
+            <h3 class="mt-2">Badges <span class="text-muted">(+badge)<span></span></h3>
             <div v-if="badgesLoading" class="d-flex align-items-center">
                 <span class="spinner-border" role="status"></span>
                 <span class="ml-2">Loading...</span>
