@@ -469,13 +469,29 @@ class HttpMuckConnection implements MuckConnection
         if (array_key_exists('whatIs', $response))
             $response['whatIs'] = Ansi::unparsedToHtml($response['whatIs']);
 
-        //Replace timestamps with Carbon objects
-        if (array_key_exists('badges', $response)) {
-            foreach ($response['badges'] as $key => $badge) {
-                if (array_key_exists('awarded', $badge))
-                    $response['badges'][$key]['awarded'] = Carbon::createFromTimestamp($badge['awarded']);
-            }
-        }
         return $response;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function getBadgesForCharacterName(string $characterName): array
+    {
+        $badges = [];
+        // The response from the muck for this is separate lines each containing a json object
+        $lines = $this->requestToMuck('getBadgesForCharacterName', [
+            'characterName' => $characterName
+        ]);
+        foreach (explode("\n", $lines) as $line) {
+            $badge = json_decode($line, true);
+
+            //Replace timestamps with Carbon objects
+            if (array_key_exists('awarded', $badge))
+                $badge['awarded'] = Carbon::createFromTimestamp($badge['awarded']);
+
+            $badges[] = $badge;
+        }
+        return $badges;
+    }
+
 }

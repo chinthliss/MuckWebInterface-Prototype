@@ -233,4 +233,12 @@ interface MuckConnection
      * @return array
      */
     public function getProfileInformationForCharacterName(string $characterName): array;
+
+    /**
+     * Separate call because some characters have so many badges the muck can't put them all into a single json response.
+     * @param string $characterName Name of the character - this is a string to save looking up the dbref since it's called after the page is loaded
+     * @return array
+     */
+    public function getBadgesForCharacterName(string $characterName): array;
+
 }

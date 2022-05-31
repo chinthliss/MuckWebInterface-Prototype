@@ -497,4 +497,20 @@ class FakeMuckConnection implements MuckConnection
         return $result;
     }
 
+    public function getBadgesForCharacterName(string $characterName): array
+    {
+        self::fakeMuckCall('getBadgesForCharacterName', [
+            'characterName' => $characterName
+        ]);
+        $result = [];
+        if ($characterName === 'AvatarCharacter') {
+            $result[] = [
+                'name' => 'Test Badge',
+                'description' => ['Basic description test'],
+                'awarded' => Carbon::now()
+            ];
+        }
+        return $result;
+    }
+
 }

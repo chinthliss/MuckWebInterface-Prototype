@@ -89,15 +89,21 @@
             <div v-if="!Object.keys(profile.pinfo).length">No custom fields</div>
             <b-table v-else dark small striped :items="profile.pinfo" :fields="fields.pinfo"></b-table>
 
-            <!-- Badges -->
-            <h3 class="mt-2">Badges</h3>
-            <div v-if="!profile.badges.length">No badges</div>
-            <b-table v-else dark small striped :items="profile.badges" :fields="fields.badges"></b-table>
-
             <!-- Equipment -->
             <h3 class="mt-2">Equipment</h3>
             <div v-if="!profile.equipment.length">Nothing equipped</div>
             <b-table v-else dark small striped :items="profile.equipment" :fields="fields.equipment"></b-table>
+
+            <!-- Badges -->
+            <h3 class="mt-2">Badges</h3>
+            <div v-if="badgesLoading" class="d-flex align-items-center">
+                <span class="spinner-border" role="status"></span>
+                <span class="ml-2">Loading...</span>
+            </div>
+            <div v-else-if="!profile.badges" class="alert alert-danger">Badges failed to load</div>
+            <div v-else-if="!profile.badges.length">No badges</div>
+            <b-table v-else dark small striped :items="profile.badges" :fields="fields.badges"></b-table>
+
         </div>
     </div>
 </template>
@@ -118,7 +124,6 @@
  * @property {string} faction
  * @property {string} group
  * @property {string} whatIs
- * @property {array} badges
  * @property {array} equipment
  * @property {array} views
  * @property {array} finger
@@ -140,6 +145,7 @@ export default {
             /** @type {Profile} */
             profile: null,
             profileLoading: true,
+            badgesLoading: true,
             fields: {
                 badges: [
                     {key: 'name', label: 'Badge', sortable: true},
@@ -168,6 +174,9 @@ export default {
         axios.get(this.profileUrl).then((response) => {
             console.log("Character profile received.");
             this.profile = response.data;
+            // Add slots for late loading things
+            this.profile.badges = null;
+            this.loadBadges();
         }).catch((error) => {
             console.log("There was an error with fetching the character profile: ", error);
         }).then(() => {
@@ -178,6 +187,16 @@ export default {
         outputArray: function (arrayToOutput) {
             if (!Array.isArray(arrayToOutput) || arrayToOutput.length === 0) return '--';
             return arrayToOutput.join('\n');
+        },
+        loadBadges: function() {
+            axios.get(this.profileUrl + '/badges/').then((response) => {
+                console.log("Badges received.");
+                this.profile.badges = response.data;
+            }).catch((error) => {
+                console.log("There was an error with fetching badges: ", error);
+            }).then(() => {
+                this.badgesLoading = false;
+            });
         }
     }
 }

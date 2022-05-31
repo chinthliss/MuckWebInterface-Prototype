@@ -68,6 +68,13 @@ class MultiplayerController extends Controller
         return $response;
     }
 
+    public function getBadgesOf(MuckConnection $muck, string $name)
+    {
+        $response = $muck->getBadgesForCharacterName($name);
+        return $response;
+
+    }
+
     #region Character Selection
 
     public function showCharacterSelect(MuckConnection $muck) : View

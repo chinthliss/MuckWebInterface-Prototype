@@ -568,8 +568,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 ( Handlers - Character profile related                       )
 ( -------------------------------------------------- )
 
-(Expects 'characterName' and returns {sex, species, height, shortdescription, role, faction, group, whatIs, badges:[], equipment:[], views:[], pinfo:[]})
-(Badges are a list of {name, description, awarded})
+(Expects 'characterName' and returns {sex, species, height, shortdescription, role, faction, group, whatIs, equipment:[], views:[], pinfo:[]})
 : handleRequest_getProfileInformationForCharacterName[ arr:webcall -- ]
     webcall @ "characterName" array_getitem ?dup if
         pmatch dup player? if
@@ -600,28 +599,6 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 
             (WhatIs)
             who @ getSimpleWI translateFlags swap "whatIs" array_setitem
-            
-            (Badges)
-            { }list 
-			who @ "_prefs/Badgelock" getprop if
-				{
-					"name" "Private"
-					"description" { "This player has opted to not show their badges publically." }list
-				}dict
-				swap array_appenditem
-			else
-				who @ getBadges foreach nip var! badge
-					{
-						"name" badge @
-						"description" 
-							badge @ getBadgeDescription
-							who @ badge @ "desc" getBadgeProperty ?dup if swap array_appenditem then
-						"awarded" who @ badge @ "createdAt" getBadgeproperty ?dup not if "" then
-					}dict
-					swap array_appenditem
-				repeat
-			then
-            swap "badges" array_setitem
             
             (Equipment)
             { }list who @ "@rp/equipment/" array_get_propdirs foreach nip 
@@ -663,6 +640,39 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     else response400 then
 ; selfcall handleRequest_getProfileInformationForCharacterName
 
+(Expects 'characterName' and returns badges as json objects of {name, description, awarded}, but each one is on a separate line because of text handling limits muck-side)
+: handleRequest_getProfileInformationForCharacterName[ arr:webcall -- ]
+    webcall @ "characterName" array_getitem ?dup if
+        pmatch dup player? if
+            var! who
+            startAcceptedResponse
+            { }list (Badges we intend to send)
+			who @ "_prefs/Badgelock" getprop if
+				{
+					"name" "Private"
+					"description" { "This player has opted to not show their badges publically." }list
+				}dict
+				swap array_appenditem
+			else
+				who @ getBadges foreach nip var! badge
+					{
+						"name" badge @
+						"description" 
+							badge @ getBadgeDescription
+							who @ badge @ "desc" getBadgeProperty ?dup if swap array_appenditem then
+						"awarded" who @ badge @ "createdAt" getBadgeproperty ?dup not if "" then
+					}dict
+					swap array_appenditem
+				repeat
+			then
+            (Send)
+            foreach nip encodeJson descr swap descrnotify repeat
+        else
+            response404
+        then
+    else response400 then
+            
+;
 ( -------------------------------------------------- )
 ( Handlers - Payment related                         )
 ( -------------------------------------------------- )
