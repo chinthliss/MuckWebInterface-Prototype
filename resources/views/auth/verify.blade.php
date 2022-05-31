@@ -23,6 +23,8 @@
                 <div class="col">
                     <p>If you did not receive the email, <a href="{{ route('auth.account.resendverifyemail') }}">click
                             here to request another</a>.</p>
+                    <p>If you are migrating from the old website it won't have sent the email,
+                        so you will need to use the link above to send an email.</p>
                 </div>
             </div>
         @endif
