@@ -1,14 +1,15 @@
 @extends('layouts.layout')
 
 @section('title')
-    View Character
+    {{ $character->name() }} - Profile
 @endsection
 
 @section('breadcrumbs')
     {{ Breadcrumbs::render([
         [ 'route' => 'home', 'label' => 'Home' ],
         [ 'route' => 'multiplayer.home', 'label' => 'Multiplayer' ],
-        [ 'label' => 'View Character' ]
+        [ 'label' => 'Characters' ],
+        [ 'label' => $character->name() ]
     ]) }}
 @endsection
 
