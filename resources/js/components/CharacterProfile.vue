@@ -63,7 +63,7 @@
 
                     <!-- Short Description -->
                     <div class="mt-2">
-                        <div class="label">Short Description</div>
+                        <div class="label">Short Description (+glance)</div>
                         <div class="value">{{ profile.shortDescription || '--' }}</div>
                     </div>
 
@@ -80,22 +80,22 @@
         <div v-if="!profileLoading">
 
             <!-- Views -->
-            <h3 class="mt-2">Views</h3>
+            <h3 class="mt-2">Views (+view)</h3>
             <div v-if="!Object.keys(profile.views).length">None configured</div>
             <b-table v-else dark small striped :items="profile.views" :fields="fields.views"></b-table>
 
             <!-- Pinfo -->
-            <h3 class="mt-2">Pinfo</h3>
+            <h3 class="mt-2">Custom Information (+finger)</h3>
             <div v-if="!Object.keys(profile.pinfo).length">No custom fields</div>
             <b-table v-else dark small striped :items="profile.pinfo" :fields="fields.pinfo"></b-table>
 
             <!-- Equipment -->
-            <h3 class="mt-2">Equipment</h3>
+            <h3 class="mt-2">Equipment (+equip)</h3>
             <div v-if="!profile.equipment.length">Nothing equipped</div>
             <b-table v-else dark small striped :items="profile.equipment" :fields="fields.equipment"></b-table>
 
             <!-- Badges -->
-            <h3 class="mt-2">Badges</h3>
+            <h3 class="mt-2">Badges (+badge)</h3>
             <div v-if="badgesLoading" class="d-flex align-items-center">
                 <span class="spinner-border" role="status"></span>
                 <span class="ml-2">Loading...</span>

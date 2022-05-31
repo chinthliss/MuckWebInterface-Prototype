@@ -595,7 +595,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
             (Role)
             who @ "role" getstatnullstr var! role
             role @ if RPSYS "Role" array_get_propdirs role @ array_findval not if "" role ! then then
-            role @ ?dup not if "Suvivor" then swap "role" array_setitem
+            role @ ?dup not if "Survivor" then capital swap "role" array_setitem
 
             (WhatIs)
             who @ getSimpleWI translateFlags swap "whatIs" array_setitem
@@ -618,7 +618,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
             { }list who @ "view/" array_get_propvals foreach (name description) var! content var! name
 				{
 					"view" name @
-					"content" content @
+					"content" content @ 1 unparse_ansi
 				}dict
 				swap array_appenditem
 			repeat
@@ -628,7 +628,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
             { }list who @ "_finger/" array_get_propvals foreach (name description) var! content var! name
 				{
 					"field" name @
-					"value" content @
+					"value" content @ 1 unparse_ansi
 				}dict
 				swap array_appenditem
 			repeat
