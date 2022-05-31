@@ -641,7 +641,7 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
 ; selfcall handleRequest_getProfileInformationForCharacterName
 
 (Expects 'characterName' and returns badges as json objects of {name, description, awarded}, but each one is on a separate line because of text handling limits muck-side)
-: handleRequest_getProfileInformationForCharacterName[ arr:webcall -- ]
+: handleRequest_getBadgesForCharacterName[ arr:webcall -- ]
     webcall @ "characterName" array_getitem ?dup if
         pmatch dup player? if
             var! who
@@ -671,8 +671,8 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
             response404
         then
     else response400 then
-            
-;
+; selfcall handleRequest_getBadgesForCharacterName
+
 ( -------------------------------------------------- )
 ( Handlers - Payment related                         )
 ( -------------------------------------------------- )
