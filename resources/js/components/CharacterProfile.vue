@@ -95,7 +95,7 @@
             <b-table v-else dark small striped :items="profile.equipment" :fields="fields.equipment"></b-table>
 
             <!-- Badges -->
-            <h3 class="mt-2">Badges <span class="text-muted">(+badge)<span></span></h3>
+            <h3 class="mt-2">Badges <span class="text-muted">(+badge)</span></h3>
             <div v-if="badgesLoading" class="d-flex align-items-center">
                 <span class="spinner-border" role="status"></span>
                 <span class="ml-2">Loading...</span>
