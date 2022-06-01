@@ -200,7 +200,7 @@
     Vue.mixin({
         methods: {
             capital: (text) => {
-                return text && text.substr(0,1).toUpperCase() + text.substr(1);
+                return text && text.substring(0, 1).toUpperCase() + text.slice(1);
             },
             lex: (word) => {
                 return lex(word);
