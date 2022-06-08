@@ -109,6 +109,7 @@
             <div class="navbar-text">Some text!</div>
             @auth
                 <a class="nav-link" href="{{ route('support.user.home') }}">Support / Request</a>
+                <a class="nav-link" href="{{ route('roadmap') }}">Website Roadmap</a>
 
                 <h4 class="nav-link mt-2 pl-0"><a href="{{ route('singleplayer.home') }}">Singleplayer</a></h4>
                 <div>???</div>
@@ -116,6 +117,7 @@
                 <h4 class="nav-link mt-2 pl-0"><a href="{{ route('multiplayer.home') }}">Multiplayer</a></h4>
                 <a class="nav-link" href="{{ route('multiplayer.gettingstarted') }}">Getting Started</a>
                 <a class="nav-link" href="{{ route('multiplayer.character.select') }}">Character Select</a>
+                <a class="nav-link" href="{{ route('multiplayer.character.changepassword') }}">Change Character Password</a>
                 <a class="nav-link" href="{{ route('multiplayer.connect') }}">Connect</a>
                 <a class="nav-link" href="{{ route('multiplayer.avatar') }}">Avatar - Edit</a>
                 <a class="nav-link" href="{{ route('multiplayer.avatar.gradients') }}">Avatar - Gradients</a>
