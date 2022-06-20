@@ -316,4 +316,8 @@ class MultiplayerController extends Controller
             ]
         ]);
     }
+
+    public function getWebsocketToken() {
+        return '1A-FAKE';
+    }
 }

@@ -109,6 +109,8 @@ Route::group(['middleware' => ['auth:account']], function () {
         ->name('auth.account.verifyemail')->middleware('signed', 'throttle:8,1');
     Route::get('account/resendverifyemail', [AccountEmailController::class, 'resend'])
         ->name('auth.account.resendverifyemail')->middleware('throttle:8,1');
+
+    Route::get('getWebsocketToken', [MultiplayerController::class, 'getWebsocketToken']);
 });
 
 /*
