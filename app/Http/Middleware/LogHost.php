@@ -26,8 +26,9 @@ class LogHost
         /** @var User $user */
         $user = $request->user('account');
 
+        /** @var HostLogManager $hostLog */
         $hostLog = resolve(HostLogManager::class);
-        $hostLog->logHost($request->ip(), $request->getHost(), $user);
+        $hostLog->logHost($request->ip(), $user);
 
         return $response;
     }
