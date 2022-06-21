@@ -13,6 +13,7 @@ class HostLogManager
 
     public function logHost(string $ip, string $hostName, ?User $user): void
     {
+        if (!$user) return;
         //Avoid logging proxy entries
         if ($ip === '127.0.0.1' || $hostName === 'localhost') return;
         // Have to check the table exists because it might not during testing
