@@ -11,23 +11,23 @@ use Illuminate\Support\Facades\Schema;
 class HostLogManager
 {
 
-    public function logHost(string $ip, string $hostName, ?User $user): void
+    public function logHost(string $ip, ?User $user): void
     {
         if (!$user) return;
-        //Avoid logging proxy entries
-        if ($ip === '127.0.0.1' || $hostName === 'localhost') return;
+        if ($ip === '127.0.0.1') return;
+
         // Have to check the table exists because it might not during testing
         if (Schema::hasTable('log_hosts')) {
-
-            $character = $user?->getCharacter();
+            $character = $user->getCharacter();
+            $hostname = gethostbyaddr($ip);
             DB::table('log_hosts')->updateOrInsert(
                 [
                     'host_ip' => $ip,
-                    'aid' => $user ? $user->getAid() : 0, // To match existing format
+                    'aid' => $user->getAid(), // To match existing format
                     'plyr_ref' => $character ? $character->dbref() : -1, // To match existing format
                     'muckname' => config('muck.muck_name')
                 ], [
-                    'host_name' => $hostName,
+                    'host_name' => $hostname,
                     'plyr_name' => $character ? $character->name() : '', // To match existing format
                     'tstamp' => Carbon::now()->timestamp
                 ]
