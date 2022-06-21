@@ -11,12 +11,14 @@ use Illuminate\Support\Facades\Schema;
 class HostLogManager
 {
 
-    public function logHost(string $ip, string $hostName, ?User $user)
+    public function logHost(string $ip, string $hostName, ?User $user): void
     {
+        //Avoid logging proxy entries
+        if ($ip === '127.0.0.1' || $hostName === 'localhost') return;
         // Have to check the table exists because it might not during testing
         if (Schema::hasTable('log_hosts')) {
 
-            $character = $user ? $user->getCharacter() : null;
+            $character = $user?->getCharacter();
             DB::table('log_hosts')->updateOrInsert(
                 [
                     'host_ip' => $ip,
