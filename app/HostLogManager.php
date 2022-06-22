@@ -31,7 +31,7 @@ class HostLogManager
                 ], [
                     'host_name' => $hostname,
                     'plyr_name' => $character?->name(),
-                    'plyr_tstamp' => $character?->createdTimestamp(),
+                    'plyr_tstamp' => $character?->createdTimestamp()->timestamp,
                     'tstamp' => Carbon::now()->timestamp
                 ]
             );
