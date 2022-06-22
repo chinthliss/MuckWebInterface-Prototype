@@ -4,6 +4,7 @@
 namespace App;
 
 use App\User as User;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Schema;
@@ -14,7 +15,8 @@ class HostLogManager
     public function logHost(string $ip, ?User $user): void
     {
         if (!$user) return;
-        if ($ip === '127.0.0.1') return;
+        //Not ideal but we don't want to log proxy entries in production and in testing everything comes from localhost
+        if (App::environment() === 'production' && $ip === '127.0.0.1') return;
 
         // Have to check the table exists because it might not during testing
         if (Schema::hasTable('log_hosts')) {
@@ -23,12 +25,13 @@ class HostLogManager
             DB::table('log_hosts')->updateOrInsert(
                 [
                     'host_ip' => $ip,
-                    'aid' => $user->getAid(), // To match existing format
+                    'aid' => $user->getAid(),
                     'plyr_ref' => $character ? $character->dbref() : -1, // To match existing format
-                    'muckname' => config('muck.muck_name')
+                    'game_code' => config('muck.muck_code')
                 ], [
                     'host_name' => $hostname,
-                    'plyr_name' => $character ? $character->name() : '', // To match existing format
+                    'plyr_name' => $character?->name(),
+                    'plyr_tstamp' => $character?->createdTimestamp(),
                     'tstamp' => Carbon::now()->timestamp
                 ]
             );

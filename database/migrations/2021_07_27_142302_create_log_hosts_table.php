@@ -16,17 +16,16 @@ class CreateLogHostsTable extends Migration
         //The existing server already has this table so need to check if it exists or not
         if (!Schema::hasTable('log_hosts')) {
             Schema::create('log_hosts', function (Blueprint $table) {
-                $table->char('host_ip', 16);
+                $table->char('host_ip', 16)->index();
                 $table->string('host_name');
-                $table->bigInteger('aid')->unsigned();
+                $table->bigInteger('aid');
                 $table->integer('tstamp');
-                $table->integer('plyr_ref');
-                $table->string('plyr_name', 50);
-                $table->string('muckname', 100);
+                $table->integer('plyr_ref')->index(); // Can't be nullable as part of primary index
+                $table->timestamp('plyr_tstamp')->nullable();
+                $table->string('plyr_name', 50)->nullable();
+                $table->tinyInteger('game_code')->unsigned();
 
-                $table->primary(['host_ip', 'aid', 'plyr_ref', 'muckname']);
-                $table->index(['aid', 'host_ip']);
-                $table->index(['host_ip']);
+                $table->primary(['host_ip', 'aid', 'plyr_ref', 'game_code']);
             });
         }
     }

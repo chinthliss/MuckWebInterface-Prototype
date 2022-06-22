@@ -16,10 +16,10 @@ class HostLogTest extends TestCase
         $this->seed();
     }
 
-    public function testHostLoggedWithNoLogin()
+    public function testHostNotLoggedWithNoLogin()
     {
         $this->get('/');
-        $this->assertDatabaseHas('log_hosts', ['aid' => 0]);
+        $this->assertDatabaseCount('log_hosts', 0);
     }
 
     public function testHostLoggedWithLoginButNoCharacter()
