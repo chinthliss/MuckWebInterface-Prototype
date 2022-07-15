@@ -36,6 +36,7 @@ $ifdef is_dev
 $endif
 
 $def parseFloatOrInt dup string? if dup "." instring if strtof else atoi then then
+$include $www/mwi/websocket
 $include $lib/account
 $include $lib/kta/proto
 $include $lib/kta/json
@@ -210,6 +211,24 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     intostr descr swap descrnotify
 ; selfcall handleRequest_externalNotification
 
+(Expects 'aid' and maybe 'character' set)
+(Retrns a string with the token in)
+: handleRequest_getWebsocketAuthToken[ arr:webcall -- ]
+    0 var! aid
+    webcall @ "aid" array_getitem ?dup if
+        acct_any2aid aid !
+    then
+    aid @ not if response400 exit then
+    
+    0 var! character
+    webcall @ "character" array_getitem ?dup if
+        atoi dbref dup ok? if character ! else pop then
+    then 
+
+    startAcceptedResponse
+    aid @ character @ websocketIssueAuthenticationToken 
+    descr swap descrnotify
+; selfcall handleRequest_getWebsocketAuthToken
 ( -------------------------------------------------- )
 ( Avatars )
 ( -------------------------------------------------- )

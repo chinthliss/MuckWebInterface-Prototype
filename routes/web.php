@@ -31,6 +31,9 @@ use App\Http\Controllers\SupportTicketController;
 Route::get('/', [HomeController::class, 'show'])
     ->name('home');
 
+//TODO: Move getWebsocketToken to behind login requirement
+Route::get('getWebsocketToken', [MultiplayerController::class, 'getWebsocketToken']);
+
 //Character Profiles
 Route::get('c/{name}', [MultiplayerController::class, 'showCharacter'])
     ->name('multiplayer.character.view');
@@ -110,7 +113,7 @@ Route::group(['middleware' => ['auth:account']], function () {
     Route::get('account/resendverifyemail', [AccountEmailController::class, 'resend'])
         ->name('auth.account.resendverifyemail')->middleware('throttle:8,1');
 
-    Route::get('getWebsocketToken', [MultiplayerController::class, 'getWebsocketToken']);
+    //TODO: Move websocket auth code back to here
 });
 
 /*
