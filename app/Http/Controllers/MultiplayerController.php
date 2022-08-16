@@ -318,8 +318,8 @@ class MultiplayerController extends Controller
     }
 
     public function getWebsocketToken() {
-        //TODO: Make sure to remove allowance for other origins in getWebsocketToken
         return response('1657894784-81031-NjUw')
-            ->header('Access-Control-Allow-Origin', '*');
+            //->header('Access-Control-Allow-Origin', '*');
+            ->header('Content-Type', 'text/plain');
     }
 }
