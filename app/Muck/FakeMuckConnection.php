@@ -513,4 +513,9 @@ class FakeMuckConnection implements MuckConnection
         return $result;
     }
 
+    public function useWebsocketAuthToken(string $token, User $user = null, MuckCharacter $character = null): void
+    {
+        //We don't have a faking mechanism for the websocket unfortunately, so this does nothing.
+        return;
+    }
 }

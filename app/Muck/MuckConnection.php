@@ -241,4 +241,13 @@ interface MuckConnection
      */
     public function getBadgesForCharacterName(string $characterName): array;
 
+    /**
+     * Passes an auth token to the muck, so that a player can use it to connect via the websocket;
+     * @param string $token
+     * @param User|null $user
+     * @param MuckCharacter|null $character
+     * @return void
+     */
+    public function useWebsocketAuthToken(string $token, User $user = null, MuckCharacter $character = null): void;
+
 }

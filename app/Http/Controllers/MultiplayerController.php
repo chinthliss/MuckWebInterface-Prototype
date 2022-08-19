@@ -12,6 +12,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -318,7 +319,14 @@ class MultiplayerController extends Controller
     }
 
     public function getWebsocketToken() {
-        return response('1657894784-81031-NjUw')
+        /** @var User $user */
+        $user = auth()->user();
+        $character = ($user ? $user->getCharacter() : null);
+
+        $token = Str::uuid();
+
+
+        return response($token)
             //->header('Access-Control-Allow-Origin', '*');
             ->header('Content-Type', 'text/plain');
     }
