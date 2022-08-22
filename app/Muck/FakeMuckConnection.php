@@ -513,9 +513,16 @@ class FakeMuckConnection implements MuckConnection
         return $result;
     }
 
-    public function useWebsocketAuthToken(string $token, User $user = null, MuckCharacter $character = null): void
+    /**
+     * @inheritDoc
+     */
+    public function getWebsocketAuthTokenFor(User $user, MuckCharacter $character = null): string
     {
-        //We don't have a faking mechanism for the websocket unfortunately, so this does nothing.
-        return;
+        self::fakeMuckCall('getWebsocketAuthToken', [
+            'aid' => $user,
+            'characterDbref' => $character
+        ]);
+        //We don't have a faking mechanism for the websocket unfortunately, so this is extremely limited
+        return "FAKEWEBSOCKETAUTHTOKEN";
     }
 }

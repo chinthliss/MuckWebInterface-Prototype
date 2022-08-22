@@ -12,7 +12,6 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -318,13 +317,12 @@ class MultiplayerController extends Controller
         ]);
     }
 
-    public function getWebsocketToken() {
+    public function getWebsocketToken(MuckConnection $muck) {
         /** @var User $user */
         $user = auth()->user();
         $character = ($user ? $user->getCharacter() : null);
 
-        $token = Str::uuid();
-
+        $token = $muck->getWebsocketAuthTokenFor($user, $character);
 
         return response($token)
             //->header('Access-Control-Allow-Origin', '*');

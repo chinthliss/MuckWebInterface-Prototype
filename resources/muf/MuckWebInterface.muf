@@ -220,15 +220,13 @@ $def response503 descr "HTTP/1.1 503 Service Unavailable\r\n" descrnotify descr 
     then
     aid @ not if response400 exit then
     
-    0 var! character
-    webcall @ "character" array_getitem ?dup if
-        atoi dbref dup ok? if character ! else pop then
-    then 
+    webcall @ "characterDbref" array_getitem ?dup if atoi dbref else #-1 then var! character
 
     startAcceptedResponse
     aid @ character @ websocketIssueAuthenticationToken 
     descr swap descrnotify
 ; selfcall handleRequest_getWebsocketAuthToken
+
 ( -------------------------------------------------- )
 ( Avatars )
 ( -------------------------------------------------- )

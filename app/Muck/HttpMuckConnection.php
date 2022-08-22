@@ -494,4 +494,14 @@ class HttpMuckConnection implements MuckConnection
         return $badges;
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function getWebsocketAuthTokenFor(User $user, MuckCharacter $character = null): string
+    {
+        return $this->requestToMuck('getWebsocketAuthToken', [
+            'aid' => $user->getAid(),
+            'characterDbref' => $character ? $character->dbref() : -1
+        ]);
+    }
 }
