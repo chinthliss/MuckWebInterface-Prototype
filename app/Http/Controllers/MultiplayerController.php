@@ -328,4 +328,8 @@ class MultiplayerController extends Controller
             //->header('Access-Control-Allow-Origin', '*');
             ->header('Content-Type', 'text/plain');
     }
+
+    public function testWebsocket() {
+        return view('test-websocket');
+    }
 }

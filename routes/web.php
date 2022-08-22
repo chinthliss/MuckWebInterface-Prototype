@@ -31,9 +31,6 @@ use App\Http\Controllers\SupportTicketController;
 Route::get('/', [HomeController::class, 'show'])
     ->name('home');
 
-//TODO: Move getWebsocketToken to behind login requirement
-Route::get('getWebsocketToken', [MultiplayerController::class, 'getWebsocketToken']);
-
 //Character Profiles
 Route::get('c/{name}', [MultiplayerController::class, 'showCharacter'])
     ->name('multiplayer.character.view');
@@ -113,7 +110,9 @@ Route::group(['middleware' => ['auth:account']], function () {
     Route::get('account/resendverifyemail', [AccountEmailController::class, 'resend'])
         ->name('auth.account.resendverifyemail')->middleware('throttle:8,1');
 
-    //TODO: Move websocket auth code back to here
+    //Websocket authorization tokens
+    Route::get('getWebsocketToken', [MultiplayerController::class, 'getWebsocketToken']);
+
 });
 
 /*
@@ -233,6 +232,9 @@ Route::group(['middleware' => ['auth:account', 'verified', 'tos.agreed', 'not.lo
     Route::get('multiplayer/changeCharacterPassword', [MultiplayerController::class, 'showChangeCharacterPassword'])
         ->name('multiplayer.character.changepassword');
     Route::post('multiplayer/changeCharacterPassword', [MultiplayerController::class, 'changeCharacterPassword']);
+
+    //Test page for the websocket functionality
+    Route::get('testWebsocket', [MultiplayerController::class, 'testWebsocket']);
 });
 
 /*

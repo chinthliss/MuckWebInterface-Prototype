@@ -28,4 +28,5 @@ files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(
 // MuckWebInterface-Websocket
 import MwiWebsocket from "muckwebinterface-websocket/src/index.js";
 window.MwiWebsocket = MwiWebsocket;
-MwiWebsocket.init();
+// Init presently left to individual pages that need it
+// MwiWebsocket.init();
