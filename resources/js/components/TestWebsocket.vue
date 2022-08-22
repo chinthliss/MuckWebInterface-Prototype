@@ -29,12 +29,12 @@ export default {
         this.channel = MwiWebsocket.channel('test-websocket');
 
         this.channel.on('player-joined', (data) => {
-            this.players.push(data);
+            this.users.push(data);
         });
 
         this.channel.on('player-left', (data) => {
-            const index = this.players.indexOf(data);
-            if (index !== -1) this.players.splice(index, 1);
+            const index = this.users.indexOf(data);
+            if (index !== -1) this.users.splice(index, 1);
         });
     }
 }
