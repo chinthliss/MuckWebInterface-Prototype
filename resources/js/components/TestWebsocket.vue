@@ -26,7 +26,7 @@ export default {
     name: "test-websocket",
     mounted() {
         MwiWebsocket.init();
-        this.channel = MwiWebsocket.channel('chat-test');
+        this.channel = MwiWebsocket.channel('test-websocket');
 
         this.channel.on('player-joined', (data) => {
             this.players.push(data);
