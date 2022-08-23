@@ -16,7 +16,7 @@
         </div>
         <div class="row">
             <div class="input-group">
-                <input id="ChatInput" type="text" class="form-control" placeholder="Enter your message here.." aria-label="Message input" aria-describedby="message-send-button">
+                <input id="ChatInput" v-model="message" type="text" class="form-control" placeholder="Enter your message here.." aria-label="Message input" aria-describedby="message-send-button">
                 <div class="input-group-append">
                     <button id="ChatInputButton" class="btn btn-primary" type="button">Send</button>
                 </div>
@@ -37,7 +37,8 @@ export default {
             /** @type {ChannelInterface} */
             channel: null,
             lastUser: 0,
-            connected: false
+            connected: false,
+            message: ''
         }
     },
     name: "test-websocket",
@@ -61,19 +62,14 @@ export default {
             this.users = data;
         });
 
-        $('#ChatInput').keypress(function(event) {
-            if (event.which === 13)  {
-                if ($(this).val() !== "") this.channel.send("message", $(this).val());
-                $(this).val("");
-                event.preventDefault()
-            }
+        $('#ChatInput').keypress((event) => {
+            if (event.which === 13)  this.sendCurrentMessage();
+            event.preventDefault();
         });
 
-        $('#ChatInputButton').click(function(event) {
-            var input = $('#ChatInput');
-            if (input !== '') this.channel.send("message", input.val());
-            input.val("");
-            event.preventDefault()
+        $('#ChatInputButton').click((event) => {
+            this.sendCurrentMessage();
+            event.preventDefault();
         });
 
         // Expecting [player, playerName, message]
@@ -87,6 +83,14 @@ export default {
             chatOutput.parent().scrollTop(chatOutput.parent()[0].scrollHeight);
             this.lastUser = player;
         });
+    },
+    methods: {
+        sendCurrentMessage: function() {
+            if (this.message) {
+                this.channel.send("message", this.message);
+                this.message = "";
+            }
+        }
     }
 }
 </script>
