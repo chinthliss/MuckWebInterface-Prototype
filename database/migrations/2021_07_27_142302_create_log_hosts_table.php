@@ -21,7 +21,7 @@ class CreateLogHostsTable extends Migration
                 $table->bigInteger('aid');
                 $table->integer('tstamp');
                 $table->integer('plyr_ref')->index(); // Can't be nullable as part of primary index
-                $table->timestamp('plyr_tstamp')->nullable();
+                $table->integer('plyr_tstamp')->nullable();
                 $table->string('plyr_name', 50)->nullable();
                 $table->tinyInteger('game_code')->unsigned();
 
