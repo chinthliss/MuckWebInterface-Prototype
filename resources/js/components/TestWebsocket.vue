@@ -63,8 +63,10 @@ export default {
         });
 
         $('#ChatInput').keypress((event) => {
-            if (event.which === 13)  this.sendCurrentMessage();
-            event.preventDefault();
+            if (event.which === 13) {
+                this.sendCurrentMessage();
+                event.preventDefault();
+            }
         });
 
         $('#ChatInputButton').click((event) => {
