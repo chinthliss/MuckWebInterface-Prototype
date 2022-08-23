@@ -16,7 +16,9 @@
         </div>
         <div class="row">
             <div class="input-group">
-                <input id="ChatInput" v-model="message" type="text" class="form-control" placeholder="Enter your message here.." aria-label="Message input" aria-describedby="message-send-button">
+                <input id="ChatInput" v-model="message" type="text" class="form-control"
+                       placeholder="Enter your message here.." aria-label="Message input"
+                       aria-describedby="message-send-button">
                 <div class="input-group-append">
                     <button id="ChatInputButton" class="btn btn-primary" type="button">Send</button>
                 </div>
@@ -87,7 +89,7 @@ export default {
         });
     },
     methods: {
-        sendCurrentMessage: function() {
+        sendCurrentMessage: function () {
             if (this.message) {
                 this.channel.send("message", this.message);
                 this.message = "";
@@ -137,7 +139,8 @@ export default {
 
 .user {
     color: black;
-    min-width: 200px
+    min-width: 96px;
+    display: inline-block;
 }
 
 </style>
