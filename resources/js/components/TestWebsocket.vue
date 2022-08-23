@@ -5,7 +5,7 @@
             <div id="ChatHistory" class="col-10 border rounded">
                 <div v-for="message in history" class="message" v-bind:class="[
                         message.sameAsLast ? 'message-same-user' : '',
-                        message.name === this.userName ? 'message-self' : ''
+                        message.name === userName ? 'message-self' : ''
                     ]">
                     <span class="user">{{ message.name }}</span>{{ message.message }}
                 </div>
