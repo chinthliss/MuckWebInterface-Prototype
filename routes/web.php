@@ -232,9 +232,6 @@ Route::group(['middleware' => ['auth:account', 'verified', 'tos.agreed', 'not.lo
     Route::get('multiplayer/changeCharacterPassword', [MultiplayerController::class, 'showChangeCharacterPassword'])
         ->name('multiplayer.character.changepassword');
     Route::post('multiplayer/changeCharacterPassword', [MultiplayerController::class, 'changeCharacterPassword']);
-
-    //Test page for the websocket functionality
-    Route::get('testWebsocket', [MultiplayerController::class, 'testWebsocket']);
 });
 
 /*
@@ -258,6 +255,9 @@ Route::group(['middleware' => ['auth:account', 'verified', 'tos.agreed', 'not.lo
         ->name('multiplayer.connect');
     Route::get('avatar/edit/{code?}', [AvatarController::class, 'getAvatarFromUserCode'])
         ->name('multiplayer.avatar.edit.render');
+
+    //Test page for the websocket functionality
+    Route::get('testWebsocket', [MultiplayerController::class, 'testWebsocket']);
 
 });
 
