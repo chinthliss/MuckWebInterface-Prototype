@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        <h2>Test</h2>
+        <h2>WebSocket Test</h2>
         <div class="row mb-2">
             <div id="ChatHistory" class="col-10 border rounded">
                 <div v-for="message in history" class="message" v-bind:class="[
