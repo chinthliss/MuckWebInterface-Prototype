@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <h2>Test</h2>
-        <div class="row">
+        <div class="row mb-2">
             <div id="ChatHistory" class="col-10 border rounded">
                 <div v-for="message in history" class="message" v-bind:class="[
                         message.sameAsLast ? 'message-same-user' : '',
@@ -12,6 +12,14 @@
             </div>
             <div id="ChatUserList" class="col-2 border rounded">
                 <div v-for="user in users" class="user">{{ user }}</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="input-group">
+                <input id="ChatInput" type="text" class="form-control" placeholder="Enter your message here.." aria-label="Message input" aria-describedby="message-send-button">
+                <div class="input-group-append">
+                    <button id="ChatInputButton" class="btn btn-primary" type="button">Send</button>
+                </div>
             </div>
         </div>
     </div>
@@ -26,6 +34,7 @@ export default {
             ],
             users: [],
             userName: null,
+            /** @type {ChannelInterface} */
             channel: null,
             lastUser: 0,
             connected: false
@@ -50,6 +59,21 @@ export default {
 
         this.channel.on('player-list', (data) => {
             this.users = data;
+        });
+
+        $('#ChatInput').keypress(function(event) {
+            if (event.which === 13)  {
+                if ($(this).val() !== "") this.channel.send("message", $(this).val());
+                $(this).val("");
+                event.preventDefault()
+            }
+        });
+
+        $('#ChatInputButton').click(function(event) {
+            var input = $('#ChatInput');
+            if (input !== '') this.channel.send("message", input.val());
+            input.val("");
+            event.preventDefault()
         });
 
         // Expecting [player, playerName, message]
@@ -107,6 +131,7 @@ export default {
 
 .user {
     color: black;
+    min-width: 200px
 }
 
 </style>
