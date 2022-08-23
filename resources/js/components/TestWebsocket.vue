@@ -31,9 +31,7 @@
 export default {
     data: function () {
         return {
-            history: [ // In the form {name, message, sameAsLast}
-                {name: 'system', message: 'Waiting on connection..', sameAsLast: false}
-            ],
+            history: [], // In the form {name, message, sameAsLast}
             users: [],
             userName: null,
             /** @type {ChannelInterface} */
@@ -45,23 +43,33 @@ export default {
     },
     name: "test-websocket",
     mounted() {
+        this.addSystemMessageToHistory('Waiting on connection');
+
         MwiWebsocket.init();
         this.channel = MwiWebsocket.channel('test-websocket');
 
         this.channel.on('connected', () => {
             this.connected = true;
             this.userName = MwiWebsocket.getPlayerName();
-            this.history.push({name: 'system', message: 'Connected', sameAsLast: false});
+            this.addSystemMessageToHistory('Connected');
         });
 
         this.channel.on('disconnected', () => {
             this.connected = false;
             this.userName = null;
-            this.history.push({name: 'system', message: 'Disconnected', sameAsLast: false});
+            this.addSystemMessageToHistory('Disconnected');
         });
 
         this.channel.on('player-list', (data) => {
             this.users = data;
+        });
+
+        this.channel.on('player-joined', (data) => {
+            this.addSystemMessageToHistory('Player joined: ' + data);
+        });
+
+        this.channel.on('player-left', (data) => {
+            this.addSystemMessageToHistory('Player left: ' + data);
         });
 
         $('#ChatInput').keypress((event) => {
@@ -76,16 +84,15 @@ export default {
             event.preventDefault();
         });
 
-        // Expecting [player, playerName, message]
+        // Expecting [playerDbref, playerName, message]
         this.channel.on('message', (data) => {
             if (typeof data !== 'object') throw "Unexpected data in chat message";
-            let [player, playerName, message] = data;
+            let [playerDbref, playerName, message] = data;
             const chatOutput = $('#ChatHistory');
             let safeParse = $('<div></div>');
             safeParse.text(message);
-            this.history.push({name: playerName, message: message, sameAsLast: player === this.lastUser});
+            this.addMessageToHistory(message, playerDbref, playerName);
             chatOutput.parent().scrollTop(chatOutput.parent()[0].scrollHeight);
-            this.lastUser = player;
         });
     },
     methods: {
@@ -94,6 +101,13 @@ export default {
                 this.channel.send("message", this.message);
                 this.message = "";
             }
+        },
+        addMessageToHistory: function(message, fromDbref, fromName) {
+            this.history.push({name: fromName, message: message, sameAsLast: fromDbref === this.lastUser});
+            this.lastUser = fromDbref;
+        },
+        addSystemMessageToHistory: function(message) {
+            this.addMessageToHistory(message, -1, 'system')
         }
     }
 }
