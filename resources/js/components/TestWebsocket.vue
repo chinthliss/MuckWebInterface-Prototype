@@ -102,11 +102,11 @@ export default {
                 this.message = "";
             }
         },
-        addMessageToHistory: function(message, fromDbref, fromName) {
+        addMessageToHistory: function (message, fromDbref, fromName) {
             this.history.push({name: fromName, message: message, sameAsLast: fromDbref === this.lastUser});
             this.lastUser = fromDbref;
         },
-        addSystemMessageToHistory: function(message) {
+        addSystemMessageToHistory: function (message) {
             this.addMessageToHistory(message, -1, 'system')
         }
     }
@@ -114,14 +114,10 @@ export default {
 </script>
 
 <style scoped>
-#ChatHistory {
-    min-height: 500px;
+#ChatHistory, #ChatUserList {
+    height: 500px;
     background: mintcream;
-}
-
-#ChatUserList {
-    min-height: 500px;
-    background: mintcream;
+    overflow-y: auto;
 }
 
 .message:first-child {
