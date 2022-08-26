@@ -92,7 +92,7 @@ export default {
             let safeParse = $('<div></div>');
             safeParse.text(message);
             this.addMessageToHistory(message, playerDbref, playerName);
-            chatOutput.parent().scrollTop(chatOutput.parent()[0].scrollHeight);
+            chatOutput.scrollTop(chatOutput[0].scrollHeight);
         });
     },
     methods: {
