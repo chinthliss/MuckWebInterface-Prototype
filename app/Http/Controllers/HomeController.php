@@ -52,7 +52,7 @@ class HomeController extends Controller
             [
                 'title' => 'Websocket',
                 'description' => 'Rewrite of the present websocket connection to the muck to work within this framework. Also stripping off backup websocket functionality since websockets are now prevalent. ',
-                'progress' => 'Pending.'
+                'progress' => 'Completed. ALso now it\'s own project.'
             ],
             [
                 'title' => 'Ticket System',
