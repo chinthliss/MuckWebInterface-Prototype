@@ -1,13 +1,13 @@
-!!@program muckwebinterface-gateway.muf
+!!@program muckwebinterface-gateway-prototype.muf
 !!q
-!!@reg muckwebinterface-gateway.muf=www/mwi
-!!@set $www/mwi=W4
-!!@set $www/mwi=L
-!!@set $www/mwi=_type:noheader
-!!@action mwi=#0,$www/mwi
-!!@propset $www=dbref:_/www/mwi/gateway:$www/mwi
+!!@reg muckwebinterface-gateway-prototype.muf=www/mwi-prototype
+!!@set $www/mwi-prototype=W4
+!!@set $www/mwi-prototype=L
+!!@set $www/mwi-prototype=_type:noheader
+!!@action mwiprototype=#0,$www/mwi-prototype
+!!@propset $www=dbref:_/www/mwi/gateway-prototype:$www/mwi-prototype
 
-@program $www/mwi
+@program $www/mwi-prototype
 1 999999 d
 i
 ( Program to handle both incoming and outgoing requests between the MWI website and the muck.)
