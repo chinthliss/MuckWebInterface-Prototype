@@ -70,6 +70,8 @@ Route::get('/roadmap', [HomeController::class, 'showRoadmap'])
 Route::get('/accountlocked', [AccountController::class, 'lockedAccount'])
     ->name('auth.account.locked');
 
+Route::get('/styleguide', [HomeController::class, 'showStyleGuide'])
+    ->name('styleguide');
 
 /*
 |--------------------------------------------------------------------------

@@ -82,4 +82,8 @@ class HomeController extends Controller
             'roadmap' => $roadmap
         ]);
     }
+
+    public function showStyleGuide() {
+        return view('styleguide');
+    }
 }
